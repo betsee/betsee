@@ -63,11 +63,7 @@ Human-readable application version as a ``.``-delimited string.
 '''
 
 
-#FIXME: Reuse the existing betse.metadata._get_version_parts_from_str()
-#function, which should presumably then be publicized. To do so safely, we'll
-#want to guarantee that the "betse" package is importable *BEFORE* this
-#submodule is ever imported in this codebase.
-def _get_version_parts_from_str(version_str: str) -> tuple:
+def convert_version_str_to_tuple(version_str: str) -> tuple:
     '''
     Convert the passed human-readable ``.``-delimited version string into a
     machine-readable version tuple of corresponding integers.
@@ -79,7 +75,7 @@ def _get_version_parts_from_str(version_str: str) -> tuple:
         int(version_part) for version_part in version_str.split('.'))
 
 
-VERSION_PARTS = _get_version_parts_from_str(VERSION)
+VERSION_PARTS = convert_version_str_to_tuple(VERSION)
 '''
 Machine-readable application version as a tuple of integers.
 '''
@@ -170,7 +166,7 @@ installation.
 
 # ....................{ METADATA ~ libs : runtime          }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# WARNING: Changes to this dictionary *MUST* be synchronized with:
+# WARNING: Changes to this subsection *MUST* be synchronized with:
 # * Front-facing documentation (e.g., "doc/md/INSTALL.md").
 # * The "betse.util.py.modules.SETUPTOOLS_TO_MODULE_NAME" dictionary, converting
 #   between the setuptools-specific names listed below and the Python-specific
@@ -178,9 +174,23 @@ installation.
 # * Gitlab-CI configuration (e.g., the top-level "requirements-conda.txt" file).
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+BETSE_VERSION_REQUIRED_MIN = '0.5.0'
+'''
+Minimum version of BETSE, the low-level CLI underlying this high-level GUI,
+required by this application as a human-readable ``.``-delimited string.
+
+Whereas all other minimum versions of third-party dependencies required by this
+application are specified as key-value pairs of various dictionary globals of
+this submodule, this minimum version is specified as an independent global --
+simplifying inspection and validation of this version elsewhere (e.g., in the
+:func:`betsee.__main__.die_unless_betse` function).
+'''
+
+
 DEPENDENCIES_RUNTIME_MANDATORY = {
     # Dependencies directly required by this application.
-    'BETSE': '>= 0.5.0',
+    'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
 }
 '''
 Dictionary mapping from the :mod:`setuptools`-specific project name of each
