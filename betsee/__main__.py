@@ -24,8 +24,8 @@ This submodule is a thin wrapper intended to be:
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import sys
-from betsee.metadata import (
-    BETSE_VERSION_REQUIRED_MIN, NAME, convert_version_str_to_tuple)
+from betsee import metadata
+from betsee.metadata import BETSE_VERSION_REQUIRED_MIN, NAME
 from betsee.exceptions import BetseeLibException
 
 # ....................{ MAIN                               }....................
@@ -52,38 +52,42 @@ def main(arg_list: list = None) -> int:
         (i.e., integer in the range ``[0, 255]``).
     '''
 
-    # Validate whether BETSE is satisfied or not.
+    # Attempt to...
     try:
+        # Validate whether BETSE is satisfied or not.
         die_unless_betse()
 
-    #FIXME: If the "PySide2.QtWidgets" subpackage is importable, display this
-    #exception with a graphical dialogue error message; else, display the raw
-    #text of this exception as is. For the former, something resembling the
-    #following should suffice:
-    #
-    #    from PySide2.QtWidgets import QApplication, QPushButton
-    #
-    #    betse_unsatisfied_window = QApplication()
-    #    betse_unsatisfied_widget = QPushButton(str(exception))
-    #    betse_unsatisfied_widget.show()
-    #    betse_unsatisfied_window.exec_()
+        # BETSE is satisfied. Import us up the BETSEE package tree, most of
+        # which assumes BETSE to be importable.
+        from betsee.cli.climain import CLIMain
 
-    # If BETSE is unsatsified, display this exception in an appropriate manner.
+        # Run the BETSEE CLI and return the exit status of doing so.
+        return CLIMain().run(arg_list)
+
+    # If BETSE is unsatisfied, display this exception in an appropriate manner.
     except BetseeLibException as exception:
-        # If the "PySide2.QtWidgets" subpackage is importable, embed this
-        # exception message in a GUI-enabled modal dialogue box.
+        # Attempt to...
+        try:
+            # Import PySide2.
+            from PySide2.QtWidgets import QApplication, QPushButton
 
-        # Else, redirect this exception message to the standard error file
-        # handle for the terminal running this CLI command.
+            # PySide2 is importable. For usability, embed this exception message
+            # in a GUI-enabled modal dialogue box.
+            betse_unsatisfied_window = QApplication()
+            betse_unsatisfied_widget = QPushButton(str(exception))
+            betse_unsatisfied_widget.show()
+            betse_unsatisfied_window.exec_()
+        # If PySide2 is unimportable, ignore this otherwise fatal exception.
+        # Why? Because we have more significant fish to fry.
+        except ImportError:
+            pass
+
+        # In either case, also redirect this exception message to the standard
+        # error file handle for the terminal running this CLI command if any.
         print(str(exception), file=sys.stderr)
 
-        # In either case, report failure to our parent process.
+        # Report failure to our parent process.
         return 1
-
-    #FIXME: Uncomment after worky.
-    # from betsee.cli.climain import CLIMain
-    # return CLIMain().run(arg_list)
-    return 0
 
 # ....................{ EXCEPTIONS                         }....................
 def die_unless_betse() -> None:
@@ -113,7 +117,7 @@ def die_unless_betse() -> None:
     # Minimum version of BETSE required by this application as a
     # machine-readable tuple of integers. Since this tuple is only required once
     # (namely, here), this tuple is *NOT* persisted as a "metadata" global.
-    BETSE_VERSION_REQUIRED_MIN_PARTS = convert_version_str_to_tuple(
+    BETSE_VERSION_REQUIRED_MIN_PARTS = metadata._convert_version_str_to_tuple(
         BETSE_VERSION_REQUIRED_MIN)
 
     # If the current version of BETSE is insufficient, raise an exception.

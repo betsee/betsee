@@ -16,6 +16,8 @@ Metadata constants synopsizing high-level application behaviour.
 # installed at some later time in the installation.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+import sys
+
 # ....................{ METADATA                           }....................
 NAME = 'BETSEE'
 '''
@@ -27,6 +29,88 @@ LICENSE = '2-clause BSD'
 '''
 Human-readable name of the license this application is licensed under.
 '''
+
+# ....................{ PYTHON ~ version                   }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# WARNING: Changes to this section *MUST* be synchronized with:
+# * The corresponding section of the "betsee.metadata" submodule.
+# * Front-facing documentation (e.g., "README.rst", "doc/md/INSTALL.md").
+# On bumping the minimum required version of Python, consider also documenting
+# the justification for doing so in the "Python Version" section of this
+# submodule's docstring above.
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+PYTHON_VERSION_MIN = '3.4.0'
+'''
+Human-readable minimum version of Python required by this application as a
+``.``-delimited string.
+'''
+
+
+def _convert_version_str_to_tuple(version_str: str) -> tuple:
+    '''
+    Convert the passed human-readable ``.``-delimited version string into a
+    machine-readable version tuple of corresponding integers.
+    '''
+    assert isinstance(version_str, str), (
+        '"{}" not a version string.'.format(version_str))
+
+    return tuple(
+        int(version_part) for version_part in version_str.split('.'))
+
+
+PYTHON_VERSION_MIN_PARTS = _convert_version_str_to_tuple(PYTHON_VERSION_MIN)
+'''
+Machine-readable minimum version of Python required by this application as a
+tuple of integers.
+'''
+
+
+# Validate the version of the active Python interpreter *BEFORE* subsequent code
+# possibly depending on such version. Since such version should be validated
+# both at setuptools-based install time and post-install runtime *AND* since
+# this module is imported sufficiently early by both, stash such validation here
+# to avoid duplication of such logic and hence the hardcoded Python version.
+#
+# The "sys" module exposes three version-related constants for this purpose:
+#
+# * "hexversion", an integer intended to be specified in an obscure (albeit
+#   both efficient and dependable) hexadecimal format: e.g.,
+#    >>> sys.hexversion
+#    33883376
+#    >>> '%x' % sys.hexversion
+#    '20504f0'
+# * "version", a human-readable string: e.g.,
+#    >>> sys.version
+#    2.5.2 (r252:60911, Jul 31 2008, 17:28:52)
+#    [GCC 4.2.3 (Ubuntu 4.2.3-2ubuntu7)]
+# * "version_info", a tuple of three or more integers *OR* strings: e.g.,
+#    >>> sys.version_info
+#    (2, 5, 2, 'final', 0)
+#
+# For sanity, this application will *NEVER* conditionally depend upon the
+# string-formatted release type of the current Python version exposed via the
+# fourth element of the "version_info" tuple. Since the first three elements of
+# that tuple are guaranteed to be integers *AND* since a comparable 3-tuple of
+# integers is declared above, comparing the former and latter yield the simplest
+# and most reliable Python version test.
+#
+# Note that the nearly decade-old and officially accepted PEP 345 proposed a new
+# field "requires_python" configured via a key-value pair passed to the call to
+# setup() in "setup.py" (e.g., "requires_python = ['>=2.2.1'],"), that field has
+# yet to be integrated into either disutils or setuputils. Hence, that field is
+# validated manually in the typical way. Behead the infidel setuptools!
+if sys.version_info[:3] < PYTHON_VERSION_MIN_PARTS:
+    # Human-readable current version of Python. "sys.version" is sufficiently
+    # overly verbose as to be unusuable, sadly.
+    PYTHON_VERSION = '.'.join(
+        str(version_part) for version_part in sys.version_info[:3])
+
+    # Die ignominiously.
+    raise RuntimeError(
+        '{} requires at least Python {}, but the active Python interpreter '
+        'is only Python {}. We feel deep sadness for you.'.format(
+            NAME, PYTHON_VERSION_MIN, PYTHON_VERSION))
 
 # ....................{ METADATA ~ version                 }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -63,19 +147,7 @@ Human-readable application version as a ``.``-delimited string.
 '''
 
 
-def convert_version_str_to_tuple(version_str: str) -> tuple:
-    '''
-    Convert the passed human-readable ``.``-delimited version string into a
-    machine-readable version tuple of corresponding integers.
-    '''
-    assert isinstance(version_str, str), (
-        '"{}" not a version string.'.format(version_str))
-
-    return tuple(
-        int(version_part) for version_part in version_str.split('.'))
-
-
-VERSION_PARTS = convert_version_str_to_tuple(VERSION)
+VERSION_PARTS = _convert_version_str_to_tuple(VERSION)
 '''
 Machine-readable application version as a tuple of integers.
 '''
