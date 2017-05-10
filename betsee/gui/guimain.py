@@ -1,24 +1,29 @@
 #!/usr/bin/env python3
-# Copyright 2014-2017 by Alexis Pietak & Cecil Curry.
+# Copyright 2017 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
-# To use a resource file exported by Qt Designer, convert this file to Python
-# 3-compatible PySide2 code as follows: e.g.,
-#
-#     # What is the name of the PySide2 "rcc" command, actually? Investigate.
-#     $ pyside2-rcc resources.qrc -o resources_rc.py
-#
-# The file must be named "resources_rc.py" and reside in the same directory as
-# "betsee.ui".
+'''
+To use a resource file exported by Qt Designer, convert this file to Python
+3-compatible PySide2 code as follows: e.g.,
 
-# FIXME: A huge issue is that, because we need to use Qthread and emit signals
-# back to our GUI objects, our message box does not play well with anything
-# that's going to report something to the Terminal (e.g. print or betse log
-# info, exceptions, etc.) while in any thread. Therefore, we need to think of a
-# work around that will let us use the GUI message box to receive messages from
-# the Terminal. At present, this functionality is totally disabled, and the GUI
-# message box is simply receiving emitted string messages from within the
-# threads.
+    # What is the name of the PySide2 "rcc" command, actually? Investigate.
+    $ pyside2-rcc resources.qrc -o resources_rc.py
+
+The file must be named "resources_rc.py" and reside in the same directory as
+"betsee.ui".
+'''
+
+#FIXME: To simplify future localization efforts, all human-readable strings to
+#be displayed should be filtered through the Qt translate() function.
+
+#FIXME: A huge issue is that, because we need to use Qthread and emit signals
+#back to our GUI objects, our message box does not play well with anything
+#that's going to report something to the Terminal (e.g. print or betse log
+#info, exceptions, etc.) while in any thread. Therefore, we need to think of a
+#work around that will let us use the GUI message box to receive messages from
+#the Terminal. At present, this functionality is totally disabled, and the GUI
+#message box is simply receiving emitted string messages from within the
+#threads.
 
 # ....................{ IMPORTS                            }....................
 import os, sys, time

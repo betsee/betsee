@@ -28,6 +28,22 @@ from betsee import metadata
 from betsee.metadata import BETSE_VERSION_REQUIRED_MIN, NAME
 from betsee.exceptions import BetseeLibException
 
+# ....................{ GLOBALS                            }....................
+#FIXME: Replicate this pattern in the "betse.gui" subpackage.
+_QT_APPLICATION = None
+'''
+Top-level :class:`QApplication` instance to be directly displayed by this
+submodule (if any) *or* ``None`` otherwise.
+
+For safety, this instance is persisted as a module rather than local variable
+(e.g., of the :func:`_show_betse_exception` function). Since the order in which
+Python garbage collects local variables that have left scope is effectively
+random, persisting this instance as a local variable would permit Python to
+garbage collect this application *before* this application's child widgets on
+program termination, resulting in non-human-readable Qt exceptions on some but
+not all terminations. (That would be bad.)
+'''
+
 # ....................{ MAIN                               }....................
 def main(arg_list: list = None) -> int:
     '''
@@ -52,45 +68,23 @@ def main(arg_list: list = None) -> int:
         (i.e., integer in the range ``[0, 255]``).
     '''
 
-    # Attempt to...
+    # Validate whether BETSE is satisfied or not.
     try:
-        # Validate whether BETSE is satisfied or not.
-        die_unless_betse()
-
-        # BETSE is satisfied. Import us up the BETSEE package tree, most of
-        # which assumes BETSE to be importable.
-        from betsee.cli.climain import CLIMain
-
-        # Run the BETSEE CLI and return the exit status of doing so.
-        return CLIMain().run(arg_list)
-
-    # If BETSE is unsatisfied, display this exception in an appropriate manner.
+        _die_unless_betse()
+    # If BETSE is unsatisfied, display this exception in an appropriate manner
+    # and return the exit status of doing so.
     except BetseeLibException as exception:
-        # Attempt to...
-        try:
-            # Import PySide2.
-            from PySide2.QtWidgets import QApplication, QPushButton
+        return _show_betse_exception(exception)
 
-            # PySide2 is importable. For usability, embed this exception message
-            # in a GUI-enabled modal dialogue box.
-            betse_unsatisfied_window = QApplication()
-            betse_unsatisfied_widget = QPushButton(str(exception))
-            betse_unsatisfied_widget.show()
-            betse_unsatisfied_window.exec_()
-        # If PySide2 is unimportable, ignore this otherwise fatal exception.
-        # Why? Because we have more significant fish to fry.
-        except ImportError:
-            pass
+    # Else, BETSE is satisfied. Import us up the BETSEE package tree, most of
+    # which assumes BETSE to be importable.
+    from betsee.cli.climain import CLIMain
 
-        # In either case, also redirect this exception message to the standard
-        # error file handle for the terminal running this CLI command if any.
-        print(str(exception), file=sys.stderr)
-
-        # Report failure to our parent process.
-        return 1
+    # Run the BETSEE CLI and return the exit status of doing so.
+    return CLIMain().run(arg_list)
 
 # ....................{ EXCEPTIONS                         }....................
-def die_unless_betse() -> None:
+def _die_unless_betse() -> None:
     '''
     Raise an exception unless BETSE, the principal mandatory dependency of this
     application, is **satisfied** (i.e., both importable and of a version
@@ -127,6 +121,79 @@ def die_unless_betse() -> None:
             'but only BETSE {} is currently installed. '
             'Endless sorrow is a feeling deep inside.'.format(
                 NAME, BETSE_VERSION_REQUIRED_MIN, betse.__version__))
+
+    # raise BetseeLibException(
+    #     'BETSE not found (i.e., package "betse" not importable).'
+    # )
+
+# ....................{ DISPLAYERS                         }....................
+def _show_betse_exception(exception: BetseeLibException) -> int:
+    '''
+    Display the passed exception signifying BETSE to be unsatisfied in an
+    appropriate manner.
+
+    Parameters
+    ----------
+    exception : BetseeLibException
+        Exception to be displayed.
+
+    Returns
+    ----------
+    int
+        Exit status implying failure (i.e., 1).
+    '''
+
+    # Always redirect this exception message to the standard error file handle
+    # for the terminal running this CLI command if any.
+    print(str(exception), file=sys.stderr)
+
+    # Additionally attempt to...
+    try:
+        # Import PySide2.
+        from PySide2.QtWidgets import QApplication, QMessageBox
+
+        # PySide2 is importable. For usability, embed this exception message
+        # in a GUI-enabled modal message box.
+        #
+        # Top-level Qt application containing this message box.
+        _QT_APPLICATION = QApplication([])
+
+        # Message box displaying this exception message.
+        message_box = QMessageBox()
+        message_box.setWindowTitle('BETSE Unsatisfied')
+
+        #FIXME: Non-ideal. Ideally, the setInformativeText() method should be
+        #called to display the paranthesized "(i.e., ...)" fragment of this
+        #exception message. Doing so will require generalizing this exception to
+        #split the message into two separate messages. Trivial, but tiresome.
+        #FIXME: In fact, to display *ALL* BETSEE-specific exceptions sanely, it
+        #might be useful to generalize the "BetseeException" class to mandate
+        #that the following three messages always be passed:
+        #
+        #* A title.
+        #* A terse synopsis.
+        #* A verbose description.
+        #
+        #Now would certainly be the time to instate such a sweeping change. Note
+        #that this support should probably *NOT* be extended to the lower-level
+        #"BetseException" class... or perhaps it should be, at least optionally?
+        #Fodder for late-night pondering.
+        message_box.setText(str(exception))
+
+        message_box.setIcon(QMessageBox.Critical)
+        message_box.setStandardButtons(QMessageBox.Ok)
+        message_box.show()
+
+        # Display this message box.
+        _QT_APPLICATION.exec_()
+
+    # If PySide2 is unimportable, ignore this otherwise fatal exception.
+    # Why? Because we have more significant fish to fry.
+    except ImportError:
+        pass
+
+    # Report failure to our parent process.
+    return 1
 
 # ....................{ MAIN                               }....................
 # If this module is imported from the command line, run this application's CLI;
