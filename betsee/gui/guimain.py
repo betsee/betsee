@@ -76,10 +76,10 @@ class Main(QMainWindow, Ui_MainWindow):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
 
-        # Initialize our superclass.
-        super().__init__()
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
 
         #FIXME: All of the following functionality should be wrapped in an
         #exception handler embedding error messages in modal dialog widgets.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                            )--------------------
-# Copyright 2014-2017 by Alexis Pietak & Cecil Curry.
+# Copyright 2017 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -13,7 +13,7 @@ Metadata constants synopsizing high-level application behaviour.
 # module may import *ONLY* from modules guaranteed to exist at the start of
 # installation. This includes all standard Python and application modules but
 # *NOT* third-party dependencies, which if currently uninstalled will only be
-# installed at some later time in the installation.
+# installed at some later time in installation.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import sys
@@ -247,7 +247,7 @@ installation.
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-BETSE_VERSION_REQUIRED_MIN = '0.5.0'
+BETSE_VERSION_REQUIRED_MIN = '0.5.1'
 '''
 Minimum version of BETSE, the low-level CLI underlying this high-level GUI,
 required by this application as a human-readable ``.``-delimited string.

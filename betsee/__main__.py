@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                            )--------------------
-# Copyright 2014-2017 by Alexis Pietak & Cecil Curry
+# Copyright 2017 by Alexis Pietak & Cecil Curry
 # See "LICENSE" for further details.
 
 '''
@@ -29,7 +29,8 @@ from betsee.metadata import BETSE_VERSION_REQUIRED_MIN, NAME
 from betsee.exceptions import BetseeLibException
 
 # ....................{ GLOBALS                            }....................
-#FIXME: Replicate this pattern in the "betse.gui" subpackage.
+#FIXME: Replicate this pattern in the "betse.gui" subpackage. Also, note that
+#this application singleton is also available via the "QtWidgets.qApp" global.
 _QT_APPLICATION = None
 '''
 Top-level :class:`QApplication` instance to be directly displayed by this
@@ -97,6 +98,9 @@ def _die_unless_betse() -> None:
         less than that required by this application).
     '''
 
+    # Title of all exceptions raised below.
+    EXCEPTION_TITLE = 'BETSE Unsatisfied'
+
     # Attempt to import BETSE.
     try:
         import betse
@@ -104,7 +108,9 @@ def _die_unless_betse() -> None:
     # into a higher-level application-specific exception.
     except ImportError as import_error:
         raise BetseeLibException(
-            'BETSE not found (i.e., package "betse" not importable).'
+            title=EXCEPTION_TITLE,
+            synopsis='BETSE not found.',
+            exegesis='Python package "betse" not importable.',
         ) from import_error
     # Else, BETSE is importable.
 
@@ -117,13 +123,17 @@ def _die_unless_betse() -> None:
     # If the current version of BETSE is insufficient, raise an exception.
     if betse.__version_info__ < BETSE_VERSION_REQUIRED_MIN_PARTS:
         raise BetseeLibException(
-            '{} requires at least BETSE {}, '
-            'but only BETSE {} is currently installed. '
-            'Endless sorrow is a feeling deep inside.'.format(
-                NAME, BETSE_VERSION_REQUIRED_MIN, betse.__version__))
+            title=EXCEPTION_TITLE,
+            synopsis='Obsolete version of BETSE found.',
+            exegesis=(
+                '{} requires at least BETSE {}, '
+                'but only BETSE {} is currently installed.'.format(
+                    NAME, BETSE_VERSION_REQUIRED_MIN, betse.__version__)))
 
     # raise BetseeLibException(
-    #     'BETSE not found (i.e., package "betse" not importable).'
+    #     title=EXCEPTION_TITLE,
+    #     synopsis='BETSE not found.',
+    #     exegesis='Python package "betse" not importable.',
     # )
 
 # ....................{ DISPLAYERS                         }....................
@@ -143,6 +153,9 @@ def _show_betse_exception(exception: BetseeLibException) -> int:
         Exit status implying failure (i.e., 1).
     '''
 
+    assert isinstance(exception, BetseeLibException), (
+        '"{}" not a BETSEE library exception.'.format(exception))
+
     # Always redirect this exception message to the standard error file handle
     # for the terminal running this CLI command if any.
     print(str(exception), file=sys.stderr)
@@ -160,28 +173,16 @@ def _show_betse_exception(exception: BetseeLibException) -> int:
 
         # Message box displaying this exception message.
         message_box = QMessageBox()
-        message_box.setWindowTitle('BETSE Unsatisfied')
-
-        #FIXME: Non-ideal. Ideally, the setInformativeText() method should be
-        #called to display the paranthesized "(i.e., ...)" fragment of this
-        #exception message. Doing so will require generalizing this exception to
-        #split the message into two separate messages. Trivial, but tiresome.
-        #FIXME: In fact, to display *ALL* BETSEE-specific exceptions sanely, it
-        #might be useful to generalize the "BetseeException" class to mandate
-        #that the following three messages always be passed:
-        #
-        #* A title.
-        #* A terse synopsis.
-        #* A verbose description.
-        #
-        #Now would certainly be the time to instate such a sweeping change. Note
-        #that this support should probably *NOT* be extended to the lower-level
-        #"BetseException" class... or perhaps it should be, at least optionally?
-        #Fodder for late-night pondering.
-        message_box.setText(str(exception))
-
+        message_box.setWindowTitle(exception.title)
+        message_box.setText(exception.synopsis)
         message_box.setIcon(QMessageBox.Critical)
         message_box.setStandardButtons(QMessageBox.Ok)
+
+        # If this exception provides a detailed explanation, display this.
+        if exception.exegesis is not None:
+            message_box.setInformativeText(exception.exegesis)
+
+        # Finalize this message box *AFTER* setting all widget proporties above.
         message_box.show()
 
         # Display this message box.
