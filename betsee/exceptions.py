@@ -86,3 +86,19 @@ class BetseeLibException(BetseeException):
     '''
 
     pass
+
+# ....................{ EXCEPTIONS ~ pyside                }....................
+class BetseePySideException(BetseeException):
+    '''
+    :mod:`PySide2`-specific exception.
+    '''
+
+    pass
+
+
+class BetseePySideUICException(BetseeException):
+    '''
+    :mod:`pyside2uic`-specific exception.
+    '''
+
+    pass
