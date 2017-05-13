@@ -63,6 +63,8 @@ class BetseeException(Exception, metaclass=ABCMeta):
             such explanation is defined.
         '''
 
+        # Since the @type_check decorator is unavailable at this early point in
+        # application startup, manually assert the types of these parameters.
         assert isinstance(title, str), '"{}" not a string.'.format(title)
         assert isinstance(synopsis, str), '"{}" not a string.'.format(synopsis)
         assert isinstance(exegesis, (str, type(None))), (
@@ -82,7 +84,7 @@ class BetseeException(Exception, metaclass=ABCMeta):
 # ....................{ EXCEPTIONS ~ lib                   }....................
 class BetseeLibException(BetseeException):
     '''
-    General-purpose exception applicable to third-party dependencies.
+    Application dependency-specific exception.
     '''
 
     pass

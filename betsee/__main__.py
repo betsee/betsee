@@ -79,10 +79,10 @@ def main(arg_list: list = None) -> int:
 
     # Else, BETSE is satisfied. Import us up the BETSEE package tree, most of
     # which assumes BETSE to be importable.
-    from betsee.cli.climain import CLIMain
+    from betsee.cli.climain import BetseeCLI
 
     # Run the BETSEE CLI and return the exit status of doing so.
-    return CLIMain().run(arg_list)
+    return BetseeCLI().run(arg_list)
 
 # ....................{ EXCEPTIONS                         }....................
 def _die_unless_betse() -> None:
