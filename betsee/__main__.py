@@ -26,24 +26,7 @@ This submodule is a thin wrapper intended to be:
 import sys
 from betsee import metadata
 from betsee.metadata import BETSE_VERSION_REQUIRED_MIN, NAME
-from betsee.exceptions import BetseeLibException
-
-# ....................{ GLOBALS                            }....................
-#FIXME: Replicate this pattern in the "betse.gui" subpackage. Also, note that
-#this application singleton is also available via the "QtWidgets.qApp" global.
-_QT_APPLICATION = None
-'''
-Top-level :class:`QApplication` instance to be directly displayed by this
-submodule (if any) *or* ``None`` otherwise.
-
-For safety, this instance is persisted as a module rather than local variable
-(e.g., of the :func:`_show_betse_exception` function). Since the order in which
-Python garbage collects local variables that have left scope is effectively
-random, persisting this instance as a local variable would permit Python to
-garbage collect this application *before* this application's child widgets on
-program termination, resulting in non-human-readable Qt exceptions on some but
-not all terminations. (That would be bad.)
-'''
+from betsee.exceptions import BetseeException, BetseeLibException
 
 # ....................{ MAIN                               }....................
 def main(arg_list: list = None) -> int:
@@ -136,15 +119,15 @@ def _die_unless_betse() -> None:
     #     exegesis='Python package "betse" not importable.',
     # )
 
-# ....................{ DISPLAYERS                         }....................
-def _show_betse_exception(exception: BetseeLibException) -> int:
+# ....................{ EXCEPTIONS                         }....................
+def _show_betse_exception(exception: BetseeException) -> int:
     '''
     Display the passed exception signifying BETSE to be unsatisfied in an
     appropriate manner.
 
     Parameters
     ----------
-    exception : BetseeLibException
+    exception : BetseeException
         Exception to be displayed.
 
     Returns
@@ -163,35 +146,15 @@ def _show_betse_exception(exception: BetseeLibException) -> int:
     # Additionally attempt to...
     try:
         # Import PySide2.
-        from PySide2.QtWidgets import QApplication, QMessageBox
+        from betsee.lib.pyside import psderr
 
-        # PySide2 is importable. For usability, embed this exception message
-        # in a GUI-enabled modal message box.
-        #
-        # Top-level Qt application containing this message box.
-        _QT_APPLICATION = QApplication([])
-
-        # Message box displaying this exception message.
-        message_box = QMessageBox()
-        message_box.setWindowTitle(exception.title)
-        message_box.setText(exception.synopsis)
-        message_box.setIcon(QMessageBox.Critical)
-        message_box.setStandardButtons(QMessageBox.Ok)
-
-        # If this exception provides a detailed explanation, display this.
-        if exception.exegesis is not None:
-            message_box.setInformativeText(exception.exegesis)
-
-        # Finalize this message box *AFTER* setting all widget proporties above.
-        message_box.show()
-
-        # Display this message box.
-        _QT_APPLICATION.exec_()
-
-    # If PySide2 is unimportable, ignore this otherwise fatal exception.
-    # Why? Because we have more significant fish to fry.
-    except ImportError:
-        pass
+        # Display a PySide2-based message box displaying this exception.
+        psderr.show_exception(exception)
+    # If PySide2 or any other module indirectly imported above is unimportable,
+    # print this exception message in the same manner as above but otherwise
+    # ignore this exception. Why? Because we have more significant fish to fry.
+    except ImportError as import_error:
+        print(str(import_error), file=sys.stderr)
 
     # Report failure to our parent process.
     return 1

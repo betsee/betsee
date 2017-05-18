@@ -4,15 +4,16 @@
 # See "LICENSE" for further details.
 
 '''
-High-level support facilities for :mod:`PySide2`, a mandatory runtime
-dependency.
+High-level support facilities for integrating :mod:`PySide2` widget classes with
+XML-formatted user interface (UI) files exported by the external Qt Designer
+application.
 '''
 
 # ....................{ IMPORTS                            }....................
 from PySide2 import QtWidgets
-from betse.exceptions import BetseePySideUICException
-from betse.util.path import files, paths
+from betse.util.path import files, pathnames
 from betse.util.type.types import type_check
+from betsee.exceptions import BetseePySideUICException
 from io import StringIO
 from pyside2uic.Compiler.compiler import UICompiler
 
@@ -52,8 +53,6 @@ from pyside2uic.Compiler.compiler import UICompiler
 #            # Initialize our superclass with all passed parameters.
 #            super().__init__(*args, **kwargs)
 #
-#            #FIXME: Define the pathtree.get_ui_filename() function.
-#            #FIXME: Can the "ui" parameter be privatized? If so, please do it so.
 #            self._ui = pysides.convert_ui_to_type(
 #                ui_filename=pathtree.get_ui_filename(),
 #            )
@@ -70,6 +69,7 @@ from pyside2uic.Compiler.compiler import UICompiler
 #The absolute path of this file should be given by the
 #pathtree.get_cache_ui_py_filename() method. This path need *NOT* be passed by
 #callers; simply use this path internally in this function.
+
 @type_check
 def convert_ui_to_type_cached(ui_filename: str) -> type:
     '''
@@ -82,7 +82,7 @@ def convert_ui_to_type_cached(ui_filename: str) -> type:
 @type_check
 def convert_ui_to_type(ui_filename: str) -> type:
     '''
-    UI class generated from the XML-formatted file with the passed
+    Helper class generated from the XML-formatted file with the passed
     ``.ui``-suffixed filename exported by the external Qt Designer application.
 
     This class defines only the following attributes:
@@ -140,7 +140,7 @@ def convert_ui_to_type(ui_filename: str) -> type:
     files.die_unless_file(ui_filename)
 
     # If this file does *NOT* have the expected filetype, raise an exception.
-    paths.die_unless_filetype_equals(pathname=ui_filename, filetype='ui')
+    pathnames.die_unless_filetype_equals(pathname=ui_filename, filetype='ui')
 
     # Title of all exceptions explicitly raised below.
     EXCEPTION_TITLE = 'PySide2 UI Compiler Error'
@@ -180,7 +180,7 @@ def convert_ui_to_type(ui_filename: str) -> type:
     #
     # In short, the pyside2uic.compileUi() function is useless and no one should
     # ever call it.
-    ui_code_metadata = UICompiler.compileUi(
+    ui_code_metadata = UICompiler().compileUi(
         input_stream=ui_filename,
         output_stream=ui_code_str,
 
@@ -209,7 +209,7 @@ def convert_ui_to_type(ui_filename: str) -> type:
     ui_code_dict = {}
 
     # Evaluate this Python code into this dictionary.
-    exec(ui_code_str, ui_code_dict)
+    exec(ui_code_str.getvalue(), ui_code_dict)
 
     # If this evaluation generated no such custom class, raise an exception.
     if ui_form_class_name not in ui_code_dict:

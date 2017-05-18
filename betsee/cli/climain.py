@@ -11,7 +11,8 @@ Concrete subclasses defining this application's command line interface (CLI).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the
 # top-level of this module may import *ONLY* from submodules guaranteed to:
-# * Exist, including standard Python and application modules.
+# * Exist, including standard Python and application modules, including both
+#   BETSEE and BETSE modules.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -68,30 +69,38 @@ class BetseeCLI(CLIABC):
         betsee_ignition.reinit()
 
 
-    #FIXME: Augment to also display this exception with PySide2 if importable.
-    #See the "betsee.__main__" submodule for similar logic.
     @type_check
     def _handle_exception(self, exception: Exception) -> None:
 
         # Defer to superclass handling, which typically logs this exception.
         super()._handle_exception(exception)
 
+        # Additionally attempt to...
+        try:
+            # Import PySide2.
+            from betsee.lib.pyside import psderr
 
-    #FIXME: Implement to actually do something.
+            # Display a PySide2-based message box displaying this exception.
+            psderr.show_exception(exception)
+        # If PySide2 or any other module indirectly imported above is
+        # unimportable, print this exception message but otherwise ignore this
+        # exception. Why? Because we have more significant fish to fry.
+        except ImportError as import_error:
+            logs.log_error(str(import_error))
+
+
     def _do(self) -> object:
         '''
-        Implement this command-line interface (CLI).
-
-        If a subcommand was passed, this method runs this subcommand and returns
-        the result of doing so; else, this method prints help output and returns
-        the current instance of this object.
+        Implement this command-line interface (CLI) by running the corresponding
+        graphical user interface (GUI), returning this interface to be memory
+        profiled when the ``--profile-type=size`` CLI option is passed.
         '''
 
-        #,Print help output. Note that this common case constitutes neither
-        # a fatal error nor a non-fatal warning.
-        print()
-        self._arg_parser.print_help()
+        # Defer imports *NOT* guaranteed to exist at this module's top-level.
+        from betsee.gui.guimain import BetseeGUI
 
-        # Return the current instance of this object. While trivial, this
-        # behaviour simplifies memory profiling of this object.
-        return self
+        # Application GUI.
+        app_gui = BetseeGUI()
+
+        # Return this GUI.
+        return app_gui
