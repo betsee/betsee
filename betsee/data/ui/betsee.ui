@@ -137,8 +137,8 @@
               <string>Lock Seed</string>
              </property>
              <property name="icon">
-              <iconset resource="resources.qrc">
-               <normaloff>:/prefix1/assets/lock_fill.svg</normaloff>:/prefix1/assets/lock_fill.svg</iconset>
+              <iconset resource="betsee.qrc">
+               <normaloff>://icon/lock_fill.svg</normaloff>://icon/lock_fill.svg</iconset>
              </property>
              <property name="checked">
               <bool>false</bool>
@@ -166,8 +166,8 @@
                  <string>Start Seed </string>
                 </property>
                 <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/prefix1/assets/play_alt.svg</normaloff>:/prefix1/assets/play_alt.svg</iconset>
+                 <iconset resource="betsee.qrc">
+                  <normaloff>://icon/play_alt.svg</normaloff>://icon/play_alt.svg</iconset>
                 </property>
                </widget>
               </item>
@@ -183,8 +183,8 @@
                  <string>Stop Seed</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/prefix1/assets/x_alt.svg</normaloff>:/prefix1/assets/x_alt.svg</iconset>
+                 <iconset resource="betsee.qrc">
+                  <normaloff>://icon/x_alt.svg</normaloff>://icon/x_alt.svg</iconset>
                 </property>
                </widget>
               </item>
@@ -269,8 +269,8 @@
                <string>Start Init</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/prefix1/assets/play_alt.svg</normaloff>:/prefix1/assets/play_alt.svg</iconset>
+               <iconset resource="betsee.qrc">
+                <normaloff>://icon/play_alt.svg</normaloff>://icon/play_alt.svg</iconset>
               </property>
              </widget>
              <widget class="QPushButton" name="pushButton_stopInit">
@@ -286,8 +286,8 @@
                <string>Stop Init</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/prefix1/assets/x_alt.svg</normaloff>:/prefix1/assets/x_alt.svg</iconset>
+               <iconset resource="betsee.qrc">
+                <normaloff>://icon/x_alt.svg</normaloff>://icon/x_alt.svg</iconset>
               </property>
              </widget>
             </widget>
@@ -558,8 +558,8 @@
                <string>Start Sim</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/prefix1/assets/play_alt.svg</normaloff>:/prefix1/assets/play_alt.svg</iconset>
+               <iconset resource="betsee.qrc">
+                <normaloff>://icon/play_alt.svg</normaloff>://icon/play_alt.svg</iconset>
               </property>
              </widget>
              <widget class="QPushButton" name="pushButton_stopSim">
@@ -575,8 +575,8 @@
                <string>Stop Sim</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/prefix1/assets/x_alt.svg</normaloff>:/prefix1/assets/x_alt.svg</iconset>
+               <iconset resource="betsee.qrc">
+                <normaloff>://icon/x_alt.svg</normaloff>://icon/x_alt.svg</iconset>
               </property>
              </widget>
             </widget>
@@ -3397,8 +3397,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/folder_fill.svg</normaloff>:/prefix1/assets/folder_fill.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/folder_fill.svg</normaloff>://icon/folder_fill.svg</iconset>
        </property>
       </item>
       <item>
@@ -3413,8 +3413,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/clock.svg</normaloff>:/prefix1/assets/clock.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/clock.svg</normaloff>://icon/clock.svg</iconset>
        </property>
       </item>
       <item>
@@ -3429,8 +3429,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/cog.svg</normaloff>:/prefix1/assets/cog.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/cog.svg</normaloff>://icon/cog.svg</iconset>
        </property>
       </item>
       <item>
@@ -3445,8 +3445,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/chemical-structure.svg</normaloff>:/prefix1/assets/chemical-structure.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/chemical-structure.svg</normaloff>://icon/chemical-structure.svg</iconset>
        </property>
       </item>
       <item>
@@ -3461,8 +3461,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/aperture.svg</normaloff>:/prefix1/assets/aperture.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/aperture.svg</normaloff>://icon/aperture.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3482,8 +3482,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/bolt.svg</normaloff>:/prefix1/assets/bolt.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/bolt.svg</normaloff>://icon/bolt.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3503,8 +3503,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/eyedropper.svg</normaloff>:/prefix1/assets/eyedropper.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/eyedropper.svg</normaloff>://icon/eyedropper.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3524,8 +3524,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/share.svg</normaloff>:/prefix1/assets/share.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/share.svg</normaloff>://icon/share.svg</iconset>
        </property>
       </item>
       <item>
@@ -3540,8 +3540,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/dna_amp.svg</normaloff>:/prefix1/assets/dna_amp.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/dna_amp.svg</normaloff>://icon/dna_amp.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3606,8 +3606,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/planet_amp.svg</normaloff>:/prefix1/assets/planet_amp.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/planet_amp.svg</normaloff>://icon/planet_amp.svg</iconset>
        </property>
       </item>
       <item>
@@ -3622,8 +3622,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/wrench.svg</normaloff>:/prefix1/assets/wrench.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/wrench.svg</normaloff>://icon/wrench.svg</iconset>
        </property>
       </item>
       <item>
@@ -3638,8 +3638,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/advanced_amp.svg</normaloff>:/prefix1/assets/advanced_amp.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/betsee/advanced_amp.svg</normaloff>://icon/betsee/advanced_amp.svg</iconset>
        </property>
       </item>
       <item>
@@ -3654,8 +3654,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/bars.svg</normaloff>:/prefix1/assets/bars.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/bars.svg</normaloff>://icon/bars.svg</iconset>
        </property>
       </item>
       <item>
@@ -3670,8 +3670,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/list.svg</normaloff>:/prefix1/assets/list.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/list.svg</normaloff>://icon/list.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3691,8 +3691,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/lineplot_amp.svg</normaloff>:/prefix1/assets/lineplot_amp.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/lineplot_amp.svg</normaloff>://icon/lineplot_amp.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3721,8 +3721,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/image.svg</normaloff>:/prefix1/assets/image.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/image.svg</normaloff>://icon/image.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3751,8 +3751,8 @@
         </font>
        </property>
        <property name="icon">
-        <iconset resource="resources.qrc">
-         <normaloff>:/prefix1/assets/movie.svg</normaloff>:/prefix1/assets/movie.svg</iconset>
+        <iconset resource="betsee.qrc">
+         <normaloff>://icon/movie.svg</normaloff>://icon/movie.svg</iconset>
        </property>
        <item>
         <property name="text">
@@ -3820,8 +3820,8 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad_Config_File">
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/prefix1/assets/download.svg</normaloff>:/prefix1/assets/download.svg</iconset>
+    <iconset resource="betsee.qrc">
+     <normaloff>://icon/download.svg</normaloff>://icon/download.svg</iconset>
    </property>
    <property name="text">
     <string>Load Config File</string>
@@ -3852,8 +3852,8 @@
   </action>
   <action name="actionSave_Config_File">
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/prefix1/assets/upload.svg</normaloff>:/prefix1/assets/upload.svg</iconset>
+    <iconset resource="betsee.qrc">
+     <normaloff>://icon/upload.svg</normaloff>://icon/upload.svg</iconset>
    </property>
    <property name="text">
     <string>Save Config File</string>
@@ -3883,8 +3883,8 @@
   </action>
   <action name="actionNew_Config_File">
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/prefix1/assets/document_alt_stroke.svg</normaloff>:/prefix1/assets/document_alt_stroke.svg</iconset>
+    <iconset resource="betsee.qrc">
+     <normaloff>://icon/document_alt_stroke.svg</normaloff>://icon/document_alt_stroke.svg</iconset>
    </property>
    <property name="text">
     <string>New Config File</string>
@@ -3901,8 +3901,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/prefix1/assets/chemical-structure.svg</normaloff>:/prefix1/assets/chemical-structure.svg</iconset>
+    <iconset resource="betsee.qrc">
+     <normaloff>://icon/chemical-structure.svg</normaloff>://icon/chemical-structure.svg</iconset>
    </property>
    <property name="text">
     <string>Run Seed</string>
@@ -3919,8 +3919,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/prefix1/assets/play_alt.svg</normaloff>:/prefix1/assets/play_alt.svg</iconset>
+    <iconset resource="betsee.qrc">
+     <normaloff>://icon/play_alt.svg</normaloff>://icon/play_alt.svg</iconset>
    </property>
    <property name="text">
     <string>Run Sim</string>
@@ -3934,8 +3934,8 @@
   </action>
   <action name="actionStop_Phase">
    <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/prefix1/assets/x_alt.svg</normaloff>:/prefix1/assets/x_alt.svg</iconset>
+    <iconset resource="betsee.qrc">
+     <normaloff>://icon/x_alt.svg</normaloff>://icon/x_alt.svg</iconset>
    </property>
    <property name="text">
     <string>Stop Phase</string>
@@ -3955,7 +3955,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="betsee.qrc"/>
  </resources>
  <connections/>
 </ui>
