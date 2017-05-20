@@ -263,6 +263,10 @@ simplifying inspection and validation of this version elsewhere (e.g., in the
 DEPENDENCIES_RUNTIME_MANDATORY = {
     # Dependencies directly required by this application.
     'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
+    'PySide2': '>= 2.0.0~alpha0',
+
+    #FIXME: Add "pyside2uic" after upstream resolves the following issue:
+    #    https://bugreports.qt.io/browse/PYSIDE-517
 }
 '''
 Dictionary mapping from the :mod:`setuptools`-specific project name of each

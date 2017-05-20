@@ -5,8 +5,8 @@
 
 '''
 High-level support facilities for integrating :mod:`PySide2` widget classes with
-XML-formatted user interface (UI) files exported by the external Qt Designer
-application.
+XML-formatted Qt resource collection (QRC) files exported by the external Qt
+Designer application.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -71,7 +71,7 @@ from pyside2uic.Compiler.compiler import UICompiler
 #callers; simply use this path internally in this function.
 
 @type_check
-def convert_ui_file_to_type_cached(ui_filename: str) -> type:
+def convert_ui_to_type_cached(ui_filename: str) -> type:
     '''
     '''
 
@@ -80,7 +80,7 @@ def convert_ui_file_to_type_cached(ui_filename: str) -> type:
 
 
 @type_check
-def convert_ui_file_to_type(ui_filename: str) -> type:
+def convert_qrc_file_to_py(ui_filename: str) -> type:
     '''
     Helper class generated from the XML-formatted file with the passed
     ``.ui``-suffixed filename exported by the external Qt Designer application.
@@ -140,92 +140,4 @@ def convert_ui_file_to_type(ui_filename: str) -> type:
     files.die_unless_file(ui_filename)
 
     # If this file does *NOT* have the expected filetype, raise an exception.
-    pathnames.die_unless_filetype_equals(pathname=ui_filename, filetype='ui')
-
-    # Title of all exceptions explicitly raised below.
-    EXCEPTION_TITLE = 'PySide2 UI Compiler Error'
-
-    # File-like string buffer containing the Python code converted from this
-    # file to be subsequently evaluated.
-    ui_code_str = StringIO()
-
-    # Dictionary of high-level metadata describing the high-level types produced
-    # by converting this file into this string buffer, containing the following
-    # key strings:
-    #
-    # * "baseclass", whose value is the name of the PySide2-specific widget base
-    #   class that objects passed to the setupUi() and retranslateUi() methods
-    #   of the generated UI class are required to be instances of.
-    # * "uiclass", whose value is the name of the generated UI class defining
-    #   the setupUi() and retranslateUi() methods.
-    # * "widgetname", whose value is... an unknown string. (Not our fault.)
-    #
-    # See the UICompiler.compileUi() method implementation for details.
-    #
-    # Note that most online examples call the slightly higher-level
-    # pyside2uic.compileUi() function internally calling the lower-level
-    # UICompiler.compileUi() method in the exact same manner as below. The
-    # former has significant disadvantages and is thus ignored in favour of the
-    # latter. In particular, the pyside2uic.compileUi() function:
-    #
-    # * Does *NOT* return the dictionary returned by the UICompiler.compileUi()
-    #   method required below. While the contents of this dictionary are
-    #   technically reverse engineerable by manually parsing the XML of this
-    #   ".ui" file for the corresponding elements (e.g., via the
-    #   "xml.etree.ElementTree" package), doing so needlessly incurs space,
-    #   time, and code complexity costs. Due presumably to path dependency, most
-    #   online examples (insanely) do so.
-    # * Adds no meaningful advantages over the UICompiler.compileUi() method for
-    #   most common cases, including this case.
-    #
-    # In short, the pyside2uic.compileUi() function is useless and no one should
-    # ever call it.
-    ui_code_metadata = UICompiler().compileUi(
-        input_stream=ui_filename,
-        output_stream=ui_code_str,
-
-        # Force all generated imports to be absolute rather than relative.
-        from_imports=False,
-    )
-
-    # Name of the custom class to be generated.
-    ui_form_class_name = ui_code_metadata['uiclass']
-
-    # Name of the PySide2 base class expected by methods of this custom class.
-    ui_base_class_name = ui_code_metadata['baseclass']
-
-    # This base class or "None" if no such class exists.
-    ui_base_class = getattr(QtWidgets, ui_base_class_name, None)
-
-    # If no such base class exists, raise an exception.
-    if ui_base_class is None:
-        raise BetseePySideUICException(
-            title=EXCEPTION_TITLE,
-            synopsis='PySide2 widget base class "{}" not found.'.format(
-                ui_base_class_name))
-
-    # Dictionary of all global attributes both passed as input to and defined as
-    # output from the subsequent evaluation of this Python code.
-    ui_code_dict = {}
-
-    # Evaluate this Python code into this dictionary.
-    exec(ui_code_str.getvalue(), ui_code_dict)
-
-    # If this evaluation generated no such custom class, raise an exception.
-    if ui_form_class_name not in ui_code_dict:
-        raise BetseePySideUICException(
-            title=EXCEPTION_TITLE,
-            synopsis='PySide2 UI form class "{}" not found.'.format(
-                ui_form_class_name),
-            exegesis=('Generated code expected to contain this class:\n\n' +
-                ui_code_str),
-        )
-
-    # Custom class generated by this evaluation.
-    ui_form_class = ui_code_dict[ui_form_class_name]
-
-    # Define the "BASE_CLASS" class attribute on this class.
-    ui_form_class.BASE_CLASS = ui_base_class
-
-    # Return this class.
-    return ui_form_class
+    pathnames.die_unless_filetype_equals(pathname=ui_filename, filetype='qrc')
