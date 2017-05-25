@@ -11,6 +11,7 @@ application.
 
 # ....................{ IMPORTS                            }....................
 from PySide2 import QtWidgets
+from betse.util.io.log import logs
 from betse.util.path import files, pathnames
 from betse.util.type.types import type_check
 from betsee.exceptions import BetseePySideUICException
@@ -65,25 +66,31 @@ from pyside2uic.Compiler.compiler import UICompiler
 #latter file will be more efficiently deserialized. The filetype of this file
 #should probably be something resembling ".betseui". We probably won't want to
 #gzip this file, unless space truly does become a concern here.
-#
-#The absolute path of this file should be given by the
-#pathtree.get_cache_ui_py_filename() method. This path need *NOT* be passed by
-#callers; simply use this path internally in this function.
+#FIXME: Actually, pickling is a poor idea for all of the obvious ideas. The most
+#non-obvious idea of why this is a poor idea, however, is that the pickled file
+#will need to also include the in-memory contents of the Python module generated
+#by the "psdrc" submodule, which very quickly descends into desynchronization
+#hell. Since the speed benefits of pickling here are likely negligible, there
+#exists no sane reason to do so. Since this is fairly important, copy the above
+#reasoning into the docstring below.
+
+#FIXME: Docstring us up.
+@type_check
+def convert_ui_file_to_class_cached(ui_filename: str) -> type:
+
+    #FIXME: Actually cache here. To do so, note that this class should probably
+    #be cached to the pathtree.get_dot_py_ui_filename() file. Since we would
+    #rather *NOT* inline that file here, we'll need the caller to pass that as
+    #well. See the "psdrc" submodule for a reasonable template to do so.
+    return convert_ui_file_to_class(ui_filename=ui_filename)
+
 
 @type_check
-def convert_ui_file_to_type_cached(ui_filename: str) -> type:
+def convert_ui_file_to_class(ui_filename: str) -> type:
     '''
-    '''
-
-    #FIXME: Call the convert_ui_to_type() function defined below.
-    pass
-
-
-@type_check
-def convert_ui_file_to_type(ui_filename: str) -> type:
-    '''
-    Helper class generated from the XML-formatted file with the passed
-    ``.ui``-suffixed filename exported by the external Qt Designer application.
+    Helper class dynamically generated from the XML-formatted file with the
+    passed ``.ui``-suffixed filename exported by the external Qt Designer
+    application.
 
     This class defines only the following attributes:
 
@@ -135,6 +142,11 @@ def convert_ui_file_to_type(ui_filename: str) -> type:
         :mod:`PyQt5`-specific, this documentation probably serves as the
         canonical resource for understanding this function's internal behaviour.
     '''
+
+    # Log this conversion attempt.
+    logs.log_info(
+        'Generating PySide2 types from "%s"...',
+        pathnames.get_basename(ui_filename))
 
     # If this file does *NOT* exist, raise an exception.
     files.die_unless_file(ui_filename)

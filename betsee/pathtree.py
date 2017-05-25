@@ -38,10 +38,12 @@ wrappers.
 # importing application packages except where explicitly required.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from betsee import metadata
+from betse import pathtree as betse_pathtree
+from betse.util.path import dirs, files, pathnames
 from betse.util.type.call.memoizers import callable_cached
+from betsee import metadata
 
-# ....................{ GETTERS ~ dir                      }....................
+# ....................{ GETTERS ~ dir : data               }....................
 @callable_cached
 def get_data_dirname() -> str:
     '''
@@ -54,7 +56,6 @@ def get_data_dirname() -> str:
 
     # Avoid circular import dependencies.
     import betsee
-    from betse.util.path import dirs, pathnames
 
     # Absolute path of this directory.
     data_dirname = pathnames.get_app_pathname(package=betsee, pathname='data')
@@ -67,23 +68,83 @@ def get_data_dirname() -> str:
 
 
 @callable_cached
+def get_data_qrc_dirname() -> str:
+    '''
+    Absolute path of this application's data subdirectory containing
+    XML-formatted Qt resource collection (QRC) files exported by the external Qt
+    Designer application if found *or* raise an exception otherwise (i.e., if
+    this directory is *not* found).
+    '''
+
+    # Return this dirname if this directory exists or raise an exception.
+    return dirs.join_and_die_unless_dir(get_data_dirname(), 'qrc')
+
+
+@callable_cached
 def get_data_ui_dirname() -> str:
     '''
     Absolute path of this application's data subdirectory containing
-    XML-formatted user interface (UI) file exported by the external Qt Designer
+    XML-formatted user interface (UI) files exported by the external Qt Designer
     application if found *or* raise an exception otherwise (i.e., if this
     directory is *not* found).
     '''
 
-    # Avoid circular import dependencies.
-    from betse.util.path import dirs
-
     # Return this dirname if this directory exists or raise an exception.
     return dirs.join_and_die_unless_dir(get_data_dirname(), 'ui')
 
-# ....................{ GETTERS ~ file                     }....................
+# ....................{ GETTERS ~ dir : dot                }....................
 @callable_cached
-def get_main_ui_filename() -> str:
+def get_dot_dirname() -> str:
+    '''
+    Absolute path of this application's top-level dot directory in the home
+    directory of the current user, silently creating this directory if *not*
+    already found.
+
+    This directory contains user-specific files (e.g., generated Python modules)
+    both read from and written to at application runtime. These are typically
+    plaintext files consumable by external users and third-party utilities.
+
+    For tidiness, this directory currently resides under BETSE's dot directory
+    (e.g., ``~/.betse/betsee`` under Linux).
+    '''
+
+    # Create this directory if needed and return its dirname.
+    return dirs.join_and_make_unless_dir(
+        betse_pathtree.get_dot_dirname(), metadata.SCRIPT_BASENAME)
+
+
+@callable_cached
+def get_dot_py_dirname() -> str:
+    '''
+    Absolute path of this application's data subdirectory containing
+    pure-Python modules and packages generated at runtime by this application,
+    silently creating this directory if *not* already found.
+    '''
+
+    # Create this directory if needed and return its dirname.
+    return dirs.join_and_make_unless_dir(get_dot_dirname(), 'py')
+
+# ....................{ GETTERS ~ file : data              }....................
+@callable_cached
+def get_data_qrc_filename() -> str:
+    '''
+    Absolute path of the XML-formatted Qt resource collection (QRC) file
+    exported by the external Qt Designer application structuring all external
+    resources (e.g., icons) required by this application's main window if found
+    *or* raise an exception otherwise (i.e., if this file is *not* found).
+    '''
+
+    # Return this filename if this file exists or raise an exception.
+    #
+    # Note that this basename *MUST* be the same as that specified by the
+    # "resources" attribute of all XML tags contained in the file whose path is
+    # given by the get_data_ui_filename() function. Why? Because obfuscatory Qt.
+    return files.join_and_die_unless_file(
+        get_data_qrc_dirname(), metadata.SCRIPT_BASENAME + '.qrc')
+
+
+@callable_cached
+def get_data_ui_filename() -> str:
     '''
     Absolute path of the XML-formatted user interface (UI) file exported by the
     external Qt Designer application structuring this application's main window
@@ -91,9 +152,46 @@ def get_main_ui_filename() -> str:
     found).
     '''
 
-    # Avoid circular import dependencies.
-    from betse.util.path import files
-
-    # Return this dirname if this directory exists or raise an exception.
+    # Return this filename if this file exists or raise an exception.
     return files.join_and_die_unless_file(
         get_data_ui_dirname(), metadata.SCRIPT_BASENAME + '.ui')
+
+# ....................{ GETTERS ~ file : dot               }....................
+@callable_cached
+def get_dot_py_qrc_filename() -> str:
+    '''
+    Absolute path of the pure-Python module generated from the XML-formatted Qt
+    resource collection (QRC) file exported by the external Qt Designer
+    application structuring all external resources (e.g., icons) required by
+    this application's main window.
+
+    This module is dynamically generated at runtime and hence may *not* yet
+    exist, in which case the caller is assumed to safely generate this module
+    before its first importation.
+    '''
+
+    # Note that this basename *MUST* be:
+    #
+    # * Prefixed by the same basename excluding filetype returned by the
+    #   get_data_qrc_filename() function.
+    # * Suffixed by "_rc.py". Why? Because the Python code generated at runtime
+    #   by the "pyside2uic" package assumes this to be the case. Naturally, this
+    #   assumption is *NOT* configurable.
+    return pathnames.join(
+        get_dot_py_dirname(), metadata.SCRIPT_BASENAME + '_rc.py')
+
+
+@callable_cached
+def get_dot_py_ui_filename() -> str:
+    '''
+    Absolute path of the pure-Python module generated from the XML-formatted
+    user interface (UI) file exported by the external Qt Designer application
+    structuring this application's main window.
+
+    This module is dynamically generated at runtime and hence may *not* yet
+    exist, in which case the caller is assumed to safely generate this module
+    before its first importation.
+    '''
+
+    return pathnames.join(
+        get_dot_py_dirname(), metadata.SCRIPT_BASENAME + '_ui.py')

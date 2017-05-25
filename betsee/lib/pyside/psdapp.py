@@ -29,7 +29,7 @@ from PySide2.QtWidgets import QApplication
 # arguments encourages conflicts with future versions of Qt. In theory, Qt could
 # expand the subset of arguments parsed by this widget to those already parsed
 # by the current application CLI -- which would be bad.
-APPLICATION_WIDGET = QApplication([])
+APP_WIDGET = QApplication([])
 '''
 :mod:`PySide2`-driven root Qt widget containing all Qt widgets to be displayed.
 
