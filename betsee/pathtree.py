@@ -72,8 +72,9 @@ def get_data_qrc_dirname() -> str:
     '''
     Absolute path of this application's data subdirectory containing
     XML-formatted Qt resource collection (QRC) files exported by the external Qt
-    Designer application if found *or* raise an exception otherwise (i.e., if
-    this directory is *not* found).
+    Designer application and all binary resource files listed in these files if
+    found *or* raise an exception otherwise (i.e., if this directory is *not*
+    found).
     '''
 
     # Return this dirname if this directory exists or raise an exception.

@@ -18,16 +18,6 @@ from betse.util.type.types import type_check
 # from betsee.exceptions import BetseePySideUICException
 
 # ....................{ CONVERTERS                         }....................
-#FIXME: Docstring us up.
-@type_check
-def convert_qrc_file_to_py_file_cached(
-    qrc_filename: str, py_filename: str) -> None:
-
-    #FIXME: Actually cache here.
-    return convert_qrc_file_to_py_file(
-        qrc_filename=qrc_filename, py_filename=py_filename)
-
-
 @type_check
 def convert_qrc_file_to_py_file(qrc_filename: str, py_filename: str) -> None:
     '''
