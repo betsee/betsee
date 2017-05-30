@@ -19,12 +19,12 @@ from betse.util.type.types import type_check
 
 # ....................{ CONVERTERS                         }....................
 @type_check
-def convert_qrc_file_to_py_file(qrc_filename: str, py_filename: str) -> None:
+def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
     '''
     Convert the XML-formatted file with the passed ``.qrc``-suffixed filename
-    exported by the external Qt Designer application into the
-    :mod:`PySide2`-based Python module with the passed ``.py``-suffixed
-    filename.
+    and all binary resources referenced by this file exported by the external Qt
+    Designer GUI into the :mod:`PySide2`-based Python module with the passed
+    ``.py``-suffixed filename.
 
     This high-level function wraps the low-level ``pyside2-rcc`` command
     provided by the external ``pyside2-tools`` project.
@@ -32,9 +32,9 @@ def convert_qrc_file_to_py_file(qrc_filename: str, py_filename: str) -> None:
     Parameters
     ----------
     qrc_filename : str
-        Absolute or relative path of the input ``.qrc``-suffixed filename.
+        Absolute or relative path of the input ``.qrc``-suffixed file.
     py_filename : str
-        Absolute or relative path of the output ``.py``-suffixed filename.
+        Absolute or relative path of the output ``.py``-suffixed file.
     '''
 
     # Log this conversion attempt.
@@ -45,13 +45,6 @@ def convert_qrc_file_to_py_file(qrc_filename: str, py_filename: str) -> None:
 
     # If this input file does *NOT* exist, raise an exception.
     files.die_unless_file(qrc_filename)
-
-    #FIXME: Reenable after implementing caching of this output file, at which
-    #point the caller must explicitly remove this file if found *BEFORE* calling
-    #this function.
-
-    # If this output file exists, raise an exception.
-    # files.die_if_file(py_filename)
 
     # If these files do *NOT* have the expected filetypes, raise an exception.
     pathnames.die_unless_filetype_equals(pathname=qrc_filename, filetype='qrc')

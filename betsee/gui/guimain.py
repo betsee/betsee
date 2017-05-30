@@ -16,22 +16,6 @@ from betsee import pathtree
 from betsee.gui import guicache
 from betsee.lib.pyside import psdui
 
-# ....................{ GLOBALS                            }....................
-#FIXME: PySide and hence presumably PySide2 as well lacks an analogue to the
-#loadUiType() function. To circumvent this, consider defining our own
-#loadUiType() function performing the equivalent thereof. This is low-hanging
-#fruit. Since doing so on every GUI startup is presumably inefficient, however,
-#this should also be improved in the long-term to perform caching: namely,
-#
-#* On the first execution of the GUI:
-#  1. Convert the UI file referenced below into in-memory Python code.
-#  2. Convert that code into a Python file, presumably cached in the current
-#     dot directory for BETSE (e.g., "~/.betse/").
-#* On all subsequent executions of the GUI:
-#  1. Compare the time stamps of this UI file and this cached Python file.
-#  2. If the time stamps are the same, reuse the latter as is.
-#  3. Else, recreate the latter as above and use the newly cached file.
-
 # ....................{ CLASSES                            }....................
 class BetseeGUI(object):
     '''
@@ -46,13 +30,13 @@ class BetseeGUI(object):
         super().__init__(*args, **kwargs)
 
         # Generate all pure-Python modules required at runtime by this GUI.
-        guicache.cache_dot_py_files()
+        guicache.cache_py_files()
 
         # UI class generated from the XML-formatted Qt Designer file specifying
         # the non-dynamic core of the BETSEE GUI (i.e., excluding dynamic
         # signals and slots), which requires Python logic.
-        ui_class = psdui.convert_ui_file_to_class_cached(
-            ui_filename=pathtree.get_data_ui_filename())
+        # ui_class = psdui.convert_ui_file_to_class_cached(
+        #     ui_filename=pathtree.get_data_ui_filename())
 
         #FIXME: Do something with "ui_class" here, presumably resembling:
         #

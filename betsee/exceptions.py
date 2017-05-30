@@ -96,11 +96,3 @@ class BetseePySideException(BetseeException):
     '''
 
     pass
-
-
-class BetseePySideUICException(BetseeException):
-    '''
-    :mod:`pyside2uic`-specific exception.
-    '''
-
-    pass
