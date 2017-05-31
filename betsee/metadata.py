@@ -236,6 +236,30 @@ Basename of the CLI-specific Python script wrapper created by :mod:`setuptools`
 installation.
 '''
 
+# ....................{ METADATA ~ python : main window    }....................
+MAIN_WINDOW_QRC_MODULE_NAME = PACKAGE_NAME + '_rc'
+'''
+Fully-qualified name of the top-level Python package implementing this
+this application's main window Qt resource collection (QRC) converted from the
+corresponding XML-formatted UI file exported by the external Qt Designer GUI.
+
+This module is dynamically generated at runtime and hence may *not* yet exist,
+in which case the caller is assumed to safely generate this module before its
+first importation.
+'''
+
+
+MAIN_WINDOW_UI_MODULE_NAME = PACKAGE_NAME + '_ui'
+'''
+Fully-qualified name of the top-level Python package implementing this
+this application's main window user interface (UI) converted from the
+corresponding XML-formatted UI file exported by the external Qt Designer GUI.
+
+This module is dynamically generated at runtime and hence may *not* yet exist,
+in which case the caller is assumed to safely generate this module before its
+first importation.
+'''
+
 # ....................{ METADATA ~ libs : runtime          }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: Changes to this subsection *MUST* be synchronized with:

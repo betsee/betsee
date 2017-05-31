@@ -179,7 +179,7 @@ def get_dot_py_qrc_filename() -> str:
     #   by the "pyside2uic" package assumes this to be the case. Naturally, this
     #   assumption is *NOT* configurable.
     return pathnames.join(
-        get_dot_py_dirname(), metadata.SCRIPT_BASENAME + '_rc.py')
+        get_dot_py_dirname(), metadata.MAIN_WINDOW_QRC_MODULE_NAME + '.py')
 
 
 @callable_cached
@@ -195,4 +195,4 @@ def get_dot_py_ui_filename() -> str:
     '''
 
     return pathnames.join(
-        get_dot_py_dirname(), metadata.SCRIPT_BASENAME + '_ui.py')
+        get_dot_py_dirname(), metadata.MAIN_WINDOW_UI_MODULE_NAME + '.py')

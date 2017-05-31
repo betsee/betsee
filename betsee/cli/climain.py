@@ -88,7 +88,6 @@ class BetseeCLI(CLIABC):
         except ImportError as import_error:
             logs.log_error(str(import_error))
 
-
     def _do(self) -> object:
         '''
         Implement this command-line interface (CLI) by running the corresponding
@@ -100,7 +99,20 @@ class BetseeCLI(CLIABC):
         from betsee.gui.guimain import BetseeGUI
 
         # Application GUI.
+        #
+        # For safety, this GUI is scoped to a local rather than instance or
+        # global variable, ensuring that this GUI is destroyed before the
+        # root Qt application widget containing this GUI.
         app_gui = BetseeGUI()
+
+        #FIXME: Propagate the exit status returned by the following method call
+        #as the exit status of the entire process. To do so, we'll probably need
+        #to generalize the "CLIABC" superclass to provide an instance variable
+        #(e.g., "self.exit_status") defaulting to None. When non-None, the
+        #superclass returns this exit status rather than "SUCCESS".
+
+        # Run this GUI's event loop and display this GUI.
+        exit_status = app_gui.run()
 
         # Return this GUI.
         return app_gui

@@ -80,6 +80,5 @@ def show_exception(exception: Exception) -> None:
     # Finalize this message box *AFTER* setting all widget proporties above.
     message_box.show()
 
-    # Display this message box.
+    # Run this application's event loop, thus displaying this message box.
     message_box.exec_()
-    # APPLICATION_WIDGET.exec_()

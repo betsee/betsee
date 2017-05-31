@@ -14,9 +14,10 @@ from PySide2 import QtWidgets
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
-from betse.util.type.types import type_check
+from betse.util.type import modules, types
+from betse.util.type.types import type_check, SequenceTypes
 from betsee import metadata
-from betsee.exceptions import BetseePySideException
+from betsee.exceptions import BetseeCacheException
 from io import StringIO
 from pyside2uic.Compiler.compiler import UICompiler
 
@@ -32,29 +33,72 @@ This global declares the sequence of all base classes that the main window Qt
 widget subclass for this application is expected to subclass (in order).
 '''
 
-# ....................{ CONVERTERS                         }....................
-#FIXME: Given this function, the canonical means of defining the main window
-#class appears to be:
-#
-#    from PySide2.QtWidgets import QMainWindow
-#    from betsee import pathtree
-#    from betsee.lib.pyside import pysides
-#
-#    class BetseeMainWindow(QMainWindow):
-#
-#        # ..................{ INITIALIZERS                       }..................
-#        def __init__(self, *args, **kwargs) -> None:
-#
-#            # Initialize our superclass with all passed parameters.
-#            super().__init__(*args, **kwargs)
-#
-#            self._ui = pysides.convert_ui_to_type(
-#                ui_filename=pathtree.get_ui_filename(),
-#            )
-#            self._ui.setupUi(self)
-#
-#Consider shifting the above logic into a new "betse.gui.mainwindow" submodule.
+# ....................{ GETTERS                            }....................
+@type_check
+def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
+    '''
+    Sequence of all base classes declared by the user interface (UI) module with
+    the passed name and intended to be subclassed by the Qt widget subclass
+    implementing this UI.
 
+    The :func:`convert_ui_to_py_file` function is assumed to have generated this
+    module from an XML-formatted file exported by the external Qt Designer GUI.
+
+    Parameters
+    ----------
+    ui_module_name : str
+        Fully-qualified name of the UI module to be imported and inspected by
+        this function. Since this module is dynamically generated at runtime and
+        hence *not* guaranteed to exist, this function explicitly validates this
+        module to both exist and declare this sequence..
+
+    Raises
+    ----------
+    BetseModuleException
+        If this module is unimportable.
+    BetseeCacheException
+        If this module declares no such sequence.
+    '''
+
+    # UI module if importable or raise an exception with this message otherwise.
+    ui_module = modules.import_module(
+        module_name=ui_module_name,
+        exception_message=(
+            'Module "{}" not found (e.g., as'
+            'module "betsee.gui.guimainwindow" imported before '
+            'module "betsee.gui.guicache").'.format(ui_module_name)
+        ))
+
+    # Sequence of all base classes if declared by this module or None otherwise.
+    ui_base_classes = getattr(ui_module, BASE_CLASSES_GLOBAL_NAME, None)
+
+    # Fully-qualified name of this sequence for use in exception messages.
+    ui_base_classes_name = '{}.{}'.format(
+        ui_module_name, BASE_CLASSES_GLOBAL_NAME)
+
+    # If no such sequence is declared, raise an exception.
+    if ui_base_classes is None:
+        raise BetseeCacheException(
+            'Sequence "{}" undefined.'.format(ui_base_classes_name))
+
+    # If this sequence is *NOT* a sequence, raise an exception. While this check
+    # is also performed by the @type_check decorator, the following length check
+    # implicitly assumes this variable to be a sequence.
+    if not types.is_sequence_nonstr(ui_base_classes):
+        raise BetseeCacheException(
+            'Variable "{}" type {!r} not a non-string sequence.'.format(
+                ui_base_classes_name, type(ui_base_classes)))
+
+    # If this sequence does *NOT* contain exactly two items, raise an exception.
+    if len(ui_base_classes) != 2:
+        raise BetseeCacheException(
+            'Sequence "{}" length {} not 2.'.format(
+                ui_base_classes_name, len(ui_base_classes)))
+
+    # Else, return this sequence.
+    return ui_base_classes
+
+# ....................{ CONVERTERS                         }....................
 @type_check
 def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
     '''
@@ -197,7 +241,7 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
 
     # If no such base class exists, raise an exception.
     if ui_base_class is None:
-        raise BetseePySideException(
+        raise BetseeCacheException(
             title='PySide2 UI Compiler Error',
             synopsis='PySide2 widget base class "{}" not found.'.format(
                 ui_base_class_name))
@@ -208,7 +252,7 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
     # that the base Qt widget class is subclassed last and thus remains the
     # "parent" base class of this multiple inheritance.
     ui_code_str.write('''
-from QtWidgets import {base_class}
+from PySide2.QtWidgets import {base_class}
 {var_name} = ({form_class}, {base_class})
 '''.format(
     var_name=BASE_CLASSES_GLOBAL_NAME,

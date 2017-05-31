@@ -39,9 +39,14 @@ def cache_py_files() -> None:
     # permitting these modules to be subsequently imported elsewhere.
     pys.add_import_dirname(pathtree.get_dot_py_dirname())
 
-    # Generate the requisite pure-Python modules (in any arbitrary order)
+    # Generate the requisite pure-Python modules (in any arbitrary order).
     _cache_py_qrc_file()
     _cache_py_ui_file()
+
+    # For safety, raise an exception unless all such modules exist now.
+    files.die_unless_file(
+        pathtree.get_dot_py_qrc_filename(),
+        pathtree.get_dot_py_ui_filename())
 
 # ....................{ CACHERS ~ private                  }....................
 def _cache_py_qrc_file() -> None:

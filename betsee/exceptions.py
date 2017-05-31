@@ -81,10 +81,19 @@ class BetseeException(Exception, metaclass=ABCMeta):
         self.synopsis = synopsis
         self.exegesis = exegesis
 
+# ....................{ EXCEPTIONS ~ general               }....................
+class BetseeCacheException(BetseeException):
+    '''
+    General-purpose exception applicable to user-specific caching, including
+    dynamic generation of pure-Python modules imported at runtime.
+    '''
+
+    pass
+
 # ....................{ EXCEPTIONS ~ lib                   }....................
 class BetseeLibException(BetseeException):
     '''
-    Application dependency-specific exception.
+    General-purpose exception applicable to third-party dependencies.
     '''
 
     pass
@@ -92,7 +101,8 @@ class BetseeLibException(BetseeException):
 # ....................{ EXCEPTIONS ~ pyside                }....................
 class BetseePySideException(BetseeException):
     '''
-    :mod:`PySide2`-specific exception.
+    General-purpose exception applicable to :mod:`PySide2`, this application's
+    principal third-party dependency.
     '''
 
     pass
