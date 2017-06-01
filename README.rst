@@ -47,6 +47,50 @@ Appveyor_ **+** py.test_, and `permissively distributed <License_>`__ under the
 
 .. # ------------------( DESCRIPTION                        )------------------
 
+Installation
+============
+
+.. Note::
+   BETSEE is pre-release software under active development. No packages
+   automating installation of either BETSEE itself *or* BETSEE dependencies are
+   currently provided. In particular, there currently exist no:
+   
+   - Platform-agnostic BETSEE packages (e.g., Anaconda_, PyPI_).
+   - platform-specific BETSEE packages (e.g., macOS_ Homebrew_, Ubuntu_ PPA_).
+
+BETSEE is manually installable as follows:
+
+#. Install the `unstable live version <BETSE live_>`__ of BETSE_.
+#. Install Qt_ `5.6 <Qt 5.6_>`__. [#pyside2_install]_
+#. Install the `stable 5.6 branch <_PySide2 5.6>`__ of PySide2_.
+   [#pyside2_install]_
+#. Open a **terminal.**
+#. Clone the ``master`` branch of this repository.
+
+   .. code:: bash
+
+      git clone https://gitlab.com/betse/betsee.git
+
+#. **Install BETSEE.**
+
+   .. code:: bash
+
+      cd betsee
+      sudo python3 setup.py install
+
+.. [#pyside2_install]
+   Like BETSEE, PySide2_ is pre-release software under active development.
+   Unlike BETSEE, packages automating installation of both PySide2_ itself and
+   PySide2_ dependencies (e.g., Qt_) *are* available for various platforms –
+   including:
+
+   - `Arch Linux`_ via the `official PySide2 installation instructions
+     <PySide2 installation_>`__.
+   - `Gentoo Linux`_ via the `official PySide2 installation instructions
+     <PySide2 installation_>`__.
+   - `Ubuntu Linux <Ubuntu_>`__ via the `unofficial PySide2 PPA
+     <PySide2 PPA_>`__.
+
 License
 =======
 
@@ -79,6 +123,8 @@ biologically misaligned, and simply unusable.
 .. # ------------------( LINKS ~ betse                      )------------------
 .. _BETSE:
    https://gitlab.com/betse/betse
+.. _BETSE live:
+   https://gitlab.com/betse/betse#advanced
 
 .. # ------------------( LINKS ~ betsee                     )------------------
 .. _author list:
@@ -144,8 +190,6 @@ biologically misaligned, and simply unusable.
    https://www.continuum.io/downloads
 .. _Appveyor:
    https://ci.appveyor.com/project/betse/betse/branch/master
-.. _APT:
-   https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 .. _Bash on Ubuntu on Windows:
    http://www.windowscentral.com/how-install-bash-shell-command-line-windows-10
 .. _FFmpeg:
@@ -160,6 +204,8 @@ biologically misaligned, and simply unusable.
    http://brew.sh
 .. _Libav:
    https://libav.org
+.. _macOS:
+   https://en.wikipedia.org/wiki/Macintosh_operating_systems
 .. _MacPorts:
    https://www.macports.org
 .. _Matplotlib:
@@ -172,6 +218,10 @@ biologically misaligned, and simply unusable.
    https://github.com/iconic/open-iconic
 .. _POSIX:
    https://en.wikipedia.org/wiki/POSIX
+.. _PPA:
+   https://launchpad.net/ubuntu/+ppas
+.. _PyPI:
+   https://pypi.python.org
 .. _Python:
    https://www.python.org
 .. _py.test:
@@ -180,6 +230,30 @@ biologically misaligned, and simply unusable.
    http://www.scipy.org
 .. _YAML:
    http://yaml.org
+
+.. # ------------------( LINKS ~ software : linux           )------------------
+.. _APT:
+   https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
+.. _Arch Linux:
+   https://www.archlinux.org
+.. _Gentoo Linux:
+   https://gentoo.org
+.. _Ubuntu:
+   https://www.ubuntu.com
+
+.. # ------------------( LINKS ~ software : pyside2         )------------------
+.. _PySide2:
+   https://wiki.qt.io/PySide2
+.. _PySide2 5.6:
+   https://code.qt.io/cgit/pyside/pyside.git/log/?h=5.6
+.. _PySide2 installation:
+   https://wiki.qt.io/PySide2_GettingStarted
+.. _PySide2 PPA:
+   https://launchpad.net/~thopiekar/+archive/ubuntu/pyside-git
+.. _Qt:
+   https://www.qt.io
+.. _Qt 5.6:
+   https://wiki.qt.io/Qt_5.6_Release
 
 .. # ------------------( LINKS ~ software : licenses        )------------------
 .. _license compatibility:

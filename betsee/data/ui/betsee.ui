@@ -23,7 +23,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>BETSE 0.5</string>
+   <string>BETSEE</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
