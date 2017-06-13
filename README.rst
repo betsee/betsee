@@ -95,7 +95,7 @@ License
 =======
 
 BETSEE is open-source software `released <LICENSE>`__ under the permissive `BSD
-2-clause license`_ and containing third-party assets also released under
+2-clause license`_. BETSEE contains third-party assets also released under
 `BSD-compatible licenses <license compatibility_>`__, including:
 
 * All `Open Iconic`_ icons distributed in the
