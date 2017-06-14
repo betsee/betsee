@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>main_window</class>
+ <widget class="QMainWindow" name="main_window">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -26,11 +26,1223 @@
    <string>BETSEE</string>
   </property>
   <widget class="QWidget" name="centralWidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" colspan="2">
-     <widget class="QPlainTextEdit" name="messageBox">
+    <item row="0" column="2" rowspan="3">
+     <widget class="QTabWidget" name="phase_tabs">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>3</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>3</number>
+      </property>
+      <widget class="QWidget" name="phase_tabsPage1_2" native="true">
+       <attribute name="title">
+        <string>Cell Cluster</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QWidget" name="mplWindow_seed" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>5</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="mplVLayout_seed"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressBar_seed">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>5</pointsize>
+           </font>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="textVisible">
+           <bool>false</bool>
+          </property>
+          <property name="invertedAppearance">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frameControls">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>1</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="2" column="3">
+            <widget class="QGroupBox" name="groupBox_seedPlots">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>2</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="title">
+              <string>Plotting:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_23">
+                <property name="text">
+                 <string>colormap</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="lineEdit_seedColormap"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="comboBox_seedPlots">
+                <property name="currentIndex">
+                 <number>-1</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QRadioButton" name="rb_lockSeed">
+             <property name="text">
+              <string>Loc&amp;k Seed</string>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>://icon/open_iconic/lock_fill.svg</normaloff>://icon/open_iconic/lock_fill.svg</iconset>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QWidget" name="widget_seedControls" native="true">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <widget class="QPushButton" name="pushButton_startSeed">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Start Seed </string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_stopSeed">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>1</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Stop Seed</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="phase_tabsPage2_2" native="true">
+       <attribute name="title">
+        <string>Initialization</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QWidget" name="mplWindow_init" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>5</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="mplVLayout_init"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressBar_init">
+          <property name="font">
+           <font>
+            <pointsize>5</pointsize>
+           </font>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="textVisible">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frame">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>1</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_7">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_initControls">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>1</horstretch>
+               <verstretch>1</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="title">
+              <string/>
+             </property>
+             <widget class="QPushButton" name="pushButton_startInit">
+              <property name="geometry">
+               <rect>
+                <x>30</x>
+                <y>10</y>
+                <width>112</width>
+                <height>29</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Init</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButton_stopInit">
+              <property name="geometry">
+               <rect>
+                <x>30</x>
+                <y>50</y>
+                <width>112</width>
+                <height>29</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Init</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
+              </property>
+             </widget>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QGroupBox" name="groupBox_initPlotControls">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>3</horstretch>
+               <verstretch>1</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="title">
+              <string/>
+             </property>
+             <widget class="QComboBox" name="comboBox_initPlots">
+              <property name="geometry">
+               <rect>
+                <x>60</x>
+                <y>0</y>
+                <width>171</width>
+                <height>29</height>
+               </rect>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_31">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>78</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>View:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_37">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>40</y>
+                <width>91</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Colormap:</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEdit_initColormap">
+              <property name="geometry">
+               <rect>
+                <x>90</x>
+                <y>40</y>
+                <width>141</width>
+                <height>29</height>
+               </rect>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButton_initAutoscale">
+              <property name="geometry">
+               <rect>
+                <x>260</x>
+                <y>0</y>
+                <width>131</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Autoscale</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QFrame" name="frame_initScaleMinMax">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="geometry">
+               <rect>
+                <x>260</x>
+                <y>20</y>
+                <width>120</width>
+                <height>51</height>
+               </rect>
+              </property>
+              <widget class="QLineEdit" name="lineEdit_initPlot_min">
+               <property name="geometry">
+                <rect>
+                 <x>50</x>
+                 <y>8</y>
+                 <width>61</width>
+                 <height>21</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </widget>
+              <widget class="QLineEdit" name="lineEdit_initPlot_max">
+               <property name="geometry">
+                <rect>
+                 <x>50</x>
+                 <y>30</y>
+                 <width>61</width>
+                 <height>21</height>
+                </rect>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_38">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>10</y>
+                 <width>31</width>
+                 <height>19</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>min</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_39">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>30</y>
+                 <width>41</width>
+                 <height>19</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>max</string>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QFrame" name="frame_initAnimControls">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="geometry">
+               <rect>
+                <x>410</x>
+                <y>10</y>
+                <width>103</width>
+                <height>82</height>
+               </rect>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <widget class="QPushButton" name="pushButton_initAnimPlay">
+                 <property name="text">
+                  <string>Play</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton_initAnimStop">
+                 <property name="text">
+                  <string>Stop</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="phase_tabsPage3_2" native="true">
+       <attribute name="title">
+        <string>Simulation</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QWidget" name="mplWindow_sim" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>5</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="mplVLayout_sim"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressBar_sim">
+          <property name="font">
+           <font>
+            <pointsize>5</pointsize>
+           </font>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="textVisible">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frame_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>1</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="groupBox_simControls">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>1</horstretch>
+               <verstretch>1</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="title">
+              <string/>
+             </property>
+             <widget class="QPushButton" name="pushButton_startSim">
+              <property name="geometry">
+               <rect>
+                <x>30</x>
+                <y>10</y>
+                <width>112</width>
+                <height>29</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Sim</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButton_stopSim">
+              <property name="geometry">
+               <rect>
+                <x>30</x>
+                <y>50</y>
+                <width>112</width>
+                <height>29</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Sim</string>
+              </property>
+              <property name="icon">
+               <iconset>
+                <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
+              </property>
+             </widget>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QGroupBox" name="groupBox_simPlotControls">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+               <horstretch>3</horstretch>
+               <verstretch>1</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="title">
+              <string/>
+             </property>
+             <widget class="QComboBox" name="comboBox_simPlots">
+              <property name="geometry">
+               <rect>
+                <x>60</x>
+                <y>0</y>
+                <width>171</width>
+                <height>29</height>
+               </rect>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_30">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>78</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>View:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_34">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>40</y>
+                <width>91</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Colormap:</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEdit_simColormap">
+              <property name="geometry">
+               <rect>
+                <x>90</x>
+                <y>40</y>
+                <width>141</width>
+                <height>29</height>
+               </rect>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButton_simAutoscale">
+              <property name="geometry">
+               <rect>
+                <x>260</x>
+                <y>0</y>
+                <width>131</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Autoscale</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QFrame" name="frame_simScaleMinMax">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="geometry">
+               <rect>
+                <x>260</x>
+                <y>30</y>
+                <width>120</width>
+                <height>51</height>
+               </rect>
+              </property>
+              <widget class="QLineEdit" name="lineEdit_simPlot_min">
+               <property name="geometry">
+                <rect>
+                 <x>50</x>
+                 <y>0</y>
+                 <width>61</width>
+                 <height>21</height>
+                </rect>
+               </property>
+              </widget>
+              <widget class="QLineEdit" name="lineEdit_simPlot_max">
+               <property name="geometry">
+                <rect>
+                 <x>50</x>
+                 <y>20</y>
+                 <width>61</width>
+                 <height>21</height>
+                </rect>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_35">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>0</y>
+                 <width>31</width>
+                 <height>19</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>min</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_36">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>20</y>
+                 <width>41</width>
+                 <height>16</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>max</string>
+               </property>
+              </widget>
+             </widget>
+             <widget class="QFrame" name="frame_simAnimControls">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="geometry">
+               <rect>
+                <x>410</x>
+                <y>10</y>
+                <width>103</width>
+                <height>82</height>
+               </rect>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QPushButton" name="pushButton_simAnimPlay">
+                 <property name="text">
+                  <string>Play</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton_simAnimStop">
+                 <property name="text">
+                  <string>Stop</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="phase_tabsPage4_2" native="true">
+       <attribute name="title">
+        <string>Network</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QWidget" name="mplWindow_net" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>5</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="mplVLayout_net"/>
+         </widget>
+        </item>
+        <item>
+         <widget class="QFrame" name="frameControls_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>1</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <widget class="QPushButton" name="pushButton_plotNetwork">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>20</y>
+             <width>131</width>
+             <height>29</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Plot Network</string>
+           </property>
+          </widget>
+          <widget class="QWidget" name="widget" native="true">
+           <property name="geometry">
+            <rect>
+             <x>180</x>
+             <y>10</y>
+             <width>371</width>
+             <height>80</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButton_runOptimizer">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>60</y>
+             <width>131</width>
+             <height>29</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Run Optimizer</string>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="0" rowspan="2">
+     <widget class="QTreeWidget" name="conf_tree">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>225</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="indentation">
+       <number>10</number>
+      </property>
+      <property name="rootIsDecorated">
+       <bool>true</bool>
+      </property>
+      <property name="uniformRowHeights">
+       <bool>false</bool>
+      </property>
+      <property name="itemsExpandable">
+       <bool>true</bool>
+      </property>
+      <column>
+       <property name="text">
+        <string>PROJECT TREE</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+      </column>
+      <item>
+       <property name="text">
+        <string>File Management</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Time Settings</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>General Options</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Cluster Options</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Tissue Profiles</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Profile</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Channels</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Channel</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Interventions</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Intervention</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Junctions</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Networks</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>Substances</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Substance</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Reactions</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Reaction</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Transporters</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Transporter</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Channels</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Channel (Network)</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Modulators</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Modulator</string>
+         </property>
+        </item>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Extra Physics</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Tools</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Advanced</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Results Settings</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Raw Data Export</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add CSV Export</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Line Plots</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Line Plot</string>
+        </property>
+        <property name="background">
+         <brush brushstyle="NoBrush">
+          <color alpha="255">
+           <red>0</red>
+           <green>166</green>
+           <blue>141</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>2D Plots</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add 2D Plot</string>
+        </property>
+        <property name="background">
+         <brush brushstyle="NoBrush">
+          <color alpha="255">
+           <red>0</red>
+           <green>166</green>
+           <blue>141</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Animations</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Animation</string>
+        </property>
+       </item>
+      </item>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="QPlainTextEdit" name="log_box">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>1</horstretch>
         <verstretch>1</verstretch>
        </sizepolicy>
@@ -57,7 +1269,7 @@
        <number>2</number>
       </property>
       <property name="readOnly">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="plainText">
        <string/>
@@ -67,11 +1279,11 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QStackedWidget" name="stackedWidget">
+    <item row="0" column="1" rowspan="2">
+     <widget class="QStackedWidget" name="conf_forms">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>1</horstretch>
+        <horstretch>2</horstretch>
         <verstretch>1</verstretch>
        </sizepolicy>
       </property>
@@ -81,7 +1293,7 @@
        </font>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_FileManagement">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1956,7 +3168,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Overlay current</string>
+              <string>O&amp;verlay current</string>
              </property>
             </widget>
            </item>
@@ -2495,1212 +3707,6 @@
       </widget>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QTreeWidget" name="treeWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-        <horstretch>1</horstretch>
-        <verstretch>3</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>225</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="indentation">
-       <number>10</number>
-      </property>
-      <property name="rootIsDecorated">
-       <bool>true</bool>
-      </property>
-      <property name="uniformRowHeights">
-       <bool>false</bool>
-      </property>
-      <property name="itemsExpandable">
-       <bool>true</bool>
-      </property>
-      <column>
-       <property name="text">
-        <string>PROJECT TREE</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-      </column>
-      <item>
-       <property name="text">
-        <string>File Management</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Time Settings</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>General Options</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Cluster Options</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tissue Profiles</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Profile</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Channels</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Channel</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Interventions</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Intervention</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Junctions</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Networks</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>Substances</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Substance</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Reactions</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Reaction</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Transporters</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Transporter</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Channels</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Channel (Network)</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Modulators</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Modulator</string>
-         </property>
-        </item>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Extra Physics</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tools</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Advanced</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Results Settings</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Raw Data Export</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add CSV Export</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Line Plots</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Line Plot</string>
-        </property>
-        <property name="background">
-         <brush brushstyle="NoBrush">
-          <color alpha="255">
-           <red>0</red>
-           <green>166</green>
-           <blue>141</blue>
-          </color>
-         </brush>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>2D Plots</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add 2D Plot</string>
-        </property>
-        <property name="background">
-         <brush brushstyle="NoBrush">
-          <color alpha="255">
-           <red>0</red>
-           <green>166</green>
-           <blue>141</blue>
-          </color>
-         </brush>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Animations</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Animation</string>
-        </property>
-       </item>
-      </item>
-     </widget>
-    </item>
-    <item row="0" column="2" rowspan="2">
-     <widget class="QTabWidget" name="tabWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>4</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <widget class="QWidget" name="tabSeed">
-       <attribute name="title">
-        <string>Cell Cluster</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QWidget" name="mplWindow_seed" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>5</verstretch>
-           </sizepolicy>
-          </property>
-          <layout class="QVBoxLayout" name="mplVLayout_seed"/>
-         </widget>
-        </item>
-        <item>
-         <widget class="QProgressBar" name="progressBar_seed">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>1</horstretch>
-            <verstretch>1</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>5</pointsize>
-           </font>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="textVisible">
-           <bool>false</bool>
-          </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frameControls">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>1</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_6">
-           <item row="2" column="3">
-            <widget class="QGroupBox" name="groupBox_seedPlots">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>2</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string>Plotting:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_5">
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_23">
-                <property name="text">
-                 <string>colormap</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="lineEdit_seedColormap"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="comboBox_seedPlots">
-                <property name="currentIndex">
-                 <number>-1</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QRadioButton" name="rb_lockSeed">
-             <property name="text">
-              <string>Loc&amp;k Seed</string>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>://icon/open_iconic/lock_fill.svg</normaloff>://icon/open_iconic/lock_fill.svg</iconset>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QWidget" name="widget_seedControls" native="true">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_5">
-              <item>
-               <widget class="QPushButton" name="pushButton_startSeed">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Start Seed </string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton_stopSeed">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>1</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Stop Seed</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tabInit">
-       <attribute name="title">
-        <string>Initialization</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QWidget" name="mplWindow_init" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>5</verstretch>
-           </sizepolicy>
-          </property>
-          <layout class="QVBoxLayout" name="mplVLayout_init"/>
-         </widget>
-        </item>
-        <item>
-         <widget class="QProgressBar" name="progressBar_init">
-          <property name="font">
-           <font>
-            <pointsize>5</pointsize>
-           </font>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="textVisible">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frame">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>1</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_7">
-           <item row="0" column="0">
-            <widget class="QGroupBox" name="groupBox_initControls">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>1</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string/>
-             </property>
-             <widget class="QPushButton" name="pushButton_startInit">
-              <property name="geometry">
-               <rect>
-                <x>30</x>
-                <y>10</y>
-                <width>112</width>
-                <height>29</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Start Init</string>
-              </property>
-              <property name="icon">
-               <iconset>
-                <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
-              </property>
-             </widget>
-             <widget class="QPushButton" name="pushButton_stopInit">
-              <property name="geometry">
-               <rect>
-                <x>30</x>
-                <y>50</y>
-                <width>112</width>
-                <height>29</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Stop Init</string>
-              </property>
-              <property name="icon">
-               <iconset>
-                <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
-              </property>
-             </widget>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QGroupBox" name="groupBox_initPlotControls">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>3</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string/>
-             </property>
-             <widget class="QComboBox" name="comboBox_initPlots">
-              <property name="geometry">
-               <rect>
-                <x>60</x>
-                <y>0</y>
-                <width>171</width>
-                <height>29</height>
-               </rect>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_31">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>78</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>View:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_37">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>40</y>
-                <width>91</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Colormap:</string>
-              </property>
-             </widget>
-             <widget class="QLineEdit" name="lineEdit_initColormap">
-              <property name="geometry">
-               <rect>
-                <x>90</x>
-                <y>40</y>
-                <width>141</width>
-                <height>29</height>
-               </rect>
-              </property>
-             </widget>
-             <widget class="QRadioButton" name="radioButton_initAutoscale">
-              <property name="geometry">
-               <rect>
-                <x>260</x>
-                <y>0</y>
-                <width>131</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Autoscale</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-             <widget class="QFrame" name="frame_initScaleMinMax">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="geometry">
-               <rect>
-                <x>260</x>
-                <y>20</y>
-                <width>120</width>
-                <height>51</height>
-               </rect>
-              </property>
-              <widget class="QLineEdit" name="lineEdit_initPlot_min">
-               <property name="geometry">
-                <rect>
-                 <x>50</x>
-                 <y>8</y>
-                 <width>61</width>
-                 <height>21</height>
-                </rect>
-               </property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
-              </widget>
-              <widget class="QLineEdit" name="lineEdit_initPlot_max">
-               <property name="geometry">
-                <rect>
-                 <x>50</x>
-                 <y>30</y>
-                 <width>61</width>
-                 <height>21</height>
-                </rect>
-               </property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_38">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>10</y>
-                 <width>31</width>
-                 <height>19</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>min</string>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_39">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>30</y>
-                 <width>41</width>
-                 <height>19</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>max</string>
-               </property>
-              </widget>
-             </widget>
-             <widget class="QFrame" name="frame_initAnimControls">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="geometry">
-               <rect>
-                <x>410</x>
-                <y>10</y>
-                <width>103</width>
-                <height>82</height>
-               </rect>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_9">
-               <item>
-                <widget class="QPushButton" name="pushButton_initAnimPlay">
-                 <property name="text">
-                  <string>Play</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_initAnimStop">
-                 <property name="text">
-                  <string>Stop</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tabSim">
-       <attribute name="title">
-        <string>Simulation</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QWidget" name="mplWindow_sim" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>5</verstretch>
-           </sizepolicy>
-          </property>
-          <layout class="QVBoxLayout" name="mplVLayout_sim"/>
-         </widget>
-        </item>
-        <item>
-         <widget class="QProgressBar" name="progressBar_sim">
-          <property name="font">
-           <font>
-            <pointsize>5</pointsize>
-           </font>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="textVisible">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frame_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>1</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_8">
-           <item row="0" column="0">
-            <widget class="QGroupBox" name="groupBox_simControls">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>1</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string/>
-             </property>
-             <widget class="QPushButton" name="pushButton_startSim">
-              <property name="geometry">
-               <rect>
-                <x>30</x>
-                <y>10</y>
-                <width>112</width>
-                <height>29</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Start Sim</string>
-              </property>
-              <property name="icon">
-               <iconset>
-                <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
-              </property>
-             </widget>
-             <widget class="QPushButton" name="pushButton_stopSim">
-              <property name="geometry">
-               <rect>
-                <x>30</x>
-                <y>50</y>
-                <width>112</width>
-                <height>29</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Stop Sim</string>
-              </property>
-              <property name="icon">
-               <iconset>
-                <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
-              </property>
-             </widget>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QGroupBox" name="groupBox_simPlotControls">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>3</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="title">
-              <string/>
-             </property>
-             <widget class="QComboBox" name="comboBox_simPlots">
-              <property name="geometry">
-               <rect>
-                <x>60</x>
-                <y>0</y>
-                <width>171</width>
-                <height>29</height>
-               </rect>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_30">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>78</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>View:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_34">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>40</y>
-                <width>91</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Colormap:</string>
-              </property>
-             </widget>
-             <widget class="QLineEdit" name="lineEdit_simColormap">
-              <property name="geometry">
-               <rect>
-                <x>90</x>
-                <y>40</y>
-                <width>141</width>
-                <height>29</height>
-               </rect>
-              </property>
-             </widget>
-             <widget class="QRadioButton" name="radioButton_simAutoscale">
-              <property name="geometry">
-               <rect>
-                <x>260</x>
-                <y>0</y>
-                <width>131</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Autoscale</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-             <widget class="QFrame" name="frame_simScaleMinMax">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="geometry">
-               <rect>
-                <x>260</x>
-                <y>30</y>
-                <width>120</width>
-                <height>51</height>
-               </rect>
-              </property>
-              <widget class="QLineEdit" name="lineEdit_simPlot_min">
-               <property name="geometry">
-                <rect>
-                 <x>50</x>
-                 <y>0</y>
-                 <width>61</width>
-                 <height>21</height>
-                </rect>
-               </property>
-              </widget>
-              <widget class="QLineEdit" name="lineEdit_simPlot_max">
-               <property name="geometry">
-                <rect>
-                 <x>50</x>
-                 <y>20</y>
-                 <width>61</width>
-                 <height>21</height>
-                </rect>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_35">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>0</y>
-                 <width>31</width>
-                 <height>19</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>min</string>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_36">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>20</y>
-                 <width>41</width>
-                 <height>16</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>max</string>
-               </property>
-              </widget>
-             </widget>
-             <widget class="QFrame" name="frame_simAnimControls">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="geometry">
-               <rect>
-                <x>410</x>
-                <y>10</y>
-                <width>103</width>
-                <height>82</height>
-               </rect>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_8">
-               <item>
-                <widget class="QPushButton" name="pushButton_simAnimPlay">
-                 <property name="text">
-                  <string>Play</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_simAnimStop">
-                 <property name="text">
-                  <string>Stop</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tabNetwork">
-       <attribute name="title">
-        <string>Network</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QWidget" name="mplWindow_net" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>5</verstretch>
-           </sizepolicy>
-          </property>
-          <layout class="QVBoxLayout" name="mplVLayout_net"/>
-         </widget>
-        </item>
-        <item>
-         <widget class="QFrame" name="frameControls_4">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>1</horstretch>
-            <verstretch>1</verstretch>
-           </sizepolicy>
-          </property>
-          <widget class="QPushButton" name="pushButton_plotNetwork">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>20</y>
-             <width>131</width>
-             <height>29</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Plot Network</string>
-           </property>
-          </widget>
-          <widget class="QWidget" name="widget" native="true">
-           <property name="geometry">
-            <rect>
-             <x>180</x>
-             <y>10</y>
-             <width>371</width>
-             <height>80</height>
-            </rect>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="pushButton_runOptimizer">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>60</y>
-             <width>131</width>
-             <height>29</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Run Optimizer</string>
-           </property>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -3709,8 +3715,14 @@
      <x>0</x>
      <y>0</y>
      <width>1628</width>
-     <height>27</height>
+     <height>23</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -3723,7 +3735,7 @@
     <addaction name="actionSave_Config_File"/>
     <addaction name="actionSave_Simulation_As"/>
     <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="action_exit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -3750,6 +3762,12 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -3763,7 +3781,14 @@
    <addaction name="actionRun_Sim"/>
    <addaction name="actionStop_Phase"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+  </widget>
   <action name="actionOpen_Config_File">
    <property name="icon">
     <iconset>
@@ -3785,7 +3810,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="actionExit">
+  <action name="action_exit">
    <property name="text">
     <string>&amp;Exit</string>
    </property>
@@ -3836,7 +3861,7 @@
   </action>
   <action name="actionPreferences">
    <property name="text">
-    <string>&amp;Preferences...</string>
+    <string>Pr&amp;eferences...</string>
    </property>
    <property name="toolTip">
     <string>Customize application settings.</string>
@@ -3969,7 +3994,7 @@
   </action>
   <action name="actionClose_Simulation">
    <property name="text">
-    <string>Close Simulation</string>
+    <string>&amp;Close Simulation</string>
    </property>
   </action>
  </widget>

@@ -17,9 +17,12 @@ submodule has locally created and cached that module for the current user.
 '''
 
 # ....................{ IMPORTS                            }....................
+# Accessing attributes of the "PySide2.QtCore.Qt" subpackage requires this
+# subpackage to be imported directly. Attributes are *NOT* importable from this
+# subpackage, contrary to pure-Python expectation.
+from PySide2.QtCore import Qt
 from betsee import metadata
 from betsee.lib.pyside import psdui
-# from betsee.lib.pyside.psdapp import APP_WIDGET
 
 # ....................{ GLOBALS                            }....................
 MAIN_WINDOW_BASE_CLASSES = psdui.get_ui_module_base_classes(
@@ -91,8 +94,39 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         implemented by this UI file.
         '''
 
+        # Customize all direct properties of this main window.
+        self._init_properties()
+
         # Customize all QAction widgets of this main window.
         self._init_actions()
+
+
+    def _init_properties(self) -> None:
+        '''
+        Customize all direct properties of this main window.
+        '''
+
+        #FIXME: While a sensible default, BETSEE should ideally preserve and
+        #restor its prior window state if any from the most recent execution of
+        #this application.
+
+        # Expand this window to consume all available horizontal and vertical
+        # screen space. Note that:
+        #
+        # * This does *NOT* constitute "full screen" mode, which is typically
+        #   desirable only for console-oriented applications (e.g., OpenGL).
+        # * This is *NOT* supported by Qt Creator and hence must be performed
+        #   with Python logic here.
+        # * The more convenient self.main_window.showMaximized() method is
+        #   intentionally *NOT* called here, as doing so would implicitly render
+        #   the entire GUI (which has yet to be fully customized) visible.
+        #
+        # Failing to maximize this window typically results in Qt erroneously
+        # defaulting this window to an inappropriate size for the current
+        # screen. On my a 1920x1080 display, for example, the default window
+        # size exceeds the vertical resolution (and hence is clipped on the
+        # bottom) but consumes only two-thirds of the horizontal resolution.
+        self.setWindowState(Qt.WindowMaximized)
 
 
     def _init_actions(self) -> None:
@@ -102,5 +136,4 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         # Associate QAction slots with Python signals.
-        # self.actionExit.triggered.connect(APP_WIDGET.quit)
-        self.actionExit.triggered.connect(self.close)
+        self.action_exit.triggered.connect(self.close)
