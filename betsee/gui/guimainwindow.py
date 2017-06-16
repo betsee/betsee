@@ -22,7 +22,7 @@ submodule has locally created and cached that module for the current user.
 # subpackage, contrary to pure-Python expectation.
 from PySide2.QtCore import Qt
 from betsee import metadata
-from betsee.lib.pyside import psdui
+from betsee.lib.pyside import psderr, psdui
 
 # ....................{ GLOBALS                            }....................
 MAIN_WINDOW_BASE_CLASSES = psdui.get_ui_module_base_classes(
@@ -100,7 +100,10 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Customize all QAction widgets of this main window.
         self._init_actions()
 
+        # Finalize the contents of this window *AFTER* customizing this content.
+        self.show()
 
+    # ..................{ INITIALIZERS ~ properties          }..................
     def _init_properties(self) -> None:
         '''
         Customize all direct properties of this main window.
@@ -128,12 +131,77 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # bottom) but consumes only two-thirds of the horizontal resolution.
         self.setWindowState(Qt.WindowMaximized)
 
-
+    # ..................{ INITIALIZERS ~ actions             }..................
     def _init_actions(self) -> None:
         '''
         Customize all QAction widgets of this main window, typically by
         associating the slots of these widgets with Python signals.
         '''
 
+        # Customize all QAction widgets in the "File", "Edit", and "Help" menus.
+        self._init_actions_file()
+        self._init_actions_edit()
+        self._init_actions_help()
+
+        #FIXME: Implement all remaining actions.
+
+        # Default all remaining actions to display an error box informing the
+        # end user that this action has yet to be implemented.
+        for action in (
+            # "File" menu.
+            self.action_new_sim,
+            self.action_open_sim,
+            self.action_close_sim,
+            self.action_save_sim,
+            self.action_save_sim_as,
+
+            # "Edit" menu.
+            self.action_undo,
+            self.action_redo,
+            self.action_cut,
+            self.action_copy,
+            self.action_paste,
+            self.action_edit_prefs,
+
+            # "Help" menu.
+            self.action_about_betse,
+            self.action_about_betsee,
+        ):
+            action.triggered.connect(self._show_error_action_unimplemented)
+
+
+    def _init_actions_file(self) -> None:
+        '''
+        Customize all QAction widgets of the top-level ``File`` menu.
+        '''
+
         # Associate QAction slots with Python signals.
         self.action_exit.triggered.connect(self.close)
+
+
+    def _init_actions_edit(self) -> None:
+        '''
+        Customize all QAction widgets of the top-level ``Edit`` menu.
+        '''
+
+        pass
+
+
+    def _init_actions_help(self) -> None:
+        '''
+        Customize all QAction widgets of the top-level ``Help`` menu.
+        '''
+
+        pass
+
+    # ..................{ INITIALIZERS                       }..................
+    def _show_error_action_unimplemented(self) -> None:
+        '''
+        Display a modal message box informing the end user that the currently
+        selected action has yet to be implemented.
+        '''
+
+        psderr.show_error(
+            title='Action Unimplemented',
+            synopsis='This action is currently unimplemented.',
+        )

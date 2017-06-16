@@ -42,9 +42,9 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="phase_tabsPage1_2" native="true">
+      <widget class="QWidget" name="phase_tabsPage1_2">
        <attribute name="title">
         <string>Cell Cluster</string>
        </attribute>
@@ -202,7 +202,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="phase_tabsPage2_2" native="true">
+      <widget class="QWidget" name="phase_tabsPage2_2">
        <attribute name="title">
         <string>Initialization</string>
        </attribute>
@@ -491,7 +491,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="phase_tabsPage3_2" native="true">
+      <widget class="QWidget" name="phase_tabsPage3_2">
        <attribute name="title">
         <string>Simulation</string>
        </attribute>
@@ -758,7 +758,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="phase_tabsPage4_2" native="true">
+      <widget class="QWidget" name="phase_tabsPage4_2">
        <attribute name="title">
         <string>Network</string>
        </attribute>
@@ -822,461 +822,6 @@
         </item>
        </layout>
       </widget>
-     </widget>
-    </item>
-    <item row="0" column="0" rowspan="2">
-     <widget class="QTreeWidget" name="conf_tree">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>1</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>225</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="indentation">
-       <number>10</number>
-      </property>
-      <property name="rootIsDecorated">
-       <bool>true</bool>
-      </property>
-      <property name="uniformRowHeights">
-       <bool>false</bool>
-      </property>
-      <property name="itemsExpandable">
-       <bool>true</bool>
-      </property>
-      <column>
-       <property name="text">
-        <string>PROJECT TREE</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-      </column>
-      <item>
-       <property name="text">
-        <string>File Management</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Time Settings</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>General Options</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Cluster Options</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tissue Profiles</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Profile</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Channels</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Channel</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Interventions</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Intervention</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Junctions</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Networks</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>Substances</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Substance</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Reactions</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Reaction</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Transporters</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Transporter</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Channels</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Channel (Network)</string>
-         </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Modulators</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Modulator</string>
-         </property>
-        </item>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Extra Physics</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tools</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Advanced</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Results Settings</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Raw Data Export</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add CSV Export</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Line Plots</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Line Plot</string>
-        </property>
-        <property name="background">
-         <brush brushstyle="NoBrush">
-          <color alpha="255">
-           <red>0</red>
-           <green>166</green>
-           <blue>141</blue>
-          </color>
-         </brush>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>2D Plots</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add 2D Plot</string>
-        </property>
-        <property name="background">
-         <brush brushstyle="NoBrush">
-          <color alpha="255">
-           <red>0</red>
-           <green>166</green>
-           <blue>141</blue>
-          </color>
-         </brush>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Animations</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Animation</string>
-        </property>
-       </item>
-      </item>
-     </widget>
-    </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="QPlainTextEdit" name="log_box">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>1</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>200</height>
-       </size>
-      </property>
-      <property name="baseSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
-      </property>
-      <property name="lineWidth">
-       <number>2</number>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-      <property name="plainText">
-       <string/>
-      </property>
-      <property name="backgroundVisible">
-       <bool>false</bool>
-      </property>
      </widget>
     </item>
     <item row="0" column="1" rowspan="2">
@@ -3707,6 +3252,461 @@
       </widget>
      </widget>
     </item>
+    <item row="0" column="0" rowspan="2">
+     <widget class="QTreeWidget" name="conf_tree">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>225</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="indentation">
+       <number>10</number>
+      </property>
+      <property name="rootIsDecorated">
+       <bool>true</bool>
+      </property>
+      <property name="uniformRowHeights">
+       <bool>false</bool>
+      </property>
+      <property name="itemsExpandable">
+       <bool>true</bool>
+      </property>
+      <column>
+       <property name="text">
+        <string>PROJECT TREE</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+      </column>
+      <item>
+       <property name="text">
+        <string>File Management</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Time Settings</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>General Options</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Cluster Options</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Tissue Profiles</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Profile</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Channels</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Channel</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Interventions</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Intervention</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Junctions</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Networks</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>Substances</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Substance</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Reactions</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Reaction</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Transporters</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Transporter</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Channels</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Channel (Network)</string>
+         </property>
+        </item>
+       </item>
+       <item>
+        <property name="text">
+         <string>Modulators</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>+Add Modulator</string>
+         </property>
+        </item>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Extra Physics</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Tools</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Advanced</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Results Settings</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Raw Data Export</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add CSV Export</string>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Line Plots</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Line Plot</string>
+        </property>
+        <property name="background">
+         <brush brushstyle="NoBrush">
+          <color alpha="255">
+           <red>0</red>
+           <green>166</green>
+           <blue>141</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>2D Plots</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add 2D Plot</string>
+        </property>
+        <property name="background">
+         <brush brushstyle="NoBrush">
+          <color alpha="255">
+           <red>0</red>
+           <green>166</green>
+           <blue>141</blue>
+          </color>
+         </brush>
+        </property>
+       </item>
+      </item>
+      <item>
+       <property name="text">
+        <string>Animations</string>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>14</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
+       </property>
+       <item>
+        <property name="text">
+         <string>+Add Animation</string>
+        </property>
+       </item>
+      </item>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="QPlainTextEdit" name="log_box">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <property name="lineWidth">
+       <number>2</number>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="plainText">
+       <string/>
+      </property>
+      <property name="backgroundVisible">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -3728,12 +3728,12 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="actionNew_Config_File"/>
-    <addaction name="actionOpen_Config_File"/>
-    <addaction name="actionClose_Simulation"/>
+    <addaction name="action_new_sim"/>
+    <addaction name="action_open_sim"/>
+    <addaction name="action_close_sim"/>
     <addaction name="separator"/>
-    <addaction name="actionSave_Config_File"/>
-    <addaction name="actionSave_Simulation_As"/>
+    <addaction name="action_save_sim"/>
+    <addaction name="action_save_sim_as"/>
     <addaction name="separator"/>
     <addaction name="action_exit"/>
    </widget>
@@ -3741,21 +3741,21 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="actionAbout_BETSE"/>
-    <addaction name="actionAbout_BETSEE"/>
+    <addaction name="action_about_betse"/>
+    <addaction name="action_about_betsee"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>&amp;Edit</string>
     </property>
-    <addaction name="action_Undo"/>
-    <addaction name="action_Redo"/>
+    <addaction name="action_undo"/>
+    <addaction name="action_redo"/>
     <addaction name="separator"/>
-    <addaction name="actionCu_t"/>
-    <addaction name="action_Copy"/>
-    <addaction name="action_Paste"/>
+    <addaction name="action_cut"/>
+    <addaction name="action_copy"/>
+    <addaction name="action_paste"/>
     <addaction name="separator"/>
-    <addaction name="actionPreferences"/>
+    <addaction name="action_edit_prefs"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -3774,12 +3774,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionOpen_Config_File"/>
-   <addaction name="actionNew_Config_File"/>
-   <addaction name="actionSave_Config_File"/>
-   <addaction name="actionRun_Seed"/>
-   <addaction name="actionRun_Sim"/>
-   <addaction name="actionStop_Phase"/>
+   <addaction name="action_open_sim"/>
+   <addaction name="action_new_sim"/>
+   <addaction name="action_save_sim"/>
+   <addaction name="action_start_phase_seed"/>
+   <addaction name="action_start_phase_sim"/>
+   <addaction name="action_stop_phase"/>
   </widget>
   <widget class="QStatusBar" name="statusBar">
    <property name="sizePolicy">
@@ -3789,7 +3789,7 @@
     </sizepolicy>
    </property>
   </widget>
-  <action name="actionOpen_Config_File">
+  <action name="action_open_sim">
    <property name="icon">
     <iconset>
      <normaloff>://icon/open_iconic/download.svg</normaloff>://icon/open_iconic/download.svg</iconset>
@@ -3827,7 +3827,7 @@
     <enum>QAction::QuitRole</enum>
    </property>
   </action>
-  <action name="actionSave_Config_File">
+  <action name="action_save_sim">
    <property name="icon">
     <iconset>
      <normaloff>://icon/open_iconic/upload.svg</normaloff>://icon/open_iconic/upload.svg</iconset>
@@ -3845,7 +3845,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="actionAbout_BETSEE">
+  <action name="action_about_betsee">
    <property name="text">
     <string>&amp;About BETSEE...</string>
    </property>
@@ -3859,7 +3859,7 @@
     <enum>QAction::AboutRole</enum>
    </property>
   </action>
-  <action name="actionPreferences">
+  <action name="action_edit_prefs">
    <property name="text">
     <string>Pr&amp;eferences...</string>
    </property>
@@ -3870,7 +3870,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="actionNew_Config_File">
+  <action name="action_new_sim">
    <property name="icon">
     <iconset>
      <normaloff>://icon/open_iconic/document_alt_stroke.svg</normaloff>://icon/open_iconic/document_alt_stroke.svg</iconset>
@@ -3888,7 +3888,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="actionRun_Seed">
+  <action name="action_start_phase_seed">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -3906,7 +3906,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="actionRun_Sim">
+  <action name="action_start_phase_sim">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -3924,7 +3924,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="actionStop_Phase">
+  <action name="action_stop_phase">
    <property name="icon">
     <iconset>
      <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
@@ -3939,7 +3939,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="actionAbout_BETSE">
+  <action name="action_about_betse">
    <property name="text">
     <string>About &amp;BETSE...</string>
    </property>
@@ -3947,12 +3947,12 @@
     <string>Display a textual synopsis of the underlying engine.</string>
    </property>
   </action>
-  <action name="actionSave_Simulation_As">
+  <action name="action_save_sim_as">
    <property name="text">
     <string>Save Simulation &amp;As...</string>
    </property>
   </action>
-  <action name="action_Undo">
+  <action name="action_undo">
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -3960,7 +3960,7 @@
     <string>Ctrl+Z</string>
    </property>
   </action>
-  <action name="action_Redo">
+  <action name="action_redo">
    <property name="text">
     <string>&amp;Redo</string>
    </property>
@@ -3968,7 +3968,7 @@
     <string>Ctrl+Shift+Z</string>
    </property>
   </action>
-  <action name="actionCu_t">
+  <action name="action_cut">
    <property name="text">
     <string>Cu&amp;t</string>
    </property>
@@ -3976,7 +3976,7 @@
     <string>Ctrl+X</string>
    </property>
   </action>
-  <action name="action_Copy">
+  <action name="action_copy">
    <property name="text">
     <string>&amp;Copy</string>
    </property>
@@ -3984,7 +3984,7 @@
     <string>Ctrl+C</string>
    </property>
   </action>
-  <action name="action_Paste">
+  <action name="action_paste">
    <property name="text">
     <string>&amp;Paste</string>
    </property>
@@ -3992,7 +3992,7 @@
     <string>Ctrl+V</string>
    </property>
   </action>
-  <action name="actionClose_Simulation">
+  <action name="action_close_sim">
    <property name="text">
     <string>&amp;Close Simulation</string>
    </property>

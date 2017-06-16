@@ -12,6 +12,7 @@ Root-level classes defining this application's graphical user interface (GUI).
 #convert raw translation files into importable Python modules.
 
 # ....................{ IMPORTS                            }....................
+from betse.util.io.log import logs
 from betsee.gui import guicache
 from betsee.lib.pyside.psdapp import APP_WIDGET
 
@@ -53,6 +54,9 @@ class BetseeGUI(object):
         # *AFTER* this module is guaranteed to be importable.
         from betsee.gui.guimainwindow import BetseeMainWindow
 
+        # Log this initialization.
+        logs.log_info('Initiating PySide2 UI...')
+
         # Main window widget for this GUI.
         #
         # For safety, this window is scoped to an instance rather than global
@@ -60,8 +64,8 @@ class BetseeGUI(object):
         # application widget containing this window,
         self._main_window = BetseeMainWindow()
 
-        # Finalize the contents of this window.
-        self._main_window.show()
+        # Log this display.
+        logs.log_info('Displaying PySide2 UI...')
 
         # Run this GUI's event loop and propagate the resulting exit status to
         # our caller. This displays this window and thus all of this GUI.
