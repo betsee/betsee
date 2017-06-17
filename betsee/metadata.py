@@ -285,12 +285,41 @@ simplifying inspection and validation of this version elsewhere (e.g., in the
 
 
 DEPENDENCIES_RUNTIME_MANDATORY = {
-    # Dependencies directly required by this application.
+    # Versioned dependencies directly required by this application.
     'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
     'PySide2': '>= 2.0.0~alpha0',
 
-    #FIXME: Add "pyside2uic" after upstream resolves the following issue:
+    #FIXME: "pyside2uic" currently emits suboptimal code for SVG icons,
+    #internally converting them in memory into non-vector raster icons before
+    #display rather than simply displaying them as vector icons. For example,
+    #the QIcon created from the "lock_fill.svg" icon is as follows:
+    #
+    #    icon = QtGui.QIcon()
+    #    icon.addPixmap(QtGui.QPixmap("://icon/open_iconic/lock_fill.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    #
+    #This code should instead resemble:
+    #
+    #    icon = QtGui.QIcon()
+    #    icon.addFile("://icon/open_iconic/lock_fill.svg", QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    #
+    #Indeed, there doesn't appear to be any benefit to *EVER* calling the
+    #icon.addPixmap() method versus the icon.addFile() method here. The latter
+    #method suffices for all supported filetypes and hence is always preferable,
+    #regardless of icon filetype.
+    #
+    #Consider filing an upstream PySide2 issue documenting this, ideally with a
+    #minimal UI file as an example.
+
+    # Unversioned dependencies directly required by this application. Since
+    # the modules providing these dependencies define no PEP-8-compliant
+    # "__version__" or "__version_info__" attributes. merely validating these
+    # modules to be importable is the most we can do.
+    'PySide2.QtSvg': None,
+
+    #FIXME: Add a minimum required version *AFTER* upstream resolves the
+    #following open issue:
     #    https://bugreports.qt.io/browse/PYSIDE-517
+    'pyside2uic': None,
 }
 '''
 Dictionary mapping from the :mod:`setuptools`-specific project name of each

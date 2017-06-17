@@ -3860,6 +3860,10 @@
    </property>
   </action>
   <action name="action_edit_prefs">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/wrench.svg</normaloff>:/icon/open_iconic/wrench.svg</iconset>
+   </property>
    <property name="text">
     <string>Pr&amp;eferences...</string>
    </property>
@@ -3899,9 +3903,6 @@
    <property name="text">
     <string>Run Seed</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+M</string>
-   </property>
    <property name="menuRole">
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
@@ -3917,9 +3918,6 @@
    <property name="text">
     <string>Run Sim</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+R</string>
-   </property>
    <property name="menuRole">
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
@@ -3931,9 +3929,6 @@
    </property>
    <property name="text">
     <string>Stop Phase</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+C</string>
    </property>
    <property name="menuRole">
     <enum>QAction::ApplicationSpecificRole</enum>
@@ -3953,6 +3948,10 @@
    </property>
   </action>
   <action name="action_undo">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/action-undo.svg</normaloff>:/icon/open_iconic/action-undo.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Undo</string>
    </property>
@@ -3961,6 +3960,10 @@
    </property>
   </action>
   <action name="action_redo">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/action-redo.svg</normaloff>:/icon/open_iconic/action-redo.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Redo</string>
    </property>

@@ -21,6 +21,7 @@ submodule has locally created and cached that module for the current user.
 # subpackage to be imported directly. Attributes are *NOT* importable from this
 # subpackage, contrary to pure-Python expectation.
 from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
 from betsee import metadata
 from betsee.lib.pyside import psderr, psdui
 
@@ -184,7 +185,18 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         Customize all QAction widgets of the top-level ``Edit`` menu.
         '''
 
-        pass
+        #FIXME: Submit an upstream issue report. This is terrible.
+
+        # Reassign all actions with corresponding SVG icons these icons. While
+        # "pyside2uic" technically already does so, it does so erroneously.
+        # "pyside2uic" converts SVG to raster icons in-memory. Since Qt wisely
+        # refuses to scale raster icons up, small SVG icons (e.g., Open Iconic,
+        # which are designed to be legible at and hence default to 8 pixels) are
+        # effectively frozen to their default sizes. Since this results in
+        # illegible icons, all actions having such icons *MUST* be manually
+        # reassigned these icons.
+        self.action_undo.setIcon(QIcon('://icon/open_iconic/action-undo.svg'))
+        self.action_redo.setIcon(QIcon('://icon/open_iconic/action-redo.svg'))
 
 
     def _init_actions_help(self) -> None:
