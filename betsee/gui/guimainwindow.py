@@ -23,7 +23,8 @@ submodule has locally created and cached that module for the current user.
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 from betsee import metadata
-from betsee.lib.pyside import psderr, psdui
+from betsee.util.io import psderr
+from betsee.util.path import psdui
 
 # ....................{ GLOBALS                            }....................
 MAIN_WINDOW_BASE_CLASSES = psdui.get_ui_module_base_classes(
@@ -34,6 +35,8 @@ fully-qualified name is given by :attr:`metadata.MAIN_WINDOW_UI_MODULE_NAME`.
 '''
 
 # ....................{ CLASSES                            }....................
+#FIXME: Rename to "QBetseeMainWindow" for disambiguity.
+
 # Subclass all main window base classes declared by the above module (in order).
 # While multiple inheritance typically invites complex complications (e.g.,
 # diamond inheritance problem) and hence is best discouraged, these base classes

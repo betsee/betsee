@@ -123,8 +123,7 @@ def init() -> None:
     # For each minor version of Python 3.x supported by this application,
     # formally classify this version as such.
     for python_version_minor in range(
-        metadata.PYTHON_VERSION_MIN_PARTS[1],
-        _PYTHON_VERSION_MINOR_MAX + 1):
+        metadata.PYTHON_VERSION_MIN_PARTS[1], _PYTHON_VERSION_MINOR_MAX + 1):
         _CLASSIFIERS.append(
             'Programming Language :: Python :: {}.{}'.format(
                 PYTHON_VERSION_MAJOR, python_version_minor,))
@@ -171,8 +170,27 @@ setup_options = {
     'license': metadata.LICENSE,
 
     # ..................{ DEPENDENCIES                       }..................
-    # Mandatory nuntime dependencies.
-    'install_requires': metadata.DEPENDENCIES_RUNTIME_MANDATORY,
+    # Mandatory nuntime dependencies, ignoring all dependencies whose
+    # fully-qualified names are prefixed by "PySide2.". These dependencies
+    # signify optional PySide2 components required by this application but
+    # unavailable on PyPI. Including these dependencies erroneously halts
+    # setuptools-based installation for several minutes with output resembling:
+    #
+    #    Searching for PySide2.QtSvg
+    #    Reading https://pypi.python.org/simple/PySide2.QtSvg/
+    #    Couldn't find index page for 'PySide2.QtSvg' (maybe misspelled?)
+    #    Scanning index of all packages (this may take a while)
+    #    Reading https://pypi.python.org/simple/
+    'install_requires': {
+        dependency_name: dependency_constraints
+        for dependency_name, dependency_constraints in
+            metadata.DEPENDENCIES_RUNTIME_MANDATORY.items()
+        #FIXME: Uncomment the following line and remove the line that follows
+        #that *AFTER* "PySide2" and "pyside2-tools" become available on PyPI.
+        #Ideally, only "PySide2."-prefixed components should be ignored.
+        # if not dependency_name.startswith('PySide2.')
+        if not dependency_name.startswith(('PySide2', 'pyside2'))
+    },
 
     #FIXME: Uncomment the following block *BEFORE* submitting the initial
     #version of this application to PyPI. For laziness, this block has been

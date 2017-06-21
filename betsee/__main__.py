@@ -146,7 +146,7 @@ def _show_betse_exception(exception: BetseeException) -> int:
     # Additionally attempt to...
     try:
         # Import PySide2.
-        from betsee.lib.pyside import psderr
+        from betsee.util.io import psderr
 
         # Display a PySide2-based message box displaying this exception.
         psderr.show_exception(exception)

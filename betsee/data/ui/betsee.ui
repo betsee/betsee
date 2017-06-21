@@ -3696,11 +3696,20 @@
       <property name="lineWidth">
        <number>2</number>
       </property>
+      <property name="undoRedoEnabled">
+       <bool>false</bool>
+      </property>
+      <property name="lineWrapMode">
+       <enum>QPlainTextEdit::NoWrap</enum>
+      </property>
       <property name="readOnly">
        <bool>true</bool>
       </property>
       <property name="plainText">
-       <string/>
+       <string notr="true"/>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
       </property>
       <property name="backgroundVisible">
        <bool>false</bool>
@@ -3715,7 +3724,7 @@
      <x>0</x>
      <y>0</y>
      <width>1628</width>
-     <height>23</height>
+     <height>27</height>
     </rect>
    </property>
    <property name="sizePolicy">

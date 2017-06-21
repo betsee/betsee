@@ -96,7 +96,7 @@ def show_exception(exception: Exception) -> None:
 
     # Implicitly create the root Qt widget containing the message box to be
     # subsequently displayed, if needed.
-    from betsee.lib.pyside import psdapp
+    from betsee.util import psdapp
     if False: psdapp  # squelch IDE warnings
 
     # If this is an application exception annotated with human-readable metadata

@@ -20,7 +20,7 @@ from betse.util.py import pys
 from betse.util.type import modules
 from betse.util.type.types import type_check, IterableTypes
 from betsee import pathtree
-from betsee.lib.pyside import psdqrc, psdui
+from betsee.util.path import psdqrc, psdui
 
 # ....................{ CACHERS ~ public                   }....................
 def cache_py_files() -> None:

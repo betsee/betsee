@@ -14,7 +14,7 @@ Root-level classes defining this application's graphical user interface (GUI).
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
 from betsee.gui import guicache
-from betsee.lib.pyside.psdapp import APP_WIDGET
+from betsee.util.psdapp import APP_WIDGET
 
 # ....................{ CLASSES                            }....................
 class BetseeGUI(object):

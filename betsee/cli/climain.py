@@ -78,7 +78,7 @@ class BetseeCLI(CLIABC):
         # Additionally attempt to...
         try:
             # Import PySide2.
-            from betsee.lib.pyside import psderr
+            from betsee.util.io import psderr
 
             # Display a PySide2-based message box displaying this exception.
             psderr.show_exception(exception)
@@ -87,6 +87,7 @@ class BetseeCLI(CLIABC):
         # exception. Why? Because we have more significant fish to fry.
         except ImportError as import_error:
             logs.log_error(str(import_error))
+
 
     def _do(self) -> object:
         '''

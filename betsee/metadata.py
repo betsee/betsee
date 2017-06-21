@@ -260,13 +260,13 @@ in which case the caller is assumed to safely generate this module before its
 first importation.
 '''
 
-# ....................{ METADATA ~ libs : runtime          }....................
+# ....................{ METADATA ~ libs                    }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: Changes to this subsection *MUST* be synchronized with:
 # * Front-facing documentation (e.g., "doc/md/INSTALL.md").
-# * The "betse.util.py.modules.SETUPTOOLS_TO_MODULE_NAME" dictionary, converting
-#   between the setuptools-specific names listed below and the Python-specific
-#   module names imported by this application.
+# * The "betse.util.type.modules.DISTUTILS_PROJECT_NAME_TO_MODULE_NAME"
+#   dictionary, converting between the setuptools-specific names listed below
+#   and the Python-specific module names imported by this application.
 # * Gitlab-CI configuration (e.g., the top-level "requirements-conda.txt" file).
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -282,6 +282,32 @@ this submodule, this minimum version is specified as an independent global --
 simplifying inspection and validation of this version elsewhere (e.g., in the
 :func:`betsee.__main__.die_unless_betse` function).
 '''
+
+
+# DEPENDENCIES_RUNTIME_MANDATORY_VERSIONED = {
+#     # Versioned dependencies directly required by this application.
+#     'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
+#     'PySide2': '>= 2.0.0~alpha0',
+# }
+# '''
+# Dictionary mapping from the :mod:`setuptools`-specific project name of each
+# mandatory runtime dependency of this application that is versioned (i.e.,
+# mandatory runtime dependency whose top-level module declares a PEP 8-compliant
+# ``__version__`` attribute) to the suffix of a :mod:`setuptools`-specific
+# requirements string constraining this dependency.
+#
+# This dictionary is intentionally isolated from the
+# :data:`DEPENDENCIES_RUNTIME_MANDATORY` dictionary, which also contains
+# unversioned mandatory runtime dependencies. Since :mod:`setuptools` requires all
+# dependencies,
+#
+# See Also
+# ----------
+# :data:`betse.metadata.DEPENDENCIES_RUNTIME_MANDATORY`
+#     Further details on dictionary structure.
+# :download:`/doc/rst/INSTALL.rst`
+#     Human-readable list of these dependencies.
+# '''
 
 
 DEPENDENCIES_RUNTIME_MANDATORY = {
@@ -314,12 +340,12 @@ DEPENDENCIES_RUNTIME_MANDATORY = {
     # the modules providing these dependencies define no PEP-8-compliant
     # "__version__" or "__version_info__" attributes. merely validating these
     # modules to be importable is the most we can do.
-    'PySide2.QtSvg': None,
+    'PySide2.QtSvg': '',
 
     #FIXME: Add a minimum required version *AFTER* upstream resolves the
     #following open issue:
     #    https://bugreports.qt.io/browse/PYSIDE-517
-    'pyside2uic': None,
+    'pyside2uic': '',
 }
 '''
 Dictionary mapping from the :mod:`setuptools`-specific project name of each
@@ -334,14 +360,9 @@ See Also
     Human-readable list of these dependencies.
 '''
 
+# DEPENDENCIES_RUNTIME_MANDATORY.update(DEPENDENCIES_RUNTIME_MANDATORY_VERSIONED)
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# WARNING: Changes to this dictionary *MUST* be synchronized with:
-# * Front-facing documentation (e.g., "doc/md/INSTALL.md").
-# * The "betse.util.py.modules.SETUPTOOLS_TO_MODULE_NAME" dictionary. See above.
-# * Gitlab-CI configuration (e.g., the top-level "requirements-conda.txt" file).
-# * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 DEPENDENCIES_RUNTIME_OPTIONAL = {
     # To simplify subsequent lookup at runtime, project names for optional
     # dependencies should be *STRICTLY LOWERCASE*. Since setuptools parses
@@ -360,14 +381,7 @@ See Also
     Human-readable list of these dependencies.
 '''
 
-# ....................{ METADATA ~ libs : testing          }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# WARNING: Changes to this dictionary *MUST* be synchronized with:
-# * Front-facing documentation (e.g., the top-level "README.rst").
-# * The "betse.util.py.modules.SETUPTOOLS_TO_MODULE_NAME" dictionary. See above.
-# * Gitlab-CI configuration (e.g., the top-level "requirements-conda.txt" file).
-# * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 DEPENDENCIES_TESTING_MANDATORY = {
     # For simplicity, py.test should remain the only hard dependency for testing
     # on local machines. While our setuptools-driven testing regime optionally
