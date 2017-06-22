@@ -86,13 +86,13 @@ def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
     '''
 
     #FIXME: Excise after resolving our pending signals and slots issue.
-    return
+    # return
 
     #FIXME: Excise after uncommenting the corresponding line in the
     #QBetseePlainTextEdit.__init__() method.
 
     # Connect the text appending signal to the corresponding slot.
-    text_edit.append_text_signal.connect(text_edit.append_text)
+    # text_edit.append_text_signal.connect(text_edit.append_text)
 
     # Global logging configuration.
     log_config = logconfig.get()
@@ -111,3 +111,21 @@ def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
 
     # Register this handler with the root logger.
     log_config.logger_root.addHandler(logger_root_handler_signal)
+
+    #FIXME: Generalize the existing BetseeCLI._show_header() method to be
+    #reusable here, presumably by extracting that method into a public function.
+    from betse import metadata as betse_metadata
+    from betse.util.io.log import logs
+    from betsee import metadata as betsee_metadata
+    logs.log_info(
+        'Welcome to <<'
+        '{betsee_name} {betsee_version} | '
+        '{betse_name} {betse_version} | '
+        '{betse_codename}'
+        '>>.'.format(
+            betsee_name=betsee_metadata.NAME,
+            betsee_version=betsee_metadata.VERSION,
+            betse_name=betse_metadata.NAME,
+            betse_version=betse_metadata.VERSION,
+            betse_codename=betse_metadata.CODENAME,
+        ))

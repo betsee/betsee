@@ -8,9 +8,8 @@ Low-level :mod:`PySide2`-specific string facilities.
 '''
 
 # ....................{ IMPORTS                            }....................
+from PySide2.QtCore import Signal, Slot
 from PySide2.QtWidgets import QPlainTextEdit
-from PySide.QtCore import Signal, Slot
-# from PySide import QtCore
 
 # ....................{ CLASSES                            }....................
 class QBetseePlainTextEdit(QPlainTextEdit):
@@ -36,7 +35,7 @@ class QBetseePlainTextEdit(QPlainTextEdit):
 
         #FIXME: Uncomment after this issue is resolved.
         # Connect the text appending signal to the corresponding slot.
-        # self.append_text_signal.connect(self.append_text)
+        self.append_text_signal.connect(self.append_text)
 
     # ..................{ SIGNALS                            }..................
     append_text_signal = Signal(str)
