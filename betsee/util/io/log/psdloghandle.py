@@ -9,8 +9,8 @@ Low-level :mod:`PySide2`-specific logging handler subclasses.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import Signal
-from betse.util.type import type_check
-from logging.handlers import Handler
+from betse.util.type.types import type_check
+from logging import Handler
 
 # ....................{ CLASSES                            }....................
 #FIXME: Post as an answer to the following StackOverflow question:

@@ -10,6 +10,7 @@ Low-level :mod:`PySide2`-specific string facilities.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtWidgets import QPlainTextEdit
 from PySide.QtCore import Signal, Slot
+# from PySide import QtCore
 
 # ....................{ CLASSES                            }....................
 class QBetseePlainTextEdit(QPlainTextEdit):
@@ -33,11 +34,13 @@ class QBetseePlainTextEdit(QPlainTextEdit):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
+        #FIXME: Uncomment after this issue is resolved.
         # Connect the text appending signal to the corresponding slot.
-        self.append_text_signal.connect(self.append_text)
+        # self.append_text_signal.connect(self.append_text)
 
     # ..................{ SIGNALS                            }..................
     append_text_signal = Signal(str)
+    # append_text_signal = QtCore.Signal(str)
     '''
     Signal accepting a single string, connected to a slot of the same widget at
     widget initialization time to intelligently append this string to this

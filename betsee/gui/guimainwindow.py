@@ -24,6 +24,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
 from betsee import metadata
 from betsee.util.io import psderr
+from betsee.util.io.log import psdlogconfig
 from betsee.util.path import psdui
 
 # ....................{ GLOBALS                            }....................
@@ -101,8 +102,11 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Customize all direct properties of this main window.
         self._init_properties()
 
-        # Customize all QAction widgets of this main window.
+        # Customize all abstract QAction widgets of this main window.
         self._init_actions()
+
+        # Customize all physical top-level widgets of this main window.
+        self._init_widgets()
 
         # Finalize the contents of this window *AFTER* customizing this content.
         self.show()
@@ -138,8 +142,9 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     # ..................{ INITIALIZERS ~ actions             }..................
     def _init_actions(self) -> None:
         '''
-        Customize all QAction widgets of this main window, typically by
-        associating the slots of these widgets with Python signals.
+        Customize all abstract :class:`QAction` widgets of this main window,
+        typically by associating the predefined C-based signals of these widgets
+        with custom pure-Python slot callables.
         '''
 
         # Customize all QAction widgets in the "File", "Edit", and "Help" menus.
@@ -189,6 +194,20 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         #FIXME: Submit an upstream issue report. This is terrible.
+        #FIXME: Actually, this is a *HIGHLY* suboptimal approach. Rather than
+        #manually reinstantiating all icons (which is absolutely abysmal), the
+        #"guicache" submodule should instead perform a simple sed-style
+        #global-search-and-replacement after the cached "betse_ui" submodule is
+        #produced, reducing each line resembling:
+        #
+        #    # This...
+        #    icon20.addPixmap(QtGui.QPixmap("://icon/open_iconic/download.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        #
+        #    # ... to this.
+        #    icon20.addPixmap("://icon/open_iconic/download.svg", QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        #
+        #Reasonably simple, yes? Certainly, doing so is ultimately simpler than
+        #attempting to manually do so in this submodule.
 
         # Reassign all actions with corresponding SVG icons these icons. While
         # "pyside2uic" technically already does so, it does so erroneously.
@@ -208,6 +227,17 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         pass
+
+    # ..................{ INITIALIZERS ~ actions             }..................
+    def _init_widgets(self) -> None:
+        '''
+        Customize all physical top-level widgets of this main window, thus
+        excluding all abstract widgets (e.g., :class:`QAction`).
+        '''
+
+        # Append all unfiltered log records to the top-level log widget in an
+        # autoscrolling, non-blocking, thread-safe manner.
+        psdlogconfig.log_to_text_edit(self.log_box)
 
     # ..................{ INITIALIZERS                       }..................
     def _show_error_action_unimplemented(self) -> None:

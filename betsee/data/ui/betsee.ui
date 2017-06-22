@@ -3668,7 +3668,7 @@
      </widget>
     </item>
     <item row="2" column="0" colspan="2">
-     <widget class="QPlainTextEdit" name="log_box">
+     <widget class="QBetseePlainTextEdit" name="log_box">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>1</horstretch>
@@ -4011,6 +4011,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QBetseePlainTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>betsee/util/type/psdstr.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../qrc/betsee.qrc"/>
  </resources>

@@ -15,6 +15,7 @@ Low-level :mod:`PySide2`-specific logging configuration.
 from betse.util.io.log import logconfig
 from betse.util.io.log.logenum import LogLevel
 from betse.util.io.log.logfilter import LogFilterThirdPartyDebug
+from betse.util.type.types import type_check
 from betsee.util.io.log.psdloghandle import LogHandlerSignal
 from betsee.util.type.psdstr import QBetseePlainTextEdit
 
@@ -61,7 +62,8 @@ from betsee.util.type.psdstr import QBetseePlainTextEdit
 #To actually use this custom class in Qt Creator, see the following insanity:
 #    https://stackoverflow.com/a/19622817/2809027
 
-def init(text_edit: QBetseePlainTextEdit) -> None:
+@type_check
+def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
     '''
     Append all unfiltered log records to the passed text widget in an
     autoscrolling, non-blocking, thread-safe manner.
@@ -82,6 +84,15 @@ def init(text_edit: QBetseePlainTextEdit) -> None:
     text_edit : QBetseePlainTextEdit
         Text widget to append relevant log records to.
     '''
+
+    #FIXME: Excise after resolving our pending signals and slots issue.
+    return
+
+    #FIXME: Excise after uncommenting the corresponding line in the
+    #QBetseePlainTextEdit.__init__() method.
+
+    # Connect the text appending signal to the corresponding slot.
+    text_edit.append_text_signal.connect(text_edit.append_text)
 
     # Global logging configuration.
     log_config = logconfig.get()
