@@ -14,7 +14,7 @@ from PySide2 import QtWidgets
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
-from betse.util.type import modules, types
+from betse.util.type import modules, regexes, types
 from betse.util.type.types import type_check, SequenceTypes
 from betsee import metadata
 from betsee.exceptions import BetseeCacheException
@@ -189,7 +189,7 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
 
     # File-like string buffer containing the Python code converted from this
     # file to be subsequently evaluated.
-    ui_code_str = StringIO()
+    ui_code_str_buffer = StringIO()
 
     # Dictionary of high-level metadata describing the high-level types produced
     # by converting this file into this string buffer, containing the following
@@ -224,7 +224,7 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
     # ever call it.
     ui_code_metadata = UICompiler().compileUi(
         input_stream=ui_filename,
-        output_stream=ui_code_str,
+        output_stream=ui_code_str_buffer,
 
         # Force all generated imports to be absolute rather than relative.
         from_imports=False,
@@ -251,7 +251,7 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
     # class for this application *MUST* subclass (in order). In particular, note
     # that the base Qt widget class is subclassed last and thus remains the
     # "parent" base class of this multiple inheritance.
-    ui_code_str.write('''
+    ui_code_str_buffer.write('''
 from PySide2.QtWidgets import {base_class}
 {var_name} = ({form_class}, {base_class})
 '''.format(
@@ -259,9 +259,55 @@ from PySide2.QtWidgets import {base_class}
     form_class=ui_form_class_name,
     base_class=ui_base_class_name,))
 
-    # Overwrite this output module with the contents of this string buffer.
-    iofiles.write_file_to_filename(
-        input_file=ui_code_str,
+    # Python code converted from this file to be subsequently evaluated.
+    ui_code_str = ui_code_str_buffer.getvalue()
+
+    #FIXME: Consider filing an upstream PySide2 issue documenting this, ideally
+    #with a minimal UI file as an example.
+
+    # Globally replace all lines of this code reducing vector SVG icons to
+    # non-vector in-memory pixmaps with lines preserving these icons as is. This
+    # reduction has a variety of harmful side effects, including:
+    #
+    # * Preventing these icons from being upscaled. Qt unconditionally refuses
+    #   to upscale in-memory pixmaps, which are of finite resolution and hence
+    #   *NOT* upscalable without introducing spurious artifacts. Vector images
+    #   are of infinite resolution and hence suffer no such issues. SVG icons
+    #   should thus be upscalable, but (due to this reduction) are *NOT*. This
+    #   issue is exacerbated by modern high-DPI displays and SVG icons
+    #   rasterized at inappropriately small scale, rendering such icons
+    #   effectively illegible.
+    # * Pixellating these icons, even when rasterized at appropriate scale.
+    #
+    # For example, the QIcon created from a "lock_fill.svg" icon is as follows:
+    #
+    #     icon = QtGui.QIcon()
+    #     icon.addPixmap(QtGui.QPixmap("://icon/open_iconic/lock_fill.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    #
+    # This QIcon should instead be created as:
+    #
+    #    # Note the need to pass an additional size, which remains unconstrained
+    #    # due to the infinitely rescalable nature of vector icons.
+    #    icon = QtGui.QIcon()
+    #    icon.addFile("://icon/open_iconic/lock_fill.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    #
+    # Indeed, there no longer appears to be any benefit to *EVER* calling the
+    # icon.addPixmap() versus icon.addFile() method. The latter suffices for all
+    # filetypes and is thus always preferable -- regardless of filetype.
+    ui_code_str = regexes.replace_substrs_line(
+        text=ui_code_str,
+        regex=(
+            r'^(\s*icon\d*\.add)'
+            r'Pixmap\(QtGui\.QPixmap\('
+            r'("[^"]+\.svg")'
+            r'\)(.*)$'
+        ),
+        replacement=r'\1File(\2, QtCore.QSize()\3',
+    )
+
+    # Write this Python code to the file implementing this output module.
+    iofiles.write_str_to_filename(
+        text=ui_code_str,
         output_filename=py_filename,
         is_overwritable=True,
     )

@@ -204,7 +204,7 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         #    icon20.addPixmap(QtGui.QPixmap("://icon/open_iconic/download.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         #
         #    # ... to this.
-        #    icon20.addPixmap("://icon/open_iconic/download.svg", QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        #    icon20.addFile("://icon/open_iconic/download.svg", QtGui.QIcon.Normal, QtGui.QIcon.Off)
         #
         #Reasonably simple, yes? Certainly, doing so is ultimately simpler than
         #attempting to manually do so in this submodule.
@@ -217,8 +217,8 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # effectively frozen to their default sizes. Since this results in
         # illegible icons, all actions having such icons *MUST* be manually
         # reassigned these icons.
-        self.action_undo.setIcon(QIcon('://icon/open_iconic/action-undo.svg'))
-        self.action_redo.setIcon(QIcon('://icon/open_iconic/action-redo.svg'))
+        # self.action_undo.setIcon(QIcon('://icon/open_iconic/action-undo.svg'))
+        # self.action_redo.setIcon(QIcon('://icon/open_iconic/action-redo.svg'))
 
 
     def _init_actions_help(self) -> None:

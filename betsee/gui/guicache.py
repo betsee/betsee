@@ -71,6 +71,8 @@ def _cache_py_qrc_file() -> None:
     # ...is older than this output module, recreate this output module from
     # these input paths.
     if _is_output_path_outdated(
+        # For efficiency, these paths are ordered according to the heuristic
+        # discussed by the paths.is_mtime_recursive_older_than_paths() function.
         input_pathnames=(
             cmdpath.get_filename('pyside2-rcc'),
             pathtree.get_data_qrc_dirname(),
@@ -96,18 +98,23 @@ def _cache_py_ui_file() -> None:
 
     # If either:
     #
+    # * This input UI file.
+    # * The file providing the submodule of this application converting this UI
+    #   file into a Python module.
     # * Any file or subdirectory in the input directories containing the
     #   "PySide2" and "pyside2uic" packages required by the
     #   psdui.convert_ui_to_py_file() function called below.
-    # * This input UI file.
     #
     # ...is older than this output module, recreate this output module from
     # these input paths.
     if _is_output_path_outdated(
+        # For efficiency, these paths are ordered according to the heuristic
+        # discussed by the paths.is_mtime_recursive_older_than_paths() function.
         input_pathnames=(
-            modules.get_dirname(PySide2),
-            modules.get_dirname(pyside2uic),
             pathtree.get_data_ui_filename(),
+            modules.get_filename(psdui),
+            modules.get_dirname(pyside2uic),
+            modules.get_dirname(PySide2),
         ),
         output_filename=pathtree.get_dot_py_ui_filename(),
     ):
@@ -129,9 +136,11 @@ def _is_output_path_outdated(
 
     Parameters
     ----------
-    input_pathnames: IterableTypes
-        Absolute or relative pathnames of all input paths required to (re)create
-        this output path.
+    input_pathnames: IterableTypes[str]
+        Iterable of the absolute or relative pathnames of all input paths
+        required to (re)create this output path. For efficiency, these paths
+        should be ordered according to the heuristic discussed by the
+        :func:`paths.is_mtime_recursive_older_than_paths` function.
     output_filename : str
         Absolute or relative pathname of the output path.
     '''
@@ -143,12 +152,12 @@ def _is_output_path_outdated(
 
     # Return true only if either...
     return (
-        # This output module does *NOT* exist or...
+        # This output module does not exist *OR*...
         not paths.is_path(output_filename) or
         # This output module does exist but is older than at least one of these
-        # output paths or...
-        paths.get_mtime(output_filename) <
-        paths.get_mtime_newest(input_pathnames) or
+        # output paths *OR*...
+        paths.is_mtime_recursive_older_than_paths(
+            output_filename, input_pathnames) or
         # This output module is a zero-byte file.
         files.get_size(output_filename) == 0
     )
