@@ -3,6 +3,7 @@
         <file>icon/betsee/advanced.svg</file>
         <file>icon/betsee/chemical.svg</file>
         <file>icon/betsee/dna.svg</file>
+        <file>icon/betsee/document_open.svg</file>
         <file>icon/betsee/lineplot.svg</file>
         <file>icon/betsee/planet.svg</file>
         <file>icon/open_iconic/action-redo.svg</file>
@@ -12,9 +13,9 @@
         <file>icon/open_iconic/bolt.svg</file>
         <file>icon/open_iconic/clock.svg</file>
         <file>icon/open_iconic/cog.svg</file>
-        <file>icon/open_iconic/document_alt_stroke.svg</file>
-        <file>icon/open_iconic/download.svg</file>
+        <file>icon/open_iconic/document.svg</file>
         <file>icon/open_iconic/eyedropper.svg</file>
+        <file>icon/open_iconic/file.svg</file>
         <file>icon/open_iconic/folder_fill.svg</file>
         <file>icon/open_iconic/image.svg</file>
         <file>icon/open_iconic/list.svg</file>
@@ -22,7 +23,6 @@
         <file>icon/open_iconic/movie.svg</file>
         <file>icon/open_iconic/play_alt.svg</file>
         <file>icon/open_iconic/share.svg</file>
-        <file>icon/open_iconic/upload.svg</file>
         <file>icon/open_iconic/wrench.svg</file>
         <file>icon/open_iconic/x_alt.svg</file>
     </qresource>

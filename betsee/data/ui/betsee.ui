@@ -3783,8 +3783,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_open_sim"/>
    <addaction name="action_new_sim"/>
+   <addaction name="action_open_sim"/>
    <addaction name="action_save_sim"/>
    <addaction name="action_start_phase_seed"/>
    <addaction name="action_start_phase_sim"/>
@@ -3800,8 +3800,8 @@
   </widget>
   <action name="action_open_sim">
    <property name="icon">
-    <iconset>
-     <normaloff>://icon/open_iconic/download.svg</normaloff>://icon/open_iconic/download.svg</iconset>
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/betsee/document_open.svg</normaloff>:/icon/betsee/document_open.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Open Simulation...</string>
@@ -3838,8 +3838,8 @@
   </action>
   <action name="action_save_sim">
    <property name="icon">
-    <iconset>
-     <normaloff>://icon/open_iconic/upload.svg</normaloff>://icon/open_iconic/upload.svg</iconset>
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/document.svg</normaloff>:/icon/open_iconic/document.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Save Simulation</string>
@@ -3885,8 +3885,8 @@
   </action>
   <action name="action_new_sim">
    <property name="icon">
-    <iconset>
-     <normaloff>://icon/open_iconic/document_alt_stroke.svg</normaloff>://icon/open_iconic/document_alt_stroke.svg</iconset>
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/file.svg</normaloff>:/icon/open_iconic/file.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;New Simulation...</string>
