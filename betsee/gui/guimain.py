@@ -14,7 +14,11 @@ Root-level classes defining this application's graphical user interface (GUI).
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
 from betsee.gui import guicache
-from betsee.util.psdapp import APP_WIDGET
+
+# Importing from this submodule has a substantial side effect: specifically, the
+# the "QApplication" singleton is instantiated and assigned to this module
+# global. All subsequent logic may safely assume this singleton to exist.
+from betsee.util.psdapp import APP_GUI
 
 # ....................{ CLASSES                            }....................
 class BetseeGUI(object):
@@ -37,7 +41,7 @@ class BetseeGUI(object):
         # Generate all modules required at runtime by this GUI.
         guicache.cache_py_files()
 
-    # ..................{ SHOWERS                            }..................
+    # ..................{ RUNNERS                            }..................
     def run(self) -> int:
         '''
         Run this GUI's main event loop and display this GUI.
@@ -69,4 +73,4 @@ class BetseeGUI(object):
 
         # Run this GUI's event loop and propagate the resulting exit status to
         # our caller. This displays this window and thus all of this GUI.
-        return APP_WIDGET.exec_()
+        return APP_GUI.exec_()
