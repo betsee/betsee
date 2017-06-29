@@ -57,13 +57,13 @@ def _init() -> None:
 
     # Set static attributes of the "QApplication" class *BEFORE* defining the
     # singleton instance of this class.
-    _init_attrs()
+    _init_qt()
 
-    # Define the singleton instance of this class.
-    _init_globals()
+    # Instantiate a singleton of this class.
+    _init_app()
 
-# ....................{ INITIALIZERS : attrs               }....................
-def _init_attrs() -> None:
+# ....................{ INITIALIZERS : qt                  }....................
+def _init_qt() -> None:
     '''
     Set static attributes of the :class:`QApplication` class *before* the
     singleton instance of this class is defined.
@@ -81,10 +81,10 @@ def _init_attrs() -> None:
     '''
 
     # Initialize all application-wide dots per inch (DPI) attributes.
-    _init_attrs_dpi()
+    _init_qt_dpi()
 
 
-def _init_attrs_dpi() -> None:
+def _init_qt_dpi() -> None:
     '''
     Set static attributes of the :class:`QApplication` class pertaining to dots
     per inch (DPI) and, specifically, high-DPI displays.
@@ -123,13 +123,16 @@ def _init_attrs_dpi() -> None:
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 # ....................{ INITIALIZERS : globals             }....................
-def _init_globals() -> None:
+def _init_app() -> None:
     '''
-    Define the singleton instance of this class.
+    Instantiate the :class:`QApplication` singleton for this application.
     '''
 
     # Permit the following globals to be redefined.
     global APP_GUI
+
+    # Log this instantiation.
+    logging.debug('Instantiating application singleton...')
 
     # For safety, initialize this application with *NO* command-line arguments
     # regardless of whether the current CLI was passed arguments. The subset of
