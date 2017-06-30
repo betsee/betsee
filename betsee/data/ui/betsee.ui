@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1628</width>
-    <height>1233</height>
+    <width>1630</width>
+    <height>1274</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -15,6 +15,12 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -33,8 +39,8 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="2" rowspan="3">
-     <widget class="QTabWidget" name="phase_tabs">
+    <item row="0" column="2" rowspan="2">
+     <widget class="QTabWidget" name="sim_phase_tabs">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>3</horstretch>
@@ -824,8 +830,8 @@
       </widget>
      </widget>
     </item>
-    <item row="0" column="1" rowspan="2">
-     <widget class="QStackedWidget" name="conf_forms">
+    <item row="0" column="1">
+     <widget class="QStackedWidget" name="sim_conf_stack">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>2</horstretch>
@@ -2973,7 +2979,7 @@
               <enum>Qt::Vertical</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Maximum</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -3183,13 +3189,23 @@
          <rect>
           <x>50</x>
           <y>70</y>
-          <width>191</width>
-          <height>80</height>
+          <width>461</width>
+          <height>161</height>
          </rect>
         </property>
         <property name="title">
          <string>Channel (Network)</string>
         </property>
+        <widget class="QLineEdit" name="lineEdit_chanNetName">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>60</y>
+           <width>113</width>
+           <height>31</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
        <widget class="QLabel" name="label_69">
         <property name="geometry">
@@ -3204,466 +3220,471 @@
          <string>Name:</string>
         </property>
        </widget>
-       <widget class="QLineEdit" name="lineEdit_chanNetName">
-        <property name="geometry">
-         <rect>
-          <x>130</x>
-          <y>140</y>
-          <width>113</width>
-          <height>31</height>
-         </rect>
-        </property>
-       </widget>
       </widget>
       <widget class="QWidget" name="page_5">
-       <widget class="QGroupBox" name="groupBox_10">
-        <property name="geometry">
-         <rect>
-          <x>50</x>
-          <y>90</y>
-          <width>310</width>
-          <height>141</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>Modulator</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_19">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLineEdit" name="lineEdit_modName"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_68">
-           <property name="text">
-            <string>Name:</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout_17">
+        <item row="0" column="0">
+         <spacer name="verticalSpacer_36">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Maximum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="0">
+         <widget class="QGroupBox" name="groupBox_10">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="title">
+           <string>Modulator</string>
+          </property>
+          <layout class="QFormLayout" name="formLayout_15">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_68">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Name:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_modName"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
-    <item row="0" column="0" rowspan="2">
-     <widget class="QTreeWidget" name="conf_tree">
+    <item row="0" column="0">
+     <widget class="QFrame" name="sim_conf_tree_frame">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>1</horstretch>
-        <verstretch>1</verstretch>
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="maximumSize">
+      <property name="minimumSize">
        <size>
-        <width>225</width>
-        <height>16777215</height>
+        <width>0</width>
+        <height>0</height>
        </size>
       </property>
-      <property name="indentation">
-       <number>10</number>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
       </property>
-      <property name="rootIsDecorated">
-       <bool>true</bool>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
       </property>
-      <property name="uniformRowHeights">
-       <bool>false</bool>
-      </property>
-      <property name="itemsExpandable">
-       <bool>true</bool>
-      </property>
-      <column>
-       <property name="text">
-        <string>Simulation Properties</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-      </column>
-      <item>
-       <property name="text">
-        <string>File Management</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Time Settings</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>General Options</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Cluster Options</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tissue Profiles</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
+      <layout class="QVBoxLayout" name="verticalLayout_21">
+       <property name="spacing">
+        <number>0</number>
        </property>
        <item>
-        <property name="text">
-         <string>+Add Profile</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Channels</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Channel</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Interventions</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Intervention</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Junctions</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Networks</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>Substances</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Substance</string>
+        <widget class="QTreeWidget" name="sim_conf_tree">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
          </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Reactions</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Reaction</string>
+         <property name="maximumSize">
+          <size>
+           <width>225</width>
+           <height>16777215</height>
+          </size>
          </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Transporters</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Transporter</string>
+         <property name="indentation">
+          <number>30</number>
          </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Channels</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Channel (Network)</string>
+         <property name="rootIsDecorated">
+          <bool>true</bool>
          </property>
-        </item>
-       </item>
-       <item>
-        <property name="text">
-         <string>Modulators</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>+Add Modulator</string>
+         <property name="uniformRowHeights">
+          <bool>false</bool>
          </property>
-        </item>
+         <property name="itemsExpandable">
+          <bool>true</bool>
+         </property>
+         <column>
+          <property name="text">
+           <string>Simulation Properties</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </column>
+         <item>
+          <property name="text">
+           <string>File Management</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Time Settings</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>General Options</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Cluster Options</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tissue Profiles</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Channels</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Interventions</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Junctions</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Networks</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
+          </property>
+          <item>
+           <property name="text">
+            <string>Substances</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Reactions</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Transporters</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Channels</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Modulators</string>
+           </property>
+          </item>
+         </item>
+         <item>
+          <property name="text">
+           <string>Extra Physics</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tools</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Advanced</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Results Settings</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Raw Data Export</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Line Plots</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2D Plots</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Animations</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
+          </property>
+         </item>
+        </widget>
        </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Extra Physics</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tools</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Advanced</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Results Settings</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>Raw Data Export</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
-       </property>
        <item>
-        <property name="text">
-         <string>+Add CSV Export</string>
-        </property>
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_20">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolBar" name="sim_conf_tree_toolbar">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+            <addaction name="action_sim_conf_tree_item_append"/>
+            <addaction name="action_sim_conf_tree_item_remove"/>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Line Plots</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Line Plot</string>
-        </property>
-        <property name="background">
-         <brush brushstyle="NoBrush">
-          <color alpha="255">
-           <red>0</red>
-           <green>166</green>
-           <blue>141</blue>
-          </color>
-         </brush>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>2D Plots</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add 2D Plot</string>
-        </property>
-        <property name="background">
-         <brush brushstyle="NoBrush">
-          <color alpha="255">
-           <red>0</red>
-           <green>166</green>
-           <blue>141</blue>
-          </color>
-         </brush>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Animations</string>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>14</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="icon">
-        <iconset>
-         <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
-       </property>
-       <item>
-        <property name="text">
-         <string>+Add Animation</string>
-        </property>
-       </item>
-      </item>
+      </layout>
      </widget>
     </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="QFrame" name="frame_3">
+    <item row="1" column="0" colspan="2">
+     <widget class="QFrame" name="log_frame">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -3672,7 +3693,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_20">
        <item>
-        <widget class="QLabel" name="label_73">
+        <widget class="QLabel" name="log_label">
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -3746,7 +3767,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1628</width>
+     <width>1630</width>
      <height>27</height>
     </rect>
    </property>
@@ -4037,6 +4058,30 @@
   <action name="action_close_sim">
    <property name="text">
     <string>&amp;Close Simulation</string>
+   </property>
+  </action>
+  <action name="action_sim_conf_tree_item_append">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/plus.svg</normaloff>:/icon/open_iconic/plus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Append</string>
+   </property>
+   <property name="toolTip">
+    <string>Append a new item to the current list.</string>
+   </property>
+  </action>
+  <action name="action_sim_conf_tree_item_remove">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/minus.svg</normaloff>:/icon/open_iconic/minus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove the current item from the current list.</string>
    </property>
   </action>
  </widget>
