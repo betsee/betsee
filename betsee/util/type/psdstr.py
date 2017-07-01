@@ -39,7 +39,6 @@ class QBetseePlainTextEdit(QPlainTextEdit):
 
     # ..................{ SIGNALS                            }..................
     append_text_signal = Signal(str)
-    # append_text_signal = QtCore.Signal(str)
     '''
     Signal accepting a single string, connected to a slot of the same widget at
     widget initialization time to intelligently append this string to this

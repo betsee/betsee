@@ -17,6 +17,13 @@ submodule has locally created and cached that module for the current user.
 '''
 
 # ....................{ IMPORTS                            }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# WARNING: To avoid circular import dependencies, avoid importing from *ANY*
+# application-specific submodules of this subpackage (i.e.,
+# "betsee.gui.widget"). Since those submodules must *ALWAYS* be able to safely
+# import from this submodule, circularities are best avoided here.
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 # Accessing attributes of the "PySide2.QtCore.Qt" subpackage requires this
 # subpackage to be imported directly. Attributes are *NOT* importable from this
 # subpackage, contrary to pure-Python expectation.
@@ -35,8 +42,6 @@ fully-qualified name is given by :attr:`metadata.MAIN_WINDOW_UI_MODULE_NAME`.
 '''
 
 # ....................{ CLASSES                            }....................
-#FIXME: Rename to "QBetseeMainWindow" for disambiguity.
-
 # Subclass all main window base classes declared by the above module (in order).
 # While multiple inheritance typically invites complex complications (e.g.,
 # diamond inheritance problem) and hence is best discouraged, these base classes
@@ -46,7 +51,7 @@ fully-qualified name is given by :attr:`metadata.MAIN_WINDOW_UI_MODULE_NAME`.
 #
 # For further details, see the following classic PyQt treatise:
 #     http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
-class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
+class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     '''
     Main window Qt widget for this application, doubling as both this
     application's root Qt widget containing all other Qt widgets.
@@ -97,6 +102,11 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         signals and slots. For portability, all other customizations should be
         implemented by this UI file.
         '''
+
+        # Append all unfiltered log records to the top-level log widget in an
+        # autoscrolling, non-blocking, thread-safe manner *BEFORE* performing
+        # any subsequent logic possibly performing logging.
+        psdlogconfig.log_to_text_edit(self.log_box)
 
         # Customize all direct properties of this main window.
         self._init_properties()
@@ -209,9 +219,8 @@ class BetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         excluding all abstract widgets (e.g., :class:`QAction`).
         '''
 
-        # Append all unfiltered log records to the top-level log widget in an
-        # autoscrolling, non-blocking, thread-safe manner.
-        psdlogconfig.log_to_text_edit(self.log_box)
+        # Initialize both the simulation configuration tree and stack widgets.
+        self.sim_conf_tree.init(self)
 
     # ..................{ INITIALIZERS                       }..................
     def _show_error_action_unimplemented(self) -> None:

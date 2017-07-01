@@ -65,7 +65,7 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
         module_name=ui_module_name,
         exception_message=(
             'Module "{}" not found (e.g., as'
-            'module "betsee.gui.guimainwindow" imported before '
+            'module "betsee.gui.widget.guimainwindow" imported before '
             'module "betsee.gui.guicache").'.format(ui_module_name)
         ))
 

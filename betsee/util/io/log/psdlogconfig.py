@@ -20,48 +20,6 @@ from betsee.util.io.log.psdloghandle import LogHandlerSignal
 from betsee.util.type.psdstr import QBetseePlainTextEdit
 
 # ....................{ INITIALIZERS                       }....................
-#FIXME: Actually call this during application ignition. For safety, this must
-#obviously be delayed until *AFTER* the main window is constructed (but ideally
-#before the main window is made visible).
-#FIXME: To do so, this function should probably accept the main window widget.
-#Or perhaps this function should accept an instance of :class:`QPlainTextEdit`
-#as its only parameter. Or... perhaps not. Instead, consider:
-#
-#* Defining a new "betsee.util.type.psdstr.QBetseePlainTextEdit" class subclassing
-#  the "PySide2.QtWidget.QPlainTextEdit" base class implementing thread-safe
-#  text appending complete with auto-scrolling, containing:
-#  * A new append_text_signal() signal class variable passed a "str".
-#  * A new append_text() slot method passed a "str", whose
-#    implementation (in order):
-#
-#    @QtCore.Slot(str)
-#    def append_text(text: str) -> None:
-#        super().appendPlainText(text)
-#        super().ensureCursorVisible()
-#  * A custom __init__() method connecting this signal to this slot.
-#* Refactor this function to accept an instance of the
-#  "betsee.util.type.str.QBetseePlainTextEdit" class, which our main window
-#  widget should pass to this function.
-#* This function should then resemble:
-#
-#    @type_check
-#    def init(text_edit: QBetseePlainTextEdit) -> None:
-#        log_config = logconfig.get()
-#
-#        # Root logger handler redirecting to all slots connected to a signal.
-#        logger_root_handler_signal = SignalHandler(
-#            signal=text_edit.append_text_signal)
-#        logger_root_handler_signal.setLevel(
-#            LogLevel.ALL if log_config.is_verbose else LogLevel.INFO)
-#
-#        # Prevent third-party debug messages from being printed to the terminal.
-#        logger_root_handler_signal.addFilter(LoggerFilterDebugNonBetse())
-#
-#        #FIXME: See the _init_logger_root_handler_std() method for the rest!
-#
-#To actually use this custom class in Qt Creator, see the following insanity:
-#    https://stackoverflow.com/a/19622817/2809027
-
 @type_check
 def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
     '''
@@ -84,15 +42,6 @@ def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
     text_edit : QBetseePlainTextEdit
         Text widget to append relevant log records to.
     '''
-
-    #FIXME: Excise after resolving our pending signals and slots issue.
-    # return
-
-    #FIXME: Excise after uncommenting the corresponding line in the
-    #QBetseePlainTextEdit.__init__() method.
-
-    # Connect the text appending signal to the corresponding slot.
-    # text_edit.append_text_signal.connect(text_edit.append_text)
 
     # Global logging configuration.
     log_config = logconfig.get()

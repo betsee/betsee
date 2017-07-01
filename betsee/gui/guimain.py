@@ -49,8 +49,8 @@ Root-level classes defining this application's graphical user interface (GUI).
 #  and then passing the absolute paths of these files in the same manner:
 #
 #    pyside2-lupdate \
-#        ~/py/betsee/betsee/gui/guimain.py \
-#        ~/py/betsee/betsee/gui/guimainwindow.py \  # ...and so on, recursively.
+#        ~/py/betsee/betsee/gui/guimain.py \    # ...and so on, recursively.
+#        ~/py/betsee/betsee/gui/widget/guimainwindow.py \
 #        -ts \
 #        ~/py/betsee/data/ts/en_US.ts \
 #        ~/py/betsee/data/ts/ru_RU.ts   # ...and so on for all needed languages.
@@ -160,7 +160,7 @@ class BetseeGUI(object):
 
     Attributes
     ----------
-    _main_window : BetseeMainWindow
+    _main_window : QBetseeMainWindow
         Main window widget for this GUI.
     '''
 
@@ -188,7 +188,7 @@ class BetseeGUI(object):
         # subclasses the custom user interface (UI) base class defined by a
         # module generated at runtime above, this importation is deferred until
         # *AFTER* this module is guaranteed to be importable.
-        from betsee.gui.guimainwindow import BetseeMainWindow
+        from betsee.gui.widget.guimainwindow import QBetseeMainWindow
 
         # Log this initialization.
         logs.log_info('Initiating PySide2 UI...')
@@ -198,7 +198,7 @@ class BetseeGUI(object):
         # For safety, this window is scoped to an instance rather than global
         # variable, ensuring that this window is destroyed before the root Qt
         # application widget containing this window,
-        self._main_window = BetseeMainWindow()
+        self._main_window = QBetseeMainWindow()
 
         # Log this display.
         logs.log_info('Displaying PySide2 UI...')
