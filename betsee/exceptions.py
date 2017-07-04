@@ -106,3 +106,20 @@ class BetseePySideException(BetseeException):
     '''
 
     pass
+
+
+class BetseePySideWidgetException(BetseePySideException):
+    '''
+    General-purpose exception applicable to :mod:`PySide2` widgets.
+    '''
+
+    pass
+
+
+class BetseePySideTreeWidgetException(BetseePySideWidgetException):
+    '''
+    General-purpose exception applicable to
+    :class:`PySide2.QtWidgets.QTreeWidget` instances.
+    '''
+
+    pass

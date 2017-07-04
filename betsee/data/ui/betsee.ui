@@ -3069,7 +3069,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="sim_conf_stack_page_1">
+      <widget class="QWidget" name="sim_conf_stack_page_NetworkSubstance">
        <widget class="QGroupBox" name="groupBox_6">
         <property name="geometry">
          <rect>
@@ -3107,7 +3107,7 @@
         </widget>
        </widget>
       </widget>
-      <widget class="QWidget" name="sim_conf_stack_page_2">
+      <widget class="QWidget" name="sim_conf_stack_page_NetworkReaction">
        <widget class="QGroupBox" name="groupBox_7">
         <property name="geometry">
          <rect>
@@ -3145,7 +3145,7 @@
         </widget>
        </widget>
       </widget>
-      <widget class="QWidget" name="sim_conf_stack_page_3">
+      <widget class="QWidget" name="sim_conf_stack_page_NetworkTransporter">
        <widget class="QGroupBox" name="groupBox_8">
         <property name="geometry">
          <rect>
@@ -3183,7 +3183,7 @@
         </widget>
        </widget>
       </widget>
-      <widget class="QWidget" name="sim_conf_stack_page_4">
+      <widget class="QWidget" name="sim_conf_stack_page_NetworkChannel">
        <widget class="QGroupBox" name="groupBox_9">
         <property name="geometry">
          <rect>
@@ -3221,7 +3221,7 @@
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="sim_conf_stack_page_5">
+      <widget class="QWidget" name="sim_conf_stack_page_NetworkModulator">
        <layout class="QGridLayout" name="gridLayout_17">
         <item row="0" column="0">
          <spacer name="verticalSpacer_36">
@@ -3418,7 +3418,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Channels</string>
+           <string>Dynamic Channels</string>
           </property>
           <property name="font">
            <font>
@@ -3507,11 +3507,11 @@
          </item>
          <item>
           <property name="text">
-           <string>Extra Physics</string>
+           <string>Additional Physics</string>
           </property>
           <property name="font">
            <font>
-            <pointsize>9</pointsize>
+            <pointsize>10</pointsize>
             <weight>50</weight>
             <bold>false</bold>
            </font>
@@ -3555,7 +3555,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Results Settings</string>
+           <string>Results</string>
           </property>
           <property name="font">
            <font>
@@ -3571,7 +3571,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Raw Data Export</string>
+           <string>Data Export</string>
           </property>
           <property name="font">
            <font>
