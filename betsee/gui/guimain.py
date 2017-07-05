@@ -6,6 +6,15 @@
 Root-level classes defining this application's graphical user interface (GUI).
 '''
 
+#FIXME: Dynamically validate the importability of *ALL* PySide2 C extensions
+#required by this application. Currently, we do so with simplistic exception
+#handling. However, upstream recently noted that:
+#
+#    - added a way to dynamically detect the available Qt modules in Pyside
+#
+#What, exactly, is this "way"? If undocumented, let's file an issue requesting
+#clarification. First grep the issue tracker for "detect module".
+
 #FIXME: To simplify future localization efforts, all human-readable strings to
 #be displayed should be filtered through the Qt tr() or translate() methods.
 #Note that the external "pyside2-lupdate" command will probably need to be
@@ -42,15 +51,17 @@ Root-level classes defining this application's graphical user interface (GUI).
 #        ~/py/betsee/data/ts/en_US.ts \
 #        ~/py/betsee/data/ts/ru_RU.ts   # ...and so on for all needed languages.
 #
-#* All ".py" files under the ~/py/betsee/betsee/gui/ directory that may contain
-#  dynamic calls to the tr() and translate() methods. In theory, these files
-#  should also be convertible into ".ts" files which may then be translated via
-#  the "Qt Linguist" GUI by recursively finding all such files in pure-Python
-#  and then passing the absolute paths of these files in the same manner:
+#* All ".py" files under the ~/py/betsee/betsee/gui/widget/ subdirectory that
+#  may contain dynamic calls to the tr() and translate() methods. In theory,
+#  these files should also be convertible into ".ts" files which may then be
+#  translated via the "Qt Linguist" GUI by recursively finding all such files in
+#  pure-Python and then passing the absolute paths of these files in the same
+#  manner:
 #
 #    pyside2-lupdate \
-#        ~/py/betsee/betsee/gui/guimain.py \    # ...and so on, recursively.
 #        ~/py/betsee/betsee/gui/widget/guimainwindow.py \
+#        ~/py/betsee/betsee/gui/widget/guisimconftree.py \
+#        # ...and so on, recursively.
 #        -ts \
 #        ~/py/betsee/data/ts/en_US.ts \
 #        ~/py/betsee/data/ts/ru_RU.ts   # ...and so on for all needed languages.
@@ -137,9 +148,9 @@ Root-level classes defining this application's graphical user interface (GUI).
 #        def hello(self):
 #            return QCoreApplication.translate('MuhObject', 'Muh hello world!')
 #
-#Hence, calling QCoreApplication.translate requires that the first parameter be
-#the explicit name of the desired context -- which, for parity with C++, should
-#*ALWAYS* be the name of the custom class performing this call.
+#Hence, calling QCoreApplication.translate() requires that the first parameter
+#be the explicit name of the desired context -- which, for parity with C++,
+#should *ALWAYS* be the name of the custom class performing this call.
 #
 #Annnnnnd we are done.
 
@@ -193,11 +204,18 @@ class BetseeGUI(object):
         # Log this initialization.
         logs.log_info('Initiating PySide2 UI...')
 
+        #FIXME: While safe, this approach has certain disadvantanges: namely,
+        #the inaccessability of this window singleton from anywhere else in this
+        #application. To render this window singleton accessible to other
+        #scopes, consider shifting this instance variable from this object into
+        #the APP_GUI widget. Assuming we select a suitably safe public variable
+        #name (e.g., "betsee_main_window"), no conflicts should exist.
+
         # Main window widget for this GUI.
         #
         # For safety, this window is scoped to an instance rather than global
-        # variable, ensuring that this window is destroyed before the root Qt
-        # application widget containing this window,
+        # variable, ensuring this window is destroyed *BEFORE* the root Qt
+        # application widget containing this window.
         self._main_window = QBetseeMainWindow()
 
         # Log this display.

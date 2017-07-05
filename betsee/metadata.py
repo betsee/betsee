@@ -341,6 +341,7 @@ DEPENDENCIES_RUNTIME_MANDATORY = {
     # "__version__" or "__version_info__" attributes. merely validating these
     # modules to be importable is the most we can do.
     'PySide2.QtSvg': '',
+    'PySide2.QtWidgets': '',
 
     #FIXME: Add a minimum required version *AFTER* upstream resolves the
     #following open issue:

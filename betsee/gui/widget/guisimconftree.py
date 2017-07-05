@@ -4,12 +4,14 @@
 # See "LICENSE" for further details.
 
 '''
-Low-level :mod:`PySide2`-specific string facilities.
+:mod:`PySide2`-based tree widget exposing all high-level features of the
+current simulation configuration.
 '''
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QMainWindow, QTreeWidget, QTreeWidgetItem
+from betse.util.io.log import logs
 from betse.util.type import strs
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
@@ -72,6 +74,9 @@ class QBetseeSimConfTreeWidget(QTreeWidget):
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this widget.
         '''
+
+        # Log this initialization.
+        logs.log_debug('Integrating tree and stack widgets...')
 
         # Integrate this tree widget with this window's top-level stack widget.
         self._init_sim_conf_stack(main_window)

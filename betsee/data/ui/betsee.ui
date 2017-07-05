@@ -28,8 +28,8 @@
     <bold>true</bold>
    </font>
   </property>
-  <property name="windowTitle">
-   <string>BETSEE</string>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">

@@ -4,7 +4,7 @@
 # See "LICENSE" for further details.
 
 '''
-High-level :mod:`PySide2`-driven error handling facilities.
+High-level :mod:`PySide2`-based error handling facilities.
 '''
 
 # ....................{ IMPORTS                            }....................
