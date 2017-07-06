@@ -19,8 +19,31 @@ See Also
 from PySide2.QtCore import QSettings
 from betse.util.os import oses
 
+# ....................{ INITIALIZERS                       }....................
+def init() -> None:
+    '''
+    Initialize the :class:`QSettings` class *before* the :func:`make` function
+    is called elsewhere to instantiate that class.
+
+    Specifically, this function establishes the default settings format
+    subsequently accessed by the default :class:`QSettings` constructor as
+    follows:
+
+    * If the current platform is non-Cygwin Windows, request that settings be
+      formatted in INI format to a physical file. By default, Windows settings
+      are formatted as registery keys. Since the registery is fragile, insecure,
+      and broken by design, this default remains unfortunate but fixable.
+    * Else, request that settings be formatted in the format preferred by the
+      current platform guaranteed to be a physical file.
+    '''
+
+    # Set the default settings format in a platform-specific manner.
+    QSettings.setDefaultFormat(
+        QSettings.IniFormat if oses.is_windows_vanilla() else
+        QSettings.NativeFormat)
+
 # ....................{ MAKERS                             }....................
-def make_settings(self) -> QSettings:
+def make() -> QSettings:
     '''
     Create and return a new :class:`QSettings` instance, encapsulating all
     application-wide settings in a cross-platform, thread- and process-safe
@@ -35,23 +58,16 @@ def make_settings(self) -> QSettings:
     :class:`QSettings` instance returned by this function.
     '''
 
-    # Platform-specific format to (de)serialize settings in.
-    settings_format = None
-
-    # If the current platform is non-Cygwin Windows, format settings in INI
-    # format to a physical file. By default, Windows settings are formatted
-    # as registery keys. Since the registery is fragile, insecure, and
-    # broken by design, this default remains unfortunate but fixable.
-    if oses.is_windows_vanilla():
-        settings_format = QSettings.IniFormat
-    # Else, format settings in the format preferred by this platform.
-    else:
-        settings_format = QSettings.NativeFormat
-
-    # Since the QCoreApplication::applicationName, ::applicationVersion,
-    # ::organizationName, and ::organizationName properties have already been
-    # set, the default QSettings() constructor may be safely called. So, do so.
-    settings = QSettings(settings_format, QSettings.UserScope)
+    # Default settings leveraging the default QSettings() constructor,
+    # including:
+    #
+    # * The "QCoreApplication.applicationName", "organizationName", and
+    #   "organizationName" attributes previously set by the "betsee.util.psdapp"
+    #   submodule.
+    # * The "QSettings.defaultFormat" attribute previously set by the above
+    #   init() function.
+    # * The default "QSettings.UserScope" scope.
+    settings = QSettings()
 
     # Prevent settings from being read and/or written in a Cascading Style
     # Sheets (CSS)-style manner over a hierarchically nested multiplicity of

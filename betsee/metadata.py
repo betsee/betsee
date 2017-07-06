@@ -200,6 +200,20 @@ Email address of the principal corresponding author (i.e., the principal author
 responding to public correspondence).
 '''
 
+# ....................{ METADATA ~ organization            }....................
+ORG_NAME = 'Paul Allen Discovery Center'
+'''
+Human-readable list of the single organization principally responsible for
+funding the authors of this application.
+'''
+
+
+ORG_DOMAIN_NAME = 'alleninstitute.org'
+'''
+Machine-readable name of the top-level domain (TLD) hosting the organization
+signified by the :data:`ORG_NAME` global.
+'''
+
 # ....................{ METADATA ~ urls                    }....................
 URL_HOMEPAGE = 'https://gitlab.com/betse/betsee'
 '''
@@ -284,62 +298,16 @@ simplifying inspection and validation of this version elsewhere (e.g., in the
 '''
 
 
-# DEPENDENCIES_RUNTIME_MANDATORY_VERSIONED = {
-#     # Versioned dependencies directly required by this application.
-#     'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
-#     'PySide2': '>= 2.0.0~alpha0',
-# }
-# '''
-# Dictionary mapping from the :mod:`setuptools`-specific project name of each
-# mandatory runtime dependency of this application that is versioned (i.e.,
-# mandatory runtime dependency whose top-level module declares a PEP 8-compliant
-# ``__version__`` attribute) to the suffix of a :mod:`setuptools`-specific
-# requirements string constraining this dependency.
-#
-# This dictionary is intentionally isolated from the
-# :data:`DEPENDENCIES_RUNTIME_MANDATORY` dictionary, which also contains
-# unversioned mandatory runtime dependencies. Since :mod:`setuptools` requires all
-# dependencies,
-#
-# See Also
-# ----------
-# :data:`betse.metadata.DEPENDENCIES_RUNTIME_MANDATORY`
-#     Further details on dictionary structure.
-# :download:`/doc/rst/INSTALL.rst`
-#     Human-readable list of these dependencies.
-# '''
-
-
 DEPENDENCIES_RUNTIME_MANDATORY = {
     # Versioned dependencies directly required by this application.
     'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
     'PySide2': '>= 2.0.0~alpha0',
 
-    #FIXME: "pyside2uic" currently emits suboptimal code for SVG icons,
-    #internally converting them in memory into non-vector raster icons before
-    #display rather than simply displaying them as vector icons. For example,
-    #the QIcon created from the "lock_fill.svg" icon is as follows:
-    #
-    #    icon = QtGui.QIcon()
-    #    icon.addPixmap(QtGui.QPixmap("://icon/open_iconic/lock_fill.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-    #
-    #This code should instead resemble:
-    #
-    #    icon = QtGui.QIcon()
-    #    icon.addFile("://icon/open_iconic/lock_fill.svg", QtGui.QIcon.Normal, QtGui.QIcon.Off)
-    #
-    #Indeed, there doesn't appear to be any benefit to *EVER* calling the
-    #icon.addPixmap() method versus the icon.addFile() method here. The latter
-    #method suffices for all supported filetypes and hence is always preferable,
-    #regardless of icon filetype.
-    #
-    #Consider filing an upstream PySide2 issue documenting this, ideally with a
-    #minimal UI file as an example.
-
     # Unversioned dependencies directly required by this application. Since
     # the modules providing these dependencies define no PEP-8-compliant
     # "__version__" or "__version_info__" attributes. merely validating these
     # modules to be importable is the most we can do.
+    'PySide2.QtGui': '',
     'PySide2.QtSvg': '',
     'PySide2.QtWidgets': '',
 
@@ -360,8 +328,6 @@ See Also
 :download:`/doc/rst/INSTALL.rst`
     Human-readable list of these dependencies.
 '''
-
-# DEPENDENCIES_RUNTIME_MANDATORY.update(DEPENDENCIES_RUNTIME_MANDATORY_VERSIONED)
 
 
 DEPENDENCIES_RUNTIME_OPTIONAL = {

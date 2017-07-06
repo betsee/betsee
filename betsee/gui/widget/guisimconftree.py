@@ -76,7 +76,7 @@ class QBetseeSimConfTreeWidget(QTreeWidget):
         '''
 
         # Log this initialization.
-        logs.log_debug('Integrating tree and stack widgets...')
+        logs.log_debug('Integrating top-level tree and stack widgets...')
 
         # Integrate this tree widget with this window's top-level stack widget.
         self._init_sim_conf_stack(main_window)

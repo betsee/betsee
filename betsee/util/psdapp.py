@@ -19,8 +19,10 @@
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import logging, platform
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, QCoreApplication
+from PySide2.QtGui import QGuiApplication
 from PySide2.QtWidgets import QApplication
+from betsee import metadata
 
 # ....................{ GLOBALS                            }....................
 # This global is initialized by the _init() function called below.
@@ -60,13 +62,15 @@ def _init() -> None:
     _init_qt()
 
     # Instantiate a singleton of this class.
-    _init_app()
+    _init_qt_app()
 
 # ....................{ INITIALIZERS : qt                  }....................
 def _init_qt() -> None:
     '''
-    Set static attributes of the :class:`QApplication` class *before* the
-    singleton instance of this class is defined.
+    Initialize static attributes of the :class:`QApplication` class or
+    subclasses thereof (e.g., :class:`QCoreApplication`,
+    :class:`QGuiApplication`) *before* the singleton instance of this class is
+    defined.
 
     Technically, some of these attributes (e.g.,
     :attr:`Qt.AA_UseHighDpiPixmaps`) are safely definable at any time. Since
@@ -80,14 +84,45 @@ def _init_qt() -> None:
     implemented in Python.
     '''
 
+    # Avoid circular import dependencies.
+    from betsee.util.io import psdsettings
+
+    # Log this initialization.
+    logging.debug('Initializing static Qt attributes...')
+
+    # Initialize all application-wide core attributes (e.g., name, version).
+    _init_qt_core()
+
     # Initialize all application-wide dots per inch (DPI) attributes.
     _init_qt_dpi()
+
+    # Initialize all application-wide QSettings attributes.
+    psdsettings.init()
+
+
+def _init_qt_core() -> None:
+    '''
+    Initialize all static attributes of the :class:`QCoreApplication` class
+    signifying application-wide core properties (e.g., name, version).
+    '''
+
+    # High-level human-readable application name intended *ONLY* for display.
+    QGuiApplication.setApplicationDisplayName(metadata.NAME)
+
+    # Low-level machine-readable application name and version, each intended
+    # both for display (e.g., to end users) and internal inspection.
+    QCoreApplication.setApplicationName(metadata.NAME)
+    QCoreApplication.setApplicationVersion(metadata.VERSION)
+
+    # Low-level machine-readable organization name and domain.
+    QCoreApplication.setOrganizationName(metadata.ORG_NAME)
+    QCoreApplication.setOrganizationDomain(metadata.ORG_DOMAIN_NAME)
 
 
 def _init_qt_dpi() -> None:
     '''
-    Set static attributes of the :class:`QApplication` class pertaining to dots
-    per inch (DPI) and, specifically, high-DPI displays.
+    Initialize all static attributes of the :class:`QApplication` class
+    pertaining to dots per inch (DPI) and, specifically, high-DPI displays.
 
     See Also
     ----------
@@ -123,7 +158,7 @@ def _init_qt_dpi() -> None:
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 # ....................{ INITIALIZERS : globals             }....................
-def _init_app() -> None:
+def _init_qt_app() -> None:
     '''
     Instantiate the :class:`QApplication` singleton for this application.
     '''
@@ -133,6 +168,16 @@ def _init_app() -> None:
 
     # Log this instantiation.
     logging.debug('Instantiating application singleton...')
+
+    #FIXME: Actually, this isn't *QUITE* right. At least the "-session" option
+    #should be forwarded on to the "QApplication" constructor, required for
+    #application restoration after having been previously suspended. See the
+    #QSessionManager::setRestartCommand() method documentation for details.
+    #
+    #Note that this option *MUST* be named "-session" unless the
+    #setRestartCommand() method is called to override this default. We'd
+    #certainly prefer a *nix-style option named "--session-id" instead, however.
+    #Can we make this happen?
 
     # For safety, initialize this application with *NO* command-line arguments
     # regardless of whether the current CLI was passed arguments. The subset of

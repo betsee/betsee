@@ -16,6 +16,10 @@ submodule is safely importable only *after* the :mod:`betsee.gui.guicache`
 submodule has locally created and cached that module for the current user.
 '''
 
+#FIXME: An application icon should be set. Of course, we first need to create an
+#application icon - ideally in SVG format. For exhaustive details on portability
+#issues, see the well-written "Setting the Application Icon" article.
+
 #FIXME: The title of the main window should probably be dynamically modified on
 #opening and closing a simulation configuration file to reflect both the
 #basename of this file *AND* a character indicating whether this file has
@@ -44,9 +48,10 @@ submodule has locally created and cached that module for the current user.
 # subpackage to be imported directly. Attributes are *NOT* importable from this
 # subpackage, contrary to pure-Python expectation.
 from PySide2.QtCore import Qt
+from PySide2.QtGui import QCloseEvent
 from betse.util.io.log import logs
 from betsee import metadata
-from betsee.util.io import psderr, psdprefs
+from betsee.util.io import psderr, psdsettings
 from betsee.util.io.log import psdlogconfig
 from betsee.util.path import psdui
 
@@ -106,6 +111,11 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Customize this main window with additional Python logic.
         self._init()
+
+        # Restore previously stored application-wide settings *AFTER*
+        # initializing but *BEFORE* displaying this main window (i.e., as the
+        # last operation of this method).
+        self._restore_settings()
 
 
     def _init(self) -> None:
@@ -266,18 +276,52 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
             synopsis='This action is currently unimplemented.',
         )
 
-    # ..................{ SETTINGS                           }..................
-    #FIXME: This should be called *AFTER* the main window is constructed but
-    #*BEFORE* that window is actually displayed.
-    def _read_settings(self) -> None:
+    # ..................{ SUPERCLASS                         }..................
+    # Subclass methods overriding superclass implementations.
+
+    def closeEvent(self, event: QCloseEvent) -> None:
         '''
-        Read application-wide settings previously written to a predefined
-        application- and user-specific on-disk file by the most recent execution
-        of this application if any *or* reduce to a noop otherwise.
+        Event handler handling the passed close event signifying a user-driven
+        request to close this main window and exit the current application.
         '''
 
+        # Log this closure.
+        logs.log_info('Finalizing PySide2 UI...')
+
+        # Store application-wide settings *BEFORE* closing this window.
+        self._store_settings()
+
+        # Accept this request, thus finalizing the closure of this window.
+        event.accept()
+
+    # ..................{ ENABLERS                           }..................
+    def _enable_full_screen(self) -> None:
+        '''
+        Display this main window in **full-screen mode** (i.e., consuming all
+        available screen real estate *without* the usual window decorations,
+        including a frame or title bar).
+        '''
+
+        self.setWindowState(self.windowState() | Qt.WindowFullScreen)
+
+    # ..................{ SETTINGS                           }..................
+    #FIXME: This should be called:
+    #
+    #* By the QGuiApplication::saveStateRequest() slot, which Qt triggers on
+    #  the current desktop session manager beginning a restoration from a prior
+    #  shutdown or suspend.
+    def _restore_settings(self) -> None:
+        '''
+        Read and restore application-wide settings previously written to a
+        predefined application- and user-specific on-disk file by the most
+        recent execution of this application if any *or* reduce to a noop.
+        '''
+
+        # Log this restoration.
+        logs.log_info('Restoring application settings...')
+
         # Previously written application settings.
-        settings = psdprefs.make_settings()
+        settings = psdsettings.make()
 
         # Read settings specific to this main window.
         settings.beginGroup('MainWindow')
@@ -303,11 +347,11 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         #
         # In the absence of compelling evidence, the current approach prevails.
         if settings.contains('pos'):
-            self.move(settings.value('pos').toPoint())
+            self.move(settings.value('pos'))
         if settings.contains('size'):
-            self.resize(settings.value('size').toSize())
-        if settings.contains('isFullScreen'):
-            self.setFullScreen(settings.value('isFullScreen'))
+            self.resize(settings.value('size'))
+        if settings.value('isFullScreen', False):
+            self._enable_full_screen()
 
         # Cease reading settings specific to this window.
         settings.endGroup()
@@ -315,19 +359,36 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
     #FIXME: This should be called:
     #
-    #* At least immediately *BEFORE* the main window is closed.
     #* Ideally incrementally during the application life cycle to prevent
     #  settings from being lost if the application fails to close gracefully.
     #  "QTimer" is probably our friends, here.
-    def _write_settings(self) -> None:
+    #* By the QGuiApplication::commitDataRequest() slot, which Qt triggers on
+    #  the current desktop session manager beginning a shutdown or suspend.
+    #  However, note that:
+    #  * This slot will also need to save unsaved data if any and that no
+    #    interactive message box should be displayed to the user *UNLESS* this
+    #    session manager explicitly permits such interaction. (Sigh.)
+    #  * The QGuiApplication.setFallbackSessionManagementEnabled(False) method
+    #    will need to be called to prevent fallback session management from
+    #    interfering with this slot's behaviour.
+    #  * Any concurrent operations (e.g., simulation running) will need to be
+    #    temporarily halted until this application is restored. Failure to do so
+    #    typically results in the OS killing this application. (Makes sense.) To
+    #    respond to this application state change in a robust manner, it will
+    #    probably be necessary to connect to the
+    #    QGuiApplication::applicationStateChanged() slot.
+    def _store_settings(self) -> None:
         '''
         Write application-wide settings to a predefined application- and
         user-specific on-disk file, which the next execution of this application
         will read and restore on startup.
         '''
 
+        # Log this storage.
+        logs.log_info('Storing application settings...')
+
         # Currently written application settings if any.
-        settings = psdprefs.make_settings()
+        settings = psdsettings.make()
 
         # Write settings specific to this main window.
         settings.beginGroup('MainWindow')
