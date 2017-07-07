@@ -10,12 +10,10 @@ Designer application.
 '''
 
 # ....................{ IMPORTS                            }....................
-# from PySide2 import QtWidgets
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
 from betse.util.path.command import cmdrun
 from betse.util.type.types import type_check
-# from betsee.exceptions import BetseePySideUICException
 
 # ....................{ CONVERTERS                         }....................
 @type_check

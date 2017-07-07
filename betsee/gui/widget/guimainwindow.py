@@ -16,6 +16,83 @@ submodule is safely importable only *after* the :mod:`betsee.gui.guicache`
 submodule has locally created and cached that module for the current user.
 '''
 
+#FIXME: Correctly setting the "_is_dirty" flag on simulation configuration
+#changes is *NOT* going to be easy, unfortunately. Specifically:
+#
+#* The pair of QWidget.isWindowChanged() and QWidget.setWindowChanged() methods
+#  that *COULD* have made detecting widget changes simpler fail to propagate to
+#  parent widgets and hence are effectively useless.
+#* The "QEvent::ModifiedChange" event type is emitted for only some but *NOT*
+#  all widget changes of interest. Of course, right? From StackOverflow:
+#  "I have QFrame::eventFilter installed on the QDateEdit anyway because I need
+#   to change row selection for QTableWidget if QDateEdit was edited so I
+#   thought I could use it instead... but QEvent::ModifiedChange doesn't work
+#   for that and I don't know what to use..."
+#* The QWidget.changeEvent() method that that *COULD* also have made detecting
+#  widget changes is a protected event handler rather than a public signal.
+#  This means that overriding the default handling for widget change events
+#  would require:
+#  * Defining one BETSEE-specific widget subclass for each widget superclass of
+#    interest (e.g., "QBetseeLineEdit" for "QLineEdit").
+#  * Overriding the changeEvent() method in that subclass to:
+#    * Detect whether the current change event corresponds to an event of
+#      interest (e.g., text change).
+#    * If so, explicitly emit a signal to a corresponding slot of this
+#      "QBetseeMainWindow" instance, which should then register this change.
+#  * Explicitly promoting each changeable widget of interest in Qt Creator to
+#    our BETSEE-specific widget subclass.
+#
+#Technically, this *WOULD* maybe work -- but it's also incredibly cumbersome. An
+#alternative solution is to shift as much of this tedious manual labour as
+#feasible into clever Python automation. How? Specifically:
+#
+#* Define a new "QBetseeMainWindow._is_sim_changed" boolean corresponding to the
+#  typical "dirty" flag (i.e., "True" only if the current simulation has unsaved
+#  configuration changes).
+#* Define a new "QBetseeMainWindow.sim_changed" slot internally enabling this
+#  "self._is_sim_changed" boolean. This slot should accept no arguments.
+#* Define a new QBetseeSimConfTreeWidget._init_connections_changed() method,
+#  called by the existing QBetseeSimConfTreeWidget._init_connections() method.
+#* In this new method:
+#  * Define a local dictionary constant mapping from each widget type of
+#    interest (e.g., "QComboBox", "QLineEdit") to a tuple of the names of all
+#    signals emitted by widgets of this type when their contents change: e.g.,
+#
+#    WIDGET_TYPE_TO_CHANGE_SIGNALS = {
+#        QLineEdit: ('textChanged',),
+#        QCombobox: ('currentIndexChanged', 'editTextChanged',),
+#        ...
+#    }
+#
+#  * Iteratively find all transitive children of our top-level stack widget by
+#    calling the QStackedWidget.findChildren() method.
+#  * For each such child:
+#    * Map this child's type to the tuple of the names of all change signals
+#      emitted by widgets of this type via the "WIDGET_TYPE_TO_CHANGE_SIGNALS"
+#      dictionary defined above.
+#    * For each such signal name:
+#      * Dynamically retrieve this signal with getattr(). (Yay!)
+#      * Connect this signal to the "QBetseeMainWindow.sim_changed" slot.
+#
+#This exact solution is outlined, albeit without any working code, at:
+#    http://www.qtcentre.org/archive/index.php/t-44026.html
+#
+#This is sufficiently annoying that we should consider posting a working
+#solution back to StackOverflow... somewhere. The following question might be a
+#reasonable place to pose this answer:
+#    https://stackoverflow.com/questions/2559681/qt-how-to-know-whether-content-in-child-widgets-has-been-changed
+
+#FIXME: Consider permitting multiple simulations to be simultaneously open. The
+#conventional means of doing so is the so-called Single Documentation Interface
+#(SDI) approach, in which opening a new document opens a new distinct
+#application window displaying that new document; open documents and hence
+#windows may then be switched between via a "Windows" menu item listing all
+#currently open documents. Supporting SDI would permit end users to run multiple
+#simultaneous simulations, which only seems reasonable. As a PySide2-specific
+#example, see the "pyside2-examples/examples/widgets/mainwindows/sdi/sdi.py"
+#application. While incomplete, this application should serve as a simple
+#starting point for implementing our own SDI. (It's only 295 lines!)
+
 #FIXME: An application icon should be set. Of course, we first need to create an
 #application icon - ideally in SVG format. For exhaustive details on portability
 #issues, see the well-written "Setting the Application Icon" article.
@@ -50,6 +127,7 @@ submodule has locally created and cached that module for the current user.
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QCloseEvent
 from betse.util.io.log import logs
+from betse.util.type.types import type_check
 from betsee import metadata
 from betsee.util.io import psderr, psdsettings
 from betsee.util.io.log import psdlogconfig
@@ -396,3 +474,31 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         settings.setValue('size', self.size())
         settings.setValue('isFullScreen', self.isFullScreen())
         settings.endGroup()
+
+    # ..................{ STATUS                             }..................
+    @type_check
+    def _show_status(self, text: str) -> None:
+        '''
+        Display the passed string as a **temporary message** (i.e., string
+        temporarily replacing any normal message currently displayed) in the
+        status bar.
+        '''
+
+        #FIXME: Validate this string to contain no newlines. Additionally,
+        #consider emitting a warning if the length of this string exceeds a
+        #sensible maximum (say, 160 characters or so).
+
+        # Display this temporary message.
+        self.status_bar.showMessage(text)
+
+
+    def _clear_status(self) -> None:
+        '''
+        Remove the temporary message currently displayed in the status bar if
+        any *or* reduce to a noop otherwise.
+
+        This Any normal message was displayed prior to this temporary message being
+        displayed in the status bar,
+        '''
+
+        self.status_bar.clearMessage()

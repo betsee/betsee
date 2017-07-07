@@ -138,15 +138,48 @@ Root-level classes defining this application's graphical user interface (GUI).
 #their appropriate context. For example, see this StackOverflow response:
 #    https://stackoverflow.com/a/41174550/2809027
 #
+#One final caveat exists: interpolated arguments should be explicitly rather
+#than implicitly numbered (e.g., "{0}" rather than "{}"). Why? Because
+#non-English languages may interpolate arguments in a different order, in which
+#case implicitly numbered {}-style arguments would not be translatable. For a
+#real-world example demonstrating this difference between two English and
+#Norwegian sentences, see the "Using Numbered Arguments" subsection of the
+#"Writing Source Code for Translation" Qt article.
+#
+#Lastly, note that our application would still benefit from a way of permitting
+#the user to explicitly define their interface language of choice. Technically,
+#automatic locale detection should suffice for now. The appropriate
+#documentation reads:
+#
+#    "Qt notifies applications if the user interface language changes by sending
+#     an event of the type QEvent::LanguageChange. To call the member function
+#     retranslateUi() of the user interface object, we reimplement
+#     QWidget::changeEvent() in the form class, as follows:
+#
+#     void CalculatorForm::changeEvent(QEvent *e)
+#     {
+#         QWidget::changeEvent(e);
+#         switch (e->type()) {
+#         case QEvent::LanguageChange:
+#             ui->retranslateUi(this);
+#             break;
+#         default:
+#             break;
+#        }
+#     }
+#
 #tl;dr
 #=====
-#Always call QCoreApplication::translate(). To do so, a minimal-length example:
+#Always call QCoreApplication::translate() and explicitly number interpolated
+#arguments (e.g., "{0}" rather than "{}"). To do so, a minimal-length example:
 #
+#    import sys
 #    from QtCore import QCoreApplication
 #
 #    class MuhObject(QtCore.QObject):
 #        def hello(self):
-#            return QCoreApplication.translate('MuhObject', 'Muh hello world!')
+#            return QCoreApplication.translate(
+#                'MuhObject', 'Muh hello world, {0}!'.format(sys.argv[0])
 #
 #Hence, calling QCoreApplication.translate() requires that the first parameter
 #be the explicit name of the desired context -- which, for parity with C++,

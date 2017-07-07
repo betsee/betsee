@@ -3841,7 +3841,7 @@
    <addaction name="action_start_phase_sim"/>
    <addaction name="action_stop_phase"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar">
+  <widget class="QStatusBar" name="status_bar">
    <property name="sizePolicy">
     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
      <horstretch>0</horstretch>

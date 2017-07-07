@@ -11,6 +11,7 @@ application.
 
 # ....................{ IMPORTS                            }....................
 from PySide2 import QtWidgets
+from PySide2.QtCore import QCoreApplication
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
@@ -63,8 +64,9 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
     # UI module if importable or raise an exception with this message otherwise.
     ui_module = modules.import_module(
         module_name=ui_module_name,
-        exception_message=(
-            'Module "{}" not found (e.g., as'
+        exception_message=QCoreApplication.translate(
+            'get_ui_module_base_classes',
+            'Module "{0}" not found (e.g., as'
             'module "betsee.gui.widget.guimainwindow" imported before '
             'module "betsee.gui.guicache").'.format(ui_module_name)
         ))
@@ -78,22 +80,25 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
 
     # If no such sequence is declared, raise an exception.
     if ui_base_classes is None:
-        raise BetseeCacheException(
-            'Sequence "{}" undefined.'.format(ui_base_classes_name))
+        raise BetseeCacheException(QCoreApplication.translate(
+            'get_ui_module_base_classes',
+            'Sequence "{0}" undefined.'.format(ui_base_classes_name)))
 
     # If this sequence is *NOT* a sequence, raise an exception. While this check
     # is also performed by the @type_check decorator, the following length check
     # implicitly assumes this variable to be a sequence.
     if not types.is_sequence_nonstr(ui_base_classes):
-        raise BetseeCacheException(
-            'Variable "{}" type {!r} not a non-string sequence.'.format(
-                ui_base_classes_name, type(ui_base_classes)))
+        raise BetseeCacheException(QCoreApplication.translate(
+            'get_ui_module_base_classes',
+            'Variable "{0}" type {1!r} not a non-string sequence.'.format(
+                ui_base_classes_name, type(ui_base_classes))))
 
     # If this sequence does *NOT* contain exactly two items, raise an exception.
     if len(ui_base_classes) != 2:
-        raise BetseeCacheException(
-            'Sequence "{}" length {} not 2.'.format(
-                ui_base_classes_name, len(ui_base_classes)))
+        raise BetseeCacheException(QCoreApplication.translate(
+            'get_ui_module_base_classes',
+            'Sequence "{0}" length {1} not 2.'.format(
+                ui_base_classes_name, len(ui_base_classes))))
 
     # Else, return this sequence.
     return ui_base_classes
@@ -242,9 +247,12 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
     # If no such base class exists, raise an exception.
     if ui_base_class is None:
         raise BetseeCacheException(
-            title='PySide2 UI Compiler Error',
-            synopsis='PySide2 widget base class "{}" not found.'.format(
-                ui_base_class_name))
+            title=QCoreApplication.translate(
+                'convert_ui_to_py_file', 'PySide2 UI Compiler Error'),
+            synopsis=QCoreApplication.translate(
+                'convert_ui_to_py_file',
+                'PySide2 widget base class "{0}" not found.'.format(
+                    ui_base_class_name)))
 
     # Append an application-specific global to the Python code generated above,
     # declaring the sequence of all base classes that the main Qt window widget

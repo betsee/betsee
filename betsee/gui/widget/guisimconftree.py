@@ -9,7 +9,7 @@ current simulation configuration.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import Slot
+from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QTreeWidget, QTreeWidgetItem
 from betse.util.io.log import logs
 from betse.util.type import strs
@@ -170,10 +170,12 @@ class QBetseeSimConfTreeWidget(QTreeWidget):
             # If no such page exists, raise an exception.
             if sim_conf_stack_page is None:
                 raise BetseePySideTreeWidgetException(
-                    title='Stacked Page not Found',
-                    synopsis=(
+                    title=QCoreApplication.translate(
+                       'QBetseeSimConfTreeWidget', 'Stacked Page not Found'),
+                    synopsis=QCoreApplication.translate(
+                        'QBetseeSimConfTreeWidget',
                         'Simulation configuration stacked page '
-                        '"{}" not found.'.format(sim_conf_stack_page_name)))
+                        '"{0}" not found.'.format(sim_conf_stack_page_name)))
 
             # Map this tree widget item to this stack widget page.
             self._item_to_sim_conf_stack_page[top_item] = sim_conf_stack_page
