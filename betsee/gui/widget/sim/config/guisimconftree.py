@@ -18,7 +18,7 @@ from betse.util.type.types import type_check
 from betsee.exceptions import BetseePySideTreeWidgetException
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimConfTreeWidget(QTreeWidget):
+class QBetseeSimConfigTreeWidget(QTreeWidget):
     '''
     :mod:`PySide2`-based tree widget exposing all high-level features of the
     current simulation configuration.

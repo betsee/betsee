@@ -16,72 +16,6 @@ submodule is safely importable only *after* the :mod:`betsee.gui.guicache`
 submodule has locally created and cached that module for the current user.
 '''
 
-#FIXME: Correctly setting the "_is_dirty" flag on simulation configuration
-#changes is *NOT* going to be easy, unfortunately. Specifically:
-#
-#* The pair of QWidget.isWindowChanged() and QWidget.setWindowChanged() methods
-#  that *COULD* have made detecting widget changes simpler fail to propagate to
-#  parent widgets and hence are effectively useless.
-#* The "QEvent::ModifiedChange" event type is emitted for only some but *NOT*
-#  all widget changes of interest. Of course, right? From StackOverflow:
-#  "I have QFrame::eventFilter installed on the QDateEdit anyway because I need
-#   to change row selection for QTableWidget if QDateEdit was edited so I
-#   thought I could use it instead... but QEvent::ModifiedChange doesn't work
-#   for that and I don't know what to use..."
-#* The QWidget.changeEvent() method that that *COULD* also have made detecting
-#  widget changes is a protected event handler rather than a public signal.
-#  This means that overriding the default handling for widget change events
-#  would require:
-#  * Defining one BETSEE-specific widget subclass for each widget superclass of
-#    interest (e.g., "QBetseeLineEdit" for "QLineEdit").
-#  * Overriding the changeEvent() method in that subclass to:
-#    * Detect whether the current change event corresponds to an event of
-#      interest (e.g., text change).
-#    * If so, explicitly emit a signal to a corresponding slot of this
-#      "QBetseeMainWindow" instance, which should then register this change.
-#  * Explicitly promoting each changeable widget of interest in Qt Creator to
-#    our BETSEE-specific widget subclass.
-#
-#Technically, this *WOULD* maybe work -- but it's also incredibly cumbersome. An
-#alternative solution is to shift as much of this tedious manual labour as
-#feasible into clever Python automation. How? Specifically:
-#
-#* Define a new "QBetseeMainWindow._is_sim_changed" boolean corresponding to the
-#  typical "dirty" flag (i.e., "True" only if the current simulation has unsaved
-#  configuration changes).
-#* Define a new "QBetseeMainWindow.sim_changed" slot internally enabling this
-#  "self._is_sim_changed" boolean. This slot should accept no arguments.
-#* Define a new QBetseeSimConfTreeWidget._init_connections_changed() method,
-#  called by the existing QBetseeSimConfTreeWidget._init_connections() method.
-#* In this new method:
-#  * Define a local dictionary constant mapping from each widget type of
-#    interest (e.g., "QComboBox", "QLineEdit") to a tuple of the names of all
-#    signals emitted by widgets of this type when their contents change: e.g.,
-#
-#    WIDGET_TYPE_TO_CHANGE_SIGNALS = {
-#        QLineEdit: ('textChanged',),
-#        QCombobox: ('currentIndexChanged', 'editTextChanged',),
-#        ...
-#    }
-#
-#  * Iteratively find all transitive children of our top-level stack widget by
-#    calling the QStackedWidget.findChildren() method.
-#  * For each such child:
-#    * Map this child's type to the tuple of the names of all change signals
-#      emitted by widgets of this type via the "WIDGET_TYPE_TO_CHANGE_SIGNALS"
-#      dictionary defined above.
-#    * For each such signal name:
-#      * Dynamically retrieve this signal with getattr(). (Yay!)
-#      * Connect this signal to the "QBetseeMainWindow.sim_changed" slot.
-#
-#This exact solution is outlined, albeit without any working code, at:
-#    http://www.qtcentre.org/archive/index.php/t-44026.html
-#
-#This is sufficiently annoying that we should consider posting a working
-#solution back to StackOverflow... somewhere. The following question might be a
-#reasonable place to pose this answer:
-#    https://stackoverflow.com/questions/2559681/qt-how-to-know-whether-content-in-child-widgets-has-been-changed
-
 #FIXME: Consider permitting multiple simulations to be simultaneously open. The
 #conventional means of doing so is the so-called Single Documentation Interface
 #(SDI) approach, in which opening a new document opens a new distinct
@@ -92,6 +26,11 @@ submodule has locally created and cached that module for the current user.
 #example, see the "pyside2-examples/examples/widgets/mainwindows/sdi/sdi.py"
 #application. While incomplete, this application should serve as a simple
 #starting point for implementing our own SDI. (It's only 295 lines!)
+#FIXME: Actually, modern UI design strongly favours "QTabWidget"-style
+#browser-based multiplicity -- and so do we. Ergo, classical window-style
+#SDI- and MDI-based multiplicity are right out. That said, it shouldn't be
+#terribly arduous to add a new top-level "QTabWidget" permitting multiple
+#concurrently open simulations to be switched between.
 
 #FIXME: An application icon should be set. Of course, we first need to create an
 #application icon - ideally in SVG format. For exhaustive details on portability
@@ -124,12 +63,14 @@ submodule has locally created and cached that module for the current user.
 # Accessing attributes of the "PySide2.QtCore.Qt" subpackage requires this
 # subpackage to be imported directly. Attributes are *NOT* importable from this
 # subpackage, contrary to pure-Python expectation.
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Slot
 from PySide2.QtGui import QCloseEvent
 from betse.util.io.log import logs
-from betse.util.type.types import type_check
+from betse.util.path import pathnames
+from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import metadata
-from betsee.util.io import psderr, psdsettings
+from betsee.gui.guisignal import QBetseeSignaler
+from betsee.util.io import psderr
 from betsee.util.io.log import psdlogconfig
 from betsee.util.path import psdui
 
@@ -167,6 +108,18 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     worse complications and otherwise avoidable annoyances. In short, this is
     arguably the best we can do.
 
+    Attributes (Public)
+    ----------
+    signaler : QBetseeSignaler
+        :class:`PySide2`-based collection of various application-wide signals.
+        To allow external callers (e.g., :class:`QBetseeSettings`) to access
+        this object, this object is public rather than private.
+
+    Attributes (Private)
+    ----------
+    _sim_conf : QBetseeSimConfig
+        Object encapsulating high-level simulation configuration state.
+
     See Also
     ----------
     http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
@@ -174,10 +127,29 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def __init__(self, *args, **kwargs) -> None:
+    @type_check
+    def __init__(
+        self,
+        signaler: QBetseeSignaler,
+        *args, **kwargs
+    ) -> None:
+        '''
+        Initialize this main window.
+
+        Parameters
+        ----------
+        signaler : QBetseeSettingsSignaler
+            :class:`PySide2`-based collection of application-wide signals.
+        '''
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
+
+        # Classify all remaining parameters.
+        self.signaler = signaler
+
+        # Nullify all remaining instance variables for safety.
+        self._sim_config = None
 
         # Log this initialization.
         logs.log_debug('Fabricating main window...')
@@ -189,11 +161,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Customize this main window with additional Python logic.
         self._init()
-
-        # Restore previously stored application-wide settings *AFTER*
-        # initializing but *BEFORE* displaying this main window (i.e., as the
-        # last operation of this method).
-        self._restore_settings()
 
 
     def _init(self) -> None:
@@ -216,57 +183,14 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # any subsequent logic possibly performing logging.
         psdlogconfig.log_to_text_edit(self.log_box)
 
-        # Initialize all PySide2-agnostic variables of this main window.
-        self._init_vars()
-
-        # Customize all PySide2-specific properties of this main window.
-        self._init_props()
-
         # Customize all abstract QAction widgets of this main window.
         self._init_actions()
 
         # Customize all physical top-level widgets of this main window.
         self._init_widgets()
 
-        # Finalize the contents of this window *AFTER* customizing this content.
-        self.show()
-
-    # ..................{ INITIALIZERS ~ properties          }..................
-    def _init_vars(self) -> None:
-        '''
-        Initialize all :class:`PySide2`-agnostic variables of this main window.
-        '''
-
-        self._is_dirty = False
-        self._is_dirty = False
-
-
-    def _init_props(self) -> None:
-        '''
-        Customize all :class:`PySide2`-specific properties of this main window.
-        '''
-
-        #FIXME: While a sensible default, BETSEE should ideally preserve and
-        #restor its prior window state if any from the most recent execution of
-        #this application.
-
-        # Expand this window to consume all available horizontal and vertical
-        # screen space. Note that:
-        #
-        # * This does *NOT* constitute "full screen" mode, which is typically
-        #   desirable only for console-oriented applications (e.g., OpenGL).
-        # * This is *NOT* supported by Qt Creator and hence must be performed
-        #   with Python logic here.
-        # * The more convenient self.main_window.showMaximized() method is
-        #   intentionally *NOT* called here, as doing so would implicitly render
-        #   the entire GUI (which has yet to be fully customized) visible.
-        #
-        # Failing to maximize this window typically results in Qt erroneously
-        # defaulting this window to an inappropriate size for the current
-        # screen. On my a 1920x1080 display, for example, the default window
-        # size exceeds the vertical resolution (and hence is clipped on the
-        # bottom) but consumes only two-thirds of the horizontal resolution.
-        self.setWindowState(Qt.WindowMaximized)
+        # Create all non-physical abstract objects of this main window.
+        self._init_objects()
 
     # ..................{ INITIALIZERS ~ actions             }..................
     def _init_actions(self) -> None:
@@ -332,7 +256,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         pass
 
-    # ..................{ INITIALIZERS ~ actions             }..................
+    # ..................{ INITIALIZERS ~ widgets             }..................
     def _init_widgets(self) -> None:
         '''
         Customize all physical top-level widgets of this main window, thus
@@ -341,6 +265,19 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Initialize both the simulation configuration tree and stack widgets.
         self.sim_conf_tree.init(self)
+
+    # ..................{ INITIALIZERS ~ objects             }..................
+    def _init_objects(self) -> None:
+        '''
+        Create all non-physical abstract non-widgets of this main window, thus
+        excluding widgets (both physical and abstract).
+        '''
+
+        # Avoid circular import dependencies.
+        from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConfig
+
+        # Object encapsulating high-level simulation configuration state.
+        self._sim_conf = QBetseeSimConfig(self)
 
     # ..................{ INITIALIZERS                       }..................
     def _show_error_action_unimplemented(self) -> None:
@@ -354,9 +291,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
             synopsis='This action is currently unimplemented.',
         )
 
-    # ..................{ SUPERCLASS                         }..................
-    # Subclass methods overriding superclass implementations.
-
+    # ..................{ EVENT HANDLERS                     }..................
     def closeEvent(self, event: QCloseEvent) -> None:
         '''
         Event handler handling the passed close event signifying a user-driven
@@ -367,113 +302,94 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         logs.log_info('Finalizing PySide2 UI...')
 
         # Store application-wide settings *BEFORE* closing this window.
-        self._store_settings()
+        self.signaler.store_settings_signal.emit()
 
         # Accept this request, thus finalizing the closure of this window.
         event.accept()
 
-    # ..................{ ENABLERS                           }..................
-    def _enable_full_screen(self) -> None:
+    # ..................{ SLOTS ~ sim conf                   }..................
+    @Slot(str)
+    def update_sim_conf_filename(
+        self, sim_conf_filename: StrOrNoneTypes) -> None:
         '''
-        Display this main window in **full-screen mode** (i.e., consuming all
-        available screen real estate *without* the usual window decorations,
-        including a frame or title bar).
+        Slot invoked in response to both the opening of new simulation
+        configurations *and* the closing of open simulation configurations.
+
+        Parameters
+        ----------
+        sim_conf_filename : StrOrNoneTypes
+            Absolute path of the currently open YAML-formatted simulation
+            configuration file if any *or* ``None`` otherwise.
+        '''
+
+        # If a simulation configuration is currently open...
+        if sim_conf_filename is not None:
+            # Basename of this configuration file.
+            sim_conf_basename = pathnames.get_basename(sim_conf_filename)
+
+            # Update this window title to contain this basename appended by a
+            # Qt-specific suffix to be subsequently replaced by a
+            # platform-specific identifier when the setWindowModified() method
+            # is called elsewhere.
+            self.setWindowTitle('{}[*]'.format(sim_conf_basename))
+        # Else, no simulation configuration is currently open. In this case,
+        # clear this window title.
+        else:
+            self.setWindowTitle('')
+
+
+    @Slot(bool)
+    def update_is_sim_conf_unsaved(self, is_sim_conf_unsaved: bool) -> None:
+        '''
+        Slot invoked in response to the currently open simulation configuration
+        associated with this main window (if any) either having unsaved changes
+        *or* having just saved such changes.
+
+        Parameters
+        ----------
+        is_sim_conf_unsaved : bool
+            ``True`` only if a simulation configuration is currently open *and*
+            this configuration has unsaved changes.
+        '''
+
+        # Set the modification state of this window to correspond to the
+        # modification state of this simulation configuration, an operation that
+        # has platform-specific effects usually including appending an asterisk
+        # to the current window title.
+        self.setWindowModified(is_sim_conf_unsaved)
+
+    # ..................{ RESIZERS                           }..................
+    def resize_full(self) -> None:
+        '''
+        Enable full-screen mode for this main window.
+
+        Specifically, this method:
+
+        * Hides all standard window decorations, including the window frame and
+          title bar.
+        * Resize this window to consume all available screen space.
         '''
 
         self.setWindowState(self.windowState() | Qt.WindowFullScreen)
 
-    # ..................{ SETTINGS                           }..................
-    #FIXME: This should be called:
-    #
-    #* By the QGuiApplication::saveStateRequest() slot, which Qt triggers on
-    #  the current desktop session manager beginning a restoration from a prior
-    #  shutdown or suspend.
-    def _restore_settings(self) -> None:
+
+    def resize_max(self) -> None:
         '''
-        Read and restore application-wide settings previously written to a
-        predefined application- and user-specific on-disk file by the most
-        recent execution of this application if any *or* reduce to a noop.
-        '''
+        Else, expand this window to consume all available horizontal and
+        vertical screen space.
 
-        # Log this restoration.
-        logs.log_info('Restoring application settings...')
+        Note that:
 
-        # Previously written application settings.
-        settings = psdsettings.make()
-
-        # Read settings specific to this main window.
-        settings.beginGroup('MainWindow')
-
-        # Restore all previously written properties of this window.
-        #
-        # Note that there exist numerous means of doing so. While the canonical
-        # means of doing so appears to be the QMainWindow.restoreGeometry() and
-        # QMainWindow.restoreState() methods, QSettings documentation explicitly
-        # states that:
-        #
-        #     "See Window Geometry for a discussion on why it is better to call
-        #      QWidget::resize() and QWidget::move() rather than
-        #      QWidget::setGeometry() to restore a window's geometry."
-        #
-        # Sadly, the "Window Geometry" article fails to actually discuss why the
-        # QWidget.resize() and QWidget.move() methods are preferable to
-        # QWidget.setGeometry() with respect to the main window. We do note,
-        # however, that QWidget.setGeometry() documentation cautions:
-        #
-        #     "Warning: Calling setGeometry() inside resizeEvent() or
-        #      moveEvent() can lead to infinite recursion."
-        #
-        # In the absence of compelling evidence, the current approach prevails.
-        if settings.contains('pos'):
-            self.move(settings.value('pos'))
-        if settings.contains('size'):
-            self.resize(settings.value('size'))
-        if settings.value('isFullScreen', False):
-            self._enable_full_screen()
-
-        # Cease reading settings specific to this window.
-        settings.endGroup()
-
-
-    #FIXME: This should be called:
-    #
-    #* Ideally incrementally during the application life cycle to prevent
-    #  settings from being lost if the application fails to close gracefully.
-    #  "QTimer" is probably our friends, here.
-    #* By the QGuiApplication::commitDataRequest() slot, which Qt triggers on
-    #  the current desktop session manager beginning a shutdown or suspend.
-    #  However, note that:
-    #  * This slot will also need to save unsaved data if any and that no
-    #    interactive message box should be displayed to the user *UNLESS* this
-    #    session manager explicitly permits such interaction. (Sigh.)
-    #  * The QGuiApplication.setFallbackSessionManagementEnabled(False) method
-    #    will need to be called to prevent fallback session management from
-    #    interfering with this slot's behaviour.
-    #  * Any concurrent operations (e.g., simulation running) will need to be
-    #    temporarily halted until this application is restored. Failure to do so
-    #    typically results in the OS killing this application. (Makes sense.) To
-    #    respond to this application state change in a robust manner, it will
-    #    probably be necessary to connect to the
-    #    QGuiApplication::applicationStateChanged() slot.
-    def _store_settings(self) -> None:
-        '''
-        Write application-wide settings to a predefined application- and
-        user-specific on-disk file, which the next execution of this application
-        will read and restore on startup.
+        * This does *not* constitute "full screen" mode, which is typically
+          desirable only for console-oriented applications (e.g., OpenGL).
+        * This is *not* supported by Qt Creator and hence must be performed
+          with Python logic here.
+        * The more convenient :meth:`showMaximized` method is intentionally
+          *not* called here, as doing so would implicitly render the entire GUI
+          (which could currently be under construction) visible.
         '''
 
-        # Log this storage.
-        logs.log_info('Storing application settings...')
-
-        # Currently written application settings if any.
-        settings = psdsettings.make()
-
-        # Write settings specific to this main window.
-        settings.beginGroup('MainWindow')
-        settings.setValue('pos', self.pos())
-        settings.setValue('size', self.size())
-        settings.setValue('isFullScreen', self.isFullScreen())
-        settings.endGroup()
+        self.setWindowState(self.windowState() | Qt.WindowMaximized)
 
     # ..................{ STATUS                             }..................
     @type_check

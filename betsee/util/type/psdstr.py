@@ -33,7 +33,6 @@ class QBetseePlainTextEdit(QPlainTextEdit):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        #FIXME: Uncomment after this issue is resolved.
         # Connect the text appending signal to the corresponding slot.
         self.append_text_signal.connect(self.append_text)
 
@@ -45,8 +44,8 @@ class QBetseePlainTextEdit(QPlainTextEdit):
     widget.
 
     This signal is connected to the :meth:`append_text` slot at widget
-    initialization time, permitting callers in different threads to
-    thread-safely append text to this widget.
+    initialization time, enabling callers in different threads to thread-safely
+    append text to this widget.
     '''
 
     # ..................{ SLOTS                              }..................

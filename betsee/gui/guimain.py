@@ -206,6 +206,11 @@ class BetseeGUI(object):
     ----------
     _main_window : QBetseeMainWindow
         Main window widget for this GUI.
+    _settings : QBetseeSettings
+        :class:`QSettings`-based object exposing all application-wide settings
+        via cross-platform, thread- and process-safe slots.
+    _signaler : QBetseeSignaler
+        :class:`PySide2`-based collection of all application-wide signals.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -213,6 +218,11 @@ class BetseeGUI(object):
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
+
+        # Nullify all instance variables for safety.
+        self._main_window = None
+        self._signaler = None
+        self._settings = None
 
         # Generate all modules required at runtime by this GUI.
         guicache.cache_py_files()
@@ -228,14 +238,28 @@ class BetseeGUI(object):
             Exit status of this event loop as an unsigned byte.
         '''
 
-        # Main window Qt widget class for this application. Since this class
+        self._make_main_window()
+        return self._show_main_window()
+
+
+    def _make_main_window(self) -> None:
+        '''
+        Create but do *not* display this GUI's main window.
+        '''
+
+        # Since the main window Qt widget class for this application class
         # subclasses the custom user interface (UI) base class defined by a
         # module generated at runtime above, this importation is deferred until
         # *AFTER* this module is guaranteed to be importable.
+        from betsee.gui.guisettings import QBetseeSettings
+        from betsee.gui.guisignal import QBetseeSignaler
         from betsee.gui.widget.guimainwindow import QBetseeMainWindow
 
         # Log this initialization.
         logs.log_info('Initiating PySide2 UI...')
+
+        # Application-wide signaler.
+        self._signaler = QBetseeSignaler()
 
         #FIXME: While safe, this approach has certain disadvantanges: namely,
         #the inaccessability of this window singleton from anywhere else in this
@@ -244,16 +268,42 @@ class BetseeGUI(object):
         #the APP_GUI widget. Assuming we select a suitably safe public variable
         #name (e.g., "betsee_main_window"), no conflicts should exist.
 
-        # Main window widget for this GUI.
+        # Main window widget for this GUI, which requires this signaler.
         #
         # For safety, this window is scoped to an instance rather than global
         # variable, ensuring this window is destroyed *BEFORE* the root Qt
         # application widget containing this window.
-        self._main_window = QBetseeMainWindow()
+        self._main_window = QBetseeMainWindow(signaler=self._signaler)
+
+        # Application-wide settings slotter, which requires this window.
+        self._settings = QBetseeSettings(self._main_window)
+
+        # Restore previously stored application-wide settings *AFTER*
+        # initializing but *BEFORE* displaying this window.
+        self._settings.restore_settings()
+
+        # Finalize this window *AFTER* restoring settings, which modifies
+        # critical window properties.
+        #
+        # Note that this call does *NOT* actually display this window. The main
+        # event loop required to do so has yet to be run by the APP_GUI.exec_()
+        # call. In this case, this method merely toggles this window's internal
+        # state in preparation for that call. (Why, Qt. Why.)
+        self._main_window.show()
+
+
+    def _show_main_window(self) -> int:
+        '''
+        Display this GUI's previously created main window.
+
+        Specifically, this method:
+
+        * Run this GUI's event loops, thus displaying this window.
+        * Propagates the resulting exit status to the caller.
+        '''
 
         # Log this display.
         logs.log_info('Displaying PySide2 UI...')
 
-        # Run this GUI's event loop and propagate the resulting exit status to
-        # our caller. This displays this window and thus all of this GUI.
+        # Display this GUI.
         return APP_GUI.exec_()

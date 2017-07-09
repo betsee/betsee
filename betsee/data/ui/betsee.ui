@@ -3299,7 +3299,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QBetseeSimConfTreeWidget" name="sim_conf_tree">
+        <widget class="QBetseeSimConfigTreeWidget" name="sim_conf_tree">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>1</horstretch>
@@ -3691,12 +3691,9 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_20">
+      <layout class="QVBoxLayout" name="verticalLayout_20" stretch="0,0">
        <item>
         <widget class="QLabel" name="log_label">
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
          <property name="text">
           <string>Log Messages</string>
          </property>
@@ -3706,15 +3703,9 @@
         <widget class="QBetseePlainTextEdit" name="log_box">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>1</horstretch>
-           <verstretch>1</verstretch>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>200</height>
-          </size>
          </property>
          <property name="baseSize">
           <size>
@@ -4093,9 +4084,9 @@
    <header>betsee/util/type/psdstr.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeSimConfTreeWidget</class>
+   <class>QBetseeSimConfigTreeWidget</class>
    <extends>QTreeWidget</extends>
-   <header>betsee/gui/widget/guisimconftree.h</header>
+   <header>betsee/gui/widget/sim/config/guisimconftree.h</header>
   </customwidget>
  </customwidgets>
  <resources>
