@@ -7,6 +7,12 @@
 Concrete subclasses defining this application's command line interface (CLI).
 '''
 
+#FIXME: Add support for an optional positional argument providing the absolute
+#or relative paths of a YAML-formatted simulation configuration files to be
+#preopened at application startup. For example:
+#
+#    betsee -v ~/BETSEE/muh_sim/muh_sim.yaml
+
 # ....................{ IMPORTS                            }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the
@@ -16,12 +22,12 @@ Concrete subclasses defining this application's command line interface (CLI).
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from betse import metadata as betse_metadata
 from betse.cli.cliabc import CLIABC
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, MappingType
-from betsee import ignition as betsee_ignition
-from betsee import metadata as betsee_metadata
+from betsee import ignition
+from betsee import metadata
+from betsee.cli import cliinfo
 
 # ....................{ SUBCLASS                           }....................
 class BetseeCLI(CLIABC):
@@ -32,19 +38,7 @@ class BetseeCLI(CLIABC):
     # ..................{ SUPERCLASS ~ header                }..................
     def _show_header(self) -> None:
 
-        # Log a one-line synopsis of metadata logged by the ``info`` subcommand.
-        logs.log_info(
-            'Welcome to <<'
-            '{betsee_name} {betsee_version} | '
-            '{betse_name} {betse_version} | '
-            '{betse_codename}'
-            '>>.'.format(
-                betsee_name=betsee_metadata.NAME,
-                betsee_version=betsee_metadata.VERSION,
-                betse_name=betse_metadata.NAME,
-                betse_version=betse_metadata.VERSION,
-                betse_codename=betse_metadata.CODENAME,
-            ))
+        logs.log_info(cliinfo.get_header())
 
     # ..................{ SUPERCLASS ~ properties            }..................
     @property
@@ -52,7 +46,7 @@ class BetseeCLI(CLIABC):
 
         return {
             # Human-readable multi-sentence application description.
-            'description': betsee_metadata.DESCRIPTION,
+            'description': metadata.DESCRIPTION,
 
             #FIXME: Define an epilog encouraging users requiring full access to
             #the BETSE's command-line suite of subcommands to call the "betse"
@@ -66,7 +60,7 @@ class BetseeCLI(CLIABC):
     def _ignite_app(self) -> None:
 
         # (Re-)initialize both BETSEE and BETSE.
-        betsee_ignition.reinit()
+        ignition.reinit()
 
 
     @type_check

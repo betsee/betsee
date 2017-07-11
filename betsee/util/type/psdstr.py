@@ -4,7 +4,7 @@
 # See "LICENSE" for further details.
 
 '''
-Low-level :mod:`PySide2`-specific string facilities.
+High-level :mod:`PySide2`-specific string facilities.
 '''
 
 # ....................{ IMPORTS                            }....................

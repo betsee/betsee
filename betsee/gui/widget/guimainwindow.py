@@ -16,6 +16,10 @@ submodule is safely importable only *after* the :mod:`betsee.gui.guicache`
 submodule has locally created and cached that module for the current user.
 '''
 
+#FIXME: An application icon should be set. Of course, we first need to create an
+#application icon - ideally in SVG format. For exhaustive details on portability
+#issues, see the well-written "Setting the Application Icon" article.
+
 #FIXME: Consider permitting multiple simulations to be simultaneously open. The
 #conventional means of doing so is the so-called Single Documentation Interface
 #(SDI) approach, in which opening a new document opens a new distinct
@@ -31,10 +35,6 @@ submodule has locally created and cached that module for the current user.
 #SDI- and MDI-based multiplicity are right out. That said, it shouldn't be
 #terribly arduous to add a new top-level "QTabWidget" permitting multiple
 #concurrently open simulations to be switched between.
-
-#FIXME: An application icon should be set. Of course, we first need to create an
-#application icon - ideally in SVG format. For exhaustive details on portability
-#issues, see the well-written "Setting the Application Icon" article.
 
 #FIXME: The title of the main window should probably be dynamically modified on
 #opening and closing a simulation configuration file to reflect both the
@@ -263,6 +263,9 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         excluding all abstract widgets (e.g., :class:`QAction`).
         '''
 
+        # Initialize the status bar with a sensible startup message.
+        self._show_status('Welcome to {}'.format(metadata.NAME))
+
         # Initialize both the simulation configuration tree and stack widgets.
         self.sim_conf_tree.init(self)
 
@@ -404,7 +407,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         #consider emitting a warning if the length of this string exceeds a
         #sensible maximum (say, 160 characters or so).
 
-        # Display this temporary message.
+        # Display this temporary message with no timeout.
         self.status_bar.showMessage(text)
 
 

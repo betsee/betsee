@@ -19,6 +19,8 @@
 #   to change row selection for QTableWidget if QDateEdit was edited so I
 #   thought I could use it instead... but QEvent::ModifiedChange doesn't work
 #   for that and I don't know what to use..."
+#* The QLineEdit.isModified() and QTextEdit.isModified() methods are provided
+#  *ONLY* by those widgets, despite their general utility.
 #* The QWidget.changeEvent() method that that *COULD* also have made detecting
 #  widget changes is a protected event handler rather than a public signal.
 #  This means that overriding the default handling for widget change events
@@ -49,6 +51,8 @@
 #    interest (e.g., "QComboBox", "QLineEdit") to a tuple of the names of all
 #    signals emitted by widgets of this type when their contents change: e.g.,
 #
+#    #FIXME: Actually, just use the new
+#    #"betsee.util.type.psdwidget.FORM_WIDGET_TYPE_TO_SIGNALS_CHANGE" global.
 #    WIDGET_TYPE_TO_CHANGE_SIGNALS = {
 #        QLineEdit: ('textChanged',),
 #        QCombobox: ('currentIndexChanged', 'editTextChanged',),
@@ -75,7 +79,7 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QObject, Signal
-# from betse.util.io.log import logs
+from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
 
@@ -162,15 +166,43 @@ class QBetseeSimConfig(QObject):
         self._is_open = False
         self._is_unsaved = False
 
+        # Connect all relevant signals and slots.
+        self._init_connections(main_window)
+
+        # Update the state of all widgets dependent upon this object's state
+        # *AFTER* connecting these signals and slots implementing this update.
+        self._update_widgets()
+
+
+    @type_check
+    def _init_connections(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Connect all relevant signals and slots of *all* widgets (including the
+        main window, top-level widgets of that window, and leaf widgets
+        distributed throughout this application) whose internal state pertains
+        to the high-level state of this simulation configuration.
+
+        Specifically:
+
+        * When any such widget's content (e.g., editable text, selectable item)
+          is modified, widgets elsewhere are notified of this simulation
+          configuration modification via the
+          :attr:`update_is_sim_conf_unsaved_signal` signal.
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget.
+        '''
+
+        # Log this initialization.
+        logs.log_debug('Aggregating widget change connectivity...')
+
         # Connect this object's signals to this window's corresponding slots.
         self.update_sim_conf_filename_signal.connect(
             main_window.update_sim_conf_filename)
         self.update_is_sim_conf_unsaved_signal.connect(
             main_window.update_is_sim_conf_unsaved)
-
-        # Update the state of all widgets dependent upon this object's state
-        # *AFTER* connecting these signals and slots implementing this update.
-        self._update_widgets()
 
     # ..................{ SIGNALS                            }..................
     update_sim_conf_filename_signal = Signal(str)
@@ -203,10 +235,12 @@ class QBetseeSimConfig(QObject):
         # with unsaved changes.
         self._action_save_sim.setEnabled(self._is_unsaved)
 
+        #FIXME: Re-enable after widget change detection behaves as expected.
+
         # Show or hide widgets requiring an open simulation configuration.
-        self._sim_conf_stack.setVisible(self._is_open)
-        self._sim_conf_tree_frame.setVisible(self._is_open)
-        self._sim_phase_tabs.setVisible(self._is_open)
+        # self._sim_conf_stack.setVisible(self._is_open)
+        # self._sim_conf_tree_frame.setVisible(self._is_open)
+        # self._sim_phase_tabs.setVisible(self._is_open)
 
         # Update all widgets dependent upon this simulation configuration state.
         self.update_sim_conf_filename_signal.emit(self._filename)
