@@ -40,6 +40,9 @@ class BetseeException(Exception, metaclass=ABCMeta):
     '''
 
     # ..................{ INITIALIZERS                       }..................
+    #FIXME: The title should be optional. If absent, a suitable title should be
+    #synthesized from the name of the concrete leaf subclass implementing this
+    #abstract base class.
     def __init__(
         self,
         title: str,
@@ -98,7 +101,7 @@ class BetseeLibException(BetseeException):
 
     pass
 
-# ....................{ EXCEPTIONS ~ pyside                }....................
+# ....................{ EXCEPTIONS ~ psd                   }....................
 class BetseePySideException(BetseeException):
     '''
     General-purpose exception applicable to :mod:`PySide2`, this application's
@@ -107,10 +110,19 @@ class BetseePySideException(BetseeException):
 
     pass
 
-
+# ....................{ EXCEPTIONS ~ psd : widget          }....................
 class BetseePySideWidgetException(BetseePySideException):
     '''
     General-purpose exception applicable to :mod:`PySide2` widgets.
+    '''
+
+    pass
+
+
+class BetseePySideMenuException(BetseePySideWidgetException):
+    '''
+    General-purpose exception applicable to
+    :class:`PySide2.QtWidgets.QMenu` instances.
     '''
 
     pass

@@ -218,8 +218,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
             self.action_save_sim_as,
 
             # "Edit" menu.
-            self.action_undo,
-            self.action_redo,
             self.action_cut,
             self.action_copy,
             self.action_paste,
@@ -342,24 +340,25 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
 
     @Slot(bool)
-    def update_is_sim_conf_unsaved(self, is_sim_conf_unsaved: bool) -> None:
+    def update_is_sim_conf_dirty(self, is_sim_conf_dirty: bool) -> None:
         '''
-        Slot invoked in response to the currently open simulation configuration
-        associated with this main window (if any) either having unsaved changes
-        *or* having just saved such changes.
+        Slot invoked on the currently open simulation configuration associated
+        with the main window either receiving new unsaved changes (in which case
+        this boolean is ``True``) *or* having just been saved (in which case
+        this boolean is ``False``).
 
         Parameters
         ----------
-        is_sim_conf_unsaved : bool
+        is_sim_conf_dirty : bool
             ``True`` only if a simulation configuration is currently open *and*
-            this configuration has unsaved changes.
+            this configuration is **dirty** (i.e., has unsaved changes).
         '''
 
         # Set the modification state of this window to correspond to the
         # modification state of this simulation configuration, an operation that
         # has platform-specific effects usually including appending an asterisk
         # to the current window title.
-        self.setWindowModified(is_sim_conf_unsaved)
+        self.setWindowModified(is_sim_conf_dirty)
 
     # ..................{ RESIZERS                           }..................
     def resize_full(self) -> None:

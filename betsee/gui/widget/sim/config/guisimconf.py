@@ -7,7 +7,41 @@
 :mod:`PySide2`-based object encapsulating simulation configuration state.
 '''
 
-#FIXME: Correctly setting the "_is_unsaved" flag on simulation configuration
+#FIXME: Add support for Qt's command pattern-based "QUndoStack". It's critical
+#we do this *BEFORE* implementing the application, as adhering to the command
+#pattern up-front will substantially simplify our life down-the-road. To do so,
+#note that:
+#
+#* The undo stack should be initialized in the _init() method as follows:
+#
+#    from PySide2.QtGui import QKeySequence
+#    from PySide2.QtWidgets import QUndoStack
+#
+#    self._undo_stack = QUndoStack(self)
+#
+#* We'll need to replace our existing hard-coded "action_undo" and "action_redo"
+#  actions in Qt Creator with dynamically created actions ala:
+#
+#    self._undo_action = self._undo_stack.createUndoAction(
+#        self, QCoreApplication.translate('QBetseeSimConfig', '&Undo %1'))
+#    self._undo_action.setShortcuts(QKeySequence.Undo)
+#
+#    self._redo_action = self._undo_stack.createRedoAction(
+#        self, QCoreApplication.translate('QBetseeSimConfig', '&Redo %1'))
+#    self._redo_action.setShortcuts(QKeySequence.Redo)
+#
+#* We'll need to dynamically associate these actions with the existing menu
+#
+#* When the document is saved to disk, the undo stack should be marked as clean:
+#
+#     self._undo_stack.setClean()
+#
+#* Whenever the undo stack returns to the clean state through undoing and
+#  redoing commands, it emits the signal cleanChanged(). This signal should be
+#  connected to a slot simply emitting our more general-purpose
+#  "update_is_sim_conf_dirty_signal".
+
+#FIXME: Correctly setting the "_is_dirty" flag on simulation configuration
 #changes is *NOT* going to be easy, unfortunately. Specifically:
 #
 #* The pair of QWidget.isWindowChanged() and QWidget.setWindowChanged() methods
@@ -78,7 +112,7 @@
 #    https://stackoverflow.com/questions/2559681/qt-how-to-know-whether-content-in-child-widgets-has-been-changed
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import QObject, Signal, Slot
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
@@ -101,9 +135,9 @@ class QBetseeSimConfig(QObject):
         such a configuration is currently open *or* ``None`` otherwise.
     _is_open : bool
         ``True`` only if a simulation configuration is currently open.
-    _is_unsaved : bool
+    _is_dirty : bool
         ``True`` only if a simulation configuration is currently open *and* this
-        configuration has unsaved changes.
+        configuration is **dirty** (i.e., has unsaved changes).
 
     Attributes (widgets)
     ----------
@@ -131,7 +165,7 @@ class QBetseeSimConfig(QObject):
     @type_check
     def __init__(self, main_window: QBetseeMainWindow, *args, **kwargs) -> None:
         '''
-        Initialize this objected owned by the passed main window widget.
+        Initialize this object, owned by the passed main window widget.
 
         To avoid circular references, this method is guaranteed to *not* retain
         a reference to this main window on returning. References to child
@@ -164,10 +198,14 @@ class QBetseeSimConfig(QObject):
         # Initialize all instance variables for safety.
         self._filename = None
         self._is_open = False
-        self._is_unsaved = False
+        self._is_dirty = False
 
         # Connect all relevant signals and slots.
         self._init_connections(main_window)
+
+        # Create all widgets owned directly by this object *AFTER* connecting
+        # all such signals and slots, as the former emits the latter.
+        self._init_widgets(main_window)
 
         # Update the state of all widgets dependent upon this object's state
         # *AFTER* connecting these signals and slots implementing this update.
@@ -187,7 +225,7 @@ class QBetseeSimConfig(QObject):
         * When any such widget's content (e.g., editable text, selectable item)
           is modified, widgets elsewhere are notified of this simulation
           configuration modification via the
-          :attr:`update_is_sim_conf_unsaved_signal` signal.
+          :attr:`update_is_sim_conf_dirty_signal` signal.
 
         Parameters
         ----------
@@ -201,10 +239,32 @@ class QBetseeSimConfig(QObject):
         # Connect this object's signals to this window's corresponding slots.
         self.update_sim_conf_filename_signal.connect(
             main_window.update_sim_conf_filename)
-        self.update_is_sim_conf_unsaved_signal.connect(
-            main_window.update_is_sim_conf_unsaved)
+        self.update_is_sim_conf_dirty_signal.connect(
+            main_window.update_is_sim_conf_dirty)
+
+
+    @type_check
+    def _init_widgets(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Create all physical widgets owned directly by this object, thus
+        excluding abstract widgets (e.g., :class:`QAction`).
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget.
+        '''
+
+        # Avoid circular import dependencies.
+        from betsee.gui.widget.sim.config.guisimconfundo import (
+            QBetseeSimConfigUndoStack)
+
+        # Undo stack for this simulation configuration.
+        self._undo_stack = QBetseeSimConfigUndoStack(
+            main_window=main_window, sim_config=self)
 
     # ..................{ SIGNALS                            }..................
+    #FIXME: Emit this signal on opening, closing, or saving-as a simulation.
     update_sim_conf_filename_signal = Signal(str)
     '''
     Signal passed either the absolute path of the currently open YAML-formatted
@@ -212,12 +272,29 @@ class QBetseeSimConfig(QObject):
     '''
 
 
-    update_is_sim_conf_unsaved_signal = Signal(bool)
+    #FIXME: Emit this signal on:
+    #
+    #* Any "sim_conf_stack" widget changes (with value "True").
+    #* Saving the current simulation (with value "False").
+    update_is_sim_conf_dirty_signal = Signal(bool)
     '''
-    Signal passed a single boolean in response to the currently open
-    simulation configuration associated with the main window (if any) either
-    containing unsaved changes *or* having just saved such changes.
+    Signal passed a single boolean on the currently open simulation
+    configuration associated with the main window either receiving new unsaved
+    changes (in which case this boolean is ``True``) *or* having just been saved
+    (in which case this boolean is ``False``).
     '''
+
+    # ..................{ SLOTS                              }..................
+    #FIXME: Connect below.
+    @Slot()
+    def is_sim_conf_changed(self) -> None:
+        '''
+        Slot invoked on every modification of the contents of any widget owned
+        by the top-level simulation configuration tree or stack widgets,
+        signifying a change to the currently open simulation configuration.
+        '''
+
+        self._is_dirty = False
 
     # ..................{ UPDATERS                           }..................
     def _update_widgets(self) -> None:
@@ -233,7 +310,7 @@ class QBetseeSimConfig(QObject):
 
         # Enable or disable actions requiring an open simulation configuration
         # with unsaved changes.
-        self._action_save_sim.setEnabled(self._is_unsaved)
+        self._action_save_sim.setEnabled(self._is_dirty)
 
         #FIXME: Re-enable after widget change detection behaves as expected.
 
@@ -244,4 +321,4 @@ class QBetseeSimConfig(QObject):
 
         # Update all widgets dependent upon this simulation configuration state.
         self.update_sim_conf_filename_signal.emit(self._filename)
-        self.update_is_sim_conf_unsaved_signal.emit(self._is_unsaved)
+        self.update_is_sim_conf_dirty_signal.emit(self._is_dirty)
