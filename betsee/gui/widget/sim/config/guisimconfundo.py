@@ -44,17 +44,10 @@
 #  * Shift this "guisimconfundo" submodule into this subpackage.
 #  * Create a new "guisimconfundocmd" submodule in this subpackage, to which
 #    this base class and all subclasses described below should be added.
-#* Design a variety of "QUndoCommand" subclasses in this submodule. Ideally,
-#  there should exist one such subclass for each type of editable form widget in
-#  our "sim_conf_stack" widget (e.g., "QBetseeSimConfigUndoCommandLineEdit" for
-#  "QLineEdit" widgets), undoing and redoing changes to such widgets. It's quite
-#  likely that such subclasses will need to be specific to simulation
-#  configurations, as their implementations will probably need to store the
-#  current and new values of a data descriptor-style attribute of the
-#  "betse.science.params.Parameters" class for subsequent application
-#  restoration by an undo. Presumably, the name of this attribute, the desired
-#  new value of this attribute, and this "Parameters" object will need to be
-#  passed to the constructor of each such subclass.
+#* Connect all applicable edit signals of editable form widgets contained within
+#  the stack widget to corresponding slots (probably defined on this object),
+#  each internally pushing an instance of the corresponding subclass defined by
+#  the "betsee.util.type.psdundo" submodule onto this undo stack.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QSize  # Signal, Slot
