@@ -8,17 +8,81 @@
 '''
 
 # ....................{ IMPORTS                            }....................
+from abc import ABCMeta  #, abstractmethod
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (
     QLineEdit,
 )
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
+from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConfig
 
-# ....................{ WIDGETS ~ text                     }....................
-#FIXME: Docstring us up.
-class QBetseeUndoableLineEdit(QLineEdit):
+# ....................{ MIXINS                             }....................
+class QBetseeSimConfigWidgetMixin(object, metaclass=ABCMeta):
     '''
+    Abstract base class of all **editable simulation configuration widget**
+    (i.e., widgets permitting one or more simulation configuration values stored
+    in an external YAML file to be interactively edited) subclasses.
+
+    Design
+    ----------
+    This class is suitable for use as a multiple-inheritance mixin. To preserve
+    the expected method resolution order (MRO) semantics, this class should
+    typically be subclassed *first* rather than *last* in subclasses.
+
+    Attributes
+    ----------
+    _sim_conf : QBetseeSimConfig
+        High-level state of the currently open simulation configuration, which
+        depends on the state of this low-level simulation configuration widget.
+    '''
+
+    # ..................{ INITIALIZERS                       }..................
+    def __init__(self, *args, **kwargs) -> None:
+
+        # Initialize our superclass with all passed arguments.
+        super().__init__(*args, **kwargs)
+
+        # Nullify all instance variables for safety.
+        self._sim_conf = None
+
+
+    @type_check
+    def init(self, sim_conf: QBetseeSimConfig) -> bool:
+        '''
+        Initialize this widget against the passed state object.
+
+        Parameters
+        ----------
+        sim_conf : QBetseeSimConfig
+            High-level state of the currently open simulation configuration.
+        '''
+
+        # Classify all passed parameters. Since the main window rather than this
+        # state object owns this widget, retaining a reference to this state
+        # object introduces no circularity and hence is safe. (That's nice.)
+        self._sim_conf = sim_conf
+
+    # ..................{ ENABLERS                           }..................
+    def _enable_sim_conf_dirty(self) -> None:
+        '''
+        Enable the dirty staate for the current simulation configuration.
+
+        This method is intended to be called by subclass slots on completion of
+        user edits to the contents of this widget. In response, this method
+        notifies all connected slots that this simulation configuration has
+        received new unsaved changes.
+        '''
+
+        self._sim_conf.set_dirty_signal.emit(True)
+
+# ....................{ SUBCLASSES ~ text                  }....................
+class QBetseeSimConfigLineEdit(QBetseeSimConfigWidgetMixin, QLineEdit):
+    '''
+    Simulation configuration line edit widget, permitting a simulation
+    configuration string value stored in an external YAML file to be
+    interactively edited.
+
     Attributes
     ----------
     _text_cached : str
@@ -28,7 +92,6 @@ class QBetseeUndoableLineEdit(QLineEdit):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    @type_check
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed arguments.
@@ -105,3 +168,7 @@ class QBetseeUndoableLineEdit(QLineEdit):
         self._text_cached = self.text()
 
         #FIXME: Push an undo command onto the undo stack.
+
+        # Notify all connected slots that the currently open simulation
+        # configuration has received new unsaved changes.
+        self._enable_sim_conf_dirty()

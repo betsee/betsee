@@ -3772,7 +3772,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="action_new_sim"/>
+    <addaction name="action_make_sim"/>
     <addaction name="action_open_sim"/>
     <addaction name="action_close_sim"/>
     <addaction name="separator"/>
@@ -3822,7 +3822,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_new_sim"/>
+   <addaction name="action_make_sim"/>
    <addaction name="action_open_sim"/>
    <addaction name="action_save_sim"/>
    <addaction name="separator"/>
@@ -3923,7 +3923,7 @@
     <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
-  <action name="action_new_sim">
+  <action name="action_make_sim">
    <property name="icon">
     <iconset resource="../qrc/betsee.qrc">
      <normaloff>:/icon/open_iconic/file.svg</normaloff>:/icon/open_iconic/file.svg</iconset>
@@ -4055,7 +4055,7 @@
   <customwidget>
    <class>QBetseePlainTextEdit</class>
    <extends>QPlainTextEdit</extends>
-   <header>betsee/util/type/psdstr.h</header>
+   <header>betsee/util/widget/psdtextedit.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfigTreeWidget</class>

@@ -210,13 +210,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Default all remaining actions to display an error box informing the
         # end user that this action has yet to be implemented.
         for action in (
-            # "File" menu.
-            self.action_new_sim,
-            self.action_open_sim,
-            self.action_close_sim,
-            self.action_save_sim,
-            self.action_save_sim_as,
-
             # "Edit" menu.
             self.action_cut,
             self.action_copy,
@@ -281,6 +274,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         self._sim_conf = QBetseeSimConfig(self)
 
     # ..................{ INITIALIZERS                       }..................
+    #FIXME: Excise this, which should no longer be required.
     def _show_error_action_unimplemented(self) -> None:
         '''
         Display a modal message box informing the end user that the currently
@@ -310,8 +304,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
     # ..................{ SLOTS ~ sim conf                   }..................
     @Slot(str)
-    def update_sim_conf_filename(
-        self, sim_conf_filename: StrOrNoneTypes) -> None:
+    def set_sim_conf_filename(self, sim_conf_filename: StrOrNoneTypes) -> None:
         '''
         Slot invoked in response to both the opening of new simulation
         configurations *and* the closing of open simulation configurations.
@@ -340,7 +333,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
 
     @Slot(bool)
-    def update_is_sim_conf_dirty(self, is_sim_conf_dirty: bool) -> None:
+    def set_sim_conf_dirty(self, is_sim_conf_dirty: bool) -> None:
         '''
         Slot invoked on the currently open simulation configuration associated
         with the main window either receiving new unsaved changes (in which case
