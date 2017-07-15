@@ -7,47 +7,14 @@
 :mod:`PySide2`-based object encapsulating simulation configuration state.
 '''
 
-#FIXME: Add support for Qt's command pattern-based "QUndoStack". It's critical
-#we do this *BEFORE* implementing the application, as adhering to the command
-#pattern up-front will substantially simplify our life down-the-road. To do so,
-#note that:
-#
-#* The undo stack should be initialized in the _init() method as follows:
-#
-#    from PySide2.QtGui import QKeySequence
-#    from PySide2.QtWidgets import QUndoStack
-#
-#    self._undo_stack = QUndoStack(self)
-#
-#* We'll need to replace our existing hard-coded "action_undo" and "action_redo"
-#  actions in Qt Creator with dynamically created actions ala:
-#
-#    self._undo_action = self._undo_stack.createUndoAction(
-#        self, QCoreApplication.translate('QBetseeSimConfig', '&Undo %1'))
-#    self._undo_action.setShortcuts(QKeySequence.Undo)
-#
-#    self._redo_action = self._undo_stack.createRedoAction(
-#        self, QCoreApplication.translate('QBetseeSimConfig', '&Redo %1'))
-#    self._redo_action.setShortcuts(QKeySequence.Redo)
-#
-#* When the document is saved to disk, the undo stack should be marked as clean:
-#
-#     self._undo_stack.setClean()
-#
-#* Whenever the undo stack returns to the clean state through undoing and
-#  redoing commands, it emits the signal cleanChanged(). This signal should be
-#  connected to a slot simply emitting our more general-purpose
-#  "update_is_sim_conf_dirty_signal".
-#* Design a new ""QBetseeSimConfigUndoCommandABC" base class. This is getting
-#  cumbersome fast, so we probably want to:
-#  * Create a new "betsee.gui.widget.sim.config.undo" subpackage.
-#  * Shift this "guisimconfundo" submodule into this subpackage.
-#  * Create a new "guisimconfundocmd" submodule in this subpackage, to which
-#    this base class and all subclasses described below should be added.
-#* Connect all applicable edit signals of editable form widgets contained within
-#  the stack widget to corresponding slots (probably defined on this object),
-#  each internally pushing an instance of the corresponding subclass defined by
-#  the "betsee.util.type.psdundo" submodule onto this undo stack.
+#FIXME: Whenever the undo stack returns to the clean state through undoing and
+#redoing commands, it emits the signal cleanChanged(). This signal should be
+#connected to a slot simply emitting our more general-purpose
+#"set_dirty_signal".
+#FIXME: Connect all applicable edit signals of editable form widgets contained
+#within the stack widget to corresponding slots (probably defined on this
+#object), each internally pushing an instance of the corresponding subclass
+#defined by the "betsee.util.type.psdundo" submodule onto this undo stack.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QSize  # Signal, Slot

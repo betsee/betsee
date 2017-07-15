@@ -113,7 +113,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     signaler : QBetseeSignaler
         :class:`PySide2`-based collection of various application-wide signals.
         To allow external callers (e.g., :class:`QBetseeSettings`) to access
-        this object, this object is public rather than private.
+        this attribute, this attribute is public rather than private.
 
     Attributes (Private)
     ----------

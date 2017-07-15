@@ -17,11 +17,74 @@ High-level :mod:`PySide2`-based error handling facilities.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-import re
+import re, sys, traceback
 from PySide2.QtWidgets import QMessageBox
 from betsee.exceptions import BetseeException
 
-# ....................{ ERRORS                             }....................
+# ....................{ INSTALLERS                         }....................
+def install_exception_hook() -> None:
+    '''
+    Install a global exception hook overriding :mod:`PySide2`\ 's default insane
+    exception handling behaviour with sane exception handling.
+
+    By default, :mod:`PySide2`:
+
+    #. Catches exceptions raised during the GUI's event loop processing.
+    #, Prints the tracebacks for these exceptions to stderr.
+    #. Ignores these exceptions by silently returning to GUI processing.
+
+    Such behaviour is invisible to end users and hence insane. This function
+    amends this insanity by installing a new handler both interactively
+    displaying and non-interactively logging these exceptions.
+
+    Caveats
+    ----------
+    Ideally, this function should be called *before* entering this event loop
+    (i.e., calling the :meth:`betsee.util.psdapp.APP_GUI._exec` method).
+    '''
+
+    # Default insane global exception hook, preserved in case of catastrophe.
+    default_exception_handler = sys.excepthook
+
+    # Custom sane global exception hook implemented as a closure requiring this
+    # default insane global exception hook as a fallback.
+    def exception_hook(exception_type, exception, exception_traceback):
+        '''
+        Application-specific global exception hook.
+
+        See Also
+        ----------
+        :func:`install_handler`
+            Further details.
+        '''
+
+        # Additionally attempt to...
+        try:
+            # Import from BETSE. Since this hook should only over be installed
+            # *AFTER* BETSE is validated to be importable, this should succeed.
+            from betse.util.io.log import logs
+
+            # Log this exception.
+            logs.log_exception(exception)
+
+            # Display a PySide2-based message box displaying this exception.
+            show_exception(exception)
+        # If this exception handling itself raises an exception...
+        except Exception as exception_exception:
+            # Defer to the default global exception hook, presumably prining
+            # both this new and the prior exception to stderr.
+            default_exception_handler(
+                type(exception_exception),
+                exception_exception,
+                traceback.extract_stack(exception_exception))
+
+            # Exit the current application with failure status.
+            sys.exit(1)
+
+    # Replace the default global exception hook with this handler.
+    sys.excepthook = exception_hook
+
+# ....................{ SHOWERS                            }....................
 def show_error(
     # Mandatory parameters.
     title: str,
@@ -78,7 +141,7 @@ def show_error(
     # Run this application's event loop, thus displaying this message box.
     error_box.exec_()
 
-# ....................{ EXCEPTIONS                         }....................
+
 def show_exception(exception: Exception) -> None:
     '''
     Display the passed exception as a :mod:`PySide2`-driven modal message box in

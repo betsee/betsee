@@ -190,6 +190,7 @@ Root-level classes defining this application's graphical user interface (GUI).
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
 from betsee.gui import guicache
+from betsee.util.io import psderr
 
 # Importing from this submodule has a substantial side effect: specifically, the
 # the "QApplication" singleton is instantiated and assigned to this module
@@ -238,7 +239,17 @@ class BetseeGUI(object):
             Exit status of this event loop as an unsigned byte.
         '''
 
+        # Install a global exception hook overriding PySide2's default insane
+        # exception handling behaviour with sane exception handling *BEFORE*
+        # triggering any application-specific slots possibly raising exceptions.
+        # Since the _make_main_window() method transitively does so, this hook
+        # should be installed as the first call of this method.
+        psderr.install_exception_hook()
+
+        # Create but do *NOT* display this GUI's main window.
         self._make_main_window()
+
+        # Run this GUI's main event loop and display this GUI.
         return self._show_main_window()
 
 
@@ -298,7 +309,7 @@ class BetseeGUI(object):
 
         Specifically, this method:
 
-        * Run this GUI's event loops, thus displaying this window.
+        * Run this GUI's event loop, thus displaying this window.
         * Propagates the resulting exit status to the caller.
         '''
 

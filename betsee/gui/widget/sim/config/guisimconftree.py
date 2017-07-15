@@ -4,8 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based tree widget exposing all high-level features of the
-current simulation configuration.
+:mod:`PySide2`-based tree widget exposing all high-level features of a
+simulation configuration.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -15,6 +15,7 @@ from betse.util.io.log import logs
 from betse.util.type import strs
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
+from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.exceptions import BetseePySideTreeWidgetException
 
 # ....................{ CLASSES                            }....................
@@ -106,19 +107,15 @@ class QBetseeSimConfigTreeWidget(QTreeWidget):
             'Networks',  # Dynamically created list of child network items.
         }
 
-        # Substring prefixing the names of all pages of this stack widget.
-        SIM_CONF_STACK_PAGE_NAME_PREFIX = 'sim_conf_stack_page_'
-
         # Classify all widgets internally accessed by slots connected to below
         # *BEFORE* connecting these slots.
         self._sim_conf_stack = main_window.sim_conf_stack
 
         # Generator yielding 2-tuples of the name and value of each page of this
-        # stack widget parsed as all instance variables of this main window
-        # whose names are prefixed by a uniquely identifying string.
-        sim_conf_stack_pages = objects.iter_vars_custom_simple_matching(
-            obj=main_window, predicate=lambda var_name, var_value: (
-                var_name.startswith(SIM_CONF_STACK_PAGE_NAME_PREFIX)))
+        # stack widget, matching all instance variables of this main window with
+        # names prefixed by a unique substring.
+        sim_conf_stack_pages = objects.iter_vars_custom_simple_prefixed(
+            obj=main_window, prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX)
 
         # Dictionary mapping the name to value of each such stack widget page,
         # permitting the iteration below to efficiently look such values up.

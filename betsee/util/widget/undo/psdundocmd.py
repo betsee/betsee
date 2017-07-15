@@ -46,6 +46,9 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
 
     Attributes
     ----------
+    _id : int
+        Integer uniquely identifying the concrete subclass implementing this
+        abstract base class of this undo command.
     _widget : QWidget
         Widget operated upon by this undo command.
     '''
@@ -71,6 +74,9 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
         # Classify all remaining parameters.
         self._widget = widget
 
+        # Integer uniquely identifying this concrete subclass.
+        self._id = id(type(self))
+
     # ..................{ SUPERCLASS                         }..................
     # Optional superclass methods permitted to be redefined by each subclass.
 
@@ -86,7 +92,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
         of adjacent undo commands of the same type)..
         '''
 
-        return id(type(self))
+        return self._id
 
 
 class QBetseeScalarWidgetUndoCommandABC(QBetseeWidgetUndoCommandABC):
@@ -121,8 +127,8 @@ class QBetseeScalarWidgetUndoCommandABC(QBetseeWidgetUndoCommandABC):
         Parameters
         ----------
         value_new : object
-            New value replacing the prior value of the scalar widget associated with
-            this undo command.
+            New value replacing the prior value of the scalar widget associated
+            with this undo command.
         value_old : object
             Prior value of the scalar widget associated with this undo command.
 
@@ -193,21 +199,33 @@ class QBetseeLineEditUndoCommand(QBetseeScalarWidgetUndoCommandABC):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, widget: QLineEdit, *args, **kwargs) -> None:
+    def __init__(self, widget: QLineEdit, value_old: str) -> None:
+        '''
+        Initialize this undo command.
+
+        Parameters
+        ----------
+        widget: QLineEdit
+            Scalar widget associated with this undo command.
+        value_old : str
+            Prior value of this scalar widget.
+        '''
 
         # Initialize our superclass with all passed arguments.
         super().__init__(
             widget=widget,
+            value_old=value_old,
+            value_new=widget.text(),
             synopsis='edits to a text box',
-            value_old=self._widget.text(),
-            *args, **kwargs
         )
 
     # ..................{ SUPERCLASS                         }..................
     # Abstract superclass methods required to be defined by each subclass.
 
-    #FIXME: This focus attempt almost certainly fails across pages. Nonetheless,
-    #let's give her a go, eh?
+    #FIXME: This focus attempt almost certainly fails across pages. If this is
+    #the case, a sane general-purpose solution would be to iteratively search
+    #up from the parent of this widget to the eventual page of the
+    #"QStackedWidget" object containing this widget and then switch to that.
 
     def undo(self) -> None:
 
