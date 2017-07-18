@@ -96,7 +96,7 @@ from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.gui.widget.guinamespace import SIM_CONF_EDIT_WIDGET_NAME_PREFIX
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
 from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
-    QBetseeSimConfigEditWidgetMixin)
+    QBetseeWidgetMixinSimConfigEdit)
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfig(QObject):
@@ -111,10 +111,10 @@ class QBetseeSimConfig(QObject):
 
     Attributes (Non-widgets: Public)
     ----------
-    undo_stack : QBetseeSimConfigUndoStack
+    undo_stack : QBetseeUndoStackSimConfig
         Undo stack for the currently open simulation configuration if any *or*
         the empty undo stack otherwise. To allow external callers (e.g.,
-        :class:`QBetseeSimConfigEditWidgetMixin` instances) to access this
+        :class:`QBetseeWidgetMixinSimConfigEdit` instances) to access this
         attribute, this attribute is public rather than private.
 
     Attributes (Non-widgets: Private)
@@ -236,10 +236,10 @@ class QBetseeSimConfig(QObject):
 
         # Avoid circular import dependencies.
         from betsee.gui.widget.sim.config.guisimconfundo import (
-            QBetseeSimConfigUndoStack)
+            QBetseeUndoStackSimConfig)
 
         # Undo stack for this simulation configuration.
-        self.undo_stack = QBetseeSimConfigUndoStack(
+        self.undo_stack = QBetseeUndoStackSimConfig(
             main_window=main_window, sim_config=self)
 
         # Generator yielding 2-tuples of the name and value of each editable
@@ -253,7 +253,7 @@ class QBetseeSimConfig(QObject):
             # If this widget does *NOT* implement the editable widget API, raise
             # an exception.
             objects.die_unless_instance(
-                obj=edit_widget, cls=QBetseeSimConfigEditWidgetMixin)
+                obj=edit_widget, cls=QBetseeWidgetMixinSimConfigEdit)
 
             # Initialize this widget against this state object.
             edit_widget.init(self)
@@ -482,18 +482,20 @@ class QBetseeSimConfig(QObject):
         # associated with an existing file and having unsaved changes.
         self._action_save_sim.setEnabled(self._is_file and self._is_dirty)
 
-        #FIXME: Re-enable after widget change detection behaves as expected.
+        #FIXME: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #Re-enable after widget change detection behaves as expected.
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        # Show or hide widgets requiring an open simulation configuration.
+        # # Show or hide widgets requiring an open simulation configuration.
         # self._sim_conf_stack.setVisible(self._is_open)
         # self._sim_conf_tree_frame.setVisible(self._is_open)
         # self._sim_phase_tabs.setVisible(self._is_open)
-
-        # If a simulation configuration is open...
-        if self._is_open:
-            # ...and this configuration is clean, mark the undo stack as clean.
-            if not self._is_dirty:
-                self.undo_stack.setClean()
-        # Else, no simulation configuration is open. Clear the undo stack.
-        else:
-            self.undo_stack.clear()
+        #
+        # # If a simulation configuration is open...
+        # if self._is_open:
+        #     # ...and this configuration is clean, mark the undo stack as clean.
+        #     if not self._is_dirty:
+        #         self.undo_stack.setClean()
+        # # Else, no simulation configuration is open. Clear the undo stack.
+        # else:
+        #     self.undo_stack.clear()

@@ -4,41 +4,18 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based object encapsulating simulation configuration state.
+Abstract base classes of all widget-specific undo command subclasses.
 '''
 
-#FIXME: Add support for Qt's command pattern-based "QUndoStack". Specifically:
-#
-#* Design a new ""QBetseeSimConfigUndoCommandABC" base class. This is getting
-#  cumbersome fast, so we probably want to:
-#  * Create a new "betsee.gui.widget.sim.config.undo" subpackage.
-#  * Shift this "guisimconfundo" submodule into this subpackage.
-#  * Create a new "guisimconfundocmd" submodule in this subpackage, to which
-#    this base class and all subclasses described below should be added.
-#* Design a variety of "QUndoCommand" subclasses in this submodule. Ideally,
-#  there should exist one such subclass for each type of editable form widget in
-#  our "sim_conf_stack" widget (e.g., "QBetseeSimConfigUndoCommandLineEdit" for
-#  "QLineEdit" widgets), undoing and redoing changes to such widgets. It's quite
-#  likely that such subclasses will need to be specific to simulation
-#  configurations, as their implementations will probably need to store the
-#  current and new values of a data descriptor-style attribute of the
-#  "betse.science.params.Parameters" class for subsequent application
-#  restoration by an undo. Presumably, the name of this attribute, the desired
-#  new value of this attribute, and this "Parameters" object will need to be
-#  passed to the constructor of each such subclass.
-
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import Qt  #, Slot
 from PySide2.QtWidgets import (
-    QLineEdit,
-    QUndoCommand,
-    QWidget,
-)
-# from betse.util.io.log import logs
+    QLineEdit, QUndoCommand)
+from betse.util.io.log import logs
 from betse.util.type.types import type_check
+from betsee.util.widget.psdwdg import QBetseeWidgetMixin
 
 # ....................{ SUPERCLASSES                       }....................
-class QBetseeWidgetUndoCommandABC(QUndoCommand):
+class QBetseeUndoCommandWidgetABC(QUndoCommand):
     '''
     Abstract base class of all widget-specific undo command subclasses,
     encapsulating both the application and restoration of the contents of a
@@ -49,35 +26,65 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
     _id : int
         Integer uniquely identifying the concrete subclass implementing this
         abstract base class of this undo command.
-    _widget : QWidget
-        Widget operated upon by this undo command.
+    _widget : QBetseeWidgetMixin
+        Application-specific widget operated upon by this undo command.
+    _synopsis : str
+        Human-readable string synopsizing the operation performed by this
+        undo command, preferably as a single translated sentence fragment.
+        This string is identical to that returned by the :meth:`actionString`
+        method, but is stored as an instance variable purely for readability.
     '''
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, widget: QWidget, synopsis: str) -> None:
+    def __init__(self, widget: QBetseeWidgetMixin, synopsis: str) -> None:
         '''
         Initialize this undo command.
 
         Parameters
         ----------
-        widget : QWidget
-            Widget operated upon by this undo command.
+        widget : QBetseeWidgetMixin
+            Application-specific widget operated upon by this undo command.
         synopsis : str
             Human-readable string synopsizing the operation performed by this
-            undo command, preferably as a single translated sentence.
+            undo command, preferably as a single translated sentence fragment.
         '''
 
         # Initialize our superclass with the passed synopsis.
         super().__init__(synopsis)
 
-        # Classify all remaining parameters.
+        # Classify all parameters.
+        self._synopsis = synopsis
         self._widget = widget
 
         # Integer uniquely identifying this concrete subclass.
         self._id = id(type(self))
 
-    # ..................{ SUPERCLASS                         }..................
+    # ..................{ SUPERCLASS ~ mandatory             }..................
+    # Abstract superclass methods required to be defined by each subclass.
+
+    def undo(self) -> None:
+
+        # Log this undo.
+        logs.log_debug(
+            'Undoing %s for widget "%s"...',
+            self._synopsis, self._widget.object_name)
+
+        # Notify this widget that an undo command is now being applied to it.
+        self._widget.is_in_undo_command = True
+
+
+    def redo(self) -> None:
+
+        # Log this redo.
+        logs.log_debug(
+            'Redoing %s for widget "%s"...',
+            self._synopsis, self._widget.object_name)
+
+        # Notify this widget that an undo command is now being applied to it.
+        self._widget.is_in_undo_command = True
+
+    # ..................{ SUPERCLASS ~ optional              }..................
     # Optional superclass methods permitted to be redefined by each subclass.
 
     #FIXME: PySide2 should probably provide a default implementation for this
@@ -95,7 +102,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
         return self._id
 
 
-class QBetseeScalarWidgetUndoCommandABC(QBetseeWidgetUndoCommandABC):
+class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
     '''
     Abstract base class of all scalar widget-specific undo command subclasses,
     encapsulating both the application and restoration of the scalar contents
@@ -190,7 +197,7 @@ class QBetseeScalarWidgetUndoCommandABC(QBetseeWidgetUndoCommandABC):
         return True
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeLineEditUndoCommand(QBetseeScalarWidgetUndoCommandABC):
+class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
     '''
     :class:`QLineEdit`-specific undo command, encapsulating both the application
     of new text contents and restoration of old text contents of the
@@ -229,14 +236,43 @@ class QBetseeLineEditUndoCommand(QBetseeScalarWidgetUndoCommandABC):
 
     def undo(self) -> None:
 
+        # Defer to our superclass first.
+        super().undo()
+
+        # Undo the prior edit.
+        #
         # To avoid revalidating the previously validated prior text contents of
         # this widget, the QLineEdit.setText() rather than QLineEdit.insert()
         # method is called.
         self._widget.setText(self._value_old)
-        self._widget.setFocus(Qt.OtherFocusReason)
+        # self._widget.setFocus(Qt.OtherFocusReason)
 
 
     def redo(self) -> None:
 
+        # Defer to our superclass first.
+        super().redo()
+
+        # Redo the prior edit.
         self._widget.setText(self._value_new)
-        self._widget.setFocus(Qt.OtherFocusReason)
+        # self._widget.setFocus(Qt.OtherFocusReason)
+
+# ....................{ PLACEHOLDERS                       }....................
+class QBetseeUndoCommandNull(QUndoCommand):
+    '''
+    Placeholder undo command intended solely to simplify testing.
+    '''
+
+    # ..................{ SUPERCLASS ~ mandatory             }..................
+    # Abstract superclass methods required to be defined by each subclass.
+
+    def undo(self) -> None:
+
+        # Log this undo.
+        logs.log_debug('Undoing %s...', self.actionText())
+
+
+    def redo(self) -> None:
+
+        # Log this redo.
+        logs.log_debug('Redoing %s...', self.actionText())

@@ -897,7 +897,7 @@
             </widget>
            </item>
            <item row="2" column="0" colspan="2">
-            <widget class="QBetseeSimConfigLineEdit" name="sim_conf_edit_path_yaml">
+            <widget class="QBetseeLineEditSimConfig" name="sim_conf_edit_path_yaml">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>1</horstretch>
@@ -3359,7 +3359,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QBetseeSimConfigTreeWidget" name="sim_conf_tree">
+        <widget class="QBetseeTreeWidgetSimConfig" name="sim_conf_tree">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>1</horstretch>
@@ -4118,14 +4118,14 @@
    <header>betsee/util/widget/psdtextedit.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeSimConfigTreeWidget</class>
+   <class>QBetseeTreeWidgetSimConfig</class>
    <extends>QTreeWidget</extends>
    <header>betsee/gui/widget/sim/config/guisimconftree.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeSimConfigLineEdit</class>
+   <class>QBetseeLineEditSimConfig</class>
    <extends>QLineEdit</extends>
-   <header>betsee/gui/widget/sim/config/edit/guisimconfedit.h</header>
+   <header>betsee/gui/widget/sim/config/edit/guisimconflineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources>

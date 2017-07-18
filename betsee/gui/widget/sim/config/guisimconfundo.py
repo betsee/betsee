@@ -7,6 +7,21 @@
 :mod:`PySide2`-based object encapsulating simulation configuration state.
 '''
 
+#FIXME: Currently, entering either <Ctrl-z> or <Ctrl-Shift-z> while in an
+#editable widget that takes the keyboard focus forwards these key sequence
+#events to that specific widget rather than the application as a whole,
+#preventing the global undo stack from being modified by keyboard. To address
+#this, consider carefully:
+#
+#* Redefining the key sequence event handler for each editable simulation
+#  configuration widget as follows:
+#  * If widget.isUndoRedoEnabled() returns True, then defer to the default
+#    superclass key sequence event handler for this widget. This preserves the
+#    existing functionality for widgets with pending actions to be undone.
+#  * Else (i.e., if this widget has no pending actions to be undone), forward
+#    this key sequence event to the global application or main window widgets,
+#    triggering an undo or redo from the global undo stack.
+
 #FIXME: Whenever the undo stack returns to the clean state through undoing and
 #redoing commands, it emits the signal cleanChanged(). This signal should be
 #connected to a slot simply emitting our more general-purpose
@@ -19,7 +34,7 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QSize  # Signal, Slot
 from PySide2.QtGui import QIcon, QKeySequence
-from PySide2.QtWidgets import QUndoStack
+from PySide2.QtWidgets import QUndoCommand, QUndoStack
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.exceptions import BetseePySideMenuException
@@ -27,9 +42,9 @@ from betsee.gui.widget.guimainwindow import QBetseeMainWindow
 from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConfig
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimConfigUndoStack(QUndoStack):
+class QBetseeUndoStackSimConfig(QUndoStack):
     '''
-    :class:`QUndoStack`-based stack of all :class:`QBetseeSimConfigUndoCommand`
+    :class:`QUndoStack`-based stack of all :class:`QBetseeUndoCommandSimConfig`
     instances signifying user-driven simulation configuration modifications and
     the capacity to undo those modifications.
 
@@ -126,15 +141,15 @@ class QBetseeSimConfigUndoStack(QUndoStack):
         # Redo action synchronized with the contents of this stack.
         self._redo_action = self.createRedoAction(
             sim_config, QCoreApplication.translate(
-                'QBetseeSimConfigUndoStack', '&Redo'))
-        self._redo_action.setShortcuts(QKeySequence.Redo)
+                'QBetseeUndoStackSimConfig', '&Redo'))
         self._redo_action.setIcon(redo_icon)
         self._redo_action.setObjectName('action_redo')
+        self._redo_action.setShortcuts(QKeySequence.Redo)
 
         # Undo action synchronized with the contents of this stack.
         self._undo_action = self.createUndoAction(
             sim_config, QCoreApplication.translate(
-                'QBetseeSimConfigUndoStack', '&Undo'))
+                'QBetseeUndoStackSimConfig', '&Undo'))
         self._undo_action.setIcon(undo_icon)
         self._undo_action.setObjectName('action_undo')
         self._undo_action.setShortcuts(QKeySequence.Undo)
@@ -159,12 +174,33 @@ class QBetseeSimConfigUndoStack(QUndoStack):
             if not first_action.isSeparator():
                 raise BetseePySideMenuException(
                     title=QCoreApplication.translate(
-                        'QBetseeSimConfigUndoStack', 'Edit Menu Malformed'),
+                        'QBetseeUndoStackSimConfig', 'Edit Menu Malformed'),
                     synopsis=QCoreApplication.translate(
-                        'QBetseeSimConfigUndoStack',
+                        'QBetseeUndoStackSimConfig',
                         'First "Edit" menu action '
                         '"{0}" not a separator.'.format(first_action.text())))
 
         # Insert these actions before this action in this menu (in order).
         main_window.menu_edit.insertAction(first_action, self._undo_action)
         main_window.menu_edit.insertAction(first_action, self._redo_action)
+
+    # ..................{ PUSHERS                            }..................
+    def push(self, undo_command: QUndoCommand) -> None:
+
+        # Log this push *BEFORE* performing this push, for debuggability.
+        logs.log_debug(
+            'Pushing undo command "%s" onto stack...',
+            undo_command.actionText())
+
+        # logs.log_debug(
+        #     'Action state *BEFORE*: undo (%r), redo (%r)',
+        #     self._undo_action.isEnabled(),
+        #     self._redo_action.isEnabled())
+
+        # Push this undo command onto this stack.
+        super().push(undo_command)
+
+        # logs.log_debug(
+        #     'Action state *AFTER*: undo (%r), redo (%r)',
+        #     self._undo_action.isEnabled(),
+        #     self._redo_action.isEnabled())
