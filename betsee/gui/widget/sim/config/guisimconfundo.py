@@ -25,11 +25,10 @@
 #FIXME: Whenever the undo stack returns to the clean state through undoing and
 #redoing commands, it emits the signal cleanChanged(). This signal should be
 #connected to a slot simply emitting our more general-purpose
-#"set_dirty_signal".
-#FIXME: Connect all applicable edit signals of editable form widgets contained
-#within the stack widget to corresponding slots (probably defined on this
-#object), each internally pushing an instance of the corresponding subclass
-#defined by the "betsee.util.type.psdundo" submodule onto this undo stack.
+#"set_dirty_signal". Hmmmm; wait. Actually, is doing so even necessary? Since
+#each application of an undo or redo operation necessarily invokes an editable
+#widget slot already emitting "set_dirty_signal", there appears to be no need
+#for this undo stack to explicitly do so as well.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QSize  # Signal, Slot
@@ -87,26 +86,35 @@ class QBetseeUndoStackSimConfig(QUndoStack):
         self._redo_action = None
         self._undo_action = None
 
-        # Create all actions, menu items, and icons associated with this stack.
-        self._init_widgets(main_window=main_window, sim_config=sim_config)
+        # Log this initialization.
+        logs.log_debug('Customizing simulation configuration undo stack...')
+
+        # Create all actions and icons associated with this undo stack.
+        self._init_actions()
+
+        # Create all items of the "Edit" menu requiring these actions.
+        self._init_menu_edit(main_window)
+
+        # Create all buttons of the main toolbar requiring these actions.
+        self._init_tool_bar(main_window)
 
         #FIXME: Connect these actions to appropriate "sim_config" slots and
         #signals. (See the "FIXME" above for commentary on exactly what.)
 
 
     @type_check
-    def _init_widgets(
+    def _init_actions(
         self,
-        main_window: QBetseeMainWindow,
-        sim_config: QBetseeSimConfig,
+        # main_window: QBetseeMainWindow,
+        # sim_config: QBetseeSimConfig,
     ) -> None:
         '''
-        Create all actions, menu items, and icons associated with this stack.
+        Create all actions and icons associated with this undo stack.
 
         Design
         ----------
         To synchronize the state and text of these actions with the contents of
-        this stack, these actions *must* be created by calling the
+        this undo stack, this method creates these actions by calling the
         :meth:`createUndoAction` and :meth:`createRedoAction` methods. Since Qt
         Designer lacks support for doing so, this method does so manually.
 
@@ -117,9 +125,6 @@ class QBetseeUndoStackSimConfig(QUndoStack):
         sim_config: QBetseeSimConfig
             Direct parent object against which to initialize this object.
         '''
-
-        # Log this initialization.
-        logs.log_debug('Fabricating undo stack widgets...')
 
         # Redo icon associated with this redo action.
         redo_icon = QIcon()
@@ -140,7 +145,8 @@ class QBetseeUndoStackSimConfig(QUndoStack):
 
         # Redo action synchronized with the contents of this stack.
         self._redo_action = self.createRedoAction(
-            sim_config, QCoreApplication.translate(
+            self, QCoreApplication.translate(
+            # sim_config, QCoreApplication.translate(
                 'QBetseeUndoStackSimConfig', '&Redo'))
         self._redo_action.setIcon(redo_icon)
         self._redo_action.setObjectName('action_redo')
@@ -148,41 +154,95 @@ class QBetseeUndoStackSimConfig(QUndoStack):
 
         # Undo action synchronized with the contents of this stack.
         self._undo_action = self.createUndoAction(
-            sim_config, QCoreApplication.translate(
+            self, QCoreApplication.translate(
+            # sim_config, QCoreApplication.translate(
                 'QBetseeUndoStackSimConfig', '&Undo'))
         self._undo_action.setIcon(undo_icon)
         self._undo_action.setObjectName('action_undo')
         self._undo_action.setShortcuts(QKeySequence.Undo)
 
+
+    @type_check
+    def _init_menu_edit(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Create all items of the ``Edit`` menu requiring actions previously
+        created by the :meth:`_init_actions` method.
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget.
+        '''
+
         # List of all actions in the "Edit" menu.
         menu_edit_actions = main_window.menu_edit.actions()
 
-        # First action in the "Edit" menu. As a fallback in the event this menu
-        # contains no actions, this action intentionally defaults to a
-        # placeholder integer instructing subsequent insertions to simply append
-        # to this menu.
-        #
-        # While this should never happen, never is the enemy of reason.
-        first_action = 0
+        # First action in the "Edit" menu, guaranteed by the logic below to be
+        # separator. As a fallback in the event this menu contains no actions,
+        # this action intentionally defaults to a placeholder integer
+        # instructing subsequent insertions to append to this menu. While this
+        # edge case should never happen, never is the enemy of reason.
+        first_separator = 0
 
         # If at least one such action exists...
         if menu_edit_actions:
             # First such action.
-            first_action = menu_edit_actions[0]
+            first_separator = menu_edit_actions[0]
 
             # If this action is *NOT* a separator, raise an exception.
-            if not first_action.isSeparator():
+            if not first_separator.isSeparator():
                 raise BetseePySideMenuException(
                     title=QCoreApplication.translate(
                         'QBetseeUndoStackSimConfig', 'Edit Menu Malformed'),
                     synopsis=QCoreApplication.translate(
                         'QBetseeUndoStackSimConfig',
                         'First "Edit" menu action '
-                        '"{0}" not a separator.'.format(first_action.text())))
+                        '"{0}" not a separator.'.format(first_separator.text())))
 
-        # Insert these actions before this action in this menu (in order).
-        main_window.menu_edit.insertAction(first_action, self._undo_action)
-        main_window.menu_edit.insertAction(first_action, self._redo_action)
+        # Insert undo and redo actions before this separator in this menu.
+        main_window.menu_edit.insertAction(first_separator, self._undo_action)
+        main_window.menu_edit.insertAction(first_separator, self._redo_action)
+
+
+    @type_check
+    def _init_tool_bar(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Create all buttons of the main toolbar requiring actions previously
+        created by the :meth:`_init_actions` method.
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget.
+        '''
+
+        # List of all actions in the main toolbar.
+        tool_bar_actions = main_window.tool_bar.actions()
+
+        # For each such action...
+        for first_separator in tool_bar_actions:
+            # If this action is the first separator in this toolbar, this action
+            # is the desired separator.
+            if first_separator.isSeparator():
+                # Insert a new separator before this separator in this toolbar,
+                # such that:
+                #
+                # * The former separator will precede the undo and redo actions.
+                # * The latter separator will succeed the undo and redo actions.
+                main_window.tool_bar.insertSeparator(first_separator)
+
+                # Cease searching.
+                break
+        # Else, this action contains no separators. In this case, default to a
+        # placeholder integer instructing subsequent insertions to append to
+        # this toolbar. While this edge case should never happen, never is still
+        # the enemy of reason.
+        else:
+            first_separator = 0
+
+        # Insert undo and redo actions before this separator in this toolbar.
+        main_window.tool_bar.insertAction(first_separator, self._undo_action)
+        main_window.tool_bar.insertAction(first_separator, self._redo_action)
 
     # ..................{ PUSHERS                            }..................
     def push(self, undo_command: QUndoCommand) -> None:

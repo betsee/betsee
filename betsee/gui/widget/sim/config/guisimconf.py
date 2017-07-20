@@ -482,20 +482,16 @@ class QBetseeSimConfig(QObject):
         # associated with an existing file and having unsaved changes.
         self._action_save_sim.setEnabled(self._is_file and self._is_dirty)
 
-        #FIXME: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #Re-enable after widget change detection behaves as expected.
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # Show or hide widgets requiring an open simulation configuration.
+        self._sim_conf_stack.setVisible(self._is_open)
+        self._sim_conf_tree_frame.setVisible(self._is_open)
+        self._sim_phase_tabs.setVisible(self._is_open)
 
-        # # Show or hide widgets requiring an open simulation configuration.
-        # self._sim_conf_stack.setVisible(self._is_open)
-        # self._sim_conf_tree_frame.setVisible(self._is_open)
-        # self._sim_phase_tabs.setVisible(self._is_open)
-        #
-        # # If a simulation configuration is open...
-        # if self._is_open:
-        #     # ...and this configuration is clean, mark the undo stack as clean.
-        #     if not self._is_dirty:
-        #         self.undo_stack.setClean()
-        # # Else, no simulation configuration is open. Clear the undo stack.
-        # else:
-        #     self.undo_stack.clear()
+        # If a simulation configuration is open...
+        if self._is_open:
+            # ...and this configuration is clean, mark the undo stack as clean.
+            if not self._is_dirty:
+                self.undo_stack.setClean()
+        # Else, no simulation configuration is open. Clear the undo stack.
+        else:
+            self.undo_stack.clear()

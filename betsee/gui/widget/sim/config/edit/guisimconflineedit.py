@@ -26,7 +26,7 @@ class QBetseeLineEditSimConfig(QBetseeWidgetMixinSimConfigEdit, QLineEdit):
 
     Attributes
     ----------
-    _text_cached : str
+    _text_prev : str
         Text contents of this widget cached on the completion of the most recent
         user edit (i.e., :meth:`editingFinished` signal) and hence *not*
         necessarily reflecting the current state of this widget.
@@ -39,8 +39,7 @@ class QBetseeLineEditSimConfig(QBetseeWidgetMixinSimConfigEdit, QLineEdit):
         super().__init__(*args, **kwargs)
 
         # Nullify all instance variables for safety.
-        self._text_cached = None
-
+        self._text_prev = None
 
 
     def init(self, *args, **kwargs) -> bool:
@@ -58,15 +57,8 @@ class QBetseeLineEditSimConfig(QBetseeWidgetMixinSimConfigEdit, QLineEdit):
         # Defer to the superclass setter.
         super().setText(text_new)
 
-        # Cache this widget's new text in preparation for the next edit.
-        self._text_cached = self.text()
-
-        # Notify all connected slots that the currently open simulation
-        # configuration has received new unsaved changes. As this setter is
-        # typically called *BEFORE* this widget has been initialized with a
-        # simulation configuration, this notification is performed *ONLY* if
-        # this widget is indeed fully initialized.
-        self._enable_sim_conf_dirty_if_initted()
+        # Finalize this programmatic change of the contents of this widget.
+        self._editing_finished_undoable()
 
     # ..................{ SLOTS                              }..................
     @Slot()
@@ -78,20 +70,30 @@ class QBetseeLineEditSimConfig(QBetseeWidgetMixinSimConfigEdit, QLineEdit):
 
         # Log this edit.
         logs.log_debug(
-            'Finalizing edit of editable widget "%s"...', self.object_name)
+            'Finalizing editable widget "%s" change...', self.object_name)
 
-        # If prior text for this widget has been cached, this edit is undoable.
-        # In this case, push an undo command onto the undo stack permitting this
-        # edit to be undone *BEFORE* updating the "_text_cached" variable.
-        # elif self._text_cached is not None:
-        if self._text_cached is not None:
-            # self._undo_stack.push(QBetseeUndoCommandNull('wut'))
-            self._undo_stack.push(QBetseeUndoCommandLineEdit(
-                widget=self, value_old=self._text_cached))
+        # Current text of this widget's contents.
+        text_curr = self.text()
+
+        # If this widget's contents have changed: specifically, if...
+        if (
+            # Prior text has been cached for this widget.
+            self._text_prev is not None and
+            # This prior text differs from this current text.
+            self._text_prev != text_curr
+        ):
+            # Notify all connected slots that the currently open simulation
+            # configuration has received new unsaved changes.
+            self._enable_sim_conf_dirty()
+
+            # If an undo command is *NOT* being applied to this widget, then
+            # this edit is undoable. In this case, push an undo command onto the
+            # undo stack permitting this edit to be undone *BEFORE* updating the
+            # "_text_prev" variable.
+            if not self.is_in_undo_command:
+                # self._undo_stack.push(QBetseeUndoCommandNull('wut'))
+                self._undo_stack.push(QBetseeUndoCommandLineEdit(
+                    widget=self, value_old=self._text_prev))
 
         # Cache this widget's new text in preparation for the next edit.
-        self._text_cached = self.text()
-
-        # Notify all connected slots that the currently open simulation
-        # configuration has received new unsaved changes.
-        self._enable_sim_conf_dirty()
+        self._text_prev = text_curr

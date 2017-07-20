@@ -152,7 +152,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         self._sim_config = None
 
         # Log this initialization.
-        logs.log_debug('Fabricating main window...')
+        logs.log_debug('Generating main window...')
 
         # Customize this main window as specified by the XML-formatted UI file
         # exported by Qt Creator. This superclass method is defined by the

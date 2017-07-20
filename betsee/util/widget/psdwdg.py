@@ -102,8 +102,6 @@ directly.
 '''
 
 # ....................{ MIXINS                             }....................
-#FIXME: Is the "is_in_undo_command" boolean still of value? If not, excise.
-
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").

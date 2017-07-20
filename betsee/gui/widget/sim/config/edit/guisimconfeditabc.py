@@ -10,7 +10,7 @@ subclasses.
 
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
-from betsee.exceptions import BetseePySideWidgetException
+# from betsee.exceptions import BetseePySideWidgetException
 from betsee.util.widget.psdwdg import QBetseeWidgetMixin
 
 # ....................{ MIXINS                             }....................
@@ -97,42 +97,54 @@ class QBetseeWidgetMixinSimConfigEdit(QBetseeWidgetMixin):
         self._sim_conf = sim_conf
         self._undo_stack = sim_conf.undo_stack
 
+    # ..................{ PROPERTIES                         }..................
+    @property
+    def _is_initted(self) -> bool:
+        '''
+        ``True`` only if this widget has been associated with an open simulation
+        configuration (i.e., if the :meth:`init` method has been called).
+        '''
+
+        return self._sim_conf is not None
+
     # ..................{ ENABLERS                           }..................
+    #FIXME: Consider excising. This appears to no longer be required.
+
+    # def _enable_sim_conf_dirty(self) -> None:
+    #     '''
+    #     Enable the dirty state for the current simulation configuration.
+    #
+    #     This method is intended to be called by subclass slots on completion of
+    #     user edits to the contents of this widget. In response, this method
+    #     notifies all connected slots that this simulation configuration has
+    #     received new unsaved changes.
+    #
+    #     See Also
+    #     ----------
+    #     :meth:`_enable_sim_conf_dirty_if_initted`
+    #         Further details.
+    #
+    #     Raises
+    #     ----------
+    #     BetseePySideWidgetException
+    #         If the :meth:`init` method has yet to be called.
+    #     '''
+    #
+    #     # If this widget has yet to be initialized, raise an exception.
+    #     if not self._is_initted:
+    #         raise BetseePySideWidgetException(
+    #             title='Widget Uninitialized',
+    #             synopsis=(
+    #                 'Editable widget "{0}" uninitialized '
+    #                 '(i.e., simulation configuration not set).'
+    #             ).format(self.object_name))
+    #
+    #     # Else, this widget is initializedi, in which case the following enabler
+    #     # is safely deferrable to.
+    #     self._enable_sim_conf_dirty_if_initted()
+
+
     def _enable_sim_conf_dirty(self) -> None:
-        '''
-        Enable the dirty state for the current simulation configuration.
-
-        This method is intended to be called by subclass slots on completion of
-        user edits to the contents of this widget. In response, this method
-        notifies all connected slots that this simulation configuration has
-        received new unsaved changes.
-
-        See Also
-        ----------
-        :meth:`_enable_sim_conf_dirty_if_initted`
-            Further details.
-
-        Raises
-        ----------
-        BetseePySideWidgetException
-            If the :meth:`init` method has yet to be called.
-        '''
-
-        # If this widget has yet to be initialized, raise an exception.
-        if self._sim_conf is None:
-            raise BetseePySideWidgetException(
-                title='Widget Uninitialized',
-                synopsis=(
-                    'Editable widget "{0}" uninitialized '
-                    '(i.e., simulation configuration not set).'
-                ).format(self.object_name))
-
-        # Else, this widget is initializedi, in which case the following enabler
-        # is safely deferrable to.
-        self._enable_sim_conf_dirty_if_initted()
-
-
-    def _enable_sim_conf_dirty_if_initted(self) -> None:
         '''
         Enable the dirty state for the current simulation configuration if this
         widget has been initialized with such a configuration *or* noop
@@ -145,7 +157,7 @@ class QBetseeWidgetMixinSimConfigEdit(QBetseeWidgetMixin):
         '''
 
         # If this widget has yet to be initialized, silently noop.
-        if self._sim_conf is None:
+        if not self._is_initted:
             return
 
         # Log this initialization *AFTER* storing this name.

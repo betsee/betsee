@@ -2630,7 +2630,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>network substances affect Vmem</string>
+              <string>network substances affect &amp;Vmem</string>
              </property>
             </widget>
            </item>
@@ -3813,7 +3813,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
+  <widget class="QMenuBar" name="menu_bar">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -3863,7 +3863,7 @@
    <addaction name="menu_edit"/>
    <addaction name="menu_help"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
+  <widget class="QToolBar" name="tool_bar">
    <property name="sizePolicy">
     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
      <horstretch>0</horstretch>
