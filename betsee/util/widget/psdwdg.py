@@ -105,7 +105,7 @@ directly.
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetMixin(object):
+class QBetseeWidgetEditMixin(object):
     '''
     Abstract base class of all **editable widget** (i.e., widget permitting one
     or more simulation configuration values stored in an external YAML file to

@@ -831,7 +831,7 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QStackedWidget" name="sim_conf_stack">
+     <widget class="QBetseeStackedWidgetSimConfig" name="sim_conf_stack">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>2</horstretch>
@@ -850,237 +850,190 @@
        <number>0</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_FileManagement">
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
-         <widget class="QGroupBox" name="groupBox_FileManagement">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-            <horstretch>1</horstretch>
-            <verstretch>3</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>13</pointsize>
-           </font>
-          </property>
-          <property name="title">
-           <string>File Management</string>
-          </property>
-          <layout class="QFormLayout" name="formLayout_11">
-           <item row="0" column="0">
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>16</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="sim_conf_label_path_yaml">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Config file name:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QBetseeLineEditSimConfig" name="sim_conf_edit_path_yaml">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>betse_config1.yaml</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Seed file load/save:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QLineEdit" name="lineEdit_seedfile">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Init file load/save:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="0" colspan="2">
-            <widget class="QLineEdit" name="lineEdit_initfile">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Sim file load/save:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="0" colspan="2">
-            <widget class="QLineEdit" name="lineEdit_simfile">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="9" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Init results load/save:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="10" column="0" colspan="2">
-            <widget class="QLineEdit" name="lineEdit_initresults">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="11" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Sim results load/save:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="12" column="0" colspan="2">
-            <widget class="QLineEdit" name="lineEdit_simresults">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="13" column="0">
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QGroupBox" name="groupBox_FileManagement">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>578</width>
+          <height>877</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>1</horstretch>
+          <verstretch>3</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="title">
+         <string>File Management</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_19">
+         <item>
+          <widget class="QGroupBox" name="groupBox_11">
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Directories containing files pickled by simulation phases.</string>
+           </property>
+           <property name="title">
+            <string>Simulation Phase Pickles</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout_11">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Seed:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QWidget" name="widget_5" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_seed_edit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Directory containing the cell cluster created by the most recent seed of this simulation.</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="sim_conf_path_seed_button">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_62">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Simulation:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_73">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Initialization:</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_12">
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Directories containing results exported by simulation phases.</string>
+           </property>
+           <property name="title">
+            <string>Simulation Phase Exports</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout_16">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_74">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Initialization:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_76">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Simulation:</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
       </widget>
       <widget class="QWidget" name="sim_conf_stack_page_TimeSettings">
        <layout class="QGridLayout" name="gridLayout_3">
@@ -4126,6 +4079,12 @@
    <class>QBetseeLineEditSimConfig</class>
    <extends>QLineEdit</extends>
    <header>betsee/gui/widget/sim/config/edit/guisimconflineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeStackedWidgetSimConfig</class>
+   <extends>QStackedWidget</extends>
+   <header>betsee/gui/widget/sim/config/guisimconfstack.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

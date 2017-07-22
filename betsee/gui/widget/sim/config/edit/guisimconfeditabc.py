@@ -10,14 +10,13 @@ subclasses.
 
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
-# from betsee.exceptions import BetseePySideWidgetException
-from betsee.util.widget.psdwdg import QBetseeWidgetMixin
+from betsee.util.widget.psdwdg import QBetseeWidgetEditMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetMixinSimConfigEdit(QBetseeWidgetMixin):
+class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
     '''
     Abstract base class of all **editable simulation configuration widget**
     (i.e., widget permitting one or more simulation configuration values stored
@@ -50,10 +49,26 @@ class QBetseeWidgetMixinSimConfigEdit(QBetseeWidgetMixin):
         self._undo_stack = None
 
 
+    #FIXME: Generalize to also accept a parameter providing the class-oriented
+    #expralias()-style data descriptor object to which this widget's contents
+    #are synchronized. To do so:
+    #
+    #* Append a second "conf_alias" parameter to this method signature. Note
+    #  that this parameter will be internally validated to be a data descriptor
+    #  and hence need *NOT* be type-validated here.
+    #* Convert this raw data descriptor into a higher-level
+    #  "DataDescriptorUnbound" instance, simplifying usage semantics.
+    #
+    #For example:
+    #
+    #    from betse.util.type.descriptor.datadescs import DataDescriptorUnbound
+    #    def init(self, sim_conf: 'QBetseeSimConfig', conf_alias: object) -> None:
+    #        self._conf_alias = DataDescriptorUnbound(conf_alias)
+
     # To avoid circular imports due to the "QBetseeSimConfig" class importing
     # the "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
     # importing instances of this class, this type is validated dynamically.
-    def init(self, sim_conf: 'QBetseeSimConfig') -> bool:
+    def init(self, sim_conf: 'QBetseeSimConfig') -> None:
         '''
         Initialize this widget against the passed state object.
 
@@ -108,42 +123,6 @@ class QBetseeWidgetMixinSimConfigEdit(QBetseeWidgetMixin):
         return self._sim_conf is not None
 
     # ..................{ ENABLERS                           }..................
-    #FIXME: Consider excising. This appears to no longer be required.
-
-    # def _enable_sim_conf_dirty(self) -> None:
-    #     '''
-    #     Enable the dirty state for the current simulation configuration.
-    #
-    #     This method is intended to be called by subclass slots on completion of
-    #     user edits to the contents of this widget. In response, this method
-    #     notifies all connected slots that this simulation configuration has
-    #     received new unsaved changes.
-    #
-    #     See Also
-    #     ----------
-    #     :meth:`_enable_sim_conf_dirty_if_initted`
-    #         Further details.
-    #
-    #     Raises
-    #     ----------
-    #     BetseePySideWidgetException
-    #         If the :meth:`init` method has yet to be called.
-    #     '''
-    #
-    #     # If this widget has yet to be initialized, raise an exception.
-    #     if not self._is_initted:
-    #         raise BetseePySideWidgetException(
-    #             title='Widget Uninitialized',
-    #             synopsis=(
-    #                 'Editable widget "{0}" uninitialized '
-    #                 '(i.e., simulation configuration not set).'
-    #             ).format(self.object_name))
-    #
-    #     # Else, this widget is initializedi, in which case the following enabler
-    #     # is safely deferrable to.
-    #     self._enable_sim_conf_dirty_if_initted()
-
-
     def _enable_sim_conf_dirty(self) -> None:
         '''
         Enable the dirty state for the current simulation configuration if this

@@ -77,10 +77,10 @@ class QBetseeTreeWidgetSimConfig(QTreeWidget):
         '''
 
         # Log this initialization.
-        logs.log_debug('Integrating top-level tree and stack widgets...')
+        logs.log_debug('Initializing top-level tree widget...')
 
         # Integrate this tree widget with this window's top-level stack widget.
-        self._init_sim_conf_stack(main_window)
+        self._init_stack(main_window)
 
         # Connect all relevant signals and slots of this tree and stack widget
         # *AFTER* integrating these widgets, as required by these slots.
@@ -88,7 +88,7 @@ class QBetseeTreeWidgetSimConfig(QTreeWidget):
 
 
     @type_check
-    def _init_sim_conf_stack(self, main_window: QMainWindow) -> None:
+    def _init_stack(self, main_window: QMainWindow) -> None:
         '''
         Integrate this tree widget with the top-level :class:`QStackedWidget`
         contained in the passed parent main window.

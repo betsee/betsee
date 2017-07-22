@@ -114,11 +114,13 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         :class:`PySide2`-based collection of various application-wide signals.
         To allow external callers (e.g., :class:`QBetseeSettings`) to access
         this attribute, this attribute is public rather than private.
+    sim_conf : QBetseeSimConfig
+        Object encapsulating high-level simulation configuration state. To
+        allow external callers (e.g., :class:`QBetseeStackedWidgetSimConfig`) to
+        access this attribute, this attribute is public rather than private.
 
     Attributes (Private)
     ----------
-    _sim_conf : QBetseeSimConfig
-        Object encapsulating high-level simulation configuration state.
 
     See Also
     ----------
@@ -189,9 +191,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Customize all physical top-level widgets of this main window.
         self._init_widgets()
 
-        # Create all non-physical abstract objects of this main window.
-        self._init_objects()
-
     # ..................{ INITIALIZERS ~ actions             }..................
     def _init_actions(self) -> None:
         '''
@@ -254,24 +253,24 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         excluding all abstract widgets (e.g., :class:`QAction`).
         '''
 
-        # Initialize the status bar with a sensible startup message.
-        self._show_status('Welcome to {}'.format(metadata.NAME))
-
-        # Initialize both the simulation configuration tree and stack widgets.
-        self.sim_conf_tree.init(self)
-
-    # ..................{ INITIALIZERS ~ objects             }..................
-    def _init_objects(self) -> None:
-        '''
-        Create all non-physical abstract non-widgets of this main window, thus
-        excluding widgets (both physical and abstract).
-        '''
-
         # Avoid circular import dependencies.
         from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConfig
 
-        # Object encapsulating high-level simulation configuration state.
-        self._sim_conf = QBetseeSimConfig(self)
+        # Initialize the status bar with a sensible startup message.
+        self._show_status('Welcome to {}'.format(metadata.NAME))
+
+        # Object encapsulating high-level simulation configuration state,
+        # instantiated *BEFORE* initializing widgets assuming this state to
+        # exist.
+        self.sim_conf = QBetseeSimConfig(self)
+
+        # Initialize both the simulation configuration stack widget *BEFORE*
+        # initializing the mildly higher-level sibling tree widget, which
+        # assumes the former to have been initialized..
+        self.sim_conf_stack.init(self)
+
+        # Initialize the simulation configuration tree widget.
+        self.sim_conf_tree.init(self)
 
     # ..................{ INITIALIZERS                       }..................
     #FIXME: Excise this, which should no longer be required.

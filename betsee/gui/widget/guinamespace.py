@@ -26,15 +26,6 @@ dispersed throughout the codebase.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # ....................{ GLOBALS ~ sim conf                 }....................
-SIM_CONF_EDIT_WIDGET_NAME_PREFIX = 'sim_conf_edit_'
-'''
-Substring prefixing the name of each instance of the
-:class:`QBetseeSimConfigEditWidgetMixin` base class providing an editable
-simulation configuration widget, typically owned by the top-level stack widget
-for the main window.
-'''
-
-
 SIM_CONF_STACK_PAGE_NAME_PREFIX = 'sim_conf_stack_page_'
 '''
 Substring prefixing the name of each :class:`QBetseeMainWindow` variable

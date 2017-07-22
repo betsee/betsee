@@ -11,8 +11,9 @@ Abstract base classes of all widget-specific undo command subclasses.
 from PySide2.QtWidgets import (
     QLineEdit, QUndoCommand)
 from betse.util.io.log import logs
-from betse.util.type.types import type_check
-from betsee.util.widget.psdwdg import QBetseeWidgetMixin
+from betse.util.type.types import type_check, GeneratorType
+from betsee.util.widget.psdwdg import QBetseeWidgetEditMixin
+from contextlib import contextmanager
 
 # ....................{ SUPERCLASSES                       }....................
 class QBetseeUndoCommandWidgetABC(QUndoCommand):
@@ -26,7 +27,7 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
     _id : int
         Integer uniquely identifying the concrete subclass implementing this
         abstract base class of this undo command.
-    _widget : QBetseeWidgetMixin
+    _widget : QBetseeWidgetEditMixin
         Application-specific widget operated upon by this undo command.
     _synopsis : str
         Human-readable string synopsizing the operation performed by this
@@ -37,13 +38,13 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, widget: QBetseeWidgetMixin, synopsis: str) -> None:
+    def __init__(self, widget: QBetseeWidgetEditMixin, synopsis: str) -> None:
         '''
         Initialize this undo command.
 
         Parameters
         ----------
-        widget : QBetseeWidgetMixin
+        widget : QBetseeWidgetEditMixin
             Application-specific widget operated upon by this undo command.
         synopsis : str
             Human-readable string synopsizing the operation performed by this
@@ -70,9 +71,6 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
             'Undoing %s for widget "%s"...',
             self._synopsis, self._widget.object_name)
 
-        # Notify this widget that an undo command is now being applied to it.
-        self._widget.is_in_undo_command = True
-
 
     def redo(self) -> None:
 
@@ -80,9 +78,6 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
         logs.log_debug(
             'Redoing %s for widget "%s"...',
             self._synopsis, self._widget.object_name)
-
-        # Notify this widget that an undo command is now being applied to it.
-        self._widget.is_in_undo_command = True
 
     # ..................{ SUPERCLASS ~ optional              }..................
     # Optional superclass methods permitted to be redefined by each subclass.
@@ -100,6 +95,43 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
         '''
 
         return self._id
+
+        #FIXME: Non-ideal approach. Ideally, the superclass would provide a
+        #@contextmanager guaranteeing this boolean to be restored even in the
+        #event of exceptions raised by the above call. (Please make it so.)
+
+    # ..................{ CONTEXTS                           }..................
+    # Notify this widget that an undo command is no longer being applied.
+    @contextmanager
+    def _in_undo_command(self) -> GeneratorType:
+        '''
+        Context manager notifying the widget associated with this undo command
+        that this undo command is now being applied to it for the duration of
+        this context.
+
+        This context manager enables and then guaranteeably disables the
+        :attr:`QBetseeWidgetEditMixin.is_in_undo_command` boolean even when
+        fatal exceptions are raised.
+
+        Returns
+        -----------
+        contextlib._GeneratorContextManager
+            Context manager notifying this widget as described above.
+
+        Yields
+        -----------
+        None
+            Since this context manager yields no values, the caller's ``with``
+            statement must be suffixed by *no* ``as`` clause.
+        '''
+
+        # Yield control to the body of the caller's "with" block.
+        try:
+            self._widget.is_in_undo_command = True
+            yield
+        # Disable this notification even if that block raised an exception.
+        finally:
+            self._widget.is_in_undo_command = False
 
 
 class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
@@ -239,13 +271,14 @@ class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
         # Defer to our superclass first.
         super().undo()
 
-        # Undo the prior edit.
-        #
-        # To avoid revalidating the previously validated prior text contents of
-        # this widget, the QLineEdit.setText() rather than QLineEdit.insert()
-        # method is called.
-        self._widget.setText(self._value_old)
-        # self._widget.setFocus(Qt.OtherFocusReason)
+        # Undo the prior edit. To prevent infinite recursion, notify this widget
+        # that an undo command is now being applied to it.
+        with self._in_undo_command():
+            # To avoid revalidating the previously validated prior text contents of
+            # this widget, the QLineEdit.setText() rather than QLineEdit.insert()
+            # method is called.
+            self._widget.setText(self._value_old)
+            # self._widget.setFocus(Qt.OtherFocusReason)
 
 
     def redo(self) -> None:
@@ -253,9 +286,10 @@ class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
         # Defer to our superclass first.
         super().redo()
 
-        # Redo the prior edit.
-        self._widget.setText(self._value_new)
-        # self._widget.setFocus(Qt.OtherFocusReason)
+        # Redo the prior edit. See the undo() method for further details.
+        with self._in_undo_command():
+            self._widget.setText(self._value_new)
+            # self._widget.setFocus(Qt.OtherFocusReason)
 
 # ....................{ PLACEHOLDERS                       }....................
 class QBetseeUndoCommandNull(QUndoCommand):

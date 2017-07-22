@@ -91,12 +91,8 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QObject, Signal, Slot
 from betse.util.io.log import logs
-from betse.util.type.obj import objects
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.gui.widget.guinamespace import SIM_CONF_EDIT_WIDGET_NAME_PREFIX
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
-from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
-    QBetseeWidgetMixinSimConfigEdit)
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfig(QObject):
@@ -242,21 +238,23 @@ class QBetseeSimConfig(QObject):
         self.undo_stack = QBetseeUndoStackSimConfig(
             main_window=main_window, sim_config=self)
 
-        # Generator yielding 2-tuples of the name and value of each editable
-        # simulation configuration widget, matching all instance variables of
-        # this main window with names prefixed by a unique substring.
-        edit_widgets = objects.iter_vars_custom_simple_prefixed(
-            obj=main_window, prefix=SIM_CONF_EDIT_WIDGET_NAME_PREFIX)
+        #FIXME: Shift unrolled into the "guisimconfstack" submodule.
 
-        # For each such widget...
-        for _, edit_widget in edit_widgets:
-            # If this widget does *NOT* implement the editable widget API, raise
-            # an exception.
-            objects.die_unless_instance(
-                obj=edit_widget, cls=QBetseeWidgetMixinSimConfigEdit)
-
-            # Initialize this widget against this state object.
-            edit_widget.init(self)
+        # # Generator yielding 2-tuples of the name and value of each editable
+        # # simulation configuration widget, matching all instance variables of
+        # # this main window with names prefixed by a unique substring.
+        # edit_widgets = objects.iter_vars_custom_simple_prefixed(
+        #     obj=main_window, prefix=SIM_CONF_EDIT_WIDGET_NAME_PREFIX)
+        #
+        # # For each such widget...
+        # for _, edit_widget in edit_widgets:
+        #     # If this widget does *NOT* implement the editable widget API, raise
+        #     # an exception.
+        #     objects.die_unless_instance(
+        #         obj=edit_widget, cls=QBetseeWidgetMixinSimConfigEdit)
+        #
+        #     # Initialize this widget against this state object.
+        #     edit_widget.init(self)
 
 
     @type_check
