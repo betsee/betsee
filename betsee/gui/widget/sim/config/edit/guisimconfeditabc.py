@@ -9,7 +9,11 @@ subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
+from betse.science.config.confalias import SimConfAliasABC
 from betse.util.io.log import logs
+from betse.util.type.types import type_check
+from betse.util.type.descriptor.datadescs import DataDescriptorUnbound
+from betsee.util.widget.psdundocmd import QBetseeUndoCommandWidgetABC
 from betsee.util.widget.psdwdg import QBetseeWidgetEditMixin
 
 # ....................{ MIXINS                             }....................
@@ -33,9 +37,9 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
     _sim_conf : QBetseeSimConfig
         High-level state of the currently open simulation configuration, which
         depends on the state of this low-level simulation configuration widget.
-    _undo_stack : QBetseeSimConfigUndoStack
-        Undo stack for the currently open simulation configuration. This
-        attribute is a utility alias equivalent to :attr:`_sim_conf.undo_stack`.
+    _sim_conf_alias : DataDescriptorUnbound
+        high-level object encapsulating the low-level data descriptor bound to
+        the simulation configuration option edited by this widget.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -46,29 +50,18 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
 
         # Nullify all instance variables for safety.
         self._sim_conf = None
-        self._undo_stack = None
+        self._sim_conf_alias = None
 
 
-    #FIXME: Generalize to also accept a parameter providing the class-oriented
-    #expralias()-style data descriptor object to which this widget's contents
-    #are synchronized. To do so:
-    #
-    #* Append a second "conf_alias" parameter to this method signature. Note
-    #  that this parameter will be internally validated to be a data descriptor
-    #  and hence need *NOT* be type-validated here.
-    #* Convert this raw data descriptor into a higher-level
-    #  "DataDescriptorUnbound" instance, simplifying usage semantics.
-    #
-    #For example:
-    #
-    #    from betse.util.type.descriptor.datadescs import DataDescriptorUnbound
-    #    def init(self, sim_conf: 'QBetseeSimConfig', conf_alias: object) -> None:
-    #        self._conf_alias = DataDescriptorUnbound(conf_alias)
-
-    # To avoid circular imports due to the "QBetseeSimConfig" class importing
-    # the "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
-    # importing instances of this class, this type is validated dynamically.
-    def init(self, sim_conf: 'QBetseeSimConfig') -> None:
+    @type_check
+    def init(
+        self,
+        # To avoid circularity from the "QBetseeSimConfig" class importing the
+        # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
+        # importing instances of this class, this type is validated dynamically.
+        sim_conf: 'betsee.gui.widget.sim.config.guisimconf.QBetseeSimConfig',
+        sim_conf_alias: SimConfAliasABC,
+    ) -> None:
         '''
         Initialize this widget against the passed state object.
 
@@ -92,15 +85,13 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
         ----------
         sim_conf : QBetseeSimConfig
             High-level state of the currently open simulation configuration.
+        sim_conf_alias : SimConfAliasABC
+            Low-level data descriptor bound to the simulation configuration
+            option edited by this widget, typically a
+            :class:`betse.science.params.Parameters`-specific class variable
+            assigned the return value of the
+            :func:`betse.science.config.confabc.conf_alias` function.
         '''
-
-        # Avoid circular imports.
-        from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConfig
-
-        # Validate this type.
-        assert isinstance(sim_conf, QBetseeSimConfig), (
-            '"{!r}" not a simulation configuration state object.'.format(
-                sim_conf))
 
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
@@ -110,7 +101,9 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
         # state object owns this widget, retaining a reference to this state
         # object introduces no circularity and hence is safe. (That's nice.)
         self._sim_conf = sim_conf
-        self._undo_stack = sim_conf.undo_stack
+
+        # Wrap the passed low-level data descriptor with a high-level wrapper.
+        self._sim_conf_alias = DataDescriptorUnbound(sim_conf_alias)
 
     # ..................{ PROPERTIES                         }..................
     @property
@@ -146,3 +139,28 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
 
         # Enable the dirty state for this simulation configuration.
         self._sim_conf.set_dirty_signal.emit(True)
+
+    # ..................{ UNDO STACK                         }..................
+    @type_check
+    def _push_undo_cmd_if_safe(
+        self, undo_cmd: QBetseeUndoCommandWidgetABC) -> None:
+        '''
+        Push the passed widget-specific undo command onto the undo stack
+        associated with the currently open simulation configuration.
+
+        Parameters
+        ----------
+        undo_cmd : QBetseeUndoCommandWidgetABC
+            Widget-specific undo command to be pushed onto this stack.
+        '''
+
+        # If an undo command is currently being applied to this widget, pushing
+        # the passed undo command onto the stack would apply that command to
+        # this widget in a nested manner typically provoking infinite recursion.
+        # Since that would be bad, this undo command is silently ignored.
+        if self.is_in_undo_cmd:
+            return
+
+        # Else, no such command is being applied. Since pushing this undo
+        # command onto the stack is thus safe, do so.
+        self._sim_conf.undo_stack.push(undo_cmd)

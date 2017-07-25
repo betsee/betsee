@@ -11,7 +11,6 @@
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QLineEdit
 from betse.util.io.log import logs
-# from betse.util.type.types import type_check
 from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
     QBetseeWidgetEditMixinSimConfig)
 from betsee.util.widget.psdundocmd import QBetseeUndoCommandLineEdit
@@ -85,14 +84,10 @@ class QBetseeLineEditSimConfig(QBetseeWidgetEditMixinSimConfig, QLineEdit):
             # configuration has received new unsaved changes.
             self._enable_sim_conf_dirty()
 
-            # If an undo command is *NOT* being applied to this widget, then
-            # this edit is undoable. In this case, push an undo command onto the
-            # undo stack permitting this edit to be undone *BEFORE* updating the
-            # "_text_prev" variable.
-            if not self.is_in_undo_command:
-                # self._undo_stack.push(QBetseeUndoCommandNull('wut'))
-                self._undo_stack.push(QBetseeUndoCommandLineEdit(
-                    widget=self, value_old=self._text_prev))
+            # Push an undo command onto the stack (permitting this edit to be
+            # undone) *BEFORE* updating the "_text_prev" variable.
+            self._push_undo_cmd_if_safe(QBetseeUndoCommandLineEdit(
+                widget=self, value_old=self._text_prev))
 
         # Cache this widget's new text in preparation for the next edit.
         self._text_prev = text_curr

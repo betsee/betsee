@@ -138,15 +138,9 @@ class QBetseeUndoStackSimConfig(QUndoStack):
             ':/icon/open_iconic/action-undo.svg',
             QSize(), QIcon.Normal, QIcon.Off,)
 
-        #FIXME: Is embedding a synopsis of the commands to be undone and redone
-        #by these actions in these action names feasible? Documentation for the
-        #following methods suggests that suffixing each action name by " %1"
-        #suffices; unsurprisingly, doing so appears to have no effect. *sigh*
-
         # Redo action synchronized with the contents of this stack.
         self._redo_action = self.createRedoAction(
             self, QCoreApplication.translate(
-            # sim_config, QCoreApplication.translate(
                 'QBetseeUndoStackSimConfig', '&Redo'))
         self._redo_action.setIcon(redo_icon)
         self._redo_action.setObjectName('action_redo')
@@ -155,7 +149,6 @@ class QBetseeUndoStackSimConfig(QUndoStack):
         # Undo action synchronized with the contents of this stack.
         self._undo_action = self.createUndoAction(
             self, QCoreApplication.translate(
-            # sim_config, QCoreApplication.translate(
                 'QBetseeUndoStackSimConfig', '&Undo'))
         self._undo_action.setIcon(undo_icon)
         self._undo_action.setObjectName('action_undo')

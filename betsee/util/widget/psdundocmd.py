@@ -103,14 +103,14 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
     # ..................{ CONTEXTS                           }..................
     # Notify this widget that an undo command is no longer being applied.
     @contextmanager
-    def _in_undo_command(self) -> GeneratorType:
+    def _in_undo_cmd(self) -> GeneratorType:
         '''
         Context manager notifying the widget associated with this undo command
         that this undo command is now being applied to it for the duration of
         this context.
 
         This context manager enables and then guaranteeably disables the
-        :attr:`QBetseeWidgetEditMixin.is_in_undo_command` boolean even when
+        :attr:`QBetseeWidgetEditMixin.is_in_undo_cmd` boolean even when
         fatal exceptions are raised.
 
         Returns
@@ -127,11 +127,11 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
 
         # Yield control to the body of the caller's "with" block.
         try:
-            self._widget.is_in_undo_command = True
+            self._widget.is_in_undo_cmd = True
             yield
         # Disable this notification even if that block raised an exception.
         finally:
-            self._widget.is_in_undo_command = False
+            self._widget.is_in_undo_cmd = False
 
 
 class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
@@ -184,7 +184,7 @@ class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
     # ..................{ SUPERCLASS                         }..................
     # Optional superclass methods permitted to be redefined by each subclass.
 
-    def mergeWith(self, prior_undo_command: QUndoCommand) -> bool:
+    def mergeWith(self, prior_undo_cmd: QUndoCommand) -> bool:
         '''
         Attempt to merge this undo command with the passed undo command
         immediately preceding this undo command on the parent undo stack,
@@ -201,7 +201,7 @@ class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
 
         Parameters
         ----------
-        prior_undo_command : QUndoCommand
+        prior_undo_cmd : QUndoCommand
             Undo command immediately preceding this undo command on the parent
             undo stack.
 
@@ -215,15 +215,15 @@ class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
         # associated with a different widget than this undo command, these
         # commands cannot be safely merged and failure is reported.
         if not (
-            self.id() == prior_undo_command.id() and
-            self._widget == prior_undo_command._widget
+            self.id() == prior_undo_cmd.id() and
+            self._widget == prior_undo_cmd._widget
         ):
             return False
 
         # Else, these commands are safely mergeable. Do so by replacing the
         # prior value of this scalar widget stored with this undo command by the
         # prior value of this scalar widget stored with this prior undo command.
-        self._value_old = prior_undo_command._value_old
+        self._value_old = prior_undo_cmd._value_old
 
         # Report success.
         return True
@@ -273,7 +273,7 @@ class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
 
         # Undo the prior edit. To prevent infinite recursion, notify this widget
         # that an undo command is now being applied to it.
-        with self._in_undo_command():
+        with self._in_undo_cmd():
             # To avoid revalidating the previously validated prior text contents of
             # this widget, the QLineEdit.setText() rather than QLineEdit.insert()
             # method is called.
@@ -287,7 +287,7 @@ class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
         super().redo()
 
         # Redo the prior edit. See the undo() method for further details.
-        with self._in_undo_command():
+        with self._in_undo_cmd():
             self._widget.setText(self._value_new)
             # self._widget.setFocus(Qt.OtherFocusReason)
 

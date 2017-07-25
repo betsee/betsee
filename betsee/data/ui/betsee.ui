@@ -855,8 +855,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>578</width>
-          <height>877</height>
+          <width>587</width>
+          <height>519</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -875,6 +875,56 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_19">
          <item>
+          <widget class="QGroupBox" name="groupBox_13">
+           <property name="font">
+            <font>
+             <pointsize>11</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>Paths pertaining to files pickled by this simulation's seed phase.</string>
+           </property>
+           <property name="title">
+            <string>Seed Phase</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout_17">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Pickle basename:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_seed_pick_file_line">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Basename of the pickled file providing this simulation's most recently seeded cell cluster in the initialization pickle directory.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
           <widget class="QGroupBox" name="groupBox_11">
            <property name="font">
             <font>
@@ -882,10 +932,10 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Directories containing files pickled by simulation phases.</string>
+            <string>Paths pertaining to files pickled by this simulation's initialization phase.</string>
            </property>
            <property name="title">
-            <string>Simulation Phase Pickles</string>
+            <string>Initialization Phase</string>
            </property>
            <layout class="QFormLayout" name="formLayout_11">
             <item row="0" column="0">
@@ -896,7 +946,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Seed:</string>
+               <string>Pickle dirname:</string>
               </property>
              </widget>
             </item>
@@ -916,7 +966,7 @@
                 <number>0</number>
                </property>
                <item>
-                <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_seed_edit">
+                <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_init_pick_dir_line">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>1</horstretch>
@@ -929,7 +979,7 @@
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Directory containing the cell cluster created by the most recent seed of this simulation.</string>
+                  <string>Directory containing files pickled by the most recent seed and initialization of this simulation.</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -937,7 +987,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="sim_conf_path_seed_button">
+                <widget class="QPushButton" name="sim_conf_path_init_pick_dir_btn">
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>
@@ -951,28 +1001,100 @@
               </layout>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_62">
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_4">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
               <property name="text">
-               <string>Simulation:</string>
+               <string>Pickle basename:</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_73">
+            <item row="1" column="1">
+             <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_init_pick_file_line">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Basename of the pickled file providing this simulation's most recent initialization in this directory.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_3">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
                </font>
               </property>
               <property name="text">
-               <string>Initialization:</string>
+               <string>Exports dirname:</string>
               </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QWidget" name="widget_6" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_init_exp_dir_line_2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Directory containing results exported by the most recent seed and initialization of this simulation.</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="sim_conf_path_init_exp_dir_btn_2">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
@@ -986,37 +1108,11 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Directories containing results exported by simulation phases.</string>
+            <string>Paths pertaining to files pickled by this simulation's simulation phase.</string>
            </property>
            <property name="title">
-            <string>Simulation Phase Exports</string>
+            <string>Simulation Phase</string>
            </property>
-           <layout class="QFormLayout" name="formLayout_16">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_74">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Initialization:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_76">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Simulation:</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
           </widget>
          </item>
          <item>

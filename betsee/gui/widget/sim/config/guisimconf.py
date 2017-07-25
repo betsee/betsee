@@ -90,6 +90,7 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QObject, Signal, Slot
+from betse.science.parameters import Parameters
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
@@ -107,18 +108,20 @@ class QBetseeSimConfig(QObject):
 
     Attributes (Non-widgets: Public)
     ----------
-    undo_stack : QBetseeUndoStackSimConfig
-        Undo stack for the currently open simulation configuration if any *or*
-        the empty undo stack otherwise. To allow external callers (e.g.,
-        :class:`QBetseeWidgetMixinSimConfigEdit` instances) to access this
-        attribute, this attribute is public rather than private.
-
-    Attributes (Non-widgets: Private)
-    ----------
-    _filename : str
+    filename : str
         Absolute path of the YAML-formatted file underlying this simulation
         configuration file if a configuration is currently open *or* ``None``
         otherwise.
+    params : Parameters
+        High-level simulation configuration encapsulating the low-level
+        dictionary deserialized (i.e., parsed) from the user-defined
+        YAML-formatted file underlying the current simulation.
+    undo_stack : QBetseeUndoStackSimConfig
+        Undo stack for the currently open simulation configuration if any *or*
+        the empty undo stack otherwise.
+
+    Attributes (Non-widgets: Private)
+    ----------
     _is_open : bool
         ``True`` only if a simulation configuration is currently open.
     _is_file : bool
@@ -190,11 +193,12 @@ class QBetseeSimConfig(QObject):
         # Nullify all stateful instance variables for safety. While the signals
         # subsequently emitted by this method also do so, ensure sanity if these
         # variables are tested in the interim.
-        self._filename = None
+        self.filename = None
+        self.params = None
+        self.undo_stack = None
         self._is_dirty = False
         self._is_file = False
         self._is_open = False
-        self.undo_stack = None
 
         # Classify all instance variables of this main window subsequently
         # required by this object. Since this main window owns this object,
@@ -326,7 +330,7 @@ class QBetseeSimConfig(QObject):
         '''
 
         # Classify this parameter.
-        self._filename = filename
+        self.filename = filename
 
         # Record this simulation configuration to be open only if this filename
         # is a non-empty string. While there exist numerous means of doing so,
