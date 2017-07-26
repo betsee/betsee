@@ -20,8 +20,8 @@ from betse.util.type.types import type_check
 def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
     '''
     Convert the XML-formatted file with the passed ``.qrc``-suffixed filename
-    and all binary resources referenced by this file exported by the external Qt
-    Designer GUI into the :mod:`PySide2`-based Python module with the passed
+    *and* all binary resources referenced by this file exported by the external
+    Qt Designer GUI into the :mod:`PySide2`-based Python module with the passed
     ``.py``-suffixed filename.
 
     This high-level function wraps the low-level ``pyside2-rcc`` command

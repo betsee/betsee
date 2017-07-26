@@ -11,7 +11,7 @@ from PySide2.QtCore import QObject, Slot
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
-from betsee.util.io import psdsettings
+from betsee.util.io import guisettings
 
 # ....................{ CLASSES                            }....................
 class QBetseeSettings(QObject):
@@ -78,7 +78,7 @@ class QBetseeSettings(QObject):
         logs.log_info('Restoring application settings...')
 
         # Previously written application settings.
-        settings = psdsettings.make()
+        settings = guisettings.make()
 
         # Read settings specific to this main window.
         settings.beginGroup('MainWindow')
@@ -187,7 +187,7 @@ class QBetseeSettings(QObject):
         logs.log_info('Storing application settings...')
 
         # Currently written application settings if any.
-        settings = psdsettings.make()
+        settings = guisettings.make()
 
         # Write settings specific to this main window.
         settings.beginGroup('MainWindow')

@@ -882,7 +882,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Paths pertaining to files pickled by this simulation's seed phase.</string>
+            <string>Paths pertaining to files produced by this simulation's seed phase.</string>
            </property>
            <property name="title">
             <string>Seed Phase</string>
@@ -932,7 +932,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Paths pertaining to files pickled by this simulation's initialization phase.</string>
+            <string>Paths pertaining to files produced by this simulation's initialization phase.</string>
            </property>
            <property name="title">
             <string>Initialization Phase</string>
@@ -1108,7 +1108,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Paths pertaining to files pickled by this simulation's simulation phase.</string>
+            <string>Paths pertaining to files produced by this simulation's simulation phase.</string>
            </property>
            <property name="title">
             <string>Simulation Phase</string>
@@ -4164,7 +4164,7 @@
   <customwidget>
    <class>QBetseePlainTextEdit</class>
    <extends>QPlainTextEdit</extends>
-   <header>betsee/util/widget/psdtextedit.h</header>
+   <header>betsee/util/widget/guitextedit.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeTreeWidgetSimConfig</class>

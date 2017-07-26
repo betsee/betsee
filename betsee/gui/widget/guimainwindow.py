@@ -70,12 +70,12 @@ from betse.util.path import pathnames
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import metadata
 from betsee.gui.guisignal import QBetseeSignaler
-from betsee.util.io import psderr
-from betsee.util.io.log import psdlogconfig
-from betsee.util.path import psdui
+from betsee.util.io import guierr
+from betsee.util.io.log import guilogconf
+from betsee.util.io.xml import guiui
 
 # ....................{ GLOBALS                            }....................
-MAIN_WINDOW_BASE_CLASSES = psdui.get_ui_module_base_classes(
+MAIN_WINDOW_BASE_CLASSES = guiui.get_ui_module_base_classes(
     ui_module_name=metadata.MAIN_WINDOW_UI_MODULE_NAME)
 '''
 Sequence of all main window base classes declared by the module whose
@@ -183,7 +183,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Append all unfiltered log records to the top-level log widget in an
         # autoscrolling, non-blocking, thread-safe manner *BEFORE* performing
         # any subsequent logic possibly performing logging.
-        psdlogconfig.log_to_text_edit(self.log_box)
+        guilogconf.log_to_text_edit(self.log_box)
 
         # Customize all abstract QAction widgets of this main window.
         self._init_actions()
@@ -280,7 +280,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         selected action has yet to be implemented.
         '''
 
-        psderr.show_error(
+        guierr.show_error(
             title='Action Unimplemented',
             synopsis='This action is currently unimplemented.',
         )

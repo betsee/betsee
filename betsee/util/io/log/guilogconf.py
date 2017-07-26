@@ -16,8 +16,8 @@ from betse.util.io.log import logconfig
 from betse.util.io.log.logenum import LogLevel
 from betse.util.io.log.logfilter import LogFilterThirdPartyDebug
 from betse.util.type.types import type_check
-from betsee.util.io.log.psdloghandle import LogHandlerSignal
-from betsee.util.widget.psdtextedit import QBetseePlainTextEdit
+from betsee.util.io.log.guiloghandle import LogHandlerSignal
+from betsee.util.widget.guitextedit import QBetseePlainTextEdit
 
 # ....................{ INITIALIZERS                       }....................
 @type_check

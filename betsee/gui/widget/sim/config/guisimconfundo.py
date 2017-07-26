@@ -21,6 +21,10 @@
 #  * Else (i.e., if this widget has no pending actions to be undone), forward
 #    this key sequence event to the global application or main window widgets,
 #    triggering an undo or redo from the global undo stack.
+#
+#For further details on installing a custom eventFilter() specifically handling
+#<Ctrl-z> keyboard shortcuts from editable widgets, see the following answer:
+#    https://stackoverflow.com/a/28867475/2809027
 
 #FIXME: Whenever the undo stack returns to the clean state through undoing and
 #redoing commands, it emits the signal cleanChanged(). This signal should be

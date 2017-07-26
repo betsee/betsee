@@ -31,6 +31,11 @@ APP_GUI = None
 :class:`QApplication` singleton for this application, containing all Qt objects
 (e.g., widgets) to be displayed.
 
+For convenience, this singleton provides application-specific instance
+variables whose names are prefixed by ``betsee_`` to avoid nomenclature
+conflicts with Qt itself (e.g., ``betsee_main_window``, the main window widget
+for this application). See the "Attributes" section for details.
+
 Design
 ----------
 For safety, this object is persisted as a module rather than local variable
@@ -44,6 +49,11 @@ not all terminations. (That would be bad.)
 Contrary to expected nomenclature, note that the :class:`QApplication` class
 confusingly subclasses the :class:`QGuiApplication` base class in a manner
 optimized for widgets; thus, the former is *always* preferable to the latter.
+
+Attributes
+----------
+betsee_main_window : QBetseeMainWindow
+    Main window widget for this application.
 
 See Also
 ----------
@@ -85,7 +95,7 @@ def _init_qt() -> None:
     '''
 
     # Avoid circular import dependencies.
-    from betsee.util.io import psdsettings
+    from betsee.util.io import guisettings
 
     # Log this initialization.
     logging.debug('Initializing static Qt attributes...')
@@ -97,7 +107,7 @@ def _init_qt() -> None:
     _init_qt_dpi()
 
     # Initialize all application-wide QSettings attributes.
-    psdsettings.init()
+    guisettings.init()
 
 
 def _init_qt_core() -> None:
@@ -188,6 +198,9 @@ def _init_qt_app() -> None:
     # expand the subset of arguments parsed by this object to those already
     # parsed by the current CLI! That's bad.
     APP_GUI = QApplication([])
+
+    # Nullify all application-specific instance variables of this singleton.
+    APP_GUI.betsee_main_window = None
 
 # ....................{ MAIN                               }....................
 # Initialize this submodule.

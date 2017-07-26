@@ -190,12 +190,12 @@ Root-level classes defining this application's graphical user interface (GUI).
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
 from betsee.gui import guicache
-from betsee.util.io import psderr
+from betsee.util.io import guierr
 
 # Importing from this submodule has a substantial side effect: specifically, the
 # the "QApplication" singleton is instantiated and assigned to this module
-# global. All subsequent logic may safely assume this singleton to exist.
-from betsee.util.psdapp import APP_GUI
+# global. All subsequent logic may now safely assume this singleton to exist.
+from betsee.util.app.guiapp import APP_GUI
 
 # ....................{ CLASSES                            }....................
 class BetseeGUI(object):
@@ -205,8 +205,6 @@ class BetseeGUI(object):
 
     Attributes
     ----------
-    _main_window : QBetseeMainWindow
-        Main window widget for this GUI.
     _settings : QBetseeSettings
         :class:`QSettings`-based object exposing all application-wide settings
         via cross-platform, thread- and process-safe slots.
@@ -221,7 +219,6 @@ class BetseeGUI(object):
         super().__init__(*args, **kwargs)
 
         # Nullify all instance variables for safety.
-        self._main_window = None
         self._signaler = None
         self._settings = None
 
@@ -244,7 +241,7 @@ class BetseeGUI(object):
         # triggering any application-specific slots possibly raising exceptions.
         # Since the _make_main_window() method transitively does so, this hook
         # should be installed as the first call of this method.
-        psderr.install_exception_hook()
+        guierr.install_exception_hook()
 
         # Create but do *NOT* display this GUI's main window.
         self._make_main_window()
@@ -272,22 +269,20 @@ class BetseeGUI(object):
         # Application-wide signaler.
         self._signaler = QBetseeSignaler()
 
-        #FIXME: While safe, this approach has certain disadvantanges: namely,
-        #the inaccessability of this window singleton from anywhere else in this
-        #application. To render this window singleton accessible to other
-        #scopes, consider shifting this instance variable from this object into
-        #the APP_GUI widget. Assuming we select a suitably safe public variable
-        #name (e.g., "betsee_main_window"), no conflicts should exist.
-
         # Main window widget for this GUI, which requires this signaler.
         #
         # For safety, this window is scoped to an instance rather than global
         # variable, ensuring this window is destroyed *BEFORE* the root Qt
         # application widget containing this window.
-        self._main_window = QBetseeMainWindow(signaler=self._signaler)
+        #
+        # To permit external callers throughout the codebase to access this
+        # variable, this variable is exposed as a public attribute of the
+        # singleton application widget rather than this less accessible object.
+        # See the "guiapp" submodule for further details.
+        APP_GUI.betsee_main_window = QBetseeMainWindow(signaler=self._signaler)
 
         # Application-wide settings slotter, which requires this window.
-        self._settings = QBetseeSettings(self._main_window)
+        self._settings = QBetseeSettings(APP_GUI.betsee_main_window)
 
         # Restore previously stored application-wide settings *AFTER*
         # initializing but *BEFORE* displaying this window.
@@ -300,7 +295,7 @@ class BetseeGUI(object):
         # event loop required to do so has yet to be run by the APP_GUI.exec_()
         # call. In this case, this method merely toggles this window's internal
         # state in preparation for that call. (Why, Qt. Why.)
-        self._main_window.show()
+        APP_GUI.betsee_main_window.show()
 
 
     def _show_main_window(self) -> int:

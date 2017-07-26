@@ -146,10 +146,10 @@ def _show_betse_exception(exception: BetseeException) -> int:
     # Additionally attempt to...
     try:
         # Import PySide2.
-        from betsee.util.io import psderr
+        from betsee.util.io import guierr
 
         # Display a PySide2-based message box displaying this exception.
-        psderr.show_exception(exception)
+        guierr.show_exception(exception)
     # If PySide2 or any other module indirectly imported above is unimportable,
     # print this exception message in the same manner as above but otherwise
     # ignore this exception. Why? Because we have more significant fish to fry.

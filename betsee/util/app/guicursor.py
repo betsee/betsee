@@ -15,7 +15,7 @@ from contextlib import contextmanager
 
 # ....................{ CONTEXTS                           }....................
 @contextmanager
-def cursor_wait() -> GeneratorType:
+def waiting_cursor() -> GeneratorType:
     '''
     Context manager changing the mouse cursor to the prototypical wait cursor
     (e.g., animated hourglass) for the duration of this context.

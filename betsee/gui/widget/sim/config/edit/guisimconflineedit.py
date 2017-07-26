@@ -13,7 +13,7 @@ from PySide2.QtWidgets import QLineEdit
 from betse.util.io.log import logs
 from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
     QBetseeWidgetEditMixinSimConfig)
-from betsee.util.widget.psdundocmd import QBetseeUndoCommandLineEdit
+from betsee.util.widget.guiundocmd import QBetseeUndoCommandLineEdit
 
 # ....................{ SUBCLASSES ~ widget                }....................
 class QBetseeLineEditSimConfig(QBetseeWidgetEditMixinSimConfig, QLineEdit):

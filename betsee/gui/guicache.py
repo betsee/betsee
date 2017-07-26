@@ -20,7 +20,7 @@ from betse.util.py import pys
 from betse.util.type import modules
 from betse.util.type.types import type_check, IterableTypes
 from betsee import pathtree
-from betsee.util.path import psdqrc, psdui
+from betsee.util.io.xml import guiqrc, guiui
 
 # ....................{ CACHERS ~ public                   }....................
 def cache_py_files() -> None:
@@ -79,7 +79,7 @@ def _cache_py_qrc_file() -> None:
         ),
         output_filename=pathtree.get_dot_py_qrc_filename(),
     ):
-        psdqrc.convert_qrc_to_py_file(
+        guiqrc.convert_qrc_to_py_file(
             qrc_filename=pathtree.get_data_qrc_filename(),
             py_filename=pathtree.get_dot_py_qrc_filename())
 
@@ -112,13 +112,13 @@ def _cache_py_ui_file() -> None:
         # discussed by the paths.is_mtime_recursive_older_than_paths() function.
         input_pathnames=(
             pathtree.get_data_ui_filename(),
-            modules.get_filename(psdui),
+            modules.get_filename(guiui),
             modules.get_dirname(pyside2uic),
             modules.get_dirname(PySide2),
         ),
         output_filename=pathtree.get_dot_py_ui_filename(),
     ):
-        psdui.convert_ui_to_py_file(
+        guiui.convert_ui_to_py_file(
             ui_filename=pathtree.get_data_ui_filename(),
             py_filename=pathtree.get_dot_py_ui_filename())
 

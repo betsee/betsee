@@ -12,7 +12,7 @@ from PySide2.QtWidgets import (
     QLineEdit, QUndoCommand)
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, GeneratorType
-from betsee.util.widget.psdwdg import QBetseeWidgetEditMixin
+from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
 from contextlib import contextmanager
 
 # ....................{ SUPERCLASSES                       }....................

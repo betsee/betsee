@@ -18,6 +18,7 @@ from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.exceptions import BetseePySideTreeWidgetException
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
+from betsee.util.path import guidir
 # from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
 #     QBetseeWidgetEditMixinSimConfig)
 
@@ -204,15 +205,15 @@ class QBetseeStackedWidgetSimConfig(QStackedWidget):
         '''
 
         # Initialize all line edit widgets of this page.
-        # main_window.sim_conf_path_seed_pick_file_line.init(
-        #     sim_conf=main_window.sim_conf,
-        #     sim_conf_alias=Parameters.pickle_seed_basename,)
-        # main_window.sim_conf_path_init_pick_dir_line.init(
-        #     sim_conf=main_window.sim_conf,
-        #     sim_conf_alias=Parameters.pickle_init_dirname,)
-        # main_window.sim_conf_path_init_pick_file_line.init(
-        #     sim_conf=main_window.sim_conf,
-        #     sim_conf_alias=Parameters.pickle_init_basename,)
+        main_window.sim_conf_path_seed_pick_file_line.init(
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=Parameters.pickle_seed_basename,)
+        main_window.sim_conf_path_init_pick_dir_line.init(
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=Parameters.pickle_init_dirname,)
+        main_window.sim_conf_path_init_pick_file_line.init(
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=Parameters.pickle_init_basename,)
 
         #FIXME: Uncomment after these widgets are created.
         # main_window.sim_conf_path_sim_pick_dir_line.init(
@@ -225,7 +226,7 @@ class QBetseeStackedWidgetSimConfig(QStackedWidget):
         # Connect each line edit widget of this page to the corresponding button
         # displaying a file selection dialog.
         # main_window.sim_conf_path_init_pick_dir_btn.clicked.connect(
-        #     self._select_dir_relative_to_sim_conf)
+        #     self._set_sim_conf_subdir)
 
     # ..................{ INITIALIZERS ~ path                }..................
     # @type_check
@@ -278,23 +279,33 @@ class QBetseeStackedWidgetSimConfig(QStackedWidget):
         self.setCurrentWidget(stack_page)
 
     # ..................{ SLOTS ~ private                    }..................
-    #FIXME: Implement us up, please.
-    @Slot()
-    def _select_dir_relative_to_sim_conf(self) -> str:
-        '''
-        Display a dialog requiring the user to select a subdirectory relative to
-        the directory containing the current simulation configuration's YAML
-        file and return the relative path of this subdirectory.
-        '''
+    #FIXME: Generalize by:
+    #
+    #* Defining a new "QPushButton" subclass named
+    #  "QBetseePushButtonSubDirSimConf".
+    #* In this subclass:
+    #  * Defining a @Slot _select_subdir() implemented as below.
+    #  * Defining an init() method with signature:
+    #    def init(
+    #        sim_conf: QBetseeSimConfig,
+    #        line_edit: QBetseeLineEditSimConfig,
+    #    ) -> None
+    #  * In this method:
+    #    * Classifying all passed parameters.
+    #    * Performing the following connection:
+    #    self.clicked.connect(self._select_subdir)
+    #
+    #Pretty simple, happily.
 
-        from PySide2.QtWidgets import QFileDialog
-
-        dirname = str(QFileDialog.getExistingDirectory(
-            self, QCoreApplication.translate(
-                'QBetseeStackedWidgetSimConfig', 'Select Directory'),
-            self._sim_conf.params.config_dirname))
-
-        #FIXME: Strip the prefixing "self._params.config_dirname" if any from
-        #this "dirname".
-
-        return dirname
+    # @Slot()
+    # def _select_sim_conf_subdir(self) -> None:
+    #     '''
+    #     Display a dialog requiring the user to select a subdirectory relative to
+    #     the directory containing the current simulation configuration's YAML
+    #     file and return the relative path of this subdirectory.
+    #     '''
+    #
+    #     subdirname = guidir.select_subdir(
+    #         parent_dirname=self._sim_conf.params.config_dirname,
+    #         current_dirname=self._line_edit.text())
+    #     self._line_edit.setText(subdirname)

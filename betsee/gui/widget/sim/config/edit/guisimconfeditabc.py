@@ -13,8 +13,8 @@ from betse.science.config.confalias import SimConfAliasABC
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betse.util.type.descriptor.datadescs import DataDescriptorUnbound
-from betsee.util.widget.psdundocmd import QBetseeUndoCommandWidgetABC
-from betsee.util.widget.psdwdg import QBetseeWidgetEditMixin
+from betsee.util.widget.guiundocmd import QBetseeUndoCommandWidgetABC
+from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all

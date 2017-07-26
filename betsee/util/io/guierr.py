@@ -40,7 +40,7 @@ def install_exception_hook() -> None:
     Caveats
     ----------
     Ideally, this function should be called *before* entering this event loop
-    (i.e., calling the :meth:`betsee.util.psdapp.APP_GUI._exec` method).
+    (i.e., calling the :meth:`betsee.util.app.guiapp.APP_GUI._exec` method).
     '''
 
     # Default insane global exception hook, preserved in case of catastrophe.
@@ -58,7 +58,7 @@ def install_exception_hook() -> None:
             Further details.
         '''
 
-        # Additionally attempt to...
+        # Attempt to...
         try:
             # Import from BETSE. Since this hook should only over be installed
             # *AFTER* BETSE is validated to be importable, this should succeed.
@@ -159,8 +159,8 @@ def show_exception(exception: Exception) -> None:
 
     # Implicitly create the root Qt widget containing the message box to be
     # subsequently displayed, if needed.
-    from betsee.util import psdapp
-    if False: psdapp  # squelch IDE warnings
+    from betsee.util.app import guiapp
+    if False: guiapp  # squelch IDE warnings
 
     # If this is an application exception annotated with human-readable metadata
     # intended to be displayed, do so.
