@@ -40,14 +40,14 @@ from PySide2.QtGui import QIcon, QKeySequence
 from PySide2.QtWidgets import QUndoCommand, QUndoStack
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.exceptions import BetseePySideMenuException
+from betsee.guiexceptions import BetseePySideMenuException
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
-from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConfig
+from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConf
 
 # ....................{ CLASSES                            }....................
-class QBetseeUndoStackSimConfig(QUndoStack):
+class QBetseeUndoStackSimConf(QUndoStack):
     '''
-    :class:`QUndoStack`-based stack of all :class:`QBetseeUndoCommandSimConfig`
+    :class:`QUndoStack`-based stack of all :class:`QBetseeUndoCommandSimConf`
     instances signifying user-driven simulation configuration modifications and
     the capacity to undo those modifications.
 
@@ -64,7 +64,7 @@ class QBetseeUndoStackSimConfig(QUndoStack):
     def __init__(
         self,
         main_window: QBetseeMainWindow,
-        sim_config: QBetseeSimConfig,
+        sim_config: QBetseeSimConf,
         *args, **kwargs
     ) -> None:
         '''
@@ -79,7 +79,7 @@ class QBetseeUndoStackSimConfig(QUndoStack):
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this object.
-        sim_config: QBetseeSimConfig
+        sim_config: QBetseeSimConf
             Direct parent object against which to initialize this object.
         '''
 
@@ -110,7 +110,7 @@ class QBetseeUndoStackSimConfig(QUndoStack):
     def _init_actions(
         self,
         # main_window: QBetseeMainWindow,
-        # sim_config: QBetseeSimConfig,
+        # sim_config: QBetseeSimConf,
     ) -> None:
         '''
         Create all actions and icons associated with this undo stack.
@@ -126,7 +126,7 @@ class QBetseeUndoStackSimConfig(QUndoStack):
         ----------
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget.
-        sim_config: QBetseeSimConfig
+        sim_config: QBetseeSimConf
             Direct parent object against which to initialize this object.
         '''
 
@@ -145,7 +145,7 @@ class QBetseeUndoStackSimConfig(QUndoStack):
         # Redo action synchronized with the contents of this stack.
         self._redo_action = self.createRedoAction(
             self, QCoreApplication.translate(
-                'QBetseeUndoStackSimConfig', '&Redo'))
+                'QBetseeUndoStackSimConf', '&Redo'))
         self._redo_action.setIcon(redo_icon)
         self._redo_action.setObjectName('action_redo')
         self._redo_action.setShortcuts(QKeySequence.Redo)
@@ -153,7 +153,7 @@ class QBetseeUndoStackSimConfig(QUndoStack):
         # Undo action synchronized with the contents of this stack.
         self._undo_action = self.createUndoAction(
             self, QCoreApplication.translate(
-                'QBetseeUndoStackSimConfig', '&Undo'))
+                'QBetseeUndoStackSimConf', '&Undo'))
         self._undo_action.setIcon(undo_icon)
         self._undo_action.setObjectName('action_undo')
         self._undo_action.setShortcuts(QKeySequence.Undo)
@@ -190,9 +190,9 @@ class QBetseeUndoStackSimConfig(QUndoStack):
             if not first_separator.isSeparator():
                 raise BetseePySideMenuException(
                     title=QCoreApplication.translate(
-                        'QBetseeUndoStackSimConfig', 'Edit Menu Malformed'),
+                        'QBetseeUndoStackSimConf', 'Edit Menu Malformed'),
                     synopsis=QCoreApplication.translate(
-                        'QBetseeUndoStackSimConfig',
+                        'QBetseeUndoStackSimConf',
                         'First "Edit" menu action '
                         '"{0}" not a separator.'.format(first_separator.text())))
 

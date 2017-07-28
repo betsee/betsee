@@ -19,7 +19,7 @@ High-level :mod:`PySide2`-based error handling facilities.
 
 import re, sys, traceback
 from PySide2.QtWidgets import QMessageBox
-from betsee.exceptions import BetseeException
+from betsee.guiexceptions import BetseeException
 
 # ....................{ INSTALLERS                         }....................
 def install_exception_hook() -> None:

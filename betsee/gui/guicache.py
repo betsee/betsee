@@ -19,7 +19,7 @@ from betse.util.path.command import cmdpath
 from betse.util.py import pys
 from betse.util.type import modules
 from betse.util.type.types import type_check, IterableTypes
-from betsee import pathtree
+from betsee import guipathtree
 from betsee.util.io.xml import guiqrc, guiui
 
 # ....................{ CACHERS ~ public                   }....................
@@ -37,7 +37,7 @@ def cache_py_files() -> None:
 
     # Append the directory containing all generated modules to the PYTHONPATH,
     # permitting these modules to be subsequently imported elsewhere.
-    pys.add_import_dirname(pathtree.get_dot_py_dirname())
+    pys.add_import_dirname(guipathtree.get_dot_py_dirname())
 
     # Generate the requisite pure-Python modules (in any arbitrary order).
     _cache_py_qrc_file()
@@ -45,8 +45,8 @@ def cache_py_files() -> None:
 
     # For safety, raise an exception unless all such modules exist now.
     files.die_unless_file(
-        pathtree.get_dot_py_qrc_filename(),
-        pathtree.get_dot_py_ui_filename())
+        guipathtree.get_dot_py_qrc_filename(),
+        guipathtree.get_dot_py_ui_filename())
 
 # ....................{ CACHERS ~ private                  }....................
 def _cache_py_qrc_file() -> None:
@@ -74,14 +74,14 @@ def _cache_py_qrc_file() -> None:
         # For efficiency, these paths are ordered according to the heuristic
         # discussed by the paths.is_mtime_recursive_older_than_paths() function.
         input_pathnames=(
-            cmdpath.get_filename('pyside2-rcc'),
-            pathtree.get_data_qrc_dirname(),
+                cmdpath.get_filename('pyside2-rcc'),
+                guipathtree.get_data_qrc_dirname(),
         ),
-        output_filename=pathtree.get_dot_py_qrc_filename(),
+        output_filename=guipathtree.get_dot_py_qrc_filename(),
     ):
         guiqrc.convert_qrc_to_py_file(
-            qrc_filename=pathtree.get_data_qrc_filename(),
-            py_filename=pathtree.get_dot_py_qrc_filename())
+            qrc_filename=guipathtree.get_data_qrc_filename(),
+            py_filename=guipathtree.get_dot_py_qrc_filename())
 
 
 def _cache_py_ui_file() -> None:
@@ -111,16 +111,16 @@ def _cache_py_ui_file() -> None:
         # For efficiency, these paths are ordered according to the heuristic
         # discussed by the paths.is_mtime_recursive_older_than_paths() function.
         input_pathnames=(
-            pathtree.get_data_ui_filename(),
-            modules.get_filename(guiui),
-            modules.get_dirname(pyside2uic),
-            modules.get_dirname(PySide2),
+                guipathtree.get_data_ui_filename(),
+                modules.get_filename(guiui),
+                modules.get_dirname(pyside2uic),
+                modules.get_dirname(PySide2),
         ),
-        output_filename=pathtree.get_dot_py_ui_filename(),
+        output_filename=guipathtree.get_dot_py_ui_filename(),
     ):
         guiui.convert_ui_to_py_file(
-            ui_filename=pathtree.get_data_ui_filename(),
-            py_filename=pathtree.get_dot_py_ui_filename())
+            ui_filename=guipathtree.get_data_ui_filename(),
+            py_filename=guipathtree.get_dot_py_ui_filename())
 
 
 @type_check

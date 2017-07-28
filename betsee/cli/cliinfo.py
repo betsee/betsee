@@ -9,7 +9,7 @@ Low-level metadata facilities.
 
 # ....................{ IMPORTS                            }....................
 from betse  import metadata as betse_metadata
-from betsee import metadata as betsee_metadata
+from betsee import guimetadata as betsee_metadata
 
 # ....................{ GETTERS                            }....................
 def get_header() -> str:

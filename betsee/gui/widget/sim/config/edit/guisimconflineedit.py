@@ -12,11 +12,11 @@ from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QLineEdit
 from betse.util.io.log import logs
 from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
-    QBetseeWidgetEditMixinSimConfig)
+    QBetseeWidgetEditMixinSimConf)
 from betsee.util.widget.guiundocmd import QBetseeUndoCommandLineEdit
 
 # ....................{ SUBCLASSES ~ widget                }....................
-class QBetseeLineEditSimConfig(QBetseeWidgetEditMixinSimConfig, QLineEdit):
+class QBetseeLineEditSimConf(QBetseeWidgetEditMixinSimConf, QLineEdit):
     '''
     Simulation configuration-specific line edit widget, permitting a simulation
     configuration string value backed by an external YAML file to be

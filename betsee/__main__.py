@@ -24,9 +24,9 @@ This submodule is a thin wrapper intended to be:
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import sys
-from betsee import metadata
-from betsee.metadata import BETSE_VERSION_REQUIRED_MIN, NAME
-from betsee.exceptions import BetseeException, BetseeLibException
+from betsee import guimetadata
+from betsee.guimetadata import BETSE_VERSION_REQUIRED_MIN, NAME
+from betsee.guiexceptions import BetseeException, BetseeLibException
 
 # ....................{ MAIN                               }....................
 def main(arg_list: list = None) -> int:
@@ -100,7 +100,7 @@ def _die_unless_betse() -> None:
     # Minimum version of BETSE required by this application as a
     # machine-readable tuple of integers. Since this tuple is only required once
     # (namely, here), this tuple is *NOT* persisted as a "metadata" global.
-    BETSE_VERSION_REQUIRED_MIN_PARTS = metadata._convert_version_str_to_tuple(
+    BETSE_VERSION_REQUIRED_MIN_PARTS = guimetadata._convert_version_str_to_tuple(
         BETSE_VERSION_REQUIRED_MIN)
 
     # If the current version of BETSE is insufficient, raise an exception.

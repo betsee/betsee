@@ -23,8 +23,8 @@ automation.
 # ....................{ IMPORTS                            }....................
 # For PEP 8 compliance, versions constants expected by external automation are
 # imported under their PEP 8-mandated names.
-from betsee.metadata import VERSION as __version__
-from betsee.metadata import VERSION_PARTS as __version_info__
+from betsee.guimetadata import VERSION as __version__
+from betsee.guimetadata import VERSION_PARTS as __version_info__
 
 # ....................{ GLOBALS                            }....................
 # Document all global variables imported into this namespace above.

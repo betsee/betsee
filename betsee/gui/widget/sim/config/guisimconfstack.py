@@ -16,14 +16,14 @@ from betse.util.io.log import logs
 from betse.util.type import strs
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
-from betsee.exceptions import BetseePySideTreeWidgetException
+from betsee.guiexceptions import BetseePySideTreeWidgetException
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.util.path import guidir
 # from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
-#     QBetseeWidgetEditMixinSimConfig)
+#     QBetseeWidgetEditMixinSimConf)
 
 # ....................{ CLASSES                            }....................
-class QBetseeStackedWidgetSimConfig(QStackedWidget):
+class QBetseeStackedWidgetSimConf(QStackedWidget):
     '''
     :mod:`PySide2`-based stack widget exposing all low-level settings associated
     with each high-level feature of the current simulation configuration.
@@ -37,7 +37,7 @@ class QBetseeStackedWidgetSimConfig(QStackedWidget):
 
     Parameters
     ----------
-    _sim_conf : QBetseeSimConfig
+    _sim_conf : QBetseeSimConf
         High-level object encapsulating simulation configuration state.
     _sim_conf_tree_item_to_page : dict
         Dictionary mapping from each :class:`QTreeWidgetItem` in the
@@ -48,7 +48,7 @@ class QBetseeStackedWidgetSimConfig(QStackedWidget):
 
     See Also
     ----------
-    QBetseeTreeWidgetSimConfig
+    QBetseeTreeWidgetSimConf
         Corresponding :class:`QTreeWidget` instance, exposing all high-level
         features of the current simulation configuration which this
         :class:`QStackedWidget` instance then exposes the low-level settings of.
@@ -231,14 +231,14 @@ class QBetseeStackedWidgetSimConfig(QStackedWidget):
     # ..................{ INITIALIZERS ~ path                }..................
     # @type_check
     # def _init_page_widget(
-    #     self, page_widget: QBetseeWidgetMixinSimConfigEdit) -> None:
+    #     self, page_widget: QBetseeWidgetMixinSimConfEdit) -> None:
     #     '''
     #     Initialize the passed editable widget, presumed to be contained by an
     #     arbitrary page of this stacked widget.
     #
     #     Parameters
     #     ----------
-    #     page_widget : QBetseeWidgetMixinSimConfigEdit
+    #     page_widget : QBetseeWidgetMixinSimConfEdit
     #         Editable widget to be initialized.
     #     '''
     #
@@ -287,8 +287,8 @@ class QBetseeStackedWidgetSimConfig(QStackedWidget):
     #  * Defining a @Slot _select_subdir() implemented as below.
     #  * Defining an init() method with signature:
     #    def init(
-    #        sim_conf: QBetseeSimConfig,
-    #        line_edit: QBetseeLineEditSimConfig,
+    #        sim_conf: QBetseeSimConf,
+    #        line_edit: QBetseeLineEditSimConf,
     #    ) -> None
     #  * In this method:
     #    * Classifying all passed parameters.

@@ -13,9 +13,9 @@
 #pushed onto the undo stack. Alternately (and probably preferably), we might
 #instead:
 #
-#* Define a new "QBetseeSimConfig.is_init" boolean property set to "True" only
+#* Define a new "QBetseeSimConf.is_init" boolean property set to "True" only
 #  if edit widgets are currently being populated.
-#* In all "QBetseeSimConfigEditWidgetMixin" subclasses, avoid pushing undo
+#* In all "QBetseeSimConfEditWidgetMixin" subclasses, avoid pushing undo
 #  commands onto the stack if this property is "True."
 
 #FIXME: Correctly setting the "_is_dirty" flag on simulation configuration
@@ -96,7 +96,7 @@ from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimConfig(QObject):
+class QBetseeSimConf(QObject):
     '''
     :mod:`PySide2`-based management object encapsulating all high-level
     simulation configuration state.
@@ -116,7 +116,7 @@ class QBetseeSimConfig(QObject):
         High-level simulation configuration encapsulating the low-level
         dictionary deserialized (i.e., parsed) from the user-defined
         YAML-formatted file underlying the current simulation.
-    undo_stack : QBetseeUndoStackSimConfig
+    undo_stack : QBetseeUndoStackSimConf
         Undo stack for the currently open simulation configuration if any *or*
         the empty undo stack otherwise.
 
@@ -147,7 +147,7 @@ class QBetseeSimConfig(QObject):
         Alias of the :attr:`QBetseeMainWindow.action_save_sim_as` action.
     _sim_conf_changed_signal : QSignal
         Alias of the :attr:`QBetseeMainWindow.sim_conf_changed_signal` signal.
-    _sim_conf_stack : QBetseeSimConfigStackedWidget
+    _sim_conf_stack : QBetseeSimConfStackedWidget
         Alias of the :attr:`QBetseeMainWindow.sim_conf_stack` widget.
     _sim_conf_tree_frame : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.
@@ -236,10 +236,10 @@ class QBetseeSimConfig(QObject):
 
         # Avoid circular import dependencies.
         from betsee.gui.widget.sim.config.guisimconfundo import (
-            QBetseeUndoStackSimConfig)
+            QBetseeUndoStackSimConf)
 
         # Undo stack for this simulation configuration.
-        self.undo_stack = QBetseeUndoStackSimConfig(
+        self.undo_stack = QBetseeUndoStackSimConf(
             main_window=main_window, sim_config=self)
 
         #FIXME: Shift unrolled into the "guisimconfstack" submodule.
@@ -255,7 +255,7 @@ class QBetseeSimConfig(QObject):
         #     # If this widget does *NOT* implement the editable widget API, raise
         #     # an exception.
         #     objects.die_unless_instance(
-        #         obj=edit_widget, cls=QBetseeWidgetMixinSimConfigEdit)
+        #         obj=edit_widget, cls=QBetseeWidgetMixinSimConfEdit)
         #
         #     # Initialize this widget against this state object.
         #     edit_widget.init(self)
@@ -294,7 +294,7 @@ class QBetseeSimConfig(QObject):
     set_filename_signal = Signal(str)
     '''
     Signal passed either the absolute path of the currently open YAML-formatted
-    simulation configuration file if any *or* ``None`` otherwise.
+    simulation configuration file if any *or* the empty string otherwise.
 
     This signal is typically emitted on the user:
 

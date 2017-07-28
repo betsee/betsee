@@ -65,7 +65,7 @@ def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
     #reusable here, presumably by extracting that method into a public function.
     from betse import metadata as betse_metadata
     from betse.util.io.log import logs
-    from betsee import metadata as betsee_metadata
+    from betsee import guimetadata as betsee_metadata
     logs.log_info(
         'Welcome to <<'
         '{betsee_name} {betsee_version} | '

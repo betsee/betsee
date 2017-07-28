@@ -21,7 +21,7 @@ such dependencies.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betse.lib import libs as betse_libs
-from betsee import metadata
+from betsee import guimetadata
 
 # ....................{ EXCEPTIONS                         }....................
 def die_unless_runtime_mandatory_all() -> None:
@@ -43,4 +43,4 @@ def die_unless_runtime_mandatory_all() -> None:
     '''
 
     betse_libs.die_unless_requirements_dict(
-        metadata.DEPENDENCIES_RUNTIME_MANDATORY)
+        guimetadata.DEPENDENCIES_RUNTIME_MANDATORY)

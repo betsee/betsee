@@ -22,7 +22,7 @@ import logging, platform
 from PySide2.QtCore import Qt, QCoreApplication
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtWidgets import QApplication
-from betsee import metadata
+from betsee import guimetadata
 
 # ....................{ GLOBALS                            }....................
 # This global is initialized by the _init() function called below.
@@ -117,16 +117,16 @@ def _init_qt_core() -> None:
     '''
 
     # High-level human-readable application name intended *ONLY* for display.
-    QGuiApplication.setApplicationDisplayName(metadata.NAME)
+    QGuiApplication.setApplicationDisplayName(guimetadata.NAME)
 
     # Low-level machine-readable application name and version, each intended
     # both for display (e.g., to end users) and internal inspection.
-    QCoreApplication.setApplicationName(metadata.NAME)
-    QCoreApplication.setApplicationVersion(metadata.VERSION)
+    QCoreApplication.setApplicationName(guimetadata.NAME)
+    QCoreApplication.setApplicationVersion(guimetadata.VERSION)
 
     # Low-level machine-readable organization name and domain.
-    QCoreApplication.setOrganizationName(metadata.ORG_NAME)
-    QCoreApplication.setOrganizationDomain(metadata.ORG_DOMAIN_NAME)
+    QCoreApplication.setOrganizationName(guimetadata.ORG_NAME)
+    QCoreApplication.setOrganizationDomain(guimetadata.ORG_DOMAIN_NAME)
 
 
 def _init_qt_dpi() -> None:

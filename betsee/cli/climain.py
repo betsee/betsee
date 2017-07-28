@@ -25,8 +25,8 @@ Concrete subclasses defining this application's command line interface (CLI).
 from betse.cli.cliabc import CLIABC
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, MappingType
-from betsee import ignition
-from betsee import metadata
+from betsee import guiignition
+from betsee import guimetadata
 from betsee.cli import cliinfo
 
 # ....................{ SUBCLASS                           }....................
@@ -46,7 +46,7 @@ class BetseeCLI(CLIABC):
 
         return {
             # Human-readable multi-sentence application description.
-            'description': metadata.DESCRIPTION,
+            'description': guimetadata.DESCRIPTION,
 
             #FIXME: Define an epilog encouraging users requiring full access to
             #the BETSE's command-line suite of subcommands to call the "betse"
@@ -60,7 +60,7 @@ class BetseeCLI(CLIABC):
     def _ignite_app(self) -> None:
 
         # (Re-)initialize both BETSEE and BETSE.
-        ignition.reinit()
+        guiignition.reinit()
 
 
     @type_check

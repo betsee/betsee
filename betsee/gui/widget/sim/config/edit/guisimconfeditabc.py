@@ -20,7 +20,7 @@ from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
+class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
     '''
     Abstract base class of all **editable simulation configuration widget**
     (i.e., widget permitting one or more simulation configuration values stored
@@ -34,7 +34,7 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
 
     Attributes
     ----------
-    _sim_conf : QBetseeSimConfig
+    _sim_conf : QBetseeSimConf
         High-level state of the currently open simulation configuration, which
         depends on the state of this low-level simulation configuration widget.
     _sim_conf_alias : DataDescriptorUnbound
@@ -56,10 +56,10 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
     @type_check
     def init(
         self,
-        # To avoid circularity from the "QBetseeSimConfig" class importing the
+        # To avoid circularity from the "QBetseeSimConf" class importing the
         # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
         # importing instances of this class, this type is validated dynamically.
-        sim_conf: 'betsee.gui.widget.sim.config.guisimconf.QBetseeSimConfig',
+        sim_conf: 'betsee.gui.widget.sim.config.guisimconf.QBetseeSimConf',
         sim_conf_alias: SimConfAliasABC,
     ) -> None:
         '''
@@ -83,7 +83,7 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
 
         Parameters
         ----------
-        sim_conf : QBetseeSimConfig
+        sim_conf : QBetseeSimConf
             High-level state of the currently open simulation configuration.
         sim_conf_alias : SimConfAliasABC
             Low-level data descriptor bound to the simulation configuration
@@ -105,7 +105,22 @@ class QBetseeWidgetEditMixinSimConfig(QBetseeWidgetEditMixin):
         # Wrap the passed low-level data descriptor with a high-level wrapper.
         self._sim_conf_alias = DataDescriptorUnbound(sim_conf_alias)
 
+        #FIXME: To associate the contents of this widget with newly opened
+        #configurations, additionally:
+        #
+        #* Define the following new slot in this superclass:
+        #    @Slot
+        #    @abstractmethod
+        #    def _update_from_sim_conf_alias(self) -> None:
+        #* Redefine this slot in all superclasses.
+        #* Connect the "self._sim_conf.set_filename_signal" signal to this slot.
+        #
+        #Astonishingly elegant, really, and proof positive that Qt's slots and
+        #signals concept succeeds beyond my admittedly low expectations.
+
     # ..................{ PROPERTIES                         }..................
+    #FIXME: Overly complex and inefficient. Simply define this boolean as a
+    #typical instance variable in the init() method. *sigh*
     @property
     def _is_initted(self) -> bool:
         '''

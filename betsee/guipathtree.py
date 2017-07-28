@@ -41,7 +41,7 @@ wrappers.
 from betse import pathtree as betse_pathtree
 from betse.util.path import dirs, files, pathnames
 from betse.util.type.call.memoizers import callable_cached
-from betsee import metadata
+from betsee import guimetadata
 
 # ....................{ GETTERS ~ dir : data               }....................
 @callable_cached
@@ -111,7 +111,7 @@ def get_dot_dirname() -> str:
 
     # Create this directory if needed and return its dirname.
     return dirs.join_and_make_unless_dir(
-        betse_pathtree.get_dot_dirname(), metadata.SCRIPT_BASENAME)
+        betse_pathtree.get_dot_dirname(), guimetadata.SCRIPT_BASENAME)
 
 
 @callable_cached
@@ -141,7 +141,7 @@ def get_data_qrc_filename() -> str:
     # "resources" attribute of all XML tags contained in the file whose path is
     # given by the get_data_ui_filename() function. Why? Because obfuscatory Qt.
     return files.join_and_die_unless_file(
-        get_data_qrc_dirname(), metadata.SCRIPT_BASENAME + '.qrc')
+        get_data_qrc_dirname(), guimetadata.SCRIPT_BASENAME + '.qrc')
 
 
 @callable_cached
@@ -155,7 +155,7 @@ def get_data_ui_filename() -> str:
 
     # Return this filename if this file exists or raise an exception.
     return files.join_and_die_unless_file(
-        get_data_ui_dirname(), metadata.SCRIPT_BASENAME + '.ui')
+        get_data_ui_dirname(), guimetadata.SCRIPT_BASENAME + '.ui')
 
 # ....................{ GETTERS ~ file : dot               }....................
 @callable_cached
@@ -179,7 +179,7 @@ def get_dot_py_qrc_filename() -> str:
     #   by the "pyside2uic" package assumes this to be the case. Naturally, this
     #   assumption is *NOT* configurable.
     return pathnames.join(
-        get_dot_py_dirname(), metadata.MAIN_WINDOW_QRC_MODULE_NAME + '.py')
+        get_dot_py_dirname(), guimetadata.MAIN_WINDOW_QRC_MODULE_NAME + '.py')
 
 
 @callable_cached
@@ -195,4 +195,4 @@ def get_dot_py_ui_filename() -> str:
     '''
 
     return pathnames.join(
-        get_dot_py_dirname(), metadata.MAIN_WINDOW_UI_MODULE_NAME + '.py')
+        get_dot_py_dirname(), guimetadata.MAIN_WINDOW_UI_MODULE_NAME + '.py')

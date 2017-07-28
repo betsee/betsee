@@ -15,7 +15,7 @@ from betse.util.io.log import logs
 from betse.util.type.types import type_check
 
 # ....................{ CLASSES                            }....................
-class QBetseeTreeWidgetSimConfig(QTreeWidget):
+class QBetseeTreeWidgetSimConf(QTreeWidget):
     '''
     :mod:`PySide2`-based tree widget exposing all high-level features of the
     current simulation configuration.

@@ -831,7 +831,7 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QBetseeStackedWidgetSimConfig" name="sim_conf_stack">
+     <widget class="QBetseeStackedWidgetSimConf" name="sim_conf_stack">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>2</horstretch>
@@ -901,7 +901,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_seed_pick_file_line">
+             <widget class="QBetseeLineEditSimConf" name="sim_conf_path_seed_pick_file_line">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>1</horstretch>
@@ -966,7 +966,7 @@
                 <number>0</number>
                </property>
                <item>
-                <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_init_pick_dir_line">
+                <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_pick_dir_line">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>1</horstretch>
@@ -1014,7 +1014,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_init_pick_file_line">
+             <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_pick_file_line">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>1</horstretch>
@@ -1062,7 +1062,7 @@
                 <number>0</number>
                </property>
                <item>
-                <widget class="QBetseeLineEditSimConfig" name="sim_conf_path_init_exp_dir_line_2">
+                <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_exp_dir_line_2">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>1</horstretch>
@@ -3408,7 +3408,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QBetseeTreeWidgetSimConfig" name="sim_conf_tree">
+        <widget class="QBetseeTreeWidgetSimConf" name="sim_conf_tree">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>1</horstretch>
@@ -4167,17 +4167,17 @@
    <header>betsee/util/widget/guitextedit.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeTreeWidgetSimConfig</class>
+   <class>QBetseeTreeWidgetSimConf</class>
    <extends>QTreeWidget</extends>
    <header>betsee/gui/widget/sim/config/guisimconftree.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeLineEditSimConfig</class>
+   <class>QBetseeLineEditSimConf</class>
    <extends>QLineEdit</extends>
    <header>betsee/gui/widget/sim/config/edit/guisimconflineedit.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeStackedWidgetSimConfig</class>
+   <class>QBetseeStackedWidgetSimConf</class>
    <extends>QStackedWidget</extends>
    <header>betsee/gui/widget/sim/config/guisimconfstack.h</header>
    <container>1</container>

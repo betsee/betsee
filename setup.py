@@ -31,7 +31,7 @@ tasks (e.g., installation, freezing, test running) for this application.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import setuptools
-from betsee import metadata
+from betsee import guimetadata
 from betsee_setup import build, util
 
 # ....................{ METADATA                           }....................
@@ -114,7 +114,7 @@ def init() -> None:
     global _DESCRIPTION
 
     # Major version of Python required by this application.
-    PYTHON_VERSION_MAJOR = metadata.PYTHON_VERSION_MIN_PARTS[0]
+    PYTHON_VERSION_MAJOR = guimetadata.PYTHON_VERSION_MIN_PARTS[0]
 
     # Relative path of this application's front-facing documentation in
     # reStructuredText format, required by PyPI.
@@ -123,7 +123,7 @@ def init() -> None:
     # For each minor version of Python 3.x supported by this application,
     # formally classify this version as such.
     for python_version_minor in range(
-        metadata.PYTHON_VERSION_MIN_PARTS[1], _PYTHON_VERSION_MINOR_MAX + 1):
+        guimetadata.PYTHON_VERSION_MIN_PARTS[1], _PYTHON_VERSION_MINOR_MAX + 1):
         _CLASSIFIERS.append(
             'Programming Language :: Python :: {}.{}'.format(
                 PYTHON_VERSION_MAJOR, python_version_minor,))
@@ -152,22 +152,22 @@ init()
 setup_options = {
     # ..................{ CORE                               }..................
     # Self-explanatory metadata.
-    'name':             metadata.PACKAGE_NAME,
-    'version':          metadata.VERSION,
-    'author':           metadata.AUTHORS,
-    'author_email':     metadata.AUTHOR_EMAIL,
-    'maintainer':       metadata.AUTHORS,
-    'maintainer_email': metadata.AUTHOR_EMAIL,
-    'description':      metadata.SYNOPSIS,
+    'name':             guimetadata.PACKAGE_NAME,
+    'version':          guimetadata.VERSION,
+    'author':           guimetadata.AUTHORS,
+    'author_email':     guimetadata.AUTHOR_EMAIL,
+    'maintainer':       guimetadata.AUTHORS,
+    'maintainer_email': guimetadata.AUTHOR_EMAIL,
+    'description':      guimetadata.SYNOPSIS,
     'long_description': _DESCRIPTION,
-    'url':              metadata.URL_HOMEPAGE,
-    'download_url':     metadata.URL_DOWNLOAD,
+    'url':              guimetadata.URL_HOMEPAGE,
+    'download_url':     guimetadata.URL_DOWNLOAD,
 
     # ..................{ PYPI                               }..................
     # PyPi-specific metadata.
     'classifiers': _CLASSIFIERS,
     'keywords': _KEYWORDS,
-    'license': metadata.LICENSE,
+    'license': guimetadata.LICENSE,
 
     # ..................{ DEPENDENCIES                       }..................
     # Mandatory nuntime dependencies, ignoring all dependencies whose
@@ -184,7 +184,7 @@ setup_options = {
     'install_requires': {
         dependency_name: dependency_constraints
         for dependency_name, dependency_constraints in
-            metadata.DEPENDENCIES_RUNTIME_MANDATORY.items()
+            guimetadata.DEPENDENCIES_RUNTIME_MANDATORY.items()
         #FIXME: Uncomment the following line and remove the line that follows
         #that *AFTER* "PySide2" and "pyside2-tools" become available on PyPI.
         #Ideally, only "PySide2."-prefixed components should be ignored.
@@ -214,7 +214,7 @@ setup_options = {
     # },
 
     # Mandatory testing dependencies.
-    'tests_require': metadata.DEPENDENCIES_TESTING_MANDATORY,
+    'tests_require': guimetadata.DEPENDENCIES_TESTING_MANDATORY,
 
     # ..................{ PACKAGES                           }..................
     # List of all Python packages (i.e., directories containing zero or more
@@ -231,10 +231,10 @@ setup_options = {
     #   application freezing (i.e., conversion into an executable binary).
     'packages': setuptools.find_packages(
         exclude = [
-            metadata.PACKAGE_NAME + '_test',
-            metadata.PACKAGE_NAME + '_test.*',
-            metadata.PACKAGE_NAME + '_setup',
-            metadata.PACKAGE_NAME + '_setup.*',
+            guimetadata.PACKAGE_NAME + '_test',
+            guimetadata.PACKAGE_NAME + '_test.*',
+            guimetadata.PACKAGE_NAME + '_setup',
+            guimetadata.PACKAGE_NAME + '_setup.*',
             'build',
             'freeze',
         ],
@@ -246,7 +246,7 @@ setup_options = {
         # GUI-specific scripts.
         'gui_scripts':  [
             '{} = {}.__main__:main'.format(
-                metadata.SCRIPT_BASENAME, metadata.PACKAGE_NAME),
+                guimetadata.SCRIPT_BASENAME, guimetadata.PACKAGE_NAME),
         ],
     },
 
