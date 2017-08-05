@@ -208,7 +208,7 @@ setup_options = {
     # mandatory and optional dependencies required by the application).
     # 'extras_require': {
     #     # All optional runtime dependencies. Since the
-    #     # "DEPENDENCIES_RUNTIME_OPTIONAL" global is a dictionary rather than a
+    #     # "RUNTIME_OPTIONAL" global is a dictionary rather than a
     #     # sequence, a function converting this global into a tuple is called.
     #     'all': libs.get_runtime_optional_tuple(),
     # },

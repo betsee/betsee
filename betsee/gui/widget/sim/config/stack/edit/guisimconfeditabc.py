@@ -9,10 +9,10 @@ subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
-from betse.science.config.confalias import SimConfAliasABC
+from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
-from betse.util.type.types import type_check
 from betse.util.type.descriptor.datadescs import DataDescriptorUnbound
+from betse.util.type.types import type_check
 from betsee.util.widget.guiundocmd import QBetseeUndoCommandWidgetABC
 from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
 
@@ -60,7 +60,7 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
         # importing instances of this class, this type is validated dynamically.
         sim_conf: 'betsee.gui.widget.sim.config.guisimconf.QBetseeSimConf',
-        sim_conf_alias: SimConfAliasABC,
+        sim_conf_alias: YamlAliasABC,
     ) -> None:
         '''
         Initialize this widget against the passed state object.
@@ -85,12 +85,12 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         ----------
         sim_conf : QBetseeSimConf
             High-level state of the currently open simulation configuration.
-        sim_conf_alias : SimConfAliasABC
+        sim_conf_alias : YamlAliasABC
             Low-level data descriptor bound to the simulation configuration
             option edited by this widget, typically a
             :class:`betse.science.params.Parameters`-specific class variable
             assigned the return value of the
-            :func:`betse.science.config.confabc.conf_alias` function.
+            :func:`betse.science.config.confabc.yaml_alias` function.
         '''
 
         # Log this initialization *AFTER* storing this name.

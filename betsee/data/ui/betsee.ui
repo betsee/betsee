@@ -4174,12 +4174,12 @@
   <customwidget>
    <class>QBetseeLineEditSimConf</class>
    <extends>QLineEdit</extends>
-   <header>betsee/gui/widget/sim/config/edit/guisimconflineedit.h</header>
+   <header>betsee/gui/widget/sim/config/stack/edit/guisimconflineedit.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeStackedWidgetSimConf</class>
    <extends>QStackedWidget</extends>
-   <header>betsee/gui/widget/sim/config/guisimconfstack.h</header>
+   <header>betsee/gui/widget/sim/config/stack/guisimconfstack.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

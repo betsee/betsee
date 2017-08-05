@@ -18,9 +18,6 @@ from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.guiexceptions import BetseePySideTreeWidgetException
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
-from betsee.util.path import guidir
-# from betsee.gui.widget.sim.config.edit.guisimconfeditabc import (
-#     QBetseeWidgetEditMixinSimConf)
 
 # ....................{ CLASSES                            }....................
 class QBetseeStackedWidgetSimConf(QStackedWidget):
@@ -306,6 +303,6 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
     #     '''
     #
     #     subdirname = guidir.select_subdir(
-    #         parent_dirname=self._sim_conf.params.config_dirname,
+    #         parent_dirname=self._sim_conf.dirname,
     #         current_dirname=self._line_edit.text())
     #     self._line_edit.setText(subdirname)

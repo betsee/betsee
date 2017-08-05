@@ -323,7 +323,7 @@ mandatory runtime dependency for this application to the suffix of a
 
 See Also
 ----------
-:data:`betse.metadata.DEPENDENCIES_RUNTIME_MANDATORY`
+:data:`betse.metadata.RUNTIME_MANDATORY`
     Further details on dictionary structure.
 :download:`/doc/rst/INSTALL.rst`
     Human-readable list of these dependencies.
@@ -342,7 +342,7 @@ optional runtime dependency for this application to the suffix of a
 
 See Also
 ----------
-:data:`betse.metadata.DEPENDENCIES_RUNTIME_MANDATORY`
+:data:`betse.metadata.RUNTIME_MANDATORY`
     Further details on dictionary structure.
 :download:`/doc/rst/INSTALL.rst`
     Human-readable list of these dependencies.
@@ -363,7 +363,7 @@ mandatory testing dependency for this application to the suffix of a
 
 See Also
 ----------
-:data:`betse.metadata.DEPENDENCIES_RUNTIME_MANDATORY`
+:data:`betse.metadata.RUNTIME_MANDATORY`
     Further details on dictionary structure.
 :download:`/doc/rst/INSTALL.rst`
     Human-readable list of these dependencies.

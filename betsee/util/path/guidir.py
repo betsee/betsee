@@ -46,7 +46,7 @@ from betsee.util.app.guiapp import APP_GUI
 #    https://stackoverflow.com/a/12173504/2809027
 
 @type_check
-def select_subdir(parent_dirname: str, current_dirname: str) -> str:
+def select_subdir(parent_dirname: str, start_dirname: str) -> str:
     '''
     Display a dialog requiring the user to select an existing subdirectory of
     the parent directory with the passed path, returning the relative path of
@@ -56,8 +56,8 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> str:
     ----------
     parent_dirname : str
         Absolute path of the parent directory to select a subdirectory of.
-    current_dirname : str
-        Absolute path of the directory to initially display in this dialog.
+    start_dirname : str
+        Absolute path of the directory to be initially displayed by this dialog.
 
     Returns
     ----------
@@ -77,8 +77,8 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> str:
 
     # If this current directory does not exist, fallback to this existing parent
     # directory as the current directory.
-    if not dirs.is_dir(current_dirname):
-        current_dirname = parent_dirname
+    if not dirs.is_dir(start_dirname):
+        start_dirname = parent_dirname
 
     # Absolute path of the subdirectory selected by the user.
     child_dirname = QFileDialog.getExistingDirectory(
@@ -88,8 +88,8 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> str:
         # Translated title of this dialog.
         QCoreApplication.translate('select_subdir', 'Select Subdirectory'),
 
-        # Working directory of this dialog.
-        current_dirname,
+        # Initial working directory of this dialog.
+        start_dirname,
 
         # Options with which to initialize this dialog. Specifically:
         #
