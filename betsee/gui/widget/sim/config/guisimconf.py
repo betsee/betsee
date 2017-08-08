@@ -369,11 +369,7 @@ class QBetseeSimConf(QObject):
 
         # Absolute path of a possibly non-existing YAML-formatted simulation
         # configuration file selected by the user.
-        conf_filename = guifile.save_file(
-            title=QCoreApplication.translate(
-                'QBetseeSimConf', 'New Simulation Configuration'),
-            label_to_filetypes={'YAML files': yamls.FILETYPES,},
-        )
+        conf_filename = self._show_dialog_sim_conf_save()
 
         # If the user canceled this dialog, silently noop.
         if conf_filename is None:
@@ -389,10 +385,7 @@ class QBetseeSimConf(QObject):
             conf_filename=conf_filename, is_overwritable=True)
 
         # Deserialize this low-level file into a high-level configuration.
-        self._p.read(conf_filename)
-
-        # Notify all interested slots of this event.
-        self.set_filename_signal.emit(conf_filename)
+        self._open_sim_conf(conf_filename)
 
 
     @Slot()
@@ -408,11 +401,7 @@ class QBetseeSimConf(QObject):
 
         # Absolute path of an existing YAML-formatted simulation configuration
         # file selected by the user.
-        conf_filename = guifile.open_file(
-            title=QCoreApplication.translate(
-                'QBetseeSimConf', 'Open Simulation Configuration'),
-            label_to_filetypes={'YAML files': yamls.FILETYPES,},
-        )
+        conf_filename = self._show_dialog_sim_conf_open()
 
         # If the user canceled this dialog, silently noop.
         if conf_filename is None:
@@ -420,12 +409,12 @@ class QBetseeSimConf(QObject):
         # Else, the user did *NOT* cancel this dialog.
 
         # Deserialize this low-level file into a high-level configuration.
-        self._p.read(conf_filename)
-
-        # Notify all interested slots of this event.
-        self.set_filename_signal.emit(conf_filename)
+        self._open_sim_conf(conf_filename)
 
 
+    #FIXME: Insufficient. If this configuration is dirty, an interactive prompt
+    #should be displayed confirming this closure. See the "SDI" example
+    #application for sample code, please.
     @Slot()
     def _close_sim(self) -> None:
         '''
@@ -457,10 +446,9 @@ class QBetseeSimConf(QObject):
         self._p.overwrite()
 
         # Notify all interested slots of this event.
-        self.set_dirty_signal.emit(None)
+        self.set_dirty_signal.emit(True)
 
 
-    #FIXME: Implement us up.
     @Slot()
     def _save_sim_as(self) -> None:
         '''
@@ -468,12 +456,72 @@ class QBetseeSimConf(QObject):
         configuration be written to an arbitrary external YAML-formatted file.
         '''
 
-        # Absolute path of an existing YAML-formatted simulation configuration
-        # file selected by the user.
-        filename = 'my_sim.yaml'
+        # Absolute path of a possibly non-existing YAML-formatted simulation
+        # configuration file selected by the user.
+        conf_filename = self._show_dialog_sim_conf_save()
+
+        # If the user canceled this dialog, silently noop.
+        if conf_filename is None:
+            return
+        # Else, the user did *NOT* cancel this dialog.
+
+        # Reserialize this high-level configuration to this new low-level file.
+        self._p.write(conf_filename)
 
         # Notify all interested slots of this event.
-        self.set_filename_signal.emit(filename)
+        self.set_filename_signal.emit(conf_filename)
+
+    # ..................{ OPENERS                            }..................
+    @type_check
+    def _open_sim_conf(self, conf_filename: str) -> None:
+        '''
+        Deserialize the passed low-level YAML-formatted simulation configuration
+        file into a high-level :class:`Parameters` object *and* signal all
+        interested slots of this event.
+
+        Parameters
+        ----------
+        conf_filename : str
+            Absolute path of this file.
+        '''
+
+        # Deserialize this low-level file into a high-level configuration.
+        self._p.read(conf_filename)
+
+        # Signal all interested slots of this event.
+        self.set_filename_signal.emit(conf_filename)
+
+    # ..................{ SHOWERS                            }..................
+    def _show_dialog_sim_conf_open(self) -> str:
+        '''
+        Display a dialog requiring the user to select an existing YAML-formatted
+        file to be subsequently opened for reading (rather than overwriting) as
+        the new simulation configuration, returning the absolute path of this
+        file if this dialog was not canceled *or* ``None`` otherwise (i.e., if
+        this dialog was canceled).
+        '''
+
+        return guifile.open_file(
+            title=QCoreApplication.translate(
+                'QBetseeSimConf', 'Open Simulation Configuration'),
+            label_to_filetypes={'YAML files': yamls.FILETYPES,},
+        )
+
+
+    def _show_dialog_sim_conf_save(self) -> str:
+        '''
+        Display a dialog requiring the user to select a YAML-formatted file
+        (either existing or non-existing) to be subsequently opened for in-place
+        saving and hence overwriting as the new simulation configuration,
+        returning the absolute path of this file if this dialog was not canceled
+        *or* ``None`` otherwise (i.e., if this dialog was canceled).
+        '''
+
+        return guifile.save_file(
+            title=QCoreApplication.translate(
+                'QBetseeSimConf', 'New Simulation Configuration'),
+            label_to_filetypes={'YAML files': yamls.FILETYPES,},
+        )
 
     # ..................{ SETTERS                            }..................
     def _set_widget_state(self) -> None:
