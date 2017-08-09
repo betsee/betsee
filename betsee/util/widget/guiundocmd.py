@@ -96,12 +96,7 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
 
         return self._id
 
-        #FIXME: Non-ideal approach. Ideally, the superclass would provide a
-        #@contextmanager guaranteeing this boolean to be restored even in the
-        #event of exceptions raised by the above call. (Please make it so.)
-
     # ..................{ CONTEXTS                           }..................
-    # Notify this widget that an undo command is no longer being applied.
     @contextmanager
     def _in_undo_cmd(self) -> GeneratorType:
         '''
@@ -110,8 +105,11 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
         this context.
 
         This context manager enables and then guaranteeably disables the
-        :attr:`QBetseeWidgetEditMixin.is_in_undo_cmd` boolean even when
-        fatal exceptions are raised.
+        :attr:`QBetseeWidgetEditMixin.is_undo_cmd_pushable` boolean even when
+        fatal exceptions are raised, preventing :attr:`QBetseeWidgetEditMixin`
+        subclass slots from recursively pushing additional undo commands onto
+        the undo stack when already applying an undo command. Why? Because doing
+        so induces infinite recursion, which is bad.
 
         Returns
         -----------
@@ -125,13 +123,16 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
             statement must be suffixed by *no* ``as`` clause.
         '''
 
+        # Prior state of this boolean, preserved to permit restoration.
+        is_undo_cmd_pushable_prior = self._widget.is_undo_cmd_pushable
+
         # Yield control to the body of the caller's "with" block.
         try:
-            self._widget.is_in_undo_cmd = True
+            self._widget.is_undo_cmd_pushable = False
             yield
-        # Disable this notification even if that block raised an exception.
+        # Restore this boolean's state even if that block raised an exception.
         finally:
-            self._widget.is_in_undo_cmd = False
+            self._widget.is_undo_cmd_pushable = is_undo_cmd_pushable_prior
 
 
 class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):

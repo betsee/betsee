@@ -23,6 +23,7 @@ Concrete subclasses defining this application's command line interface (CLI).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betse.cli.cliabc import CLIABC
+from betse.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, MappingType
 from betsee import guiignition
@@ -33,7 +34,23 @@ from betsee.cli import cliinfo
 class BetseeCLI(CLIABC):
     '''
     Command line interface (CLI) for this application.
+
+    Parameters
+    ----------
+    _sim_conf_filename : StrOrNoneTypes
+        Absolute or relative path of the initial YAML-formatted simulation
+        configuration file to be initially opened if any *or* ``None`` otherwise
+        parsed from the passed options.
     '''
+
+    # ..................{ INITIALIZERS                       }..................
+    def __init__(self):
+
+        # Initialize our superclass.
+        super().__init__()
+
+        # Nullify all instance variables for safety.
+        self._sim_conf_filename = None
 
     # ..................{ SUPERCLASS ~ header                }..................
     def _show_header(self) -> None:
@@ -56,11 +73,66 @@ class BetseeCLI(CLIABC):
             # 'epilog': SUBCOMMANDS_SUFFIX,
         }
 
+    # ..................{ SUPERCLASS ~ options               }..................
+    def _make_options_top(self) -> tuple:
+
+        # Tuple of all default top-level options.
+        options_top = super()._make_options_top()
+
+        # Return a tuple extending this tuple with subclass-specific options.
+        return options_top + (
+            CLIOptionArgStr(
+                long_name='--sim-conf-file',
+                synopsis='simulation configuration file to initially open',
+                var_name='sim_conf_filename',
+                default_value=None,
+            ),
+        )
+
+
+    def _parse_options_top(self) -> None:
+
+        # Parse all default top-level options.
+        super()._parse_options_top()
+
+        # Initial simulation configuration file parsed from the passed options.
+        self._sim_conf_filename = self._args.sim_conf_filename
+
     # ..................{ SUPERCLASS ~ methods               }..................
     def _ignite_app(self) -> None:
 
         # (Re-)initialize both BETSEE and BETSE.
         guiignition.reinit()
+
+
+    def _do(self) -> object:
+        '''
+        Implement this command-line interface (CLI) by running the corresponding
+        graphical user interface (GUI), returning this interface to be memory
+        profiled when the ``--profile-type=size`` CLI option is passed.
+        '''
+
+        # Defer imports *NOT* guaranteed to exist at this module's top-level.
+        from betsee.gui.guimain import BetseeGUI
+
+        # Application GUI.
+        #
+        # For safety, this GUI is scoped to a local rather than instance or
+        # global variable, ensuring this GUI is destroyed before the root Qt
+        # application widget containing this GUI.
+        app_gui = BetseeGUI(sim_conf_filename=self._sim_conf_filename)
+
+        #FIXME: Propagate the exit status returned by the following method call
+        #as the exit status of the entire process. To do so, we'll probably need
+        #to generalize the "CLIABC" superclass to provide an instance variable
+        #(e.g., "self.exit_status") defaulting to None. When non-None, the
+        #superclass returns this exit status rather than "SUCCESS".
+
+        # Run this GUI's event loop and display this GUI.
+        exit_status = app_gui.run()
+
+        # Return this GUI.
+        return app_gui
 
 
     @type_check
@@ -83,31 +155,3 @@ class BetseeCLI(CLIABC):
             logs.log_error(str(import_error))
 
 
-    def _do(self) -> object:
-        '''
-        Implement this command-line interface (CLI) by running the corresponding
-        graphical user interface (GUI), returning this interface to be memory
-        profiled when the ``--profile-type=size`` CLI option is passed.
-        '''
-
-        # Defer imports *NOT* guaranteed to exist at this module's top-level.
-        from betsee.gui.guimain import BetseeGUI
-
-        # Application GUI.
-        #
-        # For safety, this GUI is scoped to a local rather than instance or
-        # global variable, ensuring that this GUI is destroyed before the
-        # root Qt application widget containing this GUI.
-        app_gui = BetseeGUI()
-
-        #FIXME: Propagate the exit status returned by the following method call
-        #as the exit status of the entire process. To do so, we'll probably need
-        #to generalize the "CLIABC" superclass to provide an instance variable
-        #(e.g., "self.exit_status") defaulting to None. When non-None, the
-        #superclass returns this exit status rather than "SUCCESS".
-
-        # Run this GUI's event loop and display this GUI.
-        exit_status = app_gui.run()
-
-        # Return this GUI.
-        return app_gui

@@ -7,87 +7,6 @@
 :mod:`PySide2`-based object encapsulating simulation configuration state.
 '''
 
-#FIXME: Clear the undo stack immediately after populating edit widgets on the
-#initial creation or opening of a new simulation configuration. Why? Because
-#populating these widgets emits signals inducing ignorable undo commands to be
-#pushed onto the undo stack. Alternately (and probably preferably), we might
-#instead:
-#
-#* Define a new "QBetseeSimConf.is_init" boolean property set to "True" only
-#  if edit widgets are currently being populated.
-#* In all "QBetseeSimConfEditWidgetMixin" subclasses, avoid pushing undo
-#  commands onto the stack if this property is "True."
-
-#FIXME: Correctly setting the "_is_dirty" flag on simulation configuration
-#changes is *NOT* going to be easy, unfortunately. Specifically:
-#
-#* The pair of QWidget.isWindowChanged() and QWidget.setWindowChanged() methods
-#  that *COULD* have made detecting widget changes simpler fail to propagate to
-#  parent widgets and hence are effectively useless.
-#* The "QEvent::ModifiedChange" event type is emitted for only some but *NOT*
-#  all widget changes of interest. Of course, right? From StackOverflow:
-#  "I have QFrame::eventFilter installed on the QDateEdit anyway because I need
-#   to change row selection for QTableWidget if QDateEdit was edited so I
-#   thought I could use it instead... but QEvent::ModifiedChange doesn't work
-#   for that and I don't know what to use..."
-#* The QLineEdit.isModified() and QTextEdit.isModified() methods are provided
-#  *ONLY* by those widgets, despite their general utility.
-#* The QWidget.changeEvent() method that that *COULD* also have made detecting
-#  widget changes is a protected event handler rather than a public signal.
-#  This means that overriding the default handling for widget change events
-#  would require:
-#  * Defining one BETSEE-specific widget subclass for each widget superclass of
-#    interest (e.g., "QBetseeLineEdit" for "QLineEdit").
-#  * Overriding the changeEvent() method in that subclass to:
-#    * Detect whether the current change event corresponds to an event of
-#      interest (e.g., text change).
-#    * If so, explicitly emit a signal to a corresponding slot of this
-#      "QBetseeMainWindow" instance, which should then register this change.
-#  * Explicitly promoting each changeable widget of interest in Qt Creator to
-#    our BETSEE-specific widget subclass.
-#
-#Technically, this *WOULD* maybe work -- but it's also incredibly cumbersome. An
-#alternative solution is to shift as much of this tedious manual labour as
-#feasible into clever Python automation. How? Specifically:
-#
-#* Define a new "QBetseeMainWindow._is_sim_changed" boolean corresponding to the
-#  typical "dirty" flag (i.e., "True" only if the current simulation has unsaved
-#  configuration changes).
-#* Define a new "QBetseeMainWindow.sim_changed" slot internally enabling this
-#  "self._is_sim_changed" boolean. This slot should accept no arguments.
-#* Define a new QBetseeSimConfTreeWidget._init_connections_changed() method,
-#  called by the existing QBetseeSimConfTreeWidget._init_connections() method.
-#* In this new method:
-#  * Define a local dictionary constant mapping from each widget type of
-#    interest (e.g., "QComboBox", "QLineEdit") to a tuple of the names of all
-#    signals emitted by widgets of this type when their contents change: e.g.,
-#
-#    #FIXME: Actually, just use the new
-#    #"betsee.util.type.psdwidget.FORM_WIDGET_TYPE_TO_SIGNALS_CHANGE" global.
-#    WIDGET_TYPE_TO_CHANGE_SIGNALS = {
-#        QLineEdit: ('textChanged',),
-#        QCombobox: ('currentIndexChanged', 'editTextChanged',),
-#        ...
-#    }
-#
-#  * Iteratively find all transitive children of our top-level stack widget by
-#    calling the QStackedWidget.findChildren() method.
-#  * For each such child:
-#    * Map this child's type to the tuple of the names of all change signals
-#      emitted by widgets of this type via the "WIDGET_TYPE_TO_CHANGE_SIGNALS"
-#      dictionary defined above.
-#    * For each such signal name:
-#      * Dynamically retrieve this signal with getattr(). (Yay!)
-#      * Connect this signal to the "QBetseeMainWindow.sim_changed" slot.
-#
-#This exact solution is outlined, albeit without any working code, at:
-#    http://www.qtcentre.org/archive/index.php/t-44026.html
-#
-#This is sufficiently annoying that we should consider posting a working
-#solution back to StackOverflow... somewhere. The following question might be a
-#reasonable place to pose this answer:
-#    https://stackoverflow.com/questions/2559681/qt-how-to-know-whether-content-in-child-widgets-has-been-changed
-
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
 from betse.lib.yaml import yamls
@@ -111,6 +30,9 @@ class QBetseeSimConf(QObject):
 
     Attributes (Non-widgets: Public)
     ----------
+    p : Parameters
+        High-level simulation configuration encapsulating a low-level dictionary
+        parsed from an even lower-level YAML-formatted file.
     undo_stack : QBetseeUndoStackSimConf
         Undo stack for the currently open simulation configuration if any *or*
         the empty undo stack otherwise.
@@ -120,9 +42,6 @@ class QBetseeSimConf(QObject):
     _is_dirty : bool
         ``True`` only if a simulation configuration is currently open *and* this
         configuration is **dirty** (i.e., has unsaved changes).
-    _p : Parameters
-        :mod:`PySide2`-agnostic object encapsulating the low-level dictionary
-        deserialized from the current YAML-formatted simulation configuration.
 
     Attributes (widgets)
     ----------
@@ -181,8 +100,8 @@ class QBetseeSimConf(QObject):
         # Log this initialization.
         logs.log_debug('Sanitizing simulation configuration state...')
 
-        #
-        self._p = Parameters()
+        # High-level simulation configuration, defaulting to the unread state.
+        self.p = Parameters()
 
         # Nullify all stateful instance variables for safety. While the signals
         # subsequently emitted by this method also do so, ensure sanity if these
@@ -271,7 +190,7 @@ class QBetseeSimConf(QObject):
         simulation configuration file if any *or* ``None`` otherwise.
         '''
 
-        return self._p.conf_dirname
+        return self.p.conf_dirname
 
 
     @property
@@ -281,10 +200,9 @@ class QBetseeSimConf(QObject):
         *or* ``None`` otherwise.
         '''
 
-        return self._p.conf_filename
+        return self.p.conf_filename
 
     # ..................{ SIGNALS                            }..................
-    #FIXME: Emit this signal on opening, closing, or saving-as a simulation.
     set_filename_signal = Signal(str)
     '''
     Signal passed either the absolute path of the currently open YAML-formatted
@@ -385,7 +303,7 @@ class QBetseeSimConf(QObject):
             conf_filename=conf_filename, is_overwritable=True)
 
         # Deserialize this low-level file into a high-level configuration.
-        self._open_sim_conf(conf_filename)
+        self.open_sim_conf(conf_filename)
 
 
     @Slot()
@@ -409,7 +327,7 @@ class QBetseeSimConf(QObject):
         # Else, the user did *NOT* cancel this dialog.
 
         # Deserialize this low-level file into a high-level configuration.
-        self._open_sim_conf(conf_filename)
+        self.open_sim_conf(conf_filename)
 
 
     #FIXME: Insufficient. If this configuration is dirty, an interactive prompt
@@ -427,7 +345,7 @@ class QBetseeSimConf(QObject):
         '''
 
         # Revert this simulation configuration to the unread state.
-        self._p.unread()
+        self.p.unread()
 
         # Notify all interested slots of this event.
         self.set_filename_signal.emit(None)
@@ -443,7 +361,7 @@ class QBetseeSimConf(QObject):
         '''
 
         # Reserialize this high-level configuration to the same low-level file.
-        self._p.overwrite()
+        self.p.overwrite()
 
         # Notify all interested slots of this event.
         self.set_dirty_signal.emit(True)
@@ -466,18 +384,18 @@ class QBetseeSimConf(QObject):
         # Else, the user did *NOT* cancel this dialog.
 
         # Reserialize this high-level configuration to this new low-level file.
-        self._p.write(conf_filename)
+        self.p.write(conf_filename)
 
         # Notify all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
 
     # ..................{ OPENERS                            }..................
     @type_check
-    def _open_sim_conf(self, conf_filename: str) -> None:
+    def open_sim_conf(self, conf_filename: str) -> None:
         '''
         Deserialize the passed low-level YAML-formatted simulation configuration
         file into a high-level :class:`Parameters` object *and* signal all
-        interested slots of this event.
+        connected slots of this event.
 
         Parameters
         ----------
@@ -486,7 +404,7 @@ class QBetseeSimConf(QObject):
         '''
 
         # Deserialize this low-level file into a high-level configuration.
-        self._p.read(conf_filename)
+        self.p.read(conf_filename)
 
         # Signal all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
@@ -531,20 +449,20 @@ class QBetseeSimConf(QObject):
         '''
 
         # Enable or disable actions requiring an open simulation configuration.
-        self._action_close_sim.setEnabled(self._p.is_read)
-        self._action_save_sim_as.setEnabled(self._p.is_read)
+        self._action_close_sim.setEnabled(self.p.is_read)
+        self._action_save_sim_as.setEnabled(self.p.is_read)
 
         # Enable or disable actions requiring an open simulation configuration
         # associated with an existing file and having unsaved changes.
-        self._action_save_sim.setEnabled(self._p.is_read and self._is_dirty)
+        self._action_save_sim.setEnabled(self.p.is_read and self._is_dirty)
 
         # Show or hide widgets requiring an open simulation configuration.
-        self._sim_conf_stack.setVisible(self._p.is_read)
-        self._sim_conf_tree_frame.setVisible(self._p.is_read)
-        self._sim_phase_tabs.setVisible(self._p.is_read)
+        self._sim_conf_stack.setVisible(self.p.is_read)
+        self._sim_conf_tree_frame.setVisible(self.p.is_read)
+        self._sim_phase_tabs.setVisible(self.p.is_read)
 
         # If a simulation configuration is open...
-        if self._p.is_read:
+        if self.p.is_read:
             # ...and this configuration is clean, mark the undo stack as clean.
             if not self._is_dirty:
                 self.undo_stack.setClean()

@@ -46,7 +46,7 @@ class QBetseeLineEditSimConf(QBetseeWidgetEditMixinSimConf, QLineEdit):
         super().init(*args, **kwargs)
 
         # Connect all relevant signals to slots *AFTER* initializing our
-        # superclass. See the supercrass method for details.
+        # superclass. See the superclass method for details.
         self.editingFinished.connect(self._editing_finished_undoable)
 
     # ..................{ SETTERS                            }..................
@@ -68,7 +68,7 @@ class QBetseeLineEditSimConf(QBetseeWidgetEditMixinSimConf, QLineEdit):
 
         # Log this edit.
         logs.log_debug(
-            'Finalizing editable widget "%s" change...', self.object_name)
+            'Finalizing line edit "%s" change...', self.object_name)
 
         # Current text of this widget's contents.
         text_curr = self.text()

@@ -189,6 +189,7 @@ Root-level classes defining this application's graphical user interface (GUI).
 
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
+from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.gui import guicache
 from betsee.util.io import guierr
 
@@ -210,13 +211,31 @@ class BetseeGUI(object):
         via cross-platform, thread- and process-safe slots.
     _signaler : QBetseeSignaler
         :class:`PySide2`-based collection of all application-wide signals.
+    _sim_conf_filename : StrOrNoneTypes
+        Absolute or relative path of the initial YAML-formatted simulation
+        configuration file to be initially opened if any *or* ``None``
+        otherwise.
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def __init__(self, *args, **kwargs) -> None:
+    @type_check
+    def __init__(self, sim_conf_filename: StrOrNoneTypes) -> None:
+        '''
+        Initialize this graphical user interface (GUI).
 
-        # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
+        Parameters
+        ----------
+        sim_conf_filename : StrOrNoneTypes
+            Absolute or relative path of the initial YAML-formatted simulation
+            configuration file to be initially opened if any *or* ``None``
+            otherwise.
+        '''
+
+        # Initialize subclasses performing diamond inheritance if any.
+        super().__init__()
+
+        # Classify all passed parameters.
+        self._sim_conf_filename = sim_conf_filename
 
         # Nullify all instance variables for safety.
         self._signaler = None
@@ -279,7 +298,10 @@ class BetseeGUI(object):
         # variable, this variable is exposed as a public attribute of the
         # singleton application widget rather than this less accessible object.
         # See the "guiapp" submodule for further details.
-        APP_GUI.betsee_main_window = QBetseeMainWindow(signaler=self._signaler)
+        APP_GUI.betsee_main_window = QBetseeMainWindow(
+            signaler=self._signaler,
+            sim_conf_filename=self._sim_conf_filename,
+        )
 
         # Application-wide settings slotter, which requires this window.
         self._settings = QBetseeSettings(APP_GUI.betsee_main_window)

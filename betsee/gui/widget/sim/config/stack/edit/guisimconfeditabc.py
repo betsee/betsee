@@ -11,7 +11,7 @@ subclasses.
 # ....................{ IMPORTS                            }....................
 from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
-from betse.util.type.descriptor.datadescs import DataDescriptorUnbound
+from betse.util.type.descriptor.datadescs import DataDescriptorBound
 from betse.util.type.types import type_check
 from betsee.util.widget.guiundocmd import QBetseeUndoCommandWidgetABC
 from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
@@ -37,9 +37,10 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
     _sim_conf : QBetseeSimConf
         High-level state of the currently open simulation configuration, which
         depends on the state of this low-level simulation configuration widget.
-    _sim_conf_alias : DataDescriptorUnbound
-        high-level object encapsulating the low-level data descriptor bound to
-        the simulation configuration option edited by this widget.
+    _sim_conf_alias : DataDescriptorBound
+        high-level object wrapping the low-level data descriptor of the
+        :class:`betse.science.parameters.Parameters` class, itself wrapping the
+        lower-level simulation configuration option edited by this widget.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -102,8 +103,10 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         # object introduces no circularity and hence is safe. (That's nice.)
         self._sim_conf = sim_conf
 
-        # Wrap the passed low-level data descriptor with a high-level wrapper.
-        self._sim_conf_alias = DataDescriptorUnbound(sim_conf_alias)
+        # Wrap the passed low-level data descriptor with a high-level wrapper
+        # bound to the "Parameters" instance associated with this GUI.
+        self._sim_conf_alias = DataDescriptorBound(
+            obj=sim_conf.p, data_desc=sim_conf_alias)
 
         #FIXME: To associate the contents of this widget with newly opened
         #configurations, additionally:
@@ -117,18 +120,6 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         #
         #Astonishingly elegant, really, and proof positive that Qt's slots and
         #signals concept succeeds beyond my admittedly low expectations.
-
-    # ..................{ PROPERTIES                         }..................
-    #FIXME: Overly complex and inefficient. Simply define this boolean as a
-    #typical instance variable in the init() method. *sigh*
-    @property
-    def _is_initted(self) -> bool:
-        '''
-        ``True`` only if this widget has been associated with an open simulation
-        configuration (i.e., if the :meth:`init` method has been called).
-        '''
-
-        return self._sim_conf is not None
 
     # ..................{ ENABLERS                           }..................
     def _enable_sim_conf_dirty(self) -> None:
@@ -144,7 +135,7 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         '''
 
         # If this widget has yet to be initialized, silently noop.
-        if not self._is_initted:
+        if self._sim_conf is None:
             return
 
         # Log this initialization *AFTER* storing this name.
@@ -169,11 +160,10 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
             Widget-specific undo command to be pushed onto this stack.
         '''
 
-        # If an undo command is currently being applied to this widget, pushing
-        # the passed undo command onto the stack would apply that command to
-        # this widget in a nested manner typically provoking infinite recursion.
-        # Since that would be bad, this undo command is silently ignored.
-        if self.is_in_undo_cmd:
+        # If undo commands are *NOT* safely pushable (e.g., due to a prior undo
+        # command currently being applied to this widget), silently noop.
+        # Pushing this undo command unsafely could provoke infinite recursion.
+        if not self.is_undo_cmd_pushable:
             return
 
         # Else, no such command is being applied. Since pushing this undo

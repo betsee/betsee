@@ -112,15 +112,15 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     ----------
     signaler : QBetseeSignaler
         :class:`PySide2`-based collection of various application-wide signals.
-        To allow external callers (e.g., :class:`QBetseeSettings`) to access
-        this attribute, this attribute is public rather than private.
     sim_conf : QBetseeSimConf
-        Object encapsulating high-level simulation configuration state. To
-        allow external callers (e.g., :class:`QBetseeStackedWidgetSimConf`) to
-        access this attribute, this attribute is public rather than private.
+        Object encapsulating high-level simulation configuration state.
 
     Attributes (Private)
     ----------
+    _sim_conf_filename : StrOrNoneTypes
+        Absolute or relative path of the initial YAML-formatted simulation
+        configuration file to be initially opened if any *or* ``None``
+        otherwise.
 
     See Also
     ----------
@@ -133,6 +133,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     def __init__(
         self,
         signaler: QBetseeSignaler,
+        sim_conf_filename: StrOrNoneTypes,
         *args, **kwargs
     ) -> None:
         '''
@@ -142,6 +143,10 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         ----------
         signaler : QBetseeSettingsSignaler
             :class:`PySide2`-based collection of application-wide signals.
+        sim_conf_filename : StrOrNoneTypes
+            Absolute or relative path of the initial YAML-formatted simulation
+            configuration file to be initially opened if any *or* ``None``
+            otherwise.
         '''
 
         # Initialize our superclass with all passed parameters.
@@ -149,9 +154,10 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Classify all remaining parameters.
         self.signaler = signaler
+        self._sim_conf_filename = sim_conf_filename
 
         # Nullify all remaining instance variables for safety.
-        self._sim_config = None
+        self.sim_conf = None
 
         # Log this initialization.
         logs.log_debug('Generating main window...')
@@ -262,15 +268,20 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Object encapsulating high-level simulation configuration state,
         # instantiated *BEFORE* initializing widgets assuming this state to
         # exist.
-        self.sim_conf = QBetseeSimConf(self)
+        self.sim_conf = QBetseeSimConf(main_window=self)
 
         # Initialize both the simulation configuration stack widget *BEFORE*
         # initializing the mildly higher-level sibling tree widget, which
-        # assumes the former to have been initialized..
-        self.sim_conf_stack.init(self)
+        # assumes the former to have been initialized.
+        self.sim_conf_stack.init(main_window=self)
 
         # Initialize the simulation configuration tree widget.
-        self.sim_conf_tree.init(self)
+        self.sim_conf_tree.init(main_window=self)
+
+        # If opening an initial simulation configuration file, do so *AFTER*
+        # finalizing all widgets.
+        if self._sim_conf_filename is not None:
+            self.sim_conf.open_sim_conf(self._sim_conf_filename)
 
     # ..................{ INITIALIZERS                       }..................
     #FIXME: Excise this, which should no longer be required.

@@ -119,22 +119,23 @@ class QBetseeWidgetEditMixin(object):
 
     Attributes
     ----------
-    is_in_undo_cmd : bool
-        ``True`` only if an undo command is now being externally applied to this
-        widget, in which case widget subclass slots intending to push an undo
-        commands onto the undo stack should instead (in order):
+    is_undo_cmd_pushable : bool
+        ``True`` only if undo commands are safely pushable from this widget onto
+        the undo stack *or* ``False`` when:
+        * This widget's content is currently being programmatically populated.
+        * A previous undo command is already being applied to this widget.
+        In both cases, changes to this widget's content are program- rather than
+        user-driven and hence are *NOT* safely undoable. If ``False``, widget
+        subclass slots intending to push an undo commands onto the undo stack
+        should instead (in order):
         * Temporarily avoid doing so for the duration of the current slot call,
           as doing so *could* induce infinite recursion.
-        * Set ``self.is_in_undo_cmd = False`` to permit all subsequent slot
-          calls to push undo commands onto the undo stack.
-        To allow external callers (e.g., :class:`QBetseeUndoCommandABC`) to
-        access this attribute, this attribute is public rather than private.
+        * Set ``self.is_undo_cmd_pushable = False`` to permit all subsequent
+          slot calls to push undo commands onto the undo stack.
     object_name : str
         Qt-specific name of this widget, identical to the string returned by the
         :meth:`objectName` method at widget initialization time. This string is
-        stored as an instance variable only for readability. To allow external
-        callers (e.g., :class:`QBetseeUndoCommandABC`) to access this attribute,
-        this attribute is public rather than private.
+        stored as an instance variable only for readability.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -144,7 +145,7 @@ class QBetseeWidgetEditMixin(object):
         super().__init__(*args, **kwargs)
 
         # Nullify all instance variables for safety.
-        self.is_in_undo_cmd = False
+        self.is_undo_cmd_pushable = False
         self.object_name = 'N/A'
 
     # ..................{ SETTERS                            }..................
