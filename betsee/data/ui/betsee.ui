@@ -1062,7 +1062,7 @@
                 <number>0</number>
                </property>
                <item>
-                <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_exp_dir_line_2">
+                <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_exp_dir_line">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>1</horstretch>
@@ -1083,7 +1083,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="sim_conf_path_init_exp_dir_btn_2">
+                <widget class="QPushButton" name="sim_conf_path_init_exp_dir_btn">
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>

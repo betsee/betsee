@@ -201,7 +201,7 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
 
-        # Initialize all line edit widgets of this page.
+        # Initialize all line edit widgets on this page.
         main_window.sim_conf_path_seed_pick_file_line.init(
             sim_conf=main_window.sim_conf,
             sim_conf_alias=Parameters.pickle_seed_basename,)
@@ -211,6 +211,9 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
         main_window.sim_conf_path_init_pick_file_line.init(
             sim_conf=main_window.sim_conf,
             sim_conf_alias=Parameters.pickle_init_basename,)
+        main_window.sim_conf_path_init_exp_dir_line.init(
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=Parameters.export_init_dirname,)
 
         #FIXME: Uncomment after these widgets are created.
         # main_window.sim_conf_path_sim_pick_dir_line.init(

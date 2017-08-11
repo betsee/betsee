@@ -4,7 +4,12 @@
 # See "LICENSE" for further details.
 
 '''
-High-level :mod:`PySide2`-based error handling facilities.
+High-level :mod:`QMessageBox`-based error handling facilities.
+
+See Also
+----------
+:mod:`betsee.util.widget.guimessage`
+    Error-agnostic :class:`QMessageBox` facilities.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -60,7 +65,7 @@ def install_exception_hook() -> None:
 
         # Attempt to...
         try:
-            # Import from BETSE. Since this hook should only over be installed
+            # Import from BETSE. Since this hook should only ever be installed
             # *AFTER* BETSE is validated to be importable, this should succeed.
             from betse.util.io.log import logs
 
@@ -95,8 +100,9 @@ def show_error(
     details: str = None,
 ) -> None:
     '''
-    Display the passed error as a :mod:`PySide2`-driven modal message box in
-    the current application widget, creating this widget if necessary.
+    Display the passed error message(s) as a :mod:`QMessageBox`-driven modal
+    message box in the current application widget, creating this widget if
+    necessary.
 
     Parameters
     ----------
@@ -138,14 +144,14 @@ def show_error(
     # Finalize this message box *AFTER* setting all widget proporties above.
     error_box.show()
 
-    # Run this application's event loop, thus displaying this message box.
+    # Run this application's event loop, displaying this message box.
     error_box.exec_()
 
 
 def show_exception(exception: Exception) -> None:
     '''
-    Display the passed exception as a :mod:`PySide2`-driven modal message box in
-    the current application widget, creating this widget if necessary.
+    Display the passed exception as a :mod:`QMessageBox`-driven modal message
+    box in the current application widget, creating this widget if necessary.
 
     Parameters
     ----------

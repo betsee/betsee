@@ -9,11 +9,12 @@ subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
+from PySide2.QtCore import Slot
+# from abc import abstractmethod
 from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
 from betse.util.type.types import type_check
-from betsee.util.widget.guiundocmd import QBetseeUndoCommandWidgetABC
 from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
 
 # ....................{ MIXINS                             }....................
@@ -64,7 +65,7 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         sim_conf_alias: YamlAliasABC,
     ) -> None:
         '''
-        Initialize this widget against the passed state object.
+        Finalize the initialization of this widget.
 
         Design
         ----------
@@ -98,6 +99,10 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         logs.log_debug(
             'Initializing editable widget "%s"...', self.object_name)
 
+        # Set the undo stack to which this widget pushes undo commands *BEFORE*
+        # connecting signals to slots pushing such commands.
+        self._set_undo_stack(sim_conf.undo_stack)
+
         # Classify all passed parameters. Since the main window rather than this
         # state object owns this widget, retaining a reference to this state
         # object introduces no circularity and hence is safe. (That's nice.)
@@ -108,23 +113,41 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         self._sim_conf_alias = DataDescriptorBound(
             obj=sim_conf.p, data_desc=sim_conf_alias)
 
-        #FIXME: To associate the contents of this widget with newly opened
-        #configurations, additionally:
-        #
-        #* Define the following new slot in this superclass:
-        #    @Slot
-        #    @abstractmethod
-        #    def _update_from_sim_conf_alias(self) -> None:
-        #* Redefine this slot in all superclasses.
-        #* Connect the "self._sim_conf.set_filename_signal" signal to this slot.
-        #
-        #Astonishingly elegant, really, and proof positive that Qt's slots and
-        #signals concept succeeds beyond my admittedly low expectations.
+        # Populate this widget when opening a simulation configuration.
+        self._sim_conf.set_filename_signal.connect(self._set_filename)
+
+    # ..................{ SLOTS                              }..................
+    @Slot(str)
+    def _set_filename(self, filename: str) -> None:
+        '''
+        Slot signalled on both the opening of a new simulation configuration
+        and closing of an open simulation configuration.
+
+        Design
+        ----------
+        Subclasses are recommended to override this method by (in order):
+
+        #. Calling this superclass implementation.
+        #. If this filename is non-empty, populating this widget's contents with
+           the current value of the simulation configuration alias associated
+           with this widget.
+
+        Parameters
+        ----------
+        filename : StrOrNoneTypes
+            Absolute path of the currently open YAML-formatted simulation
+            configuration file if any *or* the empty string otherwise (i.e., if
+            no such file is open).
+        '''
+
+        # Undo commands are safely pushable from this widget *ONLY* if a
+        # simulation configuration is currently open.
+        self.is_undo_cmd_pushable = bool(filename)
 
     # ..................{ ENABLERS                           }..................
-    def _enable_sim_conf_dirty(self) -> None:
+    def _update_sim_conf_dirty(self) -> None:
         '''
-        Enable the dirty state for the current simulation configuration if this
+        Update the dirty state for the current simulation configuration if this
         widget has been initialized with such a configuration *or* noop
         otherwise.
 
@@ -138,34 +161,13 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         if self._sim_conf is None:
             return
 
+        # "True" only if the undo stack is in the dirty state.
+        is_dirty = self._is_undo_stack_dirty()
+
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
-            'Enabling simulation configuration dirty bit by '
-            'editable widget "%s"...', self.object_name)
+            'Setting simulation configuration dirty bit from '
+            'editable widget "%s" to "%r"...', self.object_name, is_dirty)
 
-        # Enable the dirty state for this simulation configuration.
-        self._sim_conf.set_dirty_signal.emit(True)
-
-    # ..................{ UNDO STACK                         }..................
-    @type_check
-    def _push_undo_cmd_if_safe(
-        self, undo_cmd: QBetseeUndoCommandWidgetABC) -> None:
-        '''
-        Push the passed widget-specific undo command onto the undo stack
-        associated with the currently open simulation configuration.
-
-        Parameters
-        ----------
-        undo_cmd : QBetseeUndoCommandWidgetABC
-            Widget-specific undo command to be pushed onto this stack.
-        '''
-
-        # If undo commands are *NOT* safely pushable (e.g., due to a prior undo
-        # command currently being applied to this widget), silently noop.
-        # Pushing this undo command unsafely could provoke infinite recursion.
-        if not self.is_undo_cmd_pushable:
-            return
-
-        # Else, no such command is being applied. Since pushing this undo
-        # command onto the stack is thus safe, do so.
-        self._sim_conf.undo_stack.push(undo_cmd)
+        # Update the dirty state for this simulation configuration.
+        self._sim_conf.set_dirty_signal.emit(is_dirty)

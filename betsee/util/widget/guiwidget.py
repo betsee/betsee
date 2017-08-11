@@ -32,11 +32,15 @@ from PySide2.QtWidgets import (
     QPlainTextEdit,
     QTextEdit,
     QTimeEdit,
+    QUndoStack,
 )
-# from betse.util.type.types import type_check
+# from betse.util.io.log import logs
+from betse.util.type.types import type_check
 
 # ....................{ GLOBALS                            }....................
 #FIXME: Map all possible editable widgets.
+#FIXME: Actually, just excise this. We no longer require such generality.
+
 FORM_WIDGET_TYPE_TO_SIGNALS_CHANGE = {
     # All other modification signals exposed by "QComboBox" (e.g.,
     # QComboBox.currentIndexChanged) are subsumed by the following
@@ -117,7 +121,7 @@ class QBetseeWidgetEditMixin(object):
     the expected method resolution order (MRO) semantics, this class should
     typically be subclassed *first* rather than *last* in subclasses.
 
-    Attributes
+    Attributes (Public)
     ----------
     is_undo_cmd_pushable : bool
         ``True`` only if undo commands are safely pushable from this widget onto
@@ -136,6 +140,12 @@ class QBetseeWidgetEditMixin(object):
         Qt-specific name of this widget, identical to the string returned by the
         :meth:`objectName` method at widget initialization time. This string is
         stored as an instance variable only for readability.
+
+    Attributes (Private)
+    ----------
+    _undo_stack : QUndoStack
+        Undo stack to which this widget pushes undo commands if any *or*
+        ``None`` otherwise.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -144,9 +154,11 @@ class QBetseeWidgetEditMixin(object):
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
 
-        # Nullify all instance variables for safety.
-        self.is_undo_cmd_pushable = False
+        # Nullify all remaining instance variables for safety.
         self.object_name = 'N/A'
+
+        # Unset the undo stack to which this widget pushes undo commands.
+        self._unset_undo_stack()
 
     # ..................{ SETTERS                            }..................
     def setObjectName(self, object_name: str) -> None:
@@ -156,3 +168,68 @@ class QBetseeWidgetEditMixin(object):
 
         # Store this name as an instance variable for negligible efficiency.
         self.object_name = self.objectName()
+
+    # ..................{ UNDO STACK ~ set                   }..................
+    def _unset_undo_stack(self) -> None:
+        '''
+        Unset the undo stack to which this widget pushes undo commands,
+        preventing the :meth:`_push_undo_cmd_if_safe` method from pushing undo
+        commands from this widget.
+        '''
+
+        # Classify all passed parameters.
+        self._undo_stack = None
+
+        # Undo commands are now safely pushable from this widget.
+        self.is_undo_cmd_pushable = False
+
+
+    @type_check
+    def _set_undo_stack(self, undo_stack: QUndoStack) -> None:
+        '''
+        Set the undo stack to which this widget pushes undo commands, permitting
+        the :meth:`_push_undo_cmd_if_safe` method to pushing undo commands from
+        this widget onto this stack.
+        '''
+
+        # Classify all passed parameters.
+        self._undo_stack = undo_stack
+
+        # Undo commands are now safely pushable from this widget.
+        self.is_undo_cmd_pushable = True
+
+    # ..................{ UNDO STACK ~ other                 }..................
+    def _is_undo_stack_dirty(self) -> bool:
+        '''
+        ``True`` only if the undo stack associated with this widget is in the
+        **dirty state** (i.e., contains at least one undo command to be undone).
+        '''
+
+        return not self._undo_stack.isClean()
+
+
+    @type_check
+    def _push_undo_cmd_if_safe(
+        self,
+        # To avoid circular imports, this type is validated dynamically.
+        undo_cmd: 'betsee.util.widget.guiundocmd.QBetseeUndoCommandWidgetABC',
+    ) -> None:
+        '''
+        Push the passed widget-specific undo command onto the undo stack
+        associated with this widget.
+
+        Parameters
+        ----------
+        undo_cmd : QBetseeUndoCommandWidgetABC
+            Widget-specific undo command to be pushed onto this stack.
+        '''
+
+        # If undo commands are *NOT* safely pushable (e.g., due to a prior undo
+        # command currently being applied to this widget), silently noop.
+        # Pushing this undo command unsafely could provoke infinite recursion.
+        if not self.is_undo_cmd_pushable:
+            return
+
+        # Else, no such command is being applied. Since pushing this undo
+        # command onto the stack is thus safe, do so.
+        self._sim_conf.undo_stack.push(undo_cmd)

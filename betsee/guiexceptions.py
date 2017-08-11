@@ -128,6 +128,15 @@ class BetseePySideMenuException(BetseePySideWidgetException):
     pass
 
 
+class BetseePySideMessageBoxException(BetseePySideWidgetException):
+    '''
+    General-purpose exception applicable to
+    :class:`PySide2.QtWidgets.QMessageBox` instances.
+    '''
+
+    pass
+
+
 class BetseePySideTreeWidgetException(BetseePySideWidgetException):
     '''
     General-purpose exception applicable to

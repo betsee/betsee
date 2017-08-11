@@ -9,13 +9,15 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
+from PySide2.QtWidgets import QMessageBox
 from betse.lib.yaml import yamls
 from betse.science.config import confio
 from betse.science.parameters import Parameters
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.util.path import guifile
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
+from betsee.util.path import guifile
+from betsee.util.widget import guimessage
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConf(QObject):
@@ -229,21 +231,22 @@ class QBetseeSimConf(QObject):
 
     # ..................{ SLOTS ~ state                      }..................
     @Slot(str)
-    def set_filename(self, filename: StrOrNoneTypes) -> None:
+    def set_filename(self, filename: str) -> None:
         '''
-        Slot signalled on each change of the absolute path of the currently open
-        YAML-formatted simulation configuration file if any.
+        Slot signalled on both the opening of a new simulation configuration
+        and closing of an open simulation configuration.
 
         Parameters
         ----------
         filename : StrOrNoneTypes
-            Absolute path of this file if such a configuration is currently open
-            *or* the empty string otherwise (i.e., if no such file is open).
+            Absolute path of the currently open YAML-formatted simulation
+            configuration file if any *or* the empty string otherwise (i.e., if
+            no such file is open).
         '''
 
         # Notify all interested slots that no unsaved changes remain, regardless
         # of whether a simulation configuration has just been opened or closed.
-        # Since this implicitly calls the _set_widget_state() method to set the
+        # Since this implicitly calls the _update_widget_state() method to set the
         # state of all widgets owned by this object, this method is
         # intentionally *NOT* called again here.
         #
@@ -271,7 +274,7 @@ class QBetseeSimConf(QObject):
         self._is_dirty = is_dirty
 
         # Set the state of all widgets owned by this object.
-        self._set_widget_state()
+        self._update_widget_state()
 
     # ..................{ SLOTS ~ action                     }..................
     @Slot()
@@ -330,25 +333,69 @@ class QBetseeSimConf(QObject):
         self.open_sim_conf(conf_filename)
 
 
-    #FIXME: Insufficient. If this configuration is dirty, an interactive prompt
-    #should be displayed confirming this closure. See the "SDI" example
-    #application for sample code, please.
+    #FIXME: The QBetseeMainWindow.closeEvent() method should be overridden to
+    #call this method and respond appropriately: e.g.,
+    #
+    #    def closeEvent(self, event):
+    #        if self._sim_conf is None or self._sim_conf.is_saved_if_dirty():
+    #            event.accept()
+    #        else:
+    #            event.ignore()
+    #
+    #Naturally, we'll want to define a new is_saved_if_dirty() method as well.
+
     @Slot()
     def _close_sim(self) -> None:
         '''
-        Slot invoked on the user requesting the currently open simulation
-        configuration be closed.
+        Slot invoked on the user attempting to close the currently open
+        simulation configuration.
 
         If this configuration is dirty (i.e., has unsaved changes), the user
         will be interactively prompted to save this changes *before* this
         configuration is closed and these changes irrevocably lost.
         '''
 
-        # Revert this simulation configuration to the unread state.
+        # If this configuration is dirty (i.e., has unsaved changes)...
+        if self._is_dirty:
+            # Interactively prompt the user to save these changes and store the
+            # bit value of the "QMessageBox.StandardButton" enumeration member
+            # signifying the button clicked by the user.
+            button_clicked = guimessage.show_warning(
+                title=QCoreApplication.translate(
+                    'QBetseeSimConf', 'Unsaved Simulation Configuration'),
+                synopsis=QCoreApplication.translate(
+                    'QBetseeSimConf',
+                    'The currently open simulation configuration has '
+                    'unsaved changes.'
+                ),
+                exegesis=QCoreApplication.translate(
+                    'QBetseeSimConf',
+                    'Would you like to save these changes?',
+                ),
+                buttons=(
+                    QMessageBox.Save |
+                    QMessageBox.Discard |
+                    QMessageBox.Cancel
+                ),
+                button_default=QMessageBox.Save,
+            )
+
+            # If the "Cancel" button was clicked, silently noop.
+            if button_clicked == QMessageBox.Cancel:
+                return
+
+            # If the "Save" button was clicked, save these changes. Namely,
+            # reserialize this configuration back to the same file.
+            if button_clicked == QMessageBox.Save:
+                self.p.overwrite()
+            # Else, the "Discard" button was clicked. Discard these changes by
+            # doing absolutely nothing.
+
+        # Revert this configuration to the unread state.
         self.p.unread()
 
         # Notify all interested slots of this event.
-        self.set_filename_signal.emit(None)
+        self.set_filename_signal.emit('')
 
 
     @Slot()
@@ -360,7 +407,7 @@ class QBetseeSimConf(QObject):
         file.
         '''
 
-        # Reserialize this high-level configuration to the same low-level file.
+        # Reserialize this configuration back to the same file.
         self.p.overwrite()
 
         # Notify all interested slots of this event.
@@ -383,7 +430,7 @@ class QBetseeSimConf(QObject):
             return
         # Else, the user did *NOT* cancel this dialog.
 
-        # Reserialize this high-level configuration to this new low-level file.
+        # Reserialize this configuration into this new file.
         self.p.write(conf_filename)
 
         # Notify all interested slots of this event.
@@ -442,14 +489,14 @@ class QBetseeSimConf(QObject):
         )
 
     # ..................{ SETTERS                            }..................
-    def _set_widget_state(self) -> None:
+    def _update_widget_state(self) -> None:
         '''
-        Set the state (e.g., enabled or disabled, displayed or hidden) of all
-        widgets owned by this object.
+        Update the state (e.g., enabled or disabled, displayed or hidden) of all
+        widgets owned or otherwise associated with this object.
         '''
 
         # Enable or disable actions requiring an open simulation configuration.
-        self._action_close_sim.setEnabled(self.p.is_read)
+        self._action_close_sim  .setEnabled(self.p.is_read)
         self._action_save_sim_as.setEnabled(self.p.is_read)
 
         # Enable or disable actions requiring an open simulation configuration
@@ -457,15 +504,18 @@ class QBetseeSimConf(QObject):
         self._action_save_sim.setEnabled(self.p.is_read and self._is_dirty)
 
         # Show or hide widgets requiring an open simulation configuration.
-        self._sim_conf_stack.setVisible(self.p.is_read)
+        self._sim_conf_stack     .setVisible(self.p.is_read)
         self._sim_conf_tree_frame.setVisible(self.p.is_read)
-        self._sim_phase_tabs.setVisible(self.p.is_read)
+        self._sim_phase_tabs     .setVisible(self.p.is_read)
 
         # If a simulation configuration is open...
         if self.p.is_read:
+            pass
+
+            #FIXME: Excise the following, which is no longer required.
             # ...and this configuration is clean, mark the undo stack as clean.
-            if not self._is_dirty:
-                self.undo_stack.setClean()
+            # if not self._is_dirty:
+            #     self.undo_stack.setClean()
         # Else, no simulation configuration is open. Clear the undo stack.
         else:
             self.undo_stack.clear()

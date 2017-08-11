@@ -59,6 +59,30 @@ class QBetseeLineEditSimConf(QBetseeWidgetEditMixinSimConf, QLineEdit):
         self._editing_finished_undoable()
 
     # ..................{ SLOTS                              }..................
+    @Slot(str)
+    def _set_filename(self, filename: str) -> None:
+
+        # Call the superclass method first.
+        super()._set_filename(filename)
+
+        # Current value of this widget's simulation configuration alias if a
+        # simulation configuration is currently open *OR* "None" otherwise.
+        sim_conf_alias_value = None
+
+        # If such a configuration is open...
+        if filename:
+            # Obtain this value from this configuration.
+            sim_conf_alias_value = self._sim_conf_alias.get()
+
+            # Set this widget's current text to this value by calling the setText()
+            # method of our superclass rather than this class, preventing the
+            # interactive-only logic of the latter from being triggered.
+            super().setText(sim_conf_alias_value)
+
+        # Cache this widget's current text in preparation for the next edit.
+        self._text_prev = sim_conf_alias_value
+
+
     @Slot()
     def _editing_finished_undoable(self) -> None:
         '''
@@ -80,14 +104,16 @@ class QBetseeLineEditSimConf(QBetseeWidgetEditMixinSimConf, QLineEdit):
             # This prior text differs from this current text.
             self._text_prev != text_curr
         ):
-            # Notify all connected slots that the currently open simulation
-            # configuration has received new unsaved changes.
-            self._enable_sim_conf_dirty()
-
             # Push an undo command onto the stack (permitting this edit to be
             # undone) *BEFORE* updating the "_text_prev" variable.
             self._push_undo_cmd_if_safe(QBetseeUndoCommandLineEdit(
                 widget=self, value_old=self._text_prev))
+
+            # Notify all connected slots that the currently open simulation
+            # configuration has received new unsaved changes *AFTER* pushing an
+            # undo command onto the stack. Why? Because this method detects
+            # unsaved changes by deferring to the stack state.
+            self._update_sim_conf_dirty()
 
         # Cache this widget's new text in preparation for the next edit.
         self._text_prev = text_curr
