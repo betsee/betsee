@@ -201,32 +201,44 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
 
-        # Initialize all line edit widgets on this page.
+        # Simulation configuration state object.
+        sim_conf = main_window.sim_conf
+
+        # Initialize all seed line edit widgets on this page.
         main_window.sim_conf_path_seed_pick_file_line.init(
-            sim_conf=main_window.sim_conf,
-            sim_conf_alias=Parameters.pickle_seed_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_seed_basename,)
+
+        # Initialize all initialization line edit widgets on this page.
         main_window.sim_conf_path_init_pick_dir_line.init(
-            sim_conf=main_window.sim_conf,
-            sim_conf_alias=Parameters.pickle_init_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_init_dirname,)
         main_window.sim_conf_path_init_pick_file_line.init(
-            sim_conf=main_window.sim_conf,
-            sim_conf_alias=Parameters.pickle_init_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_init_basename,)
         main_window.sim_conf_path_init_exp_dir_line.init(
-            sim_conf=main_window.sim_conf,
-            sim_conf_alias=Parameters.export_init_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.export_init_dirname,)
 
-        #FIXME: Uncomment after these widgets are created.
-        # main_window.sim_conf_path_sim_pick_dir_line.init(
-        #     sim_conf=main_window.sim_conf,
-        #     sim_conf_alias=Parameters.pickle_sim_dirname,)
-        # main_window.sim_conf_path_sim_pick_file_line.init(
-        #     sim_conf=main_window.sim_conf,
-        #     sim_conf_alias=Parameters.pickle_sim_basename,)
+        # Initialize all initialization push button widgets on this page.
+        main_window.sim_conf_path_init_pick_dir_btn.init(
+            sim_conf=sim_conf,
+            line_edit=main_window.sim_conf_path_init_pick_dir_line)
+        main_window.sim_conf_path_init_exp_dir_btn.init(
+            sim_conf=sim_conf,
+            line_edit=main_window.sim_conf_path_init_exp_dir_line)
 
-        # Connect each line edit widget of this page to the corresponding button
-        # displaying a file selection dialog.
-        # main_window.sim_conf_path_init_pick_dir_btn.clicked.connect(
-        #     self._set_sim_conf_subdir)
+        # Initialize all simulation line edit widgets on this page.
+        main_window.sim_conf_path_sim_pick_dir_line.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_sim_dirname,)
+        main_window.sim_conf_path_sim_pick_file_line.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_sim_basename,)
+        main_window.sim_conf_path_sim_exp_dir_line.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.export_sim_dirname,)
+
+        # Initialize all simulation push button widgets on this page.
+        main_window.sim_conf_path_sim_pick_dir_btn.init(
+            sim_conf=sim_conf,
+            line_edit=main_window.sim_conf_path_sim_pick_dir_line)
+        main_window.sim_conf_path_sim_exp_dir_btn.init(
+            sim_conf=sim_conf,
+            line_edit=main_window.sim_conf_path_sim_exp_dir_line)
 
     # ..................{ INITIALIZERS ~ path                }..................
     # @type_check
@@ -277,35 +289,3 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
 
         # Else, switch to this page.
         self.setCurrentWidget(stack_page)
-
-    # ..................{ SLOTS ~ private                    }..................
-    #FIXME: Generalize by:
-    #
-    #* Defining a new "QPushButton" subclass named
-    #  "QBetseePushButtonSubDirSimConf".
-    #* In this subclass:
-    #  * Defining a @Slot _select_subdir() implemented as below.
-    #  * Defining an init() method with signature:
-    #    def init(
-    #        sim_conf: QBetseeSimConf,
-    #        line_edit: QBetseeLineEditSimConf,
-    #    ) -> None
-    #  * In this method:
-    #    * Classifying all passed parameters.
-    #    * Performing the following connection:
-    #    self.clicked.connect(self._select_subdir)
-    #
-    #Pretty simple, happily.
-
-    # @Slot()
-    # def _select_sim_conf_subdir(self) -> None:
-    #     '''
-    #     Display a dialog requiring the user to select a subdirectory relative to
-    #     the directory containing the current simulation configuration's YAML
-    #     file and return the relative path of this subdirectory.
-    #     '''
-    #
-    #     subdirname = guidir.select_subdir(
-    #         parent_dirname=self._sim_conf.dirname,
-    #         current_dirname=self._line_edit.text())
-    #     self._line_edit.setText(subdirname)

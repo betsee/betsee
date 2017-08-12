@@ -4,8 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-Abstract base classes of all simulation configuration-specific editable widget
-subclasses.
+Abstract base classes of all simulation configuration editable widget subclasses
+instantiated in pages of the top-level stack.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -15,7 +15,7 @@ from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
 from betse.util.type.types import type_check
-from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
+from betsee.util.widget.guiwdg import QBetseeWidgetEditMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
@@ -24,8 +24,8 @@ from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
 class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
     '''
     Abstract base class of all **editable simulation configuration widget**
-    (i.e., widget permitting one or more simulation configuration values stored
-    in an external YAML file to be interactively edited) subclasses.
+    (i.e., widget interactively editing simulation configuration values stored
+    in external YAML files) subclasses.
 
     Design
     ----------
@@ -67,22 +67,6 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         '''
         Finalize the initialization of this widget.
 
-        Design
-        ----------
-        Subclasses should typically override this method with a
-        subclass-specific implementation that (in order):
-
-        #. Calls this superclass implementation, which sets instance variables
-           typically required by subclass slots.
-        #. Connects all relevant signals and slots.
-
-        Connecting these signals and slots earlier in the :meth:`__init__`
-        method is *not* recommended, even for slots that Qt technically should
-        *never* invoke at that time. Why? Because Qt actually appears to
-        erroneously emit signals documented as emitted only by external user
-        action (e.g., :meth:`QLineEdit.editingFinished`) on internal code-based
-        action (e.g., startup construction of the main window).
-
         Parameters
         ----------
         sim_conf : QBetseeSimConf
@@ -93,6 +77,11 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
             :class:`betse.science.params.Parameters`-specific class variable
             assigned the return value of the
             :func:`betse.science.config.confabc.yaml_alias` function.
+
+        See Also
+        ----------
+        :meth:`QBetseeWidgetMixinSimConf.init`
+            Further details.
         '''
 
         # Log this initialization *AFTER* storing this name.

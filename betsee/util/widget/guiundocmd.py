@@ -12,7 +12,6 @@ from PySide2.QtWidgets import (
     QLineEdit, QUndoCommand)
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, GeneratorType
-from betsee.util.widget.guiwidget import QBetseeWidgetEditMixin
 from contextlib import contextmanager
 
 # ....................{ SUPERCLASSES                       }....................
@@ -38,7 +37,12 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, widget: QBetseeWidgetEditMixin, synopsis: str) -> None:
+    def __init__(
+        self,
+        # Avoid circular import dependencies.
+        widget: 'betsee.util.widget.guiwdg.QBetseeWidgetEditMixin',
+        synopsis: str,
+    ) -> None:
         '''
         Initialize this undo command.
 

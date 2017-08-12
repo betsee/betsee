@@ -48,7 +48,7 @@ def open_file(*args, **kwargs) -> StrOrNoneTypes:
 
 
 @type_check
-def Save_file(*args, **kwargs) -> StrOrNoneTypes:
+def save_file(*args, **kwargs) -> StrOrNoneTypes:
     '''
     Display a dialog requiring the user to select an arbitrary file (either
     existing or non-existing) to be subsequently opened for in-place saving and
@@ -125,7 +125,7 @@ def _call_file_dialog_func(
 
     # Initial working directory of this dialog. For generality, assume the
     # current user's documents directory.
-    start_dirname = guipathsys.get_user_docs_dirname()
+    current_dirname = guipathsys.get_user_docs_dirname()
 
     # List of all arguments to be returned.
     file_dialog_args = [
@@ -136,7 +136,7 @@ def _call_file_dialog_func(
         title,
 
         # Initial working directory of this dialog.
-        start_dirname,
+        current_dirname,
     ]
 
     # If a dictionary of acceptable filetypes was passed, reduce this to a...

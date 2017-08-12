@@ -109,11 +109,9 @@ directly.
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetEditMixin(object):
+class QBetseeWidgetMixin(object):
     '''
-    Abstract base class of all **editable widget** (i.e., widget permitting one
-    or more simulation configuration values stored in an external YAML file to
-    be interactively edited) subclasses.
+    Abstract base class of most application-specific widget subclasses.
 
     Design
     ----------
@@ -122,6 +120,39 @@ class QBetseeWidgetEditMixin(object):
     typically be subclassed *first* rather than *last* in subclasses.
 
     Attributes (Public)
+    ----------
+    object_name : str
+        Qt-specific name of this widget, identical to the string returned by the
+        :meth:`objectName` method at widget initialization time. This string is
+        stored as an instance variable only for readability.
+    '''
+
+    # ..................{ INITIALIZERS                       }..................
+    def __init__(self, *args, **kwargs) -> None:
+
+        # Initialize our superclass with all passed arguments.
+        super().__init__(*args, **kwargs)
+
+        # Nullify all remaining instance variables for safety.
+        self.object_name = 'N/A'
+
+    # ..................{ SETTERS                            }..................
+    def setObjectName(self, object_name: str) -> None:
+
+        # Defer to the superclass setter.
+        super().setObjectName(object_name)
+
+        # Store this name as an instance variable for negligible efficiency.
+        self.object_name = self.objectName()
+
+
+class QBetseeWidgetEditMixin(QBetseeWidgetMixin):
+    '''
+    Abstract base class of most application-specific **editable widget** (i.e.,
+    widget interactively editing one or more simulation configuration values
+    stored in external YAML files) subclasses.
+
+    Attributes
     ----------
     is_undo_cmd_pushable : bool
         ``True`` only if undo commands are safely pushable from this widget onto
@@ -136,13 +167,6 @@ class QBetseeWidgetEditMixin(object):
           as doing so *could* induce infinite recursion.
         * Set ``self.is_undo_cmd_pushable = False`` to permit all subsequent
           slot calls to push undo commands onto the undo stack.
-    object_name : str
-        Qt-specific name of this widget, identical to the string returned by the
-        :meth:`objectName` method at widget initialization time. This string is
-        stored as an instance variable only for readability.
-
-    Attributes (Private)
-    ----------
     _undo_stack : QUndoStack
         Undo stack to which this widget pushes undo commands if any *or*
         ``None`` otherwise.
@@ -154,20 +178,8 @@ class QBetseeWidgetEditMixin(object):
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
 
-        # Nullify all remaining instance variables for safety.
-        self.object_name = 'N/A'
-
         # Unset the undo stack to which this widget pushes undo commands.
         self._unset_undo_stack()
-
-    # ..................{ SETTERS                            }..................
-    def setObjectName(self, object_name: str) -> None:
-
-        # Defer to the superclass setter.
-        super().setObjectName(object_name)
-
-        # Store this name as an instance variable for negligible efficiency.
-        self.object_name = self.objectName()
 
     # ..................{ UNDO STACK ~ set                   }..................
     def _unset_undo_stack(self) -> None:

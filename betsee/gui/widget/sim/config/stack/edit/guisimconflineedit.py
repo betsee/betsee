@@ -11,7 +11,7 @@
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QLineEdit
 from betse.util.io.log import logs
-from betsee.gui.widget.sim.config.stack.edit.guisimconfeditabc import (
+from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
     QBetseeWidgetEditMixinSimConf)
 from betsee.util.widget.guiundocmd import QBetseeUndoCommandLineEdit
 

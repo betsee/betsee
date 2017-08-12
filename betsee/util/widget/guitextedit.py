@@ -4,18 +4,18 @@
 # See "LICENSE" for further details.
 
 '''
-High-level :mod:`PySide2`-specific string facilities.
+General-purpose :mod:`QTextEdit` widget subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import Signal, Slot
 from PySide2.QtWidgets import QPlainTextEdit
 
-# ....................{ CLASSES                            }....................
+# ....................{ SUBCLASSES                         }....................
 class QBetseePlainTextEdit(QPlainTextEdit):
     '''
-    :mod:`PySide2`-based text widget optimized for display of plain rather than
-    rich (e.g., hypertextual) text.
+    :mod:`QPlainTextEdit`-based widget optimized for intelligent display of
+    plaintext (rather than rich text or hypertext).
 
     This application-specific widget augments the stock :class:`QPlainTextEdit`
     widget with additional support for intelligent text appending, including:

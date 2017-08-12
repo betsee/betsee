@@ -856,7 +856,7 @@
           <x>0</x>
           <y>0</y>
           <width>587</width>
-          <height>519</height>
+          <height>579</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -979,7 +979,7 @@
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Directory containing files pickled by the most recent seed and initialization of this simulation.</string>
+                  <string>Directory containing files pickled by the most recent seed and initialization runs of this simulation.</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -987,11 +987,14 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="sim_conf_path_init_pick_dir_btn">
+                <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_init_pick_dir_btn">
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>
                   </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Select this directory.</string>
                  </property>
                  <property name="text">
                   <string>...</string>
@@ -1027,7 +1030,7 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>Basename of the pickled file providing this simulation's most recent initialization in this directory.</string>
+               <string>Basename of the pickled file providing this simulation's most recent initialization run in this directory.</string>
               </property>
               <property name="text">
                <string/>
@@ -1075,7 +1078,7 @@
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Directory containing results exported by the most recent seed and initialization of this simulation.</string>
+                  <string>Directory containing results exported by the most recent seed and initialization runs of this simulation.</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -1083,11 +1086,14 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="sim_conf_path_init_exp_dir_btn">
+                <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_init_exp_dir_btn">
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>
                   </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Select this directory.</string>
                  </property>
                  <property name="text">
                   <string>...</string>
@@ -1113,6 +1119,173 @@
            <property name="title">
             <string>Simulation Phase</string>
            </property>
+           <layout class="QFormLayout" name="formLayout_16">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_5">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Pickle dirname:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QWidget" name="widget_7" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QBetseeLineEditSimConf" name="sim_conf_path_sim_pick_dir_line">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Directory containing files pickled by the most recent simulation run of this simulation.</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_sim_pick_dir_btn">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Select this directory.</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_62">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Pickle basename:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QBetseeLineEditSimConf" name="sim_conf_path_sim_pick_file_line">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>1</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Basename of the pickled file providing this simulation's most recent simulation run in this directory.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_73">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Exports dirname:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QWidget" name="widget_8" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_8">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QBetseeLineEditSimConf" name="sim_conf_path_sim_exp_dir_line">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Directory containing results exported by the most recent simulation run of this simulation.</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_sim_exp_dir_btn">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Select this directory.</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
@@ -4181,6 +4354,11 @@
    <extends>QStackedWidget</extends>
    <header>betsee/gui/widget/sim/config/stack/guisimconfstack.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QBetseePushButtonSubDirSimConf</class>
+   <extends>QPushButton</extends>
+   <header>betsee/gui/widget/sim/config/stack/guisimconfpushbtn.h</header>
   </customwidget>
  </customwidgets>
  <resources>

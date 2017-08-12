@@ -46,39 +46,34 @@ from betsee.util.app.guiapp import APP_GUI
 #    https://stackoverflow.com/a/12173504/2809027
 
 @type_check
-def select_subdir(parent_dirname: str, start_dirname: str) -> str:
+def select_subdir(parent_dirname: str, current_dirname: str) -> str:
     '''
-    Display a dialog requiring the user to select an existing subdirectory of
-    the parent directory with the passed path, returning the relative path of
+    Display a dialog requesting the user select an existing subdirectory of the
+    parent directory with the passed path, returning the relative pathname of
     this subdirectory with respect to this parent directory.
 
     Parameters
     ----------
     parent_dirname : str
-        Absolute path of the parent directory to select a subdirectory of.
-    start_dirname : str
-        Absolute path of the directory to be initially displayed by this dialog.
+        Absolute pathname of the parent directory to select a subdirectory of.
+    current_dirname : str
+        Absolute pathname of the directory to initially display in this dialog.
 
     Returns
     ----------
     str
-        Relative path of an existing subdirectory of this parent directory.
+        Relative pathname of an existing subdirectory of this parent directory.
     '''
 
     # If either of these directories are relative, raise an exception.
-    pathnames.die_if_relative(parent_dirname)
+    pathnames.die_if_relative(parent_dirname, current_dirname)
 
     # If this parent directory does not exist, raise an exception.
     dirs.die_unless_dir(parent_dirname)
 
-    #FIXME: Non-ideal. Ideally, if this current directory does not exist, we
-    #should instead iteratively find the first parent directory of this current
-    #directory that does exist, halting at the passed "parent_dirname".
-
-    # If this current directory does not exist, fallback to this existing parent
-    # directory as the current directory.
-    if not dirs.is_dir(start_dirname):
-        start_dirname = parent_dirname
+    # Last directory component of the start directory that exists, ensuring this
+    # dialog opens to an existing directory.
+    current_existing_dirname = dirs.get_dir_component_last(current_dirname)
 
     # Absolute path of the subdirectory selected by the user.
     child_dirname = QFileDialog.getExistingDirectory(
@@ -89,7 +84,7 @@ def select_subdir(parent_dirname: str, start_dirname: str) -> str:
         QCoreApplication.translate('select_subdir', 'Select Subdirectory'),
 
         # Initial working directory of this dialog.
-        start_dirname,
+        current_existing_dirname,
 
         # Options with which to initialize this dialog. Specifically:
         #
@@ -109,7 +104,7 @@ def select_subdir(parent_dirname: str, start_dirname: str) -> str:
     # Relative path of this subdirectory relative to this parent directory,
     # equivalent to stripping the latter from the former.
     child_dirname_relative = pathnames.relativize(
-        trg_pathname=child_dirname, src_dirname=parent_dirname)
+        src_dirname=parent_dirname, trg_pathname=child_dirname)
 
     # Return this relative path.
     return child_dirname_relative
