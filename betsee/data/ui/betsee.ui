@@ -847,7 +847,7 @@
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_FileManagement">
        <widget class="QGroupBox" name="groupBox_FileManagement">
@@ -1317,66 +1317,88 @@
           <property name="title">
            <string>Time Settings</string>
           </property>
-          <layout class="QFormLayout" name="formLayout">
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Init time-step:</string>
+          <layout class="QVBoxLayout" name="verticalLayout_22">
+           <item>
+            <widget class="QGroupBox" name="groupBox_14">
+             <property name="font">
+              <font>
+               <pointsize>11</pointsize>
+              </font>
              </property>
+             <property name="toolTip">
+              <string>Temporal properties of this simulation's initialization phase.</string>
+             </property>
+             <property name="title">
+              <string>Initialization Phase</string>
+             </property>
+             <layout class="QFormLayout" name="formLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_75">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Time step:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="lineEdit_initTimeStep_2">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_74">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Total time:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="lineEdit_initTotalTime_2">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_76">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Sampling rate:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="lineEdit_initSampling_2">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Init total time:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>Init sampling rate:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QLabel" name="label_11">
-             <property name="text">
-              <string>Sim time-step:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="9" column="0">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>Sim total time:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="11" column="0">
-            <widget class="QLabel" name="label_10">
-             <property name="text">
-              <string>Sim sampling rate:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <spacer name="verticalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>16</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="13" column="0">
+           <item>
             <spacer name="verticalSpacer_4">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -1388,52 +1410,6 @@
               </size>
              </property>
             </spacer>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLineEdit" name="lineEdit_initTimeStep">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLineEdit" name="lineEdit_initTotalTime">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="0">
-            <widget class="QLineEdit" name="lineEdit_initSampling">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="0">
-            <widget class="QLineEdit" name="lineEdit_simTimeStep">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="10" column="0">
-            <widget class="QLineEdit" name="lineEdit_simTotalTime"/>
-           </item>
-           <item row="12" column="0">
-            <widget class="QLineEdit" name="lineEdit_simSampling"/>
            </item>
           </layout>
          </widget>

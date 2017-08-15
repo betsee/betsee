@@ -206,15 +206,15 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
 
         # Initialize all seed line edit widgets on this page.
         main_window.sim_conf_path_seed_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_seed_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.seed_pickle_basename,)
 
         # Initialize all initialization line edit widgets on this page.
         main_window.sim_conf_path_init_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_init_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_dirname,)
         main_window.sim_conf_path_init_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_init_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_basename,)
         main_window.sim_conf_path_init_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.export_init_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_export_dirname,)
 
         # Initialize all initialization push button widgets on this page.
         main_window.sim_conf_path_init_pick_dir_btn.init(
@@ -226,11 +226,11 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
 
         # Initialize all simulation line edit widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_sim_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_dirname,)
         main_window.sim_conf_path_sim_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.pickle_sim_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_basename,)
         main_window.sim_conf_path_sim_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.export_sim_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_export_dirname,)
 
         # Initialize all simulation push button widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_btn.init(
