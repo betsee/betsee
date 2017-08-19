@@ -61,8 +61,8 @@ die() {
 
 
 # Print a quasi-informative preamble.
-note 'Welcome to the BETSE[E] installer for Ubuntu Linux 16.04 and newer!'
-note 'Note that this installation typically requires 2GB of free disk space.'
+note 'Welcome to the BETSE[E] installer for Ubuntu Linux 16.04 and newer.'
+note 'Note that this installation typically requires 1GB of disk space...'
 echo
 
 # ....................{ SUDO                               }....................
@@ -159,7 +159,7 @@ echo ". /opt/qt56/bin/qt56-env.sh" >> ~/.bashrc
 
 # Install the Ubuntu 16.04- and Python 3-specific PySide2 wheel.
 info 'Installing PySide2...'
-sudo pip3 install \
+sudo --set-home pip3 install \
     https://dl.bintray.com/fredrikaverpil/pyside2-wheels/ubuntu16.04/PySide2-5.6-cp35-cp35m-linux_x86_64.whl
 
 # ....................{ DEPENDENCIES ~ betse               }....................
@@ -199,7 +199,7 @@ sudo update-alternatives --set liblapack.so.3 /usr/lib/lapack/liblapack.so.3
 #   Hence, the next-most-recent NetworkX release is installed manually.
 info 'Installing optional BETSE dependencies...'
 sudo apt-get install --yes graphviz libav-tools python3-pydot
-sudo pip3 install 'networkx==1.10'
+sudo --set-home pip3 install 'networkx==1.10'
 
 # ....................{ BETSE[E]                           }....................
 # install_py_git_repo(repo_url: str, repo_dirname: str) -> None
@@ -217,11 +217,13 @@ install_git_repo() {
     if [[ -d "${repo_dirname}" ]]; then
         # If this directory is *NOT* a Git repository, fail.
         [[ -d "${repo_dirname}/.git" ]] ||
-            die "\"${repo_dirname}\" not a Git repository."
+            die "Directory \"${repo_dirname}\" not a Git repository."
 
         # Synchronize this local repository against remote changes.
         note 'Updating Git repository...'
-        GIT_WORK_TREE="${repo_dirname}" git pull
+        pushd "${repo_dirname}"
+        git pull
+        popd
     # Else, clone this remote repository to this local directory.
     else
         note 'Cloning Git repository...'
@@ -236,7 +238,7 @@ install_git_repo() {
     note 'Installing Python project...'
     pushd "${repo_dirname}"
     sudo python3 setup.py develop
-    popd "${repo_dirname}"
+    popd
 }
 
 
@@ -250,6 +252,12 @@ install_git_repo 'https://gitlab.com/betse/betsee.git' "${betsee_dirname}"
 
 # ....................{ INSTRUCTIONS                       }....................
 # For usability, provide rudimentary usage instructions.
-info 'To run BETSEE, enter the following command in any open terminal:
+info "BETSEE and BETSE have been successfully installed.
+
+BETSEE is runnable with the following command:
     betsee &!
-'
+
+BETSEE and BETSE are safely updatable to their most recent Git repository
+commits with the following command:
+    ${betsee_dirname}/bin/update.bash
+"
