@@ -105,6 +105,15 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         # Populate this widget when opening a simulation configuration.
         self._sim_conf.set_filename_signal.connect(self._set_filename)
 
+    # ..................{ PROPERTIES                         }..................
+    @property
+    def _is_open(self) -> bool:
+        '''
+        ``True`` only if a simulation configuration file is currently open.
+        '''
+
+        return self._sim_conf is not None and self._sim_conf.is_open
+
     # ..................{ SLOTS                              }..................
     @Slot(str)
     def _set_filename(self, filename: str) -> None:

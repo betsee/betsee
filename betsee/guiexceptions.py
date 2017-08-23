@@ -93,6 +93,15 @@ class BetseeCacheException(BetseeException):
 
     pass
 
+
+class BetseeSimConfException(BetseeException):
+    '''
+    General-purpose exception applicable to simulation configuration state
+    handling (e.g., whether a simulation configuration is currently open).
+    '''
+
+    pass
+
 # ....................{ EXCEPTIONS ~ lib                   }....................
 class BetseeLibException(BetseeException):
     '''

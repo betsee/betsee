@@ -97,6 +97,7 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
 
         # Iteratively initialize all widgets associated with each stacked page.
         self._init_page_path(main_window)
+        self._init_page_time(main_window)
 
     # ..................{ INITIALIZERS ~ tree                }..................
     @type_check
@@ -240,21 +241,28 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
             sim_conf=sim_conf,
             line_edit=main_window.sim_conf_path_sim_exp_dir_line)
 
-    # ..................{ INITIALIZERS ~ path                }..................
-    # @type_check
-    # def _init_page_widget(
-    #     self, page_widget: QBetseeWidgetMixinSimConfEdit) -> None:
-    #     '''
-    #     Initialize the passed editable widget, presumed to be contained by an
-    #     arbitrary page of this stacked widget.
-    #
-    #     Parameters
-    #     ----------
-    #     page_widget : QBetseeWidgetMixinSimConfEdit
-    #         Editable widget to be initialized.
-    #     '''
-    #
-    #     pass
+    # ..................{ INITIALIZERS ~ page : time         }..................
+    @type_check
+    def _init_page_time(self, main_window: QMainWindow) -> None:
+        '''
+        Initialize the "Time Settings" page of this stack widget.
+
+        Parameters
+        ----------
+        main_window: QBetseeMainWindow
+            Parent :class:`QMainWindow` widget to initialize this widget with.
+        '''
+
+        # Simulation configuration state object.
+        sim_conf = main_window.sim_conf
+
+        # Initialize all initialization line edit widgets on this page.
+        main_window.sim_conf_time_init_total.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_total,)
+        # main_window.sim_conf_time_init_step.init(
+        #     sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_step,)
+        # main_window.sim_conf_time_init_sampling.init(
+        #     sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_sampling,)
 
     # ..................{ SLOTS ~ public                     }..................
     # The following public slots are connected to from other widgets.

@@ -15,6 +15,7 @@ from betse.science.config import confio
 from betse.science.parameters import Parameters
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
+from betsee.guiexceptions import BetseeSimConfException
 from betsee.gui.widget.guimainwindow import QBetseeMainWindow
 from betsee.util.path import guifile
 from betsee.util.widget import guimessage
@@ -182,9 +183,16 @@ class QBetseeSimConf(QObject):
         # than "None" for safety.
         self.set_filename_signal.emit('')
 
-    # ..................{ PROPERTIES ~ read-only             }..................
-    # Read-only properties, preventing callers from resetting these attributes.
+    # ..................{ PROPERTIES ~ bool                  }..................
+    @property
+    def is_open(self) -> bool:
+        '''
+        ``True`` only if a simulation configuration file is currently open.
+        '''
 
+        return self.p.is_read
+
+    # ..................{ PROPERTIES ~ str                   }..................
     @property
     def dirname(self) -> StrOrNoneTypes:
         '''
@@ -203,6 +211,17 @@ class QBetseeSimConf(QObject):
         '''
 
         return self.p.conf_filename
+
+    # ..................{ EXCEPTIONS                         }..................
+    def die_unless_open(self) -> bool:
+        '''
+        Raise an exception unless a simulation configuration file is currently
+        open.
+        '''
+
+        if not self.is_open:
+            raise BetseeSimConfException(
+                'No simulation configuration currently open.')
 
     # ..................{ SIGNALS                            }..................
     set_filename_signal = Signal(str)
