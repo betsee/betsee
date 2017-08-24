@@ -164,8 +164,8 @@ def _call_file_dialog_func(
         # file_dialog_args += filetypes_filter[:-len(';;')]
     # logs.log_debug('QFileDialog args: %r', file_dialog_args)
 
-    # Absolute path of the file selected by the user if this dialog was *NOT*
-    # canceled *or* the empty string otherwise.
+    # Absolute path of the file selected by the user if this dialog was not
+    # canceled *OR* the empty string otherwise.
     #
     # Note that the second item of the tuple returned by this function is the
     # "filetypes_filter" substring corresponding to the filetype of this file

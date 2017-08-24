@@ -281,7 +281,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # If opening an initial simulation configuration file, do so *AFTER*
         # finalizing all widgets.
         if self._sim_conf_filename is not None:
-            self.sim_conf.open_sim_conf(self._sim_conf_filename)
+            self.sim_conf.load_file(self._sim_conf_filename)
 
     # ..................{ INITIALIZERS                       }..................
     #FIXME: Excise this, which should no longer be required.

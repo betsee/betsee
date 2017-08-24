@@ -87,9 +87,12 @@ class QBetseePushButtonSubDirSimConf(QBetseeWidgetMixinSimConf, QPushButton):
         # parent directory to initially display in this dialog.
         current_dirname = pathnames.join(parent_dirname, self._line_edit.text())
 
-        # Relative pathname of an existing subdirectory of this parent.
+        # Relative pathname of an existing subdirectory of this parent if this
+        # dialog was not canceled *OR* "None" otherwise.
         subdirname = guidir.select_subdir(
             parent_dirname=parent_dirname, current_dirname=current_dirname)
 
-        # Set the contents of our buddy widget to this pathname.
-        self._line_edit.setText(subdirname)
+        # If this dialog was *NOT* canceled...
+        if subdirname is not None:
+            # Set the contents of our buddy widget to this pathname.
+            self._line_edit.setText(subdirname)

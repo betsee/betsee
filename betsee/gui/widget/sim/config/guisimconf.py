@@ -304,9 +304,6 @@ class QBetseeSimConf(QObject):
         default settings be both created and opened.
         '''
 
-        # Close the currently open simulation configuration if any.
-        self._close_sim()
-
         # Absolute path of a possibly non-existing YAML-formatted simulation
         # configuration file selected by the user.
         conf_filename = self._show_dialog_sim_conf_save()
@@ -315,6 +312,9 @@ class QBetseeSimConf(QObject):
         if conf_filename is None:
             return
         # Else, the user did *NOT* cancel this dialog.
+
+        # Close the currently open simulation configuration if any.
+        self._close_sim()
 
         # Silently (over)write this file and all external resources required by
         # this file with those contained in this default simulation
@@ -325,7 +325,7 @@ class QBetseeSimConf(QObject):
             conf_filename=conf_filename, is_overwritable=True)
 
         # Deserialize this low-level file into a high-level configuration.
-        self.open_sim_conf(conf_filename)
+        self.load_file(conf_filename)
 
 
     @Slot()
@@ -336,9 +336,6 @@ class QBetseeSimConf(QObject):
         configuration be opened.
         '''
 
-        # Close the currently open simulation configuration if any.
-        self._close_sim()
-
         # Absolute path of an existing YAML-formatted simulation configuration
         # file selected by the user.
         conf_filename = self._show_dialog_sim_conf_open()
@@ -348,8 +345,11 @@ class QBetseeSimConf(QObject):
             return
         # Else, the user did *NOT* cancel this dialog.
 
+        # Close the currently open simulation configuration if any.
+        self._close_sim()
+
         # Deserialize this low-level file into a high-level configuration.
-        self.open_sim_conf(conf_filename)
+        self.load_file(conf_filename)
 
 
     #FIXME: The QBetseeMainWindow.closeEvent() method should be overridden to
@@ -455,13 +455,17 @@ class QBetseeSimConf(QObject):
         # Notify all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
 
-    # ..................{ OPENERS                            }..................
+    # ..................{ LOADERS                            }..................
     @type_check
-    def open_sim_conf(self, conf_filename: str) -> None:
+    def load_file(self, conf_filename: str) -> None:
         '''
         Deserialize the passed low-level YAML-formatted simulation configuration
         file into a high-level :class:`Parameters` object *and* signal all
         connected slots of this event.
+
+        Note that, to avoid conflicts and confusion with ``open`` methods
+        declared throughout the Qt API (e.g., :meth:`QDialog.open`,
+        :meth:`QFile.open`), this method is intentionally *not* named ``open``.
 
         Parameters
         ----------

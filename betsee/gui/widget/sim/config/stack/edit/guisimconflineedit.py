@@ -7,11 +7,6 @@
 :class:`QLineEdit`-based simulation configuration widget subclasses.
 '''
 
-#FIXME: Excellent. That said, all existing numeric line edits should ideally be
-#refactored into numeric spinners. For expediency, perhaps we'll neglect
-#implementing undo functionality in such spinners? We should at least define a
-#new editable widget subclass for spinners, however. It'll ease the pain later.
-
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QLineEdit
@@ -20,7 +15,7 @@ from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
     QBetseeWidgetEditMixinSimConf)
 from betsee.util.widget.guiundocmd import QBetseeUndoCommandLineEdit
 
-# ....................{ SUBCLASSES ~ widget                }....................
+# ....................{ SUBCLASSES                         }....................
 class QBetseeLineEditSimConf(QBetseeWidgetEditMixinSimConf, QLineEdit):
     '''
     Simulation configuration-specific line edit widget, permitting a simulation

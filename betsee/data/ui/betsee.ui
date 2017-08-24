@@ -847,7 +847,7 @@
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_FileManagement">
        <widget class="QGroupBox" name="groupBox_FileManagement">
@@ -914,6 +914,8 @@
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="toolTip">
@@ -979,6 +981,8 @@
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="toolTip">
@@ -1030,6 +1034,8 @@
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="toolTip">
@@ -1078,6 +1084,8 @@
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="toolTip">
@@ -1161,6 +1169,8 @@
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="toolTip">
@@ -1212,6 +1222,8 @@
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="toolTip">
@@ -1260,6 +1272,8 @@
                  <property name="font">
                   <font>
                    <pointsize>10</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
                   </font>
                  </property>
                  <property name="toolTip">
@@ -1338,15 +1352,59 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QBetseeLineEditSimConf" name="sim_conf_time_init_total">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>Duration in seconds of this simulation's initialization phase.</string>
-                </property>
+               <widget class="QWidget" name="widget_9" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_9">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeDoubleSpinBoxSimConf" name="sim_conf_time_init_total">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string>Duration in seconds of this simulation's initialization phase.</string>
+                   </property>
+                   <property name="suffix">
+                    <string> </string>
+                   </property>
+                   <property name="decimals">
+                    <number>3</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_6">
+                   <property name="font">
+                    <font>
+                     <pointsize>9</pointsize>
+                     <weight>50</weight>
+                     <italic>false</italic>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>seconds</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
               </item>
               <item row="2" column="0">
@@ -1361,18 +1419,6 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QLineEdit" name="sim_conf_time_init_step">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>Duration in seconds of each time step (both sampled and unsampled) of this simulation's initialization phase.</string>
-                </property>
-               </widget>
-              </item>
               <item row="3" column="0">
                <widget class="QLabel" name="label_76">
                 <property name="font">
@@ -1382,19 +1428,6 @@
                 </property>
                 <property name="text">
                  <string>Sampling rate:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="sim_conf_time_init_sampling">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="toolTip">
-                 <string>Duration in seconds between each sampled time step (inclusive) for this simulation's initialization phase.
-</string>
                 </property>
                </widget>
               </item>
@@ -4325,6 +4358,11 @@
    <class>QBetseePushButtonSubDirSimConf</class>
    <extends>QPushButton</extends>
    <header>betsee/gui/widget/sim/config/stack/guisimconfpushbtn.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeDoubleSpinBoxSimConf</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>betsee/gui/widget/sim/config/stack/edit/guisimconfspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

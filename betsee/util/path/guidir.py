@@ -12,7 +12,7 @@ from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
 from betse.util.path import dirs, pathnames
-from betse.util.type.types import type_check  #, GeneratorType
+from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.util.app.guiapp import APP_GUI
 
 # ....................{ SELECTORS                          }....................
@@ -46,11 +46,12 @@ from betsee.util.app.guiapp import APP_GUI
 #    https://stackoverflow.com/a/12173504/2809027
 
 @type_check
-def select_subdir(parent_dirname: str, current_dirname: str) -> str:
+def select_subdir(parent_dirname: str, current_dirname: str) -> StrOrNoneTypes:
     '''
     Display a dialog requesting the user select an existing subdirectory of the
     parent directory with the passed path, returning the relative pathname of
-    this subdirectory with respect to this parent directory.
+    this subdirectory with respect to this parent directory if this dialog was
+    not canceled *or* ``None`` otherwise (i.e., if this dialog was canceled).
 
     Parameters
     ----------
@@ -61,8 +62,10 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> str:
 
     Returns
     ----------
-    str
-        Relative pathname of an existing subdirectory of this parent directory.
+    StrOrNoneTypes
+        Either:
+        * Absolute path of this file if the user did *not* cancel this dialog.
+        * ``None`` if the user cancelled this dialog.
     '''
 
     # If either of these directories are relative, raise an exception.
@@ -75,7 +78,8 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> str:
     # dialog opens to an existing directory.
     current_existing_dirname = dirs.get_dir_component_last(current_dirname)
 
-    # Absolute path of the subdirectory selected by the user.
+    # Absolute path of the subdirectory selected by the user if this dialog was
+    # not canceled *OR* the empty string otherwise.
     child_dirname = QFileDialog.getExistingDirectory(
         # Parent widget of this dialog.
         APP_GUI.betsee_main_window,
@@ -95,6 +99,10 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> str:
         #   displaying a native dialog -- which, frankly, defeats the purpose.
         QFileDialog.ShowDirsOnly,
     )
+
+    # If this dialog was canceled, silently noop.
+    if not child_dirname:
+        return None
 
     # If this directory is *NOT* a subdirectory of this parent directory, raise
     # an exception.
