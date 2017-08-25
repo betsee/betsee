@@ -42,6 +42,10 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         high-level object wrapping the low-level data descriptor of the
         :class:`betse.science.parameters.Parameters` class, itself wrapping the
         lower-level simulation configuration option edited by this widget.
+    _sim_conf_alias_type : ClassOrNoneTypes
+        Class or tuple of classes that the value to which
+        :attr:`_sim_conf_alias` evaluates is required to be an instance of if
+        any *or* ``None`` otherwise.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -53,6 +57,7 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         # Nullify all instance variables for safety.
         self._sim_conf = None
         self._sim_conf_alias = None
+        self._sim_conf_alias_type = None
 
 
     @type_check
@@ -101,6 +106,9 @@ class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
         # bound to the "Parameters" instance associated with this GUI.
         self._sim_conf_alias = DataDescriptorBound(
             obj=sim_conf.p, data_desc=sim_conf_alias)
+
+        # Type(s) required by this data descriptor if any or "None" otherwise.
+        self._sim_conf_alias_type = sim_conf_alias.expr_alias_cls
 
         # Populate this widget when opening a simulation configuration.
         self._sim_conf.set_filename_signal.connect(self._set_filename)

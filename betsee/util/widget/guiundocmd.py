@@ -9,9 +9,10 @@ Abstract base classes of all widget-specific undo command subclasses.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtWidgets import (
-    QLineEdit, QUndoCommand)
+    QDoubleSpinBox, QLineEdit, QSpinBox, QUndoCommand)
 from betse.util.io.log import logs
-from betse.util.type.types import type_check, GeneratorType
+from betse.util.type.types import (
+    type_check, CallableTypes, GeneratorType, NumericTypes)
 from contextlib import contextmanager
 
 # ....................{ SUPERCLASSES                       }....................
@@ -156,11 +157,17 @@ class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
         this undo command.
     _value_old : object
         Prior value of the scalar widget associated with this undo command.
+    _value_setter : CallableTypes
+        Callable accepting a single value of the type expected by the scalar
+        widget associated with this undo command. See the :meth:`__init__`
+        method for further details.
     '''
 
     # ..................{ INITIALIZERS                       }..................
+    @type_check
     def __init__(
         self,
+        value_setter: CallableTypes,
         value_old: object,
         value_new: object,
         *args, **kwargs
@@ -170,6 +177,12 @@ class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
 
         Parameters
         ----------
+        value_setter : CallableTypes
+            Callable accepting a single value of the type expected by the scalar
+            widget associated with this undo command, setting this widget's
+            displayed content to this value. This callable is typically a
+            ``set``-prefixed method of this widget (e.g.,
+            :meth:`QLineEdit.setText`).
         value_new : object
             New value replacing the prior value of the scalar widget associated
             with this undo command.
@@ -183,6 +196,7 @@ class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
         super().__init__(*args, **kwargs)
 
         # Classify all passed parameters.
+        self._value_setter = value_setter
         self._value_new = value_new
         self._value_old = value_old
 
@@ -233,44 +247,7 @@ class QBetseeUndoCommandScalarWidgetABC(QBetseeUndoCommandWidgetABC):
         # Report success.
         return True
 
-# ....................{ SUBCLASSES                         }....................
-class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
-    '''
-    :class:`QLineEdit`-specific undo command, encapsulating both the application
-    of new text contents and restoration of old text contents of the
-    :class:`QLineEdit` widget associated with this command.
-    '''
-
-    # ..................{ INITIALIZERS                       }..................
-    @type_check
-    def __init__(self, widget: QLineEdit, value_old: str) -> None:
-        '''
-        Initialize this undo command.
-
-        Parameters
-        ----------
-        widget: QLineEdit
-            Scalar widget associated with this undo command.
-        value_old : str
-            Prior value of this scalar widget.
-        '''
-
-        # Initialize our superclass with all passed arguments.
-        super().__init__(
-            widget=widget,
-            value_old=value_old,
-            value_new=widget.text(),
-            synopsis='edits to a text box',
-        )
-
-    # ..................{ SUPERCLASS                         }..................
-    # Abstract superclass methods required to be defined by each subclass.
-
-    #FIXME: This focus attempt almost certainly fails across pages. If this is
-    #the case, a sane general-purpose solution would be to iteratively search
-    #up from the parent of this widget to the eventual page of the
-    #"QStackedWidget" object containing this widget and then switch to that.
-
+    # ..................{ SUPERCLASS ~ [re|un]do             }..................
     def undo(self) -> None:
 
         # Defer to our superclass first.
@@ -282,7 +259,13 @@ class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
             # To avoid revalidating the previously validated prior text contents of
             # this widget, the QLineEdit.setText() rather than QLineEdit.insert()
             # method is called.
-            self._widget.setText(self._value_old)
+            self._value_setter(self._value_old)
+
+            #FIXME: This focus attempt almost certainly fails across pages. If
+            #this is the case, a sane general-purpose solution would be to
+            #iteratively search up from the parent of this widget to the
+            #eventual page of the "QStackedWidget" object containing this widget
+            #and then switch to that.
             # self._widget.setFocus(Qt.OtherFocusReason)
 
 
@@ -293,8 +276,78 @@ class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
 
         # Redo the prior edit. See the undo() method for further details.
         with self._in_undo_cmd():
-            self._widget.setText(self._value_new)
+            self._value_setter(self._value_new)
             # self._widget.setFocus(Qt.OtherFocusReason)
+
+
+# ....................{ SUBCLASSES                         }....................
+class QBetseeUndoCommandLineEdit(QBetseeUndoCommandScalarWidgetABC):
+    '''
+    Textual widget-specific undo command, encapsulating both the application
+    of new textual content and restoration of old textual content of the
+    :class:`QLineEdit` widget associated with this undo command.
+    '''
+
+    # ..................{ INITIALIZERS                       }..................
+    #FIXME: Generalize to accept other textual widgets as well, which differ
+    #with respect to this method *ONLY* by their superficial types.
+    @type_check
+    def __init__(self, widget: QLineEdit, value_old: str) -> None:
+        '''
+        Initialize this undo command.
+
+        Parameters
+        ----------
+        widget: QLineEdit
+            Textual widget associated with this undo command.
+        value_old : str
+            Prior textual value of this textual widget.
+        '''
+
+        # Initialize our superclass with all passed arguments.
+        super().__init__(
+            widget=widget,
+            value_setter=widget.setText,
+            value_old=value_old,
+            value_new=widget.text(),
+            synopsis='edits to a text box',
+        )
+
+
+class QBetseeUndoCommandNumericSpinBox(QBetseeUndoCommandScalarWidgetABC):
+    '''
+    Numeric spin box-specific undo command, encapsulating both the application
+    of new numeric content and restoration of old numeric content of the
+    :class:`QDoubleSpinBox` or :class:`QSpinBox` widget associated with this
+    undo command.
+    '''
+
+    # ..................{ INITIALIZERS                       }..................
+    @type_check
+    def __init__(
+        self,
+        widget: (QDoubleSpinBox, QSpinBox),
+        value_old: NumericTypes,
+    ) -> None:
+        '''
+        Initialize this undo command.
+
+        Parameters
+        ----------
+        widget: (QDoubleSpinBox, QSpinBox)
+            Numeric widget associated with this undo command.
+        value_old : NumericTypes
+            Prior numeric value of this scalar widget.
+        '''
+
+        # Initialize our superclass with all passed arguments.
+        super().__init__(
+            widget=widget,
+            value_setter=widget.setValue,
+            value_old=value_old,
+            value_new=widget.value(),
+            synopsis='edits to a spin box',
+        )
 
 # ....................{ PLACEHOLDERS                       }....................
 class QBetseeUndoCommandNull(QUndoCommand):

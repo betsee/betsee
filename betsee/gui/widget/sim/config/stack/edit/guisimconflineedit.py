@@ -128,14 +128,13 @@ class QBetseeLineEditSimConf(QBetseeWidgetEditMixinSimConf, QLineEdit):
         # Current text of this widget.
         alias_value = self.text()
 
-        # Type required by this alias.
-        alias_type = self._sim_conf_alias.data_desc.expr_alias_cls
-
         # If this value is *NOT* of this type...
-        if not isinstance(alias_value, alias_type):
+        if not isinstance(alias_value, self._sim_conf_alias_type):
+            alias_type = self._sim_conf_alias_type
+
             #FIXME: Non-ideal, obviously. Sadly, no better ideas come to mind.
 
-            # If this type is an alias of such types (e.g., "NumericTypes")
+            # If this type is an tuple of such types (e.g., "NumericTypes")
             # rather than a single type, arbitrarily coerce this value into the
             # type selected by the first item of this tuple.
             if alias_type is tuple:

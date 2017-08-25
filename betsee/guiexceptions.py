@@ -146,6 +146,16 @@ class BetseePySideMessageBoxException(BetseePySideWidgetException):
     pass
 
 
+class BetseePySideSpinBoxException(BetseePySideWidgetException):
+    '''
+    General-purpose exception applicable to all concrete
+    :class:`PySide2.QtWidgets.QAbstractSpinBox` instances (e.g.,
+    :class:`PySide2.QtWidgets.QDoubleSpinBox` instances).
+    '''
+
+    pass
+
+
 class BetseePySideTreeWidgetException(BetseePySideWidgetException):
     '''
     General-purpose exception applicable to
