@@ -4,24 +4,23 @@
 # See "LICENSE" for further details.
 
 '''
-Abstract base classes of all simulation configuration editable widget subclasses
+Abstract base classes of all editable simulation configuration widget subclasses
 instantiated in pages of the top-level stack.
 '''
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import Slot
-# from abc import abstractmethod
 from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
-from betse.util.type.types import type_check
+from betse.util.type.types import type_check  #, CallableTypes
 from betsee.util.widget.guiwdg import QBetseeWidgetEditMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetEditMixinSimConf(QBetseeWidgetEditMixin):
+class QBetseeWidgetEditSimConfMixin(QBetseeWidgetEditMixin):
     '''
     Abstract base class of all **editable simulation configuration widget**
     (i.e., widget interactively editing simulation configuration values stored

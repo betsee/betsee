@@ -430,7 +430,7 @@ class QBetseeSimConf(QObject):
         self.p.overwrite()
 
         # Notify all interested slots of this event.
-        self.set_dirty_signal.emit(True)
+        self.set_dirty_signal.emit(False)
 
 
     @Slot()
