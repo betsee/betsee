@@ -281,7 +281,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # If opening an initial simulation configuration file, do so *AFTER*
         # finalizing all widgets.
         if self._sim_conf_filename is not None:
-            self.sim_conf.load_file(self._sim_conf_filename)
+            self.sim_conf.load(self._sim_conf_filename)
 
     # ..................{ INITIALIZERS                       }..................
     #FIXME: Excise this, which should no longer be required.
@@ -306,11 +306,25 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Log this closure.
         logs.log_info('Finalizing PySide2 UI...')
 
-        # Store application-wide settings *BEFORE* closing this window.
-        self.signaler.store_settings_signal.emit()
+        # If either...
+        if (
+            # This window has yet to be fully initialized.
+            getattr(self, 'sim_conf', None) is None or
+            # This window has been fully initialized *AND* the user
+            # interactively confirmed saving all unsaved changes if any for the
+            # currently open simulation configuration if any.
+            self.sim_conf.save_if_dirty()
+        ):
+            # Store application-wide settings *BEFORE* closing this window.
+            self.signaler.store_settings_signal.emit()
 
-        # Accept this request, thus finalizing the closure of this window.
-        event.accept()
+            # Accept this request, thus finalizing the closure of this window.
+            event.accept()
+        # Else, refuse this request, preventing this window from being closed.
+        # Well, the window manager typically ignores us and closes the window
+        # anyway... but, hey. If it's laptop battery life or us, we've gotta go.
+        else:
+            event.ignore()
 
     # ..................{ SLOTS ~ sim conf                   }..................
     @Slot(str)

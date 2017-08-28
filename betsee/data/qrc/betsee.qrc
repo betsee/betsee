@@ -26,6 +26,7 @@
         <file>icon/open_iconic/plus.svg</file>
         <file>icon/open_iconic/share.svg</file>
         <file>icon/open_iconic/wrench.svg</file>
+        <file>icon/open_iconic/x.svg</file>
         <file>icon/open_iconic/x_alt.svg</file>
     </qresource>
 </RCC>

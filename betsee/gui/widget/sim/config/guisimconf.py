@@ -60,8 +60,10 @@ class QBetseeSimConf(QObject):
         Alias of the :attr:`QBetseeMainWindow.action_save_sim_as` action.
     _sim_conf_changed_signal : QSignal
         Alias of the :attr:`QBetseeMainWindow.sim_conf_changed_signal` signal.
-    _sim_conf_stack : QBetseeSimConfStackedWidget
+    _sim_conf_stack : QBetseeStackedWidgetSimConf
         Alias of the :attr:`QBetseeMainWindow.sim_conf_stack` widget.
+    _sim_conf_tree : QBetseeTreeWidgetSimConf
+        Alias of the :attr:`QBetseeMainWindow.sim_conf_tree` widget.
     _sim_conf_tree_frame : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.
     _sim_phase_tabs : QTabWidget
@@ -103,7 +105,7 @@ class QBetseeSimConf(QObject):
         # Log this initialization.
         logs.log_debug('Sanitizing simulation configuration state...')
 
-        # High-level simulation configuration, defaulting to the unread state.
+        # High-level simulation configuration, defaulting to the unload state.
         self.p = Parameters()
 
         # Nullify all stateful instance variables for safety. While the signals
@@ -123,6 +125,7 @@ class QBetseeSimConf(QObject):
         self._action_save_sim     = main_window.action_save_sim
         self._action_save_sim_as  = main_window.action_save_sim_as
         self._sim_conf_stack      = main_window.sim_conf_stack
+        self._sim_conf_tree       = main_window.sim_conf_tree
         self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
         self._sim_phase_tabs      = main_window.sim_phase_tabs
 
@@ -190,7 +193,7 @@ class QBetseeSimConf(QObject):
         ``True`` only if a simulation configuration file is currently open.
         '''
 
-        return self.p.is_read
+        return self.p.is_loaded
 
     # ..................{ PROPERTIES ~ str                   }..................
     @property
@@ -325,7 +328,7 @@ class QBetseeSimConf(QObject):
             conf_filename=conf_filename, is_overwritable=True)
 
         # Deserialize this low-level file into a high-level configuration.
-        self.load_file(conf_filename)
+        self.load(conf_filename)
 
 
     @Slot()
@@ -349,19 +352,8 @@ class QBetseeSimConf(QObject):
         self._close_sim()
 
         # Deserialize this low-level file into a high-level configuration.
-        self.load_file(conf_filename)
+        self.load(conf_filename)
 
-
-    #FIXME: The QBetseeMainWindow.closeEvent() method should be overridden to
-    #call this method and respond appropriately: e.g.,
-    #
-    #    def closeEvent(self, event):
-    #        if self._sim_conf is None or self._sim_conf.is_saved_if_dirty():
-    #            event.accept()
-    #        else:
-    #            event.ignore()
-    #
-    #Naturally, we'll want to define a new is_saved_if_dirty() method as well.
 
     @Slot()
     def _close_sim(self) -> None:
@@ -374,44 +366,14 @@ class QBetseeSimConf(QObject):
         configuration is closed and these changes irrevocably lost.
         '''
 
-        # If this configuration is dirty (i.e., has unsaved changes)...
-        if self._is_dirty:
-            # Interactively prompt the user to save these changes and store the
-            # bit value of the "QMessageBox.StandardButton" enumeration member
-            # signifying the button clicked by the user.
-            button_clicked = guimessage.show_warning(
-                title=QCoreApplication.translate(
-                    'QBetseeSimConf', 'Unsaved Simulation Configuration'),
-                synopsis=QCoreApplication.translate(
-                    'QBetseeSimConf',
-                    'The currently open simulation configuration has '
-                    'unsaved changes.'
-                ),
-                exegesis=QCoreApplication.translate(
-                    'QBetseeSimConf',
-                    'Would you like to save these changes?',
-                ),
-                buttons=(
-                    QMessageBox.Save |
-                    QMessageBox.Discard |
-                    QMessageBox.Cancel
-                ),
-                button_default=QMessageBox.Save,
-            )
+        # If the user failed to interactively confirm saving all unsaved changes
+        # if any for the currently open simulation configuration if any, noop.
+        if not self.save_if_dirty():
+            return
+        # Else, these change have all been saved.
 
-            # If the "Cancel" button was clicked, silently noop.
-            if button_clicked == QMessageBox.Cancel:
-                return
-
-            # If the "Save" button was clicked, save these changes. Namely,
-            # reserialize this configuration back to the same file.
-            if button_clicked == QMessageBox.Save:
-                self.p.overwrite()
-            # Else, the "Discard" button was clicked. Discard these changes by
-            # doing absolutely nothing.
-
-        # Revert this configuration to the unread state.
-        self.p.unread()
+        # Revert this configuration to the unloaded state.
+        self.p.unload()
 
         # Notify all interested slots of this event.
         self.set_filename_signal.emit('')
@@ -427,7 +389,7 @@ class QBetseeSimConf(QObject):
         '''
 
         # Reserialize this configuration back to the same file.
-        self.p.overwrite()
+        self.p.save_inplace()
 
         # Notify all interested slots of this event.
         self.set_dirty_signal.emit(False)
@@ -450,18 +412,24 @@ class QBetseeSimConf(QObject):
         # Else, the user did *NOT* cancel this dialog.
 
         # Reserialize this configuration into this new file.
-        self.p.write(conf_filename)
+        self.p.save(conf_filename)
 
         # Notify all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
 
     # ..................{ LOADERS                            }..................
     @type_check
-    def load_file(self, conf_filename: str) -> None:
+    def load(self, conf_filename: str) -> None:
         '''
         Deserialize the passed low-level YAML-formatted simulation configuration
         file into a high-level :class:`Parameters` object *and* signal all
         connected slots of this event.
+
+        Design
+        ----------
+        Although low-level, this method is publicly accessible to permit the
+        :class:`QBetseeMainWindow` class to handle the equally low-level
+        ``--sim-conf-number`` command-line option.
 
         Note that, to avoid conflicts and confusion with ``open`` methods
         declared throughout the Qt API (e.g., :meth:`QDialog.open`,
@@ -474,10 +442,86 @@ class QBetseeSimConf(QObject):
         '''
 
         # Deserialize this low-level file into a high-level configuration.
-        self.p.read(conf_filename)
+        self.p.load(conf_filename)
 
         # Signal all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
+
+        # Focus the top-level tree widget *AFTER* signaling and hence populating
+        # this tree widget to reflect the state of this configuration.
+        self._sim_conf_tree.setFocus()
+
+    # ..................{ SAVERS                             }..................
+    def save_if_dirty(self) -> bool:
+        '''
+        Write all unsaved changes for the currently open simulation
+        configuration to the external YAML-formatted file underlying this
+        configuration if such a configuration is open, if this configuration is
+        dirty (i.e., has unsaved changes), and if the user interactively
+        confirms the overwriting of the existing contents of this file.
+
+        Design
+        ----------
+        Although low-level, this method is publicly accessible to permit the
+        :class:`QBetseeMainWindow` class to handle unsaved changes on window
+        closure events.
+
+        This method should typically be called immediately *before* the
+        currently open simulation configuration (if any) is closed, preventing
+        unsaved changes from being irrevocably lost.
+
+        Returns
+        ----------
+        bool
+            Either:
+            * ``False`` only if a configuration is open, this configuration is
+              dirty, and the user cancels the dialog prompting for confirmation.
+              In this case, the caller should ideally abort the current
+              operation (e.g., closure of either the current window or
+              simulation configuration).
+            * ``True`` in *all* other cases.
+        '''
+
+        # If this configuration is *NOT* dirty (i.e., has unsaved changes),
+        # report success as no changes remain to be saved.
+        if not self._is_dirty:
+            return True
+        # Else, this configuration is dirty.
+
+        # Interactively prompt the user to save these changes and store the
+        # bit value of the "QMessageBox.StandardButton" enumeration member
+        # signifying the button clicked by the user.
+        button_clicked = guimessage.show_warning(
+            title=QCoreApplication.translate(
+                'QBetseeSimConf', 'Unsaved Simulation Configuration'),
+            synopsis=QCoreApplication.translate(
+                'QBetseeSimConf',
+                'The currently open simulation configuration has '
+                'unsaved changes.'
+            ),
+            exegesis=QCoreApplication.translate(
+                'QBetseeSimConf', 'Would you like to save these changes?'),
+            buttons=(
+                QMessageBox.Save |
+                QMessageBox.Discard |
+                QMessageBox.Cancel
+            ),
+            button_default=QMessageBox.Save,
+        )
+
+        # If the "Cancel" button was clicked, report failure.
+        if button_clicked == QMessageBox.Cancel:
+            return False
+
+        # If the "Save" button was clicked, save these changes. Namely,
+        # reserialize this configuration back to the same file.
+        if button_clicked == QMessageBox.Save:
+            self.p.save_inplace()
+        # Else, the "Discard" button was clicked. Discard these changes by
+        # doing absolutely nothing.
+
+        # In either case, report success.
+        return True
 
     # ..................{ SHOWERS                            }..................
     def _show_dialog_sim_conf_open(self) -> str:
@@ -519,20 +563,20 @@ class QBetseeSimConf(QObject):
         '''
 
         # Enable or disable actions requiring an open simulation configuration.
-        self._action_close_sim  .setEnabled(self.p.is_read)
-        self._action_save_sim_as.setEnabled(self.p.is_read)
+        self._action_close_sim  .setEnabled(self.p.is_loaded)
+        self._action_save_sim_as.setEnabled(self.p.is_loaded)
 
         # Enable or disable actions requiring an open simulation configuration
         # associated with an existing file and having unsaved changes.
-        self._action_save_sim.setEnabled(self.p.is_read and self._is_dirty)
+        self._action_save_sim.setEnabled(self.p.is_loaded and self._is_dirty)
 
         # Show or hide widgets requiring an open simulation configuration.
-        self._sim_conf_stack     .setVisible(self.p.is_read)
-        self._sim_conf_tree_frame.setVisible(self.p.is_read)
-        self._sim_phase_tabs     .setVisible(self.p.is_read)
+        self._sim_conf_stack     .setVisible(self.p.is_loaded)
+        self._sim_conf_tree_frame.setVisible(self.p.is_loaded)
+        self._sim_phase_tabs     .setVisible(self.p.is_loaded)
 
         # If a simulation configuration is open...
-        if self.p.is_read:
+        if self.p.is_loaded:
             pass
 
             #FIXME: Excise the following, which is no longer required.

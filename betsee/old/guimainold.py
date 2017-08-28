@@ -561,7 +561,7 @@ class Main(QMainWindow, Ui_MainWindow):
             self.write_message_to_box("Selected the directory " + config_dir_name)
             self.write_message_to_box("                         ")
 
-            confdefault.write(self.config_name)
+            confdefault.save(self.config_name)
 
             self.write_message_to_box("                     ")
 

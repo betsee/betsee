@@ -256,13 +256,21 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
 
-        # Initialize all initialization line edit widgets on this page.
+        # Initialize all initialization spin box widgets on this page.
         main_window.sim_conf_time_init_total.init(
             sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_total,)
-        # main_window.sim_conf_time_init_step.init(
-        #     sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_step,)
-        # main_window.sim_conf_time_init_sampling.init(
-        #     sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_sampling,)
+        main_window.sim_conf_time_init_step.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_step,)
+        main_window.sim_conf_time_init_sampling.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_sampling,)
+
+        # Initialize all simulation spin box widgets on this page.
+        main_window.sim_conf_time_sim_total.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_total,)
+        main_window.sim_conf_time_sim_step.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_step,)
+        main_window.sim_conf_time_sim_sampling.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_sampling,)
 
     # ..................{ SLOTS ~ public                     }..................
     # The following public slots are connected to from other widgets.
