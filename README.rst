@@ -54,29 +54,45 @@ Installation
    BETSEE is pre-release software under active development. No packages
    automating installation of either BETSEE itself *or* BETSEE dependencies are
    currently provided. In particular, there currently exist no:
-   
+
    - Platform-agnostic BETSEE packages (e.g., Anaconda_, PyPI_).
-   - platform-specific BETSEE packages (e.g., macOS_ Homebrew_, Ubuntu_ PPA_).
+   - Platform-specific BETSEE packages (e.g., macOS_ Homebrew_, Ubuntu_ PPA_).
 
-BETSEE is manually installable as follows:
+BETSEE is installable as follows:
 
-#. Install the `unstable live version <BETSE live_>`__ of BETSE_.
-#. Install Qt_ `5.6 <Qt 5.6_>`__. [#pyside2_install]_
-#. Install the `stable 5.6 branch <_PySide2 5.6>`__ of PySide2_.
-   [#pyside2_install]_
-#. Open a **terminal.**
-#. Clone the ``master`` branch of this repository.
+#. Under `Ubuntu Linux 16.04 (Xenial Xerus)`_ and newer, via an automated
+   command-line installer.
 
-   .. code:: bash
+   #. Open a **terminal.**
+   #. Download and run the **BETSE[E] installer**.
 
-      git clone https://gitlab.com/betse/betsee.git
+      .. code:: bash
+   
+         wget https://gitlab.com/betse/betsee/raw/master/bin/install/betsee_ubuntu_16_04.bash && bash betsee_ubuntu_16_04.bash
 
-#. **Install BETSEE.**
+#. Under all other platforms, by manually installing BETSEE and BETSE via your
+   preferred package manager.
 
-   .. code:: bash
+   #. Install the `unstable live version <BETSE live_>`__ of BETSE_.
+   #. Install Qt_ `5.6 <Qt 5.6_>`__. [#pyside2_install]_
+   #. Install the `stable 5.6 branch <_PySide2 5.6>`__ of PySide2_.
+      [#pyside2_install]_
+   #. Open a **terminal.**
+   #. Clone the ``master`` branch of this repository.
 
-      cd betsee
-      sudo python3 setup.py install
+      .. code:: bash
+
+         git clone https://gitlab.com/betse/betsee.git
+
+   #. **Install BETSEE.**
+
+      .. code:: bash
+
+         cd betsee
+         sudo python3 setup.py install
+
+Needless to say, `Ubuntu Linux`_ is *strongly* recommended for use of this
+pre-release version.
 
 .. [#pyside2_install]
    Like BETSEE, PySide2_ is pre-release software under active development.
@@ -84,12 +100,12 @@ BETSEE is manually installable as follows:
    PySide2_ dependencies (e.g., Qt_) *are* available for various platforms –
    including:
 
-   - `Arch Linux`_ via the `official PySide2 installation instructions
+   + `Arch Linux`_ via the `official PySide2 installation instructions
      <PySide2 installation_>`__.
-   - `Gentoo Linux`_ via the `official PySide2 installation instructions
+   + `Gentoo Linux`_ via the `official PySide2 installation instructions
      <PySide2 installation_>`__.
-   - `Ubuntu Linux <Ubuntu_>`__ via the `unofficial PySide2 PPA
-     <PySide2 PPA_>`__.
+   + Most other platforms (e.g., `Ubuntu Linux`_, CentOS_, macOS_, Windows) via
+     the `unofficial PySide2 wheels <PySide2 wheels_>`__.
 
 License
 =======
@@ -236,10 +252,15 @@ biologically misaligned, and simply unusable.
    https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
 .. _Arch Linux:
    https://www.archlinux.org
+.. _CentOS:
+   https://www.centos.org
 .. _Gentoo Linux:
    https://gentoo.org
 .. _Ubuntu:
+.. _Ubuntu Linux:
    https://www.ubuntu.com
+.. _Ubuntu Linux 16.04 (Xenial Xerus):
+   http://releases.ubuntu.com/16.04
 
 .. # ------------------( LINKS ~ software : pyside2         )------------------
 .. _PySide2:
@@ -250,6 +271,8 @@ biologically misaligned, and simply unusable.
    https://wiki.qt.io/PySide2_GettingStarted
 .. _PySide2 PPA:
    https://launchpad.net/~thopiekar/+archive/ubuntu/pyside-git
+.. _PySide2 wheels:
+   https://github.com/fredrikaverpil/pyside2-wheels/blob/master/QUICKSTART.md
 .. _Qt:
    https://www.qt.io
 .. _Qt 5.6:
