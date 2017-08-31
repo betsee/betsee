@@ -25,7 +25,8 @@ This submodule is a thin wrapper intended to be:
 
 import sys
 from betsee import guimetadata
-from betsee.guimetadata import BETSE_VERSION_REQUIRED_MIN, NAME
+from betsee.guimetadata import NAME
+from betsee.guimetadeps import BETSE_VERSION_REQUIRED_MIN
 from betsee.guiexceptions import BetseeException, BetseeLibException
 
 # ....................{ MAIN                               }....................

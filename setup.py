@@ -31,7 +31,7 @@ tasks (e.g., installation, freezing, test running) for this application.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import setuptools
-from betsee import guimetadata
+from betsee import guimetadata, guimetadeps
 from betsee_setup import build, util
 
 # ....................{ METADATA                           }....................
@@ -184,7 +184,7 @@ setup_options = {
     'install_requires': {
         dependency_name: dependency_constraints
         for dependency_name, dependency_constraints in
-            guimetadata.DEPENDENCIES_RUNTIME_MANDATORY.items()
+            guimetadeps.RUNTIME_MANDATORY.items()
         #FIXME: Uncomment the following line and remove the line that follows
         #that *AFTER* "PySide2" and "pyside2-tools" become available on PyPI.
         #Ideally, only "PySide2."-prefixed components should be ignored.
@@ -214,7 +214,7 @@ setup_options = {
     # },
 
     # Mandatory testing dependencies.
-    'tests_require': guimetadata.DEPENDENCIES_TESTING_MANDATORY,
+    'tests_require': guimetadeps.TESTING_MANDATORY,
 
     # ..................{ PACKAGES                           }..................
     # List of all Python packages (i.e., directories containing zero or more

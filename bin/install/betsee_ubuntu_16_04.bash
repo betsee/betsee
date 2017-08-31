@@ -242,7 +242,10 @@ info 'Installing mandatory BETSE dependencies...'
 install_apt_package \
     python3-dev python3-dill python3-matplotlib \
     python3-numpy python3-pil python3-pip python3-scipy python3-setuptools \
-    python3-six python3-yaml tcl tk
+    python3-six tcl tk
+
+# The living "ruamel.yaml" is strongly preferred to the dead PyYAML.
+install_pip_package ruamel.yaml
 
 # Install an OpenBLAS-optimized scientific stack. While the SourceForge-hosted
 # ATLAS project would also apply, the GitHub-hosted OpenBLAS project is

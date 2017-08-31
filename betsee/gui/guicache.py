@@ -12,7 +12,7 @@ on the local filesystem.
 #caches whenever any file in the BETSEE codebase changes. *sigh*
 
 # ....................{ IMPORTS                            }....................
-import PySide2, pyside2uic
+import PySide2
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmdpath
@@ -20,6 +20,7 @@ from betse.util.py import pys
 from betse.util.type import modules
 from betse.util.type.types import type_check, IterableTypes
 from betsee import guipathtree
+from betsee.lib import libs
 from betsee.util.io.xml import guiqrc, guiui
 
 # ....................{ CACHERS ~ public                   }....................
@@ -49,6 +50,10 @@ def cache_py_files() -> None:
         guipathtree.get_dot_py_ui_filename())
 
 # ....................{ CACHERS ~ private                  }....................
+#FIXME: If the "pyside2-rcc" command is *NOT* available, this function should
+#*NOT* be called; instead, the desired module should be added to this repository
+#and then automatically regenerated if writable whenever the corresponding
+#"~/.betse/betsee/py/betsee_qrc.py" file is regenerated.
 def _cache_py_qrc_file() -> None:
     '''
     Either create and cache *or* reuse the previously cached pure-Python
@@ -84,6 +89,10 @@ def _cache_py_qrc_file() -> None:
             py_filename=guipathtree.get_dot_py_qrc_filename())
 
 
+#FIXME: If the "pyside2uic" package is *NOT* available, this function should
+#*NOT* be called; instead, the desired module should be added to this repository
+#and then automatically regenerated if writable whenever the corresponding
+#"~/.betse/betsee/py/betsee_ui.py" file is regenerated.
 def _cache_py_ui_file() -> None:
     '''
     Either create and cache *or* reuse the previously cached pure-Python
@@ -95,6 +104,9 @@ def _cache_py_ui_file() -> None:
     :func:`_is_qt_to_py_file_conversion_needed`
         Further details.
     '''
+
+    # Optional third-party dependencies.
+    pyside2uic = libs.import_runtime_optional('pyside2uic')
 
     # If either:
     #

@@ -19,9 +19,9 @@ such dependencies.
 # exist at installation time (i.e., standard Python and application packages,
 # including both BETSEE and BETSE packages).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 from betse.lib import libs as betse_libs
-from betsee import guimetadata
+from betse.util.type.types import type_check  #, MappingType, StrOrNoneTypes
+from betsee import guimetadeps
 
 # ....................{ EXCEPTIONS                         }....................
 def die_unless_runtime_mandatory_all() -> None:
@@ -43,4 +43,89 @@ def die_unless_runtime_mandatory_all() -> None:
     '''
 
     betse_libs.die_unless_requirements_dict(
-        guimetadata.DEPENDENCIES_RUNTIME_MANDATORY)
+        guimetadeps.RUNTIME_MANDATORY)
+
+
+@type_check
+def die_unless_runtime_optional(*requirement_names: str) -> None:
+    '''
+    Raise an exception unless all optional runtime dependencies of this
+    application with the passed :mod:`setuptools`-specific project names are
+    **satisfiable** (i.e., both importable and of a satisfactory version)
+    *and* all external commands required by these dependencies (e.g.,
+    GraphViz's ``dot`` command) reside in the current ``${PATH}``.
+
+    Parameters
+    ----------
+    requirement_names : Tuple[str]
+        Tuple of the names of all :mod:`setuptools`-specific projects
+        implementing these dependencies (e.g., ``NetworkX``). If any such name
+        is unrecognized (i.e., is *not* a key of the
+        :data:`guimetadeps.RUNTIME_OPTIONAL` dictionary), an exception is
+        raised.
+
+    Raises
+    ----------
+    BetseLibException
+        If at least one such dependency is unsatisfiable.
+
+    See Also
+    ----------
+    :func:`betse_libs.die_unless_runtime_mandatory_all`
+        Further details.
+    '''
+
+    betse_libs.die_unless_requirements_dict_keys(
+        guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
+
+# ....................{ EXCEPTIONS                         }....................
+@type_check
+def is_runtime_optional(*requirement_names: str) -> bool:
+    '''
+    ``True`` only if all optional runtime dependencies of this application with
+    the passed :mod:`setuptools`-specific project names are **satisfiable**
+    (i.e., both importable and of a satisfactory version) *and* all external
+    commands required by these dependencies (e.g., GraphViz's ``dot`` command)
+    reside in the current ``${PATH}``.
+
+    Parameters
+    ----------
+    requirement_names : Tuple[str]
+        Tuple of the names of all :mod:`setuptools`-specific projects
+        implementing these dependencies (e.g., ``NetworkX``). If any such
+        name is *not* a key of the :data:`guimetadeps.RUNTIME_OPTIONAL`
+        dictionary and is thus unrecognized, an exception is raised.
+
+    See Also
+    ----------
+    :func:`betse_libs.die_unless_runtime_mandatory_all`
+        Further details.
+    '''
+
+    return betse_libs.is_requirements_dict_keys(
+        guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
+
+# ....................{ IMPORTERS                          }....................
+@type_check
+def import_runtime_optional(*requirement_names: str) -> object:
+    '''
+    Import and return the top-level module object satisfying each optional
+    runtime dependency of this application with the passed name.
+
+    Parameters
+    ----------
+    requirement_names : tuple[str]
+        Tuple of the names of all :mod:`setuptools`-specific projects
+        implementing these dependencies (e.g., ``NetworkX``). If any such name
+        is unrecognized (i.e., is *not* a key of the
+        :data:`guimetadeps.RUNTIME_OPTIONAL` dictionary), an exception is
+        raised.
+
+    See Also
+    ----------
+    :func:`betse_libs.import_requirements_dict_keys`
+        Further details.
+    '''
+
+    return betse_libs.import_requirements_dict_keys(
+        guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
