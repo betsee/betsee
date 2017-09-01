@@ -99,7 +99,7 @@ def _cache_py_qrc_file() -> None:
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
-    guiqrc.convert_qrc_to_py_file(
+    guiqrc.convert_qrc_to_py_file_if_able(
         qrc_filename=data_qrc_filename, py_filename=data_py_qrc_filename)
 
 
@@ -166,7 +166,7 @@ def _cache_py_ui_file() -> None:
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
-    guiui.convert_ui_to_py_file(
+    guiui.convert_ui_to_py_file_if_able(
         ui_filename=data_ui_filename, py_filename=data_py_ui_filename)
 
 # ....................{ TESTERS ~ private                  }....................

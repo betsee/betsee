@@ -17,12 +17,13 @@ from betse.util.type.types import type_check
 
 # ....................{ CONVERTERS                         }....................
 @type_check
-def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
+def convert_qrc_to_py_file_if_able(qrc_filename: str, py_filename: str) -> None:
     '''
     Convert the XML-formatted file with the passed ``.qrc``-suffixed filename
     *and* all binary resources referenced by this file exported by the external
     Qt Designer GUI into the :mod:`PySide2`-based Python module with the passed
-    ``.py``-suffixed filename.
+    ``.py``-suffixed filename if capable of doing so *or* log a non-fatal
+    warning and return otherwise.
 
     Dependencies
     ----------
@@ -30,6 +31,9 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
     ``pyside2-tools`` distributed by The Qt Company. Specifically, this
     high-level function wraps the low-level ``pyside2-rcc`` command installed
     by this dependency with a human-usable API.
+
+    If this command is unavailable, this function logs a non-fatal warning and
+    returns *without* raising a fatal exception.
 
     Parameters
     ----------
@@ -45,16 +49,23 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
         pathnames.get_basename(py_filename),
         pathnames.get_basename(qrc_filename))
 
-    # Optional third-party dependencies required by this function.
-    cmds.die_unless_command(
-        pathname='pyside2-rcc',
-        exception_reason='e.g., due to "pyside2-tools" not being installed')
+    # If the optional third-party dependency required by this function is
+    # unavailable, log a non-fatal warning and return.
+    if not cmds.is_command('pyside2-rcc'):
+        logs.log_warning(
+            'Skipping! Command "pyside2-rcc" not found, '
+            'probably due to "pyside2-tools" not being installed.')
+        return
+
+    # If this output file is unwritable, log a non-fatal warning and return.
+    if not files.is_exists_writable(py_filename):
+        logs.log_warning(
+            'Skipping! PySide2 module "%s" unwritable, '
+            'probably due to a system-wide installation.', py_filename)
+        return
 
     # If this input file does *NOT* exist, raise an exception.
     files.die_unless_file(qrc_filename)
-
-    # If this output file is unwritable, raise an exception.
-    files.die_unless_exists_writable(py_filename)
 
     # If these files do *NOT* have the expected filetypes, raise an exception.
     pathnames.die_unless_filetype_equals(pathname=qrc_filename, filetype='qrc')

@@ -105,11 +105,12 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
 
 # ....................{ CONVERTERS                         }....................
 @type_check
-def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
+def convert_ui_to_py_file_if_able(ui_filename: str, py_filename: str) -> None:
     '''
     Convert the XML-formatted file with the passed ``.ui``-suffixed filename
     exported by the external Qt Designer GUI into the :mod:`PySide2`-based
-    Python module with the passed ``.py``-suffixed filename.
+    Python module with the passed ``.py``-suffixed filename if capable of doing
+    so *or* log a non-fatal warning and return otherwise.
 
     Dependencies
     ----------
@@ -118,6 +119,9 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
     high-level function wraps the low-level
     :meth:`pyside2uic.Compiler.compiler.UICompiler.compileUi` method installed
     by this dependency with a human-usable API.
+
+    If the :mod:`pyside2uic` package is unimportable, this function logs a
+    non-fatal warning and returns *without* raising a fatal exception.
 
     Design
     ----------
@@ -190,15 +194,27 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
         pathnames.get_basename(py_filename),
         pathnames.get_basename(ui_filename))
 
+    # If the optional third-party dependency required by this function is
+    # unavailable, log a non-fatal warning and return.
+    if not libs.is_runtime_optional('pyside2uic'):
+        logs.log_warning(
+            'Skipping! Package "pyside2uic" unimportable, '
+            'probably due to "pyside2-tools" not being installed.')
+        return
+
+    # If this output file is unwritable, log a non-fatal warning and return.
+    if not files.is_exists_writable(py_filename):
+        logs.log_warning(
+            'Skipping! PySide2 module "%s" unwritable, '
+            'probably due to a system-wide installation.', py_filename)
+        return
+
     # Optional third-party dependencies required by this function.
     pyside2uic = libs.import_runtime_optional('pyside2uic')
     UICompiler = pyside2uic.Compiler.compiler.UICompiler
 
     # If this input file does *NOT* exist, raise an exception.
     files.die_unless_file(ui_filename)
-
-    # If this output file is unwritable, raise an exception.
-    files.die_unless_exists_writable(py_filename)
 
     # If these files do *NOT* have the expected filetypes, raise an exception.
     pathnames.die_unless_filetype_equals(pathname=ui_filename, filetype='ui')
