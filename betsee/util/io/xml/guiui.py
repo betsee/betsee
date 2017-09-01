@@ -18,9 +18,9 @@ from betse.util.path import files, pathnames
 from betse.util.type import modules, regexes, types
 from betse.util.type.types import type_check, SequenceTypes
 from betsee import guimetadata
+from betsee.lib import libs
 from betsee.guiexceptions import BetseeCacheException
 from io import StringIO
-from pyside2uic.Compiler.compiler import UICompiler
 
 # ....................{ GLOBALS                            }....................
 # To avoid conflict with PySide2-generated attribute names, obfuscate this
@@ -61,7 +61,7 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
         If this module declares no such sequence.
     '''
 
-    # UI module if importable or raise an exception with this message otherwise.
+    # UI module if importable *OR* raise an exception otherwise.
     ui_module = modules.import_module(
         module_name=ui_module_name,
         exception_message=QCoreApplication.translate(
@@ -111,8 +111,13 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
     exported by the external Qt Designer GUI into the :mod:`PySide2`-based
     Python module with the passed ``.py``-suffixed filename.
 
-    This high-level function wraps the low-level :meth:`UICompiler.compileUi`
-    method with a useful and user-friendly interface.
+    Dependencies
+    ----------
+    This function requires the optional third-party dependency
+    ``pyside2-tools`` distributed by The Qt Company. Specifically, this
+    high-level function wraps the low-level
+    :meth:`pyside2uic.Compiler.compiler.UICompiler.compileUi` method installed
+    by this dependency with a human-usable API.
 
     Design
     ----------
@@ -185,8 +190,15 @@ def convert_ui_to_py_file(ui_filename: str, py_filename: str) -> None:
         pathnames.get_basename(py_filename),
         pathnames.get_basename(ui_filename))
 
+    # Optional third-party dependencies required by this function.
+    pyside2uic = libs.import_runtime_optional('pyside2uic')
+    UICompiler = pyside2uic.Compiler.compiler.UICompiler
+
     # If this input file does *NOT* exist, raise an exception.
     files.die_unless_file(ui_filename)
+
+    # If this output file is unwritable, raise an exception.
+    files.die_unless_exists_writable(py_filename)
 
     # If these files do *NOT* have the expected filetypes, raise an exception.
     pathnames.die_unless_filetype_equals(pathname=ui_filename, filetype='ui')

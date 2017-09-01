@@ -12,7 +12,7 @@ Designer application.
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
-from betse.util.path.command import cmdrun
+from betse.util.path.command import cmdrun, cmds
 from betse.util.type.types import type_check
 
 # ....................{ CONVERTERS                         }....................
@@ -24,8 +24,12 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
     Qt Designer GUI into the :mod:`PySide2`-based Python module with the passed
     ``.py``-suffixed filename.
 
-    This high-level function wraps the low-level ``pyside2-rcc`` command
-    provided by the external ``pyside2-tools`` project.
+    Dependencies
+    ----------
+    This function requires the optional third-party dependency
+    ``pyside2-tools`` distributed by The Qt Company. Specifically, this
+    high-level function wraps the low-level ``pyside2-rcc`` command installed
+    by this dependency with a human-usable API.
 
     Parameters
     ----------
@@ -41,8 +45,16 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
         pathnames.get_basename(py_filename),
         pathnames.get_basename(qrc_filename))
 
+    # Optional third-party dependencies required by this function.
+    cmds.die_unless_command(
+        pathname='pyside2-rcc',
+        exception_reason='e.g., due to "pyside2-tools" not being installed')
+
     # If this input file does *NOT* exist, raise an exception.
     files.die_unless_file(qrc_filename)
+
+    # If this output file is unwritable, raise an exception.
+    files.die_unless_exists_writable(py_filename)
 
     # If these files do *NOT* have the expected filetypes, raise an exception.
     pathnames.die_unless_filetype_equals(pathname=qrc_filename, filetype='qrc')

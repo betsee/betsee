@@ -74,6 +74,19 @@ def get_data_dirname() -> str:
 
 
 @callable_cached
+def get_data_py_dirname() -> str:
+    '''
+    Absolute path of this application's data subdirectory containing
+    pure-Python modules and packages generated at runtime by this application if
+    found *or* raise an exception otherwise (i.e., if this directory is *not*
+    found).
+    '''
+
+    # Create this directory if needed and return its dirname.
+    return dirs.join_and_die_unless_dir(get_data_dirname(), 'py')
+
+
+@callable_cached
 def get_data_qrc_dirname() -> str:
     '''
     Absolute path of this application's data subdirectory containing
@@ -119,18 +132,6 @@ def get_dot_dirname() -> str:
     return dirs.join_and_make_unless_dir(
         betse_pathtree.get_dot_dirname(), guimetadata.SCRIPT_BASENAME)
 
-
-@callable_cached
-def get_dot_py_dirname() -> str:
-    '''
-    Absolute path of this application's data subdirectory containing
-    pure-Python modules and packages generated at runtime by this application,
-    silently creating this directory if *not* already found.
-    '''
-
-    # Create this directory if needed and return its dirname.
-    return dirs.join_and_make_unless_dir(get_dot_dirname(), 'py')
-
 # ....................{ GETTERS ~ file : data              }....................
 @callable_cached
 def get_data_qrc_filename() -> str:
@@ -163,18 +164,26 @@ def get_data_ui_filename() -> str:
     return files.join_and_die_unless_file(
         get_data_ui_dirname(), guimetadata.SCRIPT_BASENAME + '.ui')
 
-# ....................{ GETTERS ~ file : dot               }....................
+# ....................{ GETTERS ~ file : data              }....................
 @callable_cached
-def get_dot_py_qrc_filename() -> str:
+def get_data_py_qrc_filename() -> str:
     '''
     Absolute path of the pure-Python module generated from the XML-formatted Qt
     resource collection (QRC) file exported by the external Qt Designer
     application structuring all external resources (e.g., icons) required by
-    this application's main window.
+    this application's main window if found *or* raise an exception otherwise
+    (i.e., if this directory is *not* found).
 
-    This module is dynamically generated at runtime and hence may *not* yet
-    exist, in which case the caller is assumed to safely generate this module
-    before its first importation.
+    Caveats
+    ----------
+    This module is guaranteed to be importable but *not* necessarily be
+    up-to-date with the input paths from which this module is dynamically
+    regenerated at runtime. The caller is assumed to do so explicitly.
+
+    See Also
+    ----------
+    :mod:`betsee.gui.guicache`
+        Submodule dynamically generating this module.
     '''
 
     # Note that this basename *MUST* be:
@@ -184,21 +193,29 @@ def get_dot_py_qrc_filename() -> str:
     # * Suffixed by "_rc.py". Why? Because the Python code generated at runtime
     #   by the "pyside2uic" package assumes this to be the case. Naturally, this
     #   assumption is *NOT* configurable.
-    return pathnames.join(
-        get_dot_py_dirname(), guimetadata.MAIN_WINDOW_QRC_MODULE_NAME + '.py')
+    return files.join_and_die_unless_file(
+        get_data_py_dirname(), guimetadata.MAIN_WINDOW_QRC_MODULE_NAME + '.py')
 
 
 @callable_cached
-def get_dot_py_ui_filename() -> str:
+def get_data_py_ui_filename() -> str:
     '''
     Absolute path of the pure-Python module generated from the XML-formatted
     user interface (UI) file exported by the external Qt Designer application
-    structuring this application's main window.
+    structuring this application's main window if found *or* raise an exception
+    otherwise (i.e., if this directory is *not* found).
 
-    This module is dynamically generated at runtime and hence may *not* yet
-    exist, in which case the caller is assumed to safely generate this module
-    before its first importation.
+    Caveats
+    ----------
+    This module is guaranteed to be importable but *not* necessarily be
+    up-to-date with the input paths from which this module is dynamically
+    regenerated at runtime. The caller is assumed to do so explicitly.
+
+    See Also
+    ----------
+    :mod:`betsee.gui.guicache`
+        Submodule dynamically generating this module.
     '''
 
-    return pathnames.join(
-        get_dot_py_dirname(), guimetadata.MAIN_WINDOW_UI_MODULE_NAME + '.py')
+    return files.join_and_die_unless_file(
+        get_data_py_dirname(), guimetadata.MAIN_WINDOW_UI_MODULE_NAME + '.py')

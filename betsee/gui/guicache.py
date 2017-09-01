@@ -23,7 +23,7 @@ from betsee import guipathtree
 from betsee.lib import libs
 from betsee.util.io.xml import guiqrc, guiui
 
-# ....................{ CACHERS ~ public                   }....................
+# ....................{ CACHERS                            }....................
 def cache_py_files() -> None:
     '''
     Either create and cache *or* reuse each previously cached pure-Python
@@ -38,7 +38,7 @@ def cache_py_files() -> None:
 
     # Append the directory containing all generated modules to the PYTHONPATH,
     # permitting these modules to be subsequently imported elsewhere.
-    pys.add_import_dirname(guipathtree.get_dot_py_dirname())
+    pys.add_import_dirname(guipathtree.get_data_py_dirname())
 
     # Generate the requisite pure-Python modules (in any arbitrary order).
     _cache_py_qrc_file()
@@ -46,69 +46,113 @@ def cache_py_files() -> None:
 
     # For safety, raise an exception unless all such modules exist now.
     files.die_unless_file(
-        guipathtree.get_dot_py_qrc_filename(),
-        guipathtree.get_dot_py_ui_filename())
+        guipathtree.get_data_py_qrc_filename(),
+        guipathtree.get_data_py_ui_filename())
 
 # ....................{ CACHERS ~ private                  }....................
-#FIXME: If the "pyside2-rcc" command is *NOT* available, this function should
-#*NOT* be called; instead, the desired module should be added to this repository
-#and then automatically regenerated if writable whenever the corresponding
-#"~/.betse/betsee/py/betsee_qrc.py" file is regenerated.
 def _cache_py_qrc_file() -> None:
     '''
-    Either create and cache *or* reuse the previously cached pure-Python
-    :mod:`PySide2`-based module embedding all binary resources in this
-    application's main Qt resource collection (QRC).
+    Reuse the previously cached pure-Python :mod:`PySide2`-based module
+    embedding all binary resources in this application's main Qt resource
+    collection (QRC) if this module is sufficiently up-to-date (i.e., at least
+    as new as all input paths required to regenerate this module) *or*
+    regenerate this module from these input paths otherwise.
+
+    Raises
+    ----------
+    BetseFileException
+        If this module is outdated (i.e., older than at least one input path
+        required to regenerate this module) but is unwritable by the current
+        user, in which case this module is *NOT* updateable and is thus
+        desynchronized from the remainder of the codebase. Because this
+        desynchronization is liable to induce subtle non-human-readable issues,
+        a fatal exception is raised rather than a non-fatal warning logged.
 
     See Also
     ----------
-    :func:`_is_qt_to_py_file_conversion_needed`
+    :func:`_is_output_path_outdated`
         Further details.
     '''
 
-    # If either:
+    # Absolute path of the input QRC file used to generate this output module.
+    data_qrc_filename = guipathtree.get_data_qrc_filename()
+
+    # Absolute path of the output module to be generated.
+    data_py_qrc_filename = guipathtree.get_data_py_qrc_filename()
+
+    # If this output module is at least as new as *ALL* the following paths,
+    # this output module is sufficiently up-to-date and need *NOT* be
+    # regenerated:
     #
     # * The input "pyside2-rcc" executable run by the
     #   psdqrc.convert_qrc_to_py_file() function called below.
     # * Any file or subdirectory in the input directory containing both this
     #   input QRC file and all resource files referenced by this file.
-    #
-    # ...is older than this output module, recreate this output module from
-    # these input paths.
-    if _is_output_path_outdated(
+    if not _is_output_path_outdated(
         # For efficiency, these paths are ordered according to the heuristic
         # discussed by the paths.is_mtime_recursive_older_than_paths() function.
         input_pathnames=(
-                cmdpath.get_filename('pyside2-rcc'),
-                guipathtree.get_data_qrc_dirname(),
-        ),
-        output_filename=guipathtree.get_dot_py_qrc_filename(),
+            data_qrc_filename, cmdpath.get_filename('pyside2-rcc')),
+        output_filename=data_py_qrc_filename,
     ):
-        guiqrc.convert_qrc_to_py_file(
-            qrc_filename=guipathtree.get_data_qrc_filename(),
-            py_filename=guipathtree.get_dot_py_qrc_filename())
+        return
+
+    # Else, this output module is older than at least one such path, in which
+    # case this output module is outdated and must be regenerated.
+    guiqrc.convert_qrc_to_py_file(
+        qrc_filename=data_qrc_filename, py_filename=data_py_qrc_filename)
 
 
-#FIXME: If the "pyside2uic" package is *NOT* available, this function should
-#*NOT* be called; instead, the desired module should be added to this repository
-#and then automatically regenerated if writable whenever the corresponding
-#"~/.betse/betsee/py/betsee_ui.py" file is regenerated.
 def _cache_py_ui_file() -> None:
     '''
-    Either create and cache *or* reuse the previously cached pure-Python
-    :mod:`PySide2`-based module implementing the superficial construction of
-    this application's main window.
+    Reuse the previously cached pure-Python :mod:`PySide2`-based module
+    implementing the superficial construction of this application's main window
+    if this module is sufficiently up-to-date (i.e., at least as new as all
+    input paths required to regenerate this module) *or* regenerate this module
+    from these input paths otherwise.
+
+    Raises
+    ----------
+    BetseFileException
+        If this module is outdated (i.e., older than at least one input path
+        required to regenerate this module) but is unwritable by the current
+        user, in which case this module is *NOT* updateable and is thus
+        desynchronized from the remainder of the codebase. Because this
+        desynchronization is liable to induce subtle non-human-readable issues,
+        a fatal exception is raised rather than a non-fatal warning logged.
 
     See Also
     ----------
-    :func:`_is_qt_to_py_file_conversion_needed`
+    :func:`_is_output_path_outdated`
         Further details.
     '''
 
-    # Optional third-party dependencies.
-    pyside2uic = libs.import_runtime_optional('pyside2uic')
+    # Absolute path of the input QRC file used to generate this output module.
+    data_ui_filename = guipathtree.get_data_ui_filename()
 
-    # If either:
+    # Absolute path of the output module to be generated.
+    data_py_ui_filename = guipathtree.get_data_py_ui_filename()
+
+    # List of the absolute pathnames of all input paths required to do so. For
+    # efficiency, these paths are ordered according to the heuristic discussed
+    # by the paths.is_mtime_recursive_older_than_paths() function.
+    input_pathnames = [
+        data_ui_filename,
+        modules.get_filename(guiui),
+        modules.get_dirname(PySide2),
+    ]
+
+    # If the optional third-party dependency "pyside2-tools" is installed...
+    if libs.is_runtime_optional('pyside2uic'):
+        # Package installed by this dependency.
+        pyside2uic = libs.import_runtime_optional('pyside2uic')
+
+        # Append this package's directory for testing as well.
+        input_pathnames.append(modules.get_dirname(pyside2uic))
+
+    # If this output module is at least as new as *ALL* the following paths,
+    # this output module is sufficiently up-to-date and need *NOT* be
+    # regenerated:
     #
     # * This input UI file.
     # * The file providing the submodule of this application converting this UI
@@ -116,25 +160,16 @@ def _cache_py_ui_file() -> None:
     # * Any file or subdirectory in the input directories containing the
     #   "PySide2" and "pyside2uic" packages required by the
     #   psdui.convert_ui_to_py_file() function called below.
-    #
-    # ...is older than this output module, recreate this output module from
-    # these input paths.
-    if _is_output_path_outdated(
-        # For efficiency, these paths are ordered according to the heuristic
-        # discussed by the paths.is_mtime_recursive_older_than_paths() function.
-        input_pathnames=(
-                guipathtree.get_data_ui_filename(),
-                modules.get_filename(guiui),
-                modules.get_dirname(pyside2uic),
-                modules.get_dirname(PySide2),
-        ),
-        output_filename=guipathtree.get_dot_py_ui_filename(),
-    ):
-        guiui.convert_ui_to_py_file(
-            ui_filename=guipathtree.get_data_ui_filename(),
-            py_filename=guipathtree.get_dot_py_ui_filename())
+    if not _is_output_path_outdated(
+        input_pathnames=input_pathnames, output_filename=data_py_ui_filename):
+        return
 
+    # Else, this output module is older than at least one such path, in which
+    # case this output module is outdated and must be regenerated.
+    guiui.convert_ui_to_py_file(
+        ui_filename=data_ui_filename, py_filename=data_py_ui_filename)
 
+# ....................{ TESTERS ~ private                  }....................
 @type_check
 def _is_output_path_outdated(
     input_pathnames: IterableTypes, output_filename: str) -> bool:
