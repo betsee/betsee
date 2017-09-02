@@ -394,8 +394,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
     def resize_max(self) -> None:
         '''
-        Else, expand this window to consume all available horizontal and
-        vertical screen space.
+        Resize this window to consume all available screen space.
 
         Note that:
 

@@ -15,7 +15,7 @@ on the local filesystem.
 import PySide2
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
-from betse.util.path.command import cmdpath
+from betse.util.path.command import cmds, cmdpath
 from betse.util.py import pys
 from betse.util.type import modules
 from betse.util.type.types import type_check, IterableTypes
@@ -80,6 +80,18 @@ def _cache_py_qrc_file() -> None:
     # Absolute path of the output module to be generated.
     data_py_qrc_filename = guipathtree.get_data_py_qrc_filename()
 
+    # List of the absolute pathnames of all input paths required to do so. For
+    # efficiency, these paths are ordered according to the heuristic discussed
+    # by the paths.is_mtime_recursive_older_than_paths() function.
+    input_pathnames = [
+        data_qrc_filename,
+    ]
+
+    # If the optional third-party dependency "pyside2-tools" is installed,
+    # append the "pyside2-rcc" executable for testing as well.
+    if cmds.is_command('pyside2-rcc'):
+        input_pathnames.append(cmdpath.get_filename('pyside2-rcc'))
+
     # If this output module is at least as new as *ALL* the following paths,
     # this output module is sufficiently up-to-date and need *NOT* be
     # regenerated:
@@ -89,12 +101,7 @@ def _cache_py_qrc_file() -> None:
     # * Any file or subdirectory in the input directory containing both this
     #   input QRC file and all resource files referenced by this file.
     if not _is_output_path_outdated(
-        # For efficiency, these paths are ordered according to the heuristic
-        # discussed by the paths.is_mtime_recursive_older_than_paths() function.
-        input_pathnames=(
-            data_qrc_filename, cmdpath.get_filename('pyside2-rcc')),
-        output_filename=data_py_qrc_filename,
-    ):
+        input_pathnames=input_pathnames, output_filename=data_py_qrc_filename):
         return
 
     # Else, this output module is older than at least one such path, in which

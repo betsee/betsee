@@ -74,6 +74,9 @@ class QBetseeSettings(QObject):
         recent execution of this application if any *or* reduce to a noop.
         '''
 
+        #FIXME: Excise this.
+        # return
+
         # Log this restoration.
         logs.log_info('Restoring application settings...')
 
@@ -103,18 +106,27 @@ class QBetseeSettings(QObject):
         #      moveEvent() can lead to infinite recursion."
         #
         # In the absence of compelling evidence, the current approach prevails.
-        if settings.contains('isFullScreen'):
-            # Previously stored window full-screen state.
-            main_window_is_full_screen = bool(settings.value('isFullScreen'))
 
-            # Log this restoration.
-            logs.log_debug(
-                'Restoring window full-screen state "%r"...',
-                main_window_is_full_screen)
+        #FIXME: This logic currently appears to produce a bizarrely unusable
+        #window on some platforms (e.g., Ubuntu Linux), presumably due to the
+        #QBetseeMainWindow.resize_full() method and hence Qt.WindowFullScreen
+        #mode being fundamentally broken in some respect -- possibly due to
+        #Qt 5.6.x-specific issues resolved in subsequent Qt versions. In any
+        #event, this logic *MUST* be disabled for the moment.
 
-            # If restoring this window to a full-screen state, do so.
-            if main_window_is_full_screen:
-                self._main_window.resize_full()
+        # If a preferred window full screen state was previously stored...
+        # if settings.contains('isFullScreen'):
+        #     # Previously stored window full-screen state.
+        #     main_window_is_full_screen = bool(settings.value('isFullScreen'))
+        #
+        #     # Log this restoration.
+        #     logs.log_debug(
+        #         'Restoring window full-screen state "%r"...',
+        #         main_window_is_full_screen)
+        #
+        #     # If restoring this window to a full-screen state, do so.
+        #     if main_window_is_full_screen:
+        #         self._main_window.resize_full()
 
         # If a preferred window position was previously stored...
         if settings.contains('pos'):

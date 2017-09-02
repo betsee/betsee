@@ -318,6 +318,7 @@ class BetseeGUI(object):
         # call. In this case, this method merely toggles this window's internal
         # state in preparation for that call. (Why, Qt. Why.)
         APP_GUI.betsee_main_window.show()
+        # APP_GUI.betsee_main_window.showMaximized()
 
 
     def _show_main_window(self) -> int:

@@ -2490,11 +2490,11 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
 from betsee.gui.widget.sim.config.guisimconftree import QBetseeTreeWidgetSimConf
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeLineEditSimConf
+from betsee.util.widget.guitextedit import QBetseePlainTextEdit
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeStackedWidgetSimConf
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeLineEditSimConf
 from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeDoubleSpinBoxSimConf
 import betsee_rc
 
