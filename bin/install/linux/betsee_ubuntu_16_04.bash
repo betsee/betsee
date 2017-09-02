@@ -24,7 +24,7 @@
 # Since all Ubuntu releases come preinstalled with the "wget" command, the
 # following "one-liner" suffices to install BETSEE from any open terminal:
 #
-#     wget https://gitlab.com/betse/betsee/raw/master/bin/install/betsee_ubuntu_16_04.bash && bash betsee_ubuntu_16_04.bash
+#     wget https://gitlab.com/betse/betsee/raw/master/bin/install/linux/betsee_ubuntu_16_04.bash && bash betsee_ubuntu_16_04.bash
 
 # ....................{ BASH                               }....................
 # Enable strict mode, terminating the script with non-zero exit status on the

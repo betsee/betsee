@@ -60,15 +60,15 @@ Installation
 
 BETSEE is installable as follows:
 
-#. Under `Ubuntu Linux 16.04 (Xenial Xerus)`_ and newer, via an automated
-   command-line installer.
+#. Under `Ubuntu Linux 16.04 (Xenial Xerus)`_ and newer, by downloading and
+   running an `automated command-line installer <Ubuntu 16.04 installer_>`__.
 
    #. Open a **terminal.**
-   #. Download and run the **BETSE[E] installer**.
+   #. Download and run the `BETSE[E] installer <Ubuntu 16.04 installer_>`__.
 
       .. code:: bash
-   
-         wget https://gitlab.com/betse/betsee/raw/master/bin/install/betsee_ubuntu_16_04.bash && bash betsee_ubuntu_16_04.bash
+
+         wget https://gitlab.com/betse/betsee/raw/master/bin/install/linux/betsee_ubuntu_16_04.bash && bash betsee_ubuntu_16_04.bash
 
 #. Under all other platforms, by manually installing BETSEE and BETSE via your
    preferred package manager.
@@ -106,6 +106,8 @@ pre-release version.
      <PySide2 installation_>`__.
    + Most other platforms (e.g., `Ubuntu Linux`_, CentOS_, macOS_, Windows) via
      the `unofficial PySide2 wheels <PySide2 wheels_>`__.
+   + The platform-agnostic `Anaconda`_ and `Miniconda`_ Python distributions
+     via the `unofficial PySide2 conda-forge feedstock <PySide2 feedstock_>`__.
 
 License
 =======
@@ -155,6 +157,8 @@ biologically misaligned, and simply unusable.
    https://gitlab.com/betse/betsee/pipelines
 .. _tarballs:
    https://gitlab.com/betse/betsee/tags
+.. _Ubuntu 16.04 installer:
+   https://gitlab.com/betse/betsee/blob/master/bin/install/linux/betsee_ubuntu_16_04.bash
 
 .. # ------------------( LINKS ~ academia                   )------------------
 .. _Pietak, Alexis:
@@ -226,6 +230,8 @@ biologically misaligned, and simply unusable.
    https://www.macports.org
 .. _Matplotlib:
    http://matplotlib.org
+.. _Miniconda:
+   https://conda.io/miniconda.html
 .. _NumPy:
    http://www.numpy.org
 .. _MEncoder:
@@ -267,6 +273,8 @@ biologically misaligned, and simply unusable.
    https://wiki.qt.io/PySide2
 .. _PySide2 5.6:
    https://code.qt.io/cgit/pyside/pyside.git/log/?h=5.6
+.. _PySide2 feedstock:
+   https://github.com/conda-forge/pyside2-feedstock
 .. _PySide2 installation:
    https://wiki.qt.io/PySide2_GettingStarted
 .. _PySide2 PPA:
