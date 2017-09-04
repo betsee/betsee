@@ -139,7 +139,7 @@ class QBetseeWidgetEditSimConfMixin(QBetseeWidgetEditMixin):
 
         Parameters
         ----------
-        filename : StrOrNoneTypes
+        filename : str
             Absolute path of the currently open YAML-formatted simulation
             configuration file if any *or* the empty string otherwise (i.e., if
             no such file is open).

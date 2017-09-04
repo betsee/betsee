@@ -28,17 +28,24 @@ class QBetseeLineEditSimConf(QBetseeWidgetEditSimConfScalarMixin, QLineEdit):
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
 
-    # ..................{ PROPERTIES ~ read-only             }..................
-    # Subclasses are required to implement the following properties.
+    # ..................{ SUPERCLASS ~ setter                }..................
+    def setText(self, text_new: str) -> None:
 
+        # Defer to the superclass setter.
+        super().setText(text_new)
+
+        # If this configuration is currently open, set the current value of this
+        # simulation configuration alias to this widget's current value.
+        self._set_alias_to_widget_value_if_sim_conf_open()
+
+    # ..................{ MIXIN ~ property : read-only       }..................
     @property
     def undo_synopsis(self) -> str:
         return 'edits to a text box'
 
-    # ..................{ PROPERTIES ~ value                 }..................
+    # ..................{ MIXIN ~ property : value           }..................
     @property
     def widget_value(self) -> object:
-
         return self.text()
 
 
@@ -57,12 +64,6 @@ class QBetseeLineEditSimConf(QBetseeWidgetEditSimConfScalarMixin, QLineEdit):
         # preventing infinite recursion. (See the superclass method docstring.)
         super().setText(widget_value)
 
-    # ..................{ SETTERS                            }..................
-    def setText(self, text_new: str) -> None:
-
-        # Defer to the superclass setter.
-        super().setText(text_new)
-
-        # If this configuration is currently open, set the current value of this
-        # simulation configuration alias to this widget's current value.
-        self._set_alias_to_widget_value_if_sim_conf_open()
+    # ..................{ MIXIN ~ method                     }..................
+    def _clear_widget_value(self) -> None:
+        self.widget_value = ''

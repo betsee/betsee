@@ -59,7 +59,7 @@ class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
         # superclass. See the superclass method for details.
         self.editingFinished.connect(self._editing_finished_undoable)
 
-    # ..................{ PROPERTIES ~ read-only             }..................
+    # ..................{ SUBCLASS ~ property : read-only    }..................
     # Subclasses are required to implement the following properties.
 
     @property
@@ -71,7 +71,9 @@ class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
 
         raise BetseMethodUnimplementedException()
 
-    # ..................{ PROPERTIES ~ value                 }..................
+    # ..................{ SUBCLASS ~ property : value        }..................
+    # Subclasses are required to implement the following properties.
+
     @property
     def widget_value(self) -> object:
         '''
@@ -112,6 +114,22 @@ class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
 
         raise BetseMethodUnimplementedException()
 
+    # ..................{ SUBCLASS ~ clear                   }..................
+    # Subclasses are required to implement the following methods.
+
+    def _clear_widget_value(self) -> None:
+        '''
+        Clear the scalar value currently displayed by this scalar widget.
+
+        Specifically, if this widget displays:
+
+        * A string value, set this value to the empty string.
+        * A float value, set this value to 0.0.
+        * An integer value, set this value to 0.
+        '''
+
+        raise BetseMethodUnimplementedException()
+
     # ..................{ SLOTS                              }..................
     @Slot(str)
     def _set_filename(self, filename: str) -> None:
@@ -119,13 +137,11 @@ class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
         # Call the superclass method first.
         super()._set_filename(filename)
 
-        # If this configuration is currently open, set this widget's displayed
-        # value to the current value of this simulation configuration alias.
-        if filename:
-            self._set_widget_value_to_alias_if_sim_conf_open()
+        # Set the value displayed by this widget to the current value of this
+        # simulation configuration alias.
+        self._set_widget_to_alias_value(filename)
 
-        # Cache this widget's currently displayed value in preparation for the
-        # next edit.
+        # Cache this value in preparation for the next edit.
         self._value_prev = self.widget_value
 
 
@@ -169,9 +185,9 @@ class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
     # ..................{ CONVERTERS ~ concrete              }..................
     def _set_alias_to_widget_value_if_sim_conf_open(self) -> None:
         '''
-        Set the current value of this widget's simulation configuration alias to
-        this widget's displayed value if a simulation configuration is currently
-        open *or* reduce to a noop otherwise.
+        Set the current value of the simulation configuration alias associated
+        with this widget to this widget's displayed value if a simulation
+        configuration is currently open *or* reduce to a noop otherwise.
 
         Design
         ----------
@@ -210,27 +226,30 @@ class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
         self._editing_finished_undoable()
 
 
-    def _set_widget_value_to_alias_if_sim_conf_open(self) -> None:
+    @type_check
+    def _set_widget_to_alias_value(self, filename: str) -> None:
         '''
-        Set this widget's displayed value to the current value of this widget's
-        simulation configuration alias if a simulation configuration is
-        currently open *or* reduce to a noop otherwise.
+        Set this widget's displayed value to the current value of the
+        simulation configuration alias associated with this widget if a
+        simulation configuration is currently open *or* clear this displayed
+        value otherwise.
 
-        #FIXME: Revise us up, please.
-
-        Design
+        Parameters
         ----------
-        This method should typically be explicitly called in the subclass
-        implementation of the :attr:`???` method (e.g.,
-        :meth:`QLineEdit.setText`).
+        filename : str
+            Absolute path of the currently open YAML-formatted simulation
+            configuration file if any *or* the empty string otherwise (i.e., if
+            no such file is open).
         '''
 
-        # If no simulation configuration is currently open, reduce to a noop.
-        if not self._is_open:
-            return
-
-        # Set this widget's displayed value to this alias' current value.
-        self.widget_value = self._sim_conf_alias.get()
+        # If a simulation configuration is currently open, set this widget's
+        # displayed value to this alias' current value.
+        if filename and self._is_open:
+            self.widget_value = self._sim_conf_alias.get()
+        # Else, no simulation configuration is currently open. In this case,
+        # clear this widget's displayed value.
+        else:
+            self._clear_widget_value()
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeUndoCommandEditSimConfScalarWidget(QBetseeUndoCommandWidgetABC):

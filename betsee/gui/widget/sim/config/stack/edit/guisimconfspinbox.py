@@ -129,17 +129,24 @@ class QBetseeDoubleSpinBoxSimConf(
                 'incompatible with {!r}.'.format(
                     self._sim_conf_alias_type, float))
 
-    # ..................{ PROPERTIES ~ read-only             }..................
-    # Subclasses are required to implement the following properties.
+    # ..................{ SUPERCLASS ~ setter                }..................
+    def setValue(self, value_new: str) -> None:
 
+        # Defer to the superclass setter.
+        super().setValue(value_new)
+
+        # If this configuration is currently open, set the current value of this
+        # simulation configuration alias to this widget's current value.
+        self._set_alias_to_widget_value_if_sim_conf_open()
+
+    # ..................{ MIXIN ~ property : read-only       }..................
     @property
     def undo_synopsis(self) -> str:
         return 'edits to a spin box'
 
-    # ..................{ PROPERTIES ~ value                 }..................
+    # ..................{ MIXIN ~ property : value           }..................
     @property
     def widget_value(self) -> object:
-
         return self.value()
 
 
@@ -164,12 +171,6 @@ class QBetseeDoubleSpinBoxSimConf(
         # preventing infinite recursion. (See the superclass method docstring.)
         super().setValue(widget_value)
 
-    # ..................{ SETTERS                            }..................
-    def setValue(self, value_new: str) -> None:
-
-        # Defer to the superclass setter.
-        super().setValue(value_new)
-
-        # If this configuration is currently open, set the current value of this
-        # simulation configuration alias to this widget's current value.
-        self._set_alias_to_widget_value_if_sim_conf_open()
+    # ..................{ MIXIN ~ method                     }..................
+    def _clear_widget_value(self) -> None:
+        self.widget_value = 0.0

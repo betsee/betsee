@@ -571,9 +571,9 @@ class QBetseeSimConf(QObject):
         self._action_save_sim.setEnabled(self.p.is_loaded and self._is_dirty)
 
         # Show or hide widgets requiring an open simulation configuration.
-        self._sim_conf_stack     .setVisible(self.p.is_loaded)
-        self._sim_conf_tree_frame.setVisible(self.p.is_loaded)
-        self._sim_phase_tabs     .setVisible(self.p.is_loaded)
+        self._sim_conf_stack     .setEnabled(self.p.is_loaded)
+        self._sim_conf_tree_frame.setEnabled(self.p.is_loaded)
+        self._sim_phase_tabs     .setEnabled(self.p.is_loaded)
 
         # If a simulation configuration is open...
         if self.p.is_loaded:
