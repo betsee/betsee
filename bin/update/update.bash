@@ -55,7 +55,7 @@ note 'Welcome to the BETSE[E] updater.'
 script_dirname="$(dirname "${BASH_SOURCE[0]}")"
 
 # Absolute or relative path of the directory to which BETSEE was installed.
-betsee_dirname="${script_dirname}/.."
+betsee_dirname="${script_dirname}/../.."
 
 # Absolute or relative path of the directory to which BETSE was installed.
 betse_dirname="${betsee_dirname}/../betse"

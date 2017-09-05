@@ -288,5 +288,5 @@ BETSEE is now runnable with the following command:
     betsee &!
 
 BETSEE and BETSE are both updatable at any time with the following command:
-    ${betsee_dirname}/bin/update.bash
+    bash ${betsee_dirname}/bin/update/update.bash
 "
