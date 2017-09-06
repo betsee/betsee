@@ -60,9 +60,9 @@ class QBetseeSimConf(QObject):
         Alias of the :attr:`QBetseeMainWindow.action_save_sim_as` action.
     _sim_conf_changed_signal : QSignal
         Alias of the :attr:`QBetseeMainWindow.sim_conf_changed_signal` signal.
-    _sim_conf_stack : QBetseeStackedWidgetSimConf
+    _sim_conf_stack : QBetseeSimConfStackedWidget
         Alias of the :attr:`QBetseeMainWindow.sim_conf_stack` widget.
-    _sim_conf_tree : QBetseeTreeWidgetSimConf
+    _sim_conf_tree : QBetseeSimConfTreeWidget
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree` widget.
     _sim_conf_tree_frame : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.

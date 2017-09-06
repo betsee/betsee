@@ -66,11 +66,11 @@ from PySide2.QtWidgets import QDoubleSpinBox
 from betse.util.type.numeric import floats
 from betsee.guiexceptions import BetseePySideSpinBoxException
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
-    QBetseeWidgetEditSimConfScalarMixin)
+    QBetseeSimConfWidgetEditScalarMixin)
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeDoubleSpinBoxSimConf(
-    QBetseeWidgetEditSimConfScalarMixin, QDoubleSpinBox):
+class QBetseeSimConfDoubleSpinBox(
+    QBetseeSimConfWidgetEditScalarMixin, QDoubleSpinBox):
     '''
     Simulation configuration-specific floating point spin box widget, permitting
     a simulation configuration floating point value backed by an external YAML

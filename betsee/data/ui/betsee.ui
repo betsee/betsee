@@ -22,11 +22,46 @@
     <height>0</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <weight>75</weight>
-    <bold>true</bold>
-   </font>
+  <property name="styleSheet">
+   <string notr="true">/* ------------------( SYNOPSIS                           )---------------------
+Root stylesheet for this application, attached to the main window widget from
+Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
+
+---------------------( CAVEATS                            )---------------------
+Promoted widget types (e.g., &quot;QBetseeSimConfStackedWidget&quot;) should be avoided in
+favour of stock widget types (e.g., &quot;QStackedWidget&quot;). Due to outstanding issues
+in Qt (Creator|Designer), styles selected via promoted widget types are
+displayed.at runtime but *NOT* from within Qt (Creator|Designer) -- defeating
+the WYSIWYG intention of
+
+---------------------( SEE ALSO                           )---------------------
+* https://doc.qt.io/qt-5/stylesheet-syntax.html
+  Reference documentation for Qt 5 stylesheets.
+*/
+
+/* ..................{ STACK                              }.....................
+Styles applicable to widgets contained in pages of the top-level stack widget.
+*/
+
+/* Page. */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox {
+    /* background-color: red; */
+    font-weight: bold;
+    font-size: 13pt;
+}
+
+/* Top-level group box in a page. */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox {
+    font-weight: bold;
+    font-size: 11pt;
+}
+
+/* Widgets in a top-level group box in a page. */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QWidget {
+    /* font-weight: bold; */
+    font-size: 10pt;
+}
+</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>
@@ -39,76 +74,417 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" colspan="2">
-     <widget class="QFrame" name="log_frame">
+    <item row="0" column="0">
+     <widget class="QFrame" name="sim_conf_tree_frame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_20" stretch="0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_21">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QLabel" name="log_label">
-         <property name="text">
-          <string>Log Messages</string>
+        <widget class="QBetseeSimConfTreeWidget" name="sim_conf_tree">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>1</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>225</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="indentation">
+          <number>30</number>
+         </property>
+         <property name="rootIsDecorated">
+          <bool>true</bool>
+         </property>
+         <property name="uniformRowHeights">
+          <bool>false</bool>
+         </property>
+         <property name="itemsExpandable">
+          <bool>true</bool>
+         </property>
+         <column>
+          <property name="text">
+           <string>Simulation Properties</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+         </column>
+         <item>
+          <property name="text">
+           <string>File Management</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Time Settings</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>General Options</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Cluster Options</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tissue Profiles</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Dynamic Channels</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Interventions</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Junctions</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Networks</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
+          </property>
+          <item>
+           <property name="text">
+            <string>Substances</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Reactions</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Transporters</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Channels</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Modulators</string>
+           </property>
+          </item>
+         </item>
+         <item>
+          <property name="text">
+           <string>Additional Physics</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Tools</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Advanced</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Results</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Data Export</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Line Plots</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2D Plots</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Animations</string>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>50</weight>
+            <bold>false</bold>
+           </font>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
+          </property>
+         </item>
         </widget>
        </item>
        <item>
-        <widget class="QBetseePlainTextEdit" name="log_box">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font: 7pt &quot;Monospace&quot;;</string>
-         </property>
+        <widget class="QFrame" name="frame_3">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
+          <enum>QFrame::Raised</enum>
          </property>
-         <property name="lineWidth">
-          <number>2</number>
-         </property>
-         <property name="documentTitle">
-          <string/>
-         </property>
-         <property name="undoRedoEnabled">
-          <bool>false</bool>
-         </property>
-         <property name="lineWrapMode">
-          <enum>QPlainTextEdit::NoWrap</enum>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="plainText">
-          <string notr="true"/>
-         </property>
-         <property name="textInteractionFlags">
-          <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-         </property>
-         <property name="backgroundVisible">
-          <bool>false</bool>
-         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_20">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolBar" name="sim_conf_tree_toolbar">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+            <addaction name="action_sim_conf_tree_item_append"/>
+            <addaction name="action_sim_conf_tree_item_remove"/>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QBetseeStackedWidgetSimConf" name="sim_conf_stack">
+     <widget class="QBetseeSimConfStackedWidget" name="sim_conf_stack">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>2</horstretch>
@@ -124,17 +500,12 @@
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_FileManagement">
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_FileManagement">
-          <property name="font">
-           <font>
-            <pointsize>13</pointsize>
-           </font>
-          </property>
           <property name="toolTip">
            <string>Paths produced by this simulation.</string>
           </property>
@@ -144,11 +515,6 @@
           <layout class="QVBoxLayout" name="verticalLayout_19">
            <item>
             <widget class="QGroupBox" name="groupBox_13">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="toolTip">
               <string>Paths produced by this simulation's seed phase.</string>
              </property>
@@ -158,30 +524,18 @@
              <layout class="QFormLayout" name="formLayout_17">
               <item row="0" column="0">
                <widget class="QLabel" name="label_2">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>Pickle basename:</string>
                 </property>
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QBetseeLineEditSimConf" name="sim_conf_path_seed_pick_file_line">
+               <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_seed_pick_file_line">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>1</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
                 </property>
                 <property name="toolTip">
                  <string>Basename of the pickled file providing this simulation's most recently seeded cell cluster in the initialization pickle directory.</string>
@@ -196,11 +550,6 @@
            </item>
            <item>
             <widget class="QGroupBox" name="groupBox_11">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="toolTip">
               <string>Paths produced by this simulation's initialization phase.</string>
              </property>
@@ -210,11 +559,6 @@
              <layout class="QFormLayout" name="formLayout_11">
               <item row="0" column="0">
                <widget class="QLabel" name="label">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>Pickle dirname:</string>
                 </property>
@@ -236,7 +580,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_pick_dir_line">
+                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_init_pick_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -278,18 +622,13 @@
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_4">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>Pickle basename:</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_pick_file_line">
+               <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_init_pick_file_line">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>1</horstretch>
@@ -313,11 +652,6 @@
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_3">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>Exports dirname:</string>
                 </property>
@@ -339,7 +673,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeLineEditSimConf" name="sim_conf_path_init_exp_dir_line">
+                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_init_exp_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -384,11 +718,6 @@
            </item>
            <item>
             <widget class="QGroupBox" name="groupBox_12">
-             <property name="font">
-              <font>
-               <pointsize>11</pointsize>
-              </font>
-             </property>
              <property name="toolTip">
               <string>Paths produced by this simulation's simulation phase.</string>
              </property>
@@ -398,11 +727,6 @@
              <layout class="QFormLayout" name="formLayout_16">
               <item row="0" column="0">
                <widget class="QLabel" name="label_5">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>Pickle dirname:</string>
                 </property>
@@ -424,7 +748,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeLineEditSimConf" name="sim_conf_path_sim_pick_dir_line">
+                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_sim_pick_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -466,18 +790,13 @@
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_62">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>Pickle basename:</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QBetseeLineEditSimConf" name="sim_conf_path_sim_pick_file_line">
+               <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_sim_pick_file_line">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>1</horstretch>
@@ -501,11 +820,6 @@
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_73">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>Exports dirname:</string>
                 </property>
@@ -527,7 +841,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeLineEditSimConf" name="sim_conf_path_sim_exp_dir_line">
+                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_sim_exp_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -604,6 +918,8 @@
              <property name="font">
               <font>
                <pointsize>11</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
               </font>
              </property>
              <property name="toolTip">
@@ -641,7 +957,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeDoubleSpinBoxSimConf" name="sim_conf_time_init_total">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_init_total">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -709,7 +1025,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeDoubleSpinBoxSimConf" name="sim_conf_time_init_step">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_init_step">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -777,7 +1093,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeDoubleSpinBoxSimConf" name="sim_conf_time_init_sampling">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_init_sampling">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -825,6 +1141,8 @@
              <property name="font">
               <font>
                <pointsize>11</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
               </font>
              </property>
              <property name="toolTip">
@@ -862,7 +1180,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeDoubleSpinBoxSimConf" name="sim_conf_time_sim_total">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_sim_total">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -930,7 +1248,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeDoubleSpinBoxSimConf" name="sim_conf_time_sim_step">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_sim_step">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -998,7 +1316,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeDoubleSpinBoxSimConf" name="sim_conf_time_sim_sampling">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_sim_sampling">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -1060,53 +1378,21 @@
        </layout>
       </widget>
       <widget class="QWidget" name="sim_conf_stack_page_GeneralOptions">
-       <layout class="QVBoxLayout" name="verticalLayout_17">
-        <item>
+       <layout class="QGridLayout" name="gridLayout_21">
+        <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_generalOptions">
           <property name="title">
            <string>General Options</string>
           </property>
           <layout class="QFormLayout" name="formLayout_2">
            <item row="0" column="0">
-            <spacer name="verticalSpacer_5">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>16</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="0">
             <widget class="QLabel" name="label_12">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-               <horstretch>1</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
              <property name="text">
-              <string>Computational grid size</string>
+              <string>Computational grid size:</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QSpinBox" name="spinBox_gridSize">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="2">
             <widget class="QRadioButton" name="rb_simECM">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1119,26 +1405,27 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
+           <item row="3" column="0">
             <widget class="QLabel" name="label_14">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-               <horstretch>1</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
              </property>
              <property name="text">
               <string>Ion profile:</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
+           <item row="0" column="1">
+            <widget class="QSpinBox" name="spinBox_gridSize"/>
+           </item>
+           <item row="3" column="1">
             <widget class="QComboBox" name="comboBox_ionProfile">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>3</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
              </property>
              <item>
               <property name="text">
@@ -1162,34 +1449,8 @@
              </item>
             </widget>
            </item>
-           <item row="6" column="0">
-            <spacer name="verticalSpacer_6">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
           </layout>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_29">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>
@@ -3144,7 +3405,9 @@
          <widget class="QGroupBox" name="groupBox_10">
           <property name="font">
            <font>
-            <pointsize>9</pointsize>
+            <pointsize>13</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
            </font>
           </property>
           <property name="title">
@@ -3173,415 +3436,6 @@
         </item>
        </layout>
       </widget>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QFrame" name="sim_conf_tree_frame">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_21">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QBetseeTreeWidgetSimConf" name="sim_conf_tree">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>1</horstretch>
-           <verstretch>1</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>225</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="indentation">
-          <number>30</number>
-         </property>
-         <property name="rootIsDecorated">
-          <bool>true</bool>
-         </property>
-         <property name="uniformRowHeights">
-          <bool>false</bool>
-         </property>
-         <property name="itemsExpandable">
-          <bool>true</bool>
-         </property>
-         <column>
-          <property name="text">
-           <string>Simulation Properties</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>11</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-         </column>
-         <item>
-          <property name="text">
-           <string>File Management</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Time Settings</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>General Options</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Cluster Options</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Tissue Profiles</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Dynamic Channels</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/bolt.svg</normaloff>://icon/open_iconic/bolt.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Interventions</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/eyedropper.svg</normaloff>://icon/open_iconic/eyedropper.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Junctions</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/share.svg</normaloff>://icon/open_iconic/share.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Networks</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/betsee/dna.svg</normaloff>://icon/betsee/dna.svg</iconset>
-          </property>
-          <item>
-           <property name="text">
-            <string>Substances</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Reactions</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Transporters</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Channels</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Modulators</string>
-           </property>
-          </item>
-         </item>
-         <item>
-          <property name="text">
-           <string>Additional Physics</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/betsee/planet.svg</normaloff>://icon/betsee/planet.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Tools</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/wrench.svg</normaloff>://icon/open_iconic/wrench.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Advanced</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Results</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Data Export</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/list.svg</normaloff>://icon/open_iconic/list.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Line Plots</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/betsee/lineplot.svg</normaloff>://icon/betsee/lineplot.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2D Plots</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Animations</string>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-            <weight>50</weight>
-            <bold>false</bold>
-           </font>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QFrame" name="frame_3">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_20">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QToolBar" name="sim_conf_tree_toolbar">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
-            <addaction name="action_sim_conf_tree_item_append"/>
-            <addaction name="action_sim_conf_tree_item_remove"/>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
      </widget>
     </item>
     <item row="0" column="2" rowspan="2">
@@ -4375,6 +4229,74 @@
       </widget>
      </widget>
     </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QFrame" name="log_frame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_20" stretch="0,0">
+       <item>
+        <widget class="QLabel" name="log_label">
+         <property name="text">
+          <string>Log Messages</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QBetseePlainTextEdit" name="log_box">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 7pt &quot;Monospace&quot;;</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
+         <property name="documentTitle">
+          <string/>
+         </property>
+         <property name="undoRedoEnabled">
+          <bool>false</bool>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QPlainTextEdit::NoWrap</enum>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="plainText">
+          <string notr="true"/>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+         </property>
+         <property name="backgroundVisible">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menu_bar">
@@ -4693,28 +4615,28 @@
    <header>betsee/util/widget/guitextedit.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeTreeWidgetSimConf</class>
-   <extends>QTreeWidget</extends>
-   <header>betsee/gui/widget/sim/config/guisimconftree.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QBetseeLineEditSimConf</class>
-   <extends>QLineEdit</extends>
-   <header>betsee/gui/widget/sim/config/stack/edit/guisimconflineedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QBetseeStackedWidgetSimConf</class>
-   <extends>QStackedWidget</extends>
-   <header>betsee/gui/widget/sim/config/stack/guisimconfstack.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>QBetseePushButtonSubDirSimConf</class>
    <extends>QPushButton</extends>
    <header>betsee/gui/widget/sim/config/stack/guisimconfpushbtn.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeDoubleSpinBoxSimConf</class>
+   <class>QBetseeSimConfTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>betsee/gui/widget/sim/config/guisimconftree.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeSimConfStackedWidget</class>
+   <extends>QStackedWidget</extends>
+   <header>betsee/gui/widget/sim/config/stack/guisimconfstack.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeSimConfLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>betsee/gui/widget/sim/config/stack/edit/guisimconflineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeSimConfDoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
    <header>betsee/gui/widget/sim/config/stack/edit/guisimconfspinbox.h</header>
   </customwidget>

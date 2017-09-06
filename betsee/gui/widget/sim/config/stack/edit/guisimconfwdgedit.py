@@ -20,7 +20,7 @@ from betsee.util.widget.guiwdg import QBetseeWidgetEditMixin
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetEditSimConfMixin(QBetseeWidgetEditMixin):
+class QBetseeSimConfWidgetEditMixin(QBetseeWidgetEditMixin):
     '''
     Abstract base class of all **editable simulation configuration widget**
     (i.e., widget interactively editing simulation configuration values stored

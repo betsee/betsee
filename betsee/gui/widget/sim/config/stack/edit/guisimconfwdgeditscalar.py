@@ -15,11 +15,11 @@ from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, CallableTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
-    QBetseeWidgetEditSimConfMixin)
+    QBetseeSimConfWidgetEditMixin)
 from betsee.util.widget.guiundocmd import QBetseeUndoCommandWidgetABC
 
 # ....................{ MIXINS                             }....................
-class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
+class QBetseeSimConfWidgetEditScalarMixin(QBetseeSimConfWidgetEditMixin):
     '''
     Abstract base class of all **editable scalar simulation configuration
     widget** (i.e., widget interactively editing scalar simulation configuration
@@ -102,7 +102,7 @@ class QBetseeWidgetEditSimConfScalarMixin(QBetseeWidgetEditSimConfMixin):
 
         To avoid infinite recursion, the superclass rather than subclass
         implementation of this setter method should typically be called.
-        For the :class:`QBetseeLineEditSimConf` subclass, for example,
+        For the :class:`QBetseeSimConfLineEdit` subclass, for example,
         erroneously calling this subclass implementation would ensure that:
 
         #. On each call to the :meth:`setValue` method...
@@ -276,7 +276,7 @@ class QBetseeUndoCommandEditSimConfScalarWidget(QBetseeUndoCommandWidgetABC):
     @type_check
     def __init__(
         self,
-        widget: QBetseeWidgetEditSimConfScalarMixin,
+        widget: QBetseeSimConfWidgetEditScalarMixin,
         value_old: object,
         *args, **kwargs
     ) -> None:
@@ -285,7 +285,7 @@ class QBetseeUndoCommandEditSimConfScalarWidget(QBetseeUndoCommandWidgetABC):
 
         Parameters
         ----------
-        widget : QBetseeWidgetEditSimConfScalarMixin
+        widget : QBetseeSimConfWidgetEditScalarMixin
             Scalar widget operated upon by this undo command.
         value_old : object
             Prior value of the scalar widget associated with this undo command.

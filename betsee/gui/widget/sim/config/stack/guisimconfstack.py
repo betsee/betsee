@@ -20,7 +20,7 @@ from betsee.guiexceptions import BetseePySideTreeWidgetException
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 
 # ....................{ CLASSES                            }....................
-class QBetseeStackedWidgetSimConf(QStackedWidget):
+class QBetseeSimConfStackedWidget(QStackedWidget):
     '''
     :mod:`PySide2`-based stack widget exposing all low-level settings associated
     with each high-level feature of the current simulation configuration.
@@ -45,7 +45,7 @@ class QBetseeStackedWidgetSimConf(QStackedWidget):
 
     See Also
     ----------
-    QBetseeTreeWidgetSimConf
+    QBetseeSimConfTreeWidget
         Corresponding :class:`QTreeWidget` instance, exposing all high-level
         features of the current simulation configuration which this
         :class:`QStackedWidget` instance then exposes the low-level settings of.
