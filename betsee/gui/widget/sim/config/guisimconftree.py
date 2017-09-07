@@ -10,12 +10,13 @@ simulation configuration.
 
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import QCoreApplication  #, Slot
-from PySide2.QtWidgets import QMainWindow, QTreeWidget  #, QTreeWidgetItem
+from PySide2.QtWidgets import QMainWindow
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
+from betsee.util.widget.guitreewdg import QBetseeTreeWidget
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimConfTreeWidget(QTreeWidget):
+class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     '''
     :mod:`PySide2`-based tree widget exposing all high-level features of the
     current simulation configuration.
