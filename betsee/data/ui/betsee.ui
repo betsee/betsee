@@ -401,7 +401,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -808,7 +808,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_51">
           <property name="toolTip">
-           <string>Temporal properties of this simulation.</string>
+           <string>Time-related properties of this simulation.</string>
           </property>
           <property name="title">
            <string>Temporal Settings</string>
@@ -817,7 +817,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
            <item>
             <widget class="QGroupBox" name="groupBox_14">
              <property name="toolTip">
-              <string>Temporal properties of this simulation's initialization phase.</string>
+              <string>Time-related properties of this simulation's initialization phase.</string>
              </property>
              <property name="title">
               <string>Initialization Phase</string>
@@ -981,7 +981,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Duration in seconds between each sampled time step (inclusive) of this simulation's initialization phase.</string>
+                    <string>Duration in seconds between each sampled time step (inclusive) of this simulation's initialization phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.</string>
                    </property>
                    <property name="suffix">
                     <string/>
@@ -1018,7 +1018,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
            <item>
             <widget class="QGroupBox" name="groupBox_15">
              <property name="toolTip">
-              <string>Temporal properties of this simulation's simulation phase.</string>
+              <string>Time-related properties of this simulation's simulation phase.</string>
              </property>
              <property name="title">
               <string>Simulation Phase</string>
@@ -1182,7 +1182,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Duration in seconds between each sampled time step (inclusive) of this simulation's simulation phase.</string>
+                    <string>Duration in seconds between each sampled time step (inclusive) of this simulation's simulation phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.</string>
                    </property>
                    <property name="suffix">
                     <string/>
@@ -1289,50 +1289,26 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
        </layout>
       </widget>
       <widget class="QWidget" name="sim_conf_stack_page_Space">
+       <property name="toolTip">
+        <string>Space-related properties of this simulation.</string>
+       </property>
        <layout class="QGridLayout" name="gridLayout_50">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_53">
+          <property name="toolTip">
+           <string>Space-related properties of this simulation.</string>
+          </property>
           <property name="title">
            <string>Spatial Settings</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_17">
            <item>
-            <widget class="QGroupBox" name="groupBox_16">
-             <property name="title">
-              <string>Environment</string>
-             </property>
-             <layout class="QFormLayout" name="formLayout_5">
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_74">
-                <property name="text">
-                 <string>Grid size:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QSpinBox" name="spinBox_gridSize_2"/>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_12">
-                <property name="text">
-                 <string>Extracellular matrix:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QCheckBox" name="checkBox">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
             <widget class="QGroupBox" name="groupBox_17">
+             <property name="toolTip">
+              <string>Space-related properties of this simulation's cell cluster.</string>
+             </property>
              <property name="title">
-              <string>Cluster</string>
+              <string>Cell Cluster</string>
              </property>
              <layout class="QFormLayout" name="formLayout_8">
               <item row="0" column="0">
@@ -1431,6 +1407,46 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
                 </property>
                 <property name="singleStep">
                  <double>0.100000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_16">
+             <property name="toolTip">
+              <string>Space-related properties of this simulation's extracellular environment.</string>
+             </property>
+             <property name="title">
+              <string>Extracellular Environment</string>
+             </property>
+             <layout class="QFormLayout" name="formLayout_5">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_74">
+                <property name="text">
+                 <string>Grid size:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="sim_conf_space_env_grid_size">
+                <property name="toolTip">
+                 <string>Number of square grid spaces (in both the horizontal and vertical directions) to computationally divide this simulation's square environment into. Increasing this number increases simulation granularity and hence stability at a quadratic cost in space and time consumption. This number is strongly recommended to reside in the range [10, 60] for most simulations.</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>Extracellular matrix:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QCheckBox" name="checkBox">
+                <property name="text">
+                 <string/>
                 </property>
                </widget>
               </item>

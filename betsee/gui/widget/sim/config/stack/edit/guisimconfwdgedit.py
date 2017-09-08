@@ -14,13 +14,13 @@ from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
 from betse.util.type.types import type_check  #, CallableTypes
-from betsee.util.widget.guiwdg import QBetseeWidgetEditMixin
+from betsee.util.widget.guiwdg import QBetseeEditWidgetMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeSimConfWidgetEditMixin(QBetseeWidgetEditMixin):
+class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
     '''
     Abstract base class of all **editable simulation configuration widget**
     (i.e., widget interactively editing simulation configuration values stored

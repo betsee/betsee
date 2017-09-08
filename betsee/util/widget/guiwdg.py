@@ -129,6 +129,36 @@ class QBetseeWidgetMixin(object):
 
     # ..................{ INITIALIZERS                       }..................
     def __init__(self, *args, **kwargs) -> None:
+        '''
+        Initialize this application-specific widget.
+
+        Parameters
+        ----------
+        All parameters are passed as is to the superclass this mixin is mixed
+        into (e.g., :class:`QWidget` or a subclass thereof).
+
+        Caveats
+        ----------
+        **Subclasses overriding this method should not attempt to accept
+        subclass-specific parameters.** Due to the semantics of Python's
+        method-resolution order (MRO), accidentally violating this constraint is
+        guaranteed to raise non-human-readable exceptions at subclass
+        instantiation time.
+
+        Abstract base subclasses may trivially circumvent this constraint by
+        defining abstract properties which concrete subclasses then define. When
+        doing so, note that abstract methods should raise the
+        :class:`BetseMethodUnimplementedException` exception rather than be
+        decorated by the usual :meth:`abstractmethod` decorator -- which is
+        *not* safely applicable to subclasses of this class.
+
+        For example:
+
+            >>> from betse.exceptions import BetseMethodUnimplementedException
+            >>> @property
+            ... def muh_subclass_property(self) -> MuhValueType:
+            ...     raise BetseMethodUnimplementedException()
+        '''
 
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
@@ -146,7 +176,7 @@ class QBetseeWidgetMixin(object):
         self.object_name = self.objectName()
 
 
-class QBetseeWidgetEditMixin(QBetseeWidgetMixin):
+class QBetseeEditWidgetMixin(QBetseeWidgetMixin):
     '''
     Abstract base class of most application-specific **editable widget** (i.e.,
     widget interactively editing one or more simulation configuration values
@@ -224,7 +254,7 @@ class QBetseeWidgetEditMixin(QBetseeWidgetMixin):
     def _push_undo_cmd_if_safe(
         self,
         # To avoid circular imports, this type is validated dynamically.
-        undo_cmd: 'betsee.util.widget.guiundocmd.QBetseeUndoCommandWidgetABC',
+        undo_cmd: 'betsee.util.widget.guiundocmd.QBetseeWidgetUndoCommandABC',
     ) -> None:
         '''
         Push the passed widget-specific undo command onto the undo stack
@@ -232,7 +262,7 @@ class QBetseeWidgetEditMixin(QBetseeWidgetMixin):
 
         Parameters
         ----------
-        undo_cmd : QBetseeUndoCommandWidgetABC
+        undo_cmd : QBetseeWidgetUndoCommandABC
             Widget-specific undo command to be pushed onto this stack.
         '''
 

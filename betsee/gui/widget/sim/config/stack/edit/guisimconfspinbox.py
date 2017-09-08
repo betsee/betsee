@@ -60,17 +60,27 @@
 #users from entering invalid numeric data. (Let us see this through, please.)
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import Qt
+from PySide2.QtCore import QCoreApplication, Qt
 from PySide2.QtWidgets import QDoubleSpinBox
 #from betse.util.io.log import logs
 from betse.util.type.numeric import floats
-from betsee.guiexceptions import BetseePySideSpinBoxException
+from betse.util.type.types import ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
-    QBetseeSimConfWidgetEditScalarMixin)
+    QBetseeSimConfEditScalarWidgetMixin)
 
 # ....................{ SUBCLASSES                         }....................
+#FIXME: Refactor as follows:
+#
+#* Define a new "QBetseeSimConfSpinBoxWidgetMixin" subclass of the
+#  "QBetseeSimConfEditScalarWidgetMixin" superclass in this submodule.
+#* Shift all functionality of this "QBetseeSimConfDoubleSpinBox" subclass into
+#  that newly defined subclass, excluding functionality specific to floats.
+#* Inherit this subclass from that newly defined subclass.
+#* Define a new "QBetseeSimConfIntegerSpinBox" subclass of the same newly
+#  defined subclass in this submodule as well.
+#* Promote the "Grid size:" spin box to ""QBetseeSimConfIntegerSpinBox".
 class QBetseeSimConfDoubleSpinBox(
-    QBetseeSimConfWidgetEditScalarMixin, QDoubleSpinBox):
+    QBetseeSimConfEditScalarWidgetMixin, QDoubleSpinBox):
     '''
     Simulation configuration-specific floating point spin box widget, permitting
     a simulation configuration floating point value backed by an external YAML
@@ -106,29 +116,6 @@ class QBetseeSimConfDoubleSpinBox(
         #   key is pressed, the up or down graphical arrow is clicked).
         self.setKeyboardTracking(False)
 
-
-    def init(self, *args, **kwargs) -> bool:
-
-        # Initialize our superclass with all passed parameters.
-        super().init(*args, **kwargs)
-
-        # If the initialized simulation configuration alias accepts values of
-        # either...
-        if (
-            # Multiple types but *NOT* floating point or...
-            (self._sim_conf_alias_type is tuple and
-             float not in self._sim_conf_alias_type) or
-            # A single type that is *NOT* floating point...
-            (self._sim_conf_alias_type is not tuple and
-             not issubclass(self._sim_conf_alias_type, float))
-        # ...then this spin box is incompatible with this alias. In this case,
-        # an exception is raised.
-        ):
-            raise BetseePySideSpinBoxException(
-                'Simulation configuration alias type(s) {!r} '
-                'incompatible with {!r}.'.format(
-                    self._sim_conf_alias_type, float))
-
     # ..................{ SUPERCLASS ~ setter                }..................
     def setValue(self, value_new: str) -> None:
 
@@ -139,10 +126,16 @@ class QBetseeSimConfDoubleSpinBox(
         # simulation configuration alias to this widget's current value.
         self._set_alias_to_widget_value_if_sim_conf_open()
 
+    # ..................{ PRIVATE ~ property : read-only     }..................
+    @property
+    def _widget_type_strict(self) -> ClassOrNoneTypes:
+        return float
+
     # ..................{ MIXIN ~ property : read-only       }..................
     @property
     def undo_synopsis(self) -> str:
-        return 'edits to a spin box'
+        return QCoreApplication.translate(
+            'QBetseeSimConfDoubleSpinBox', 'edits to a spin box')
 
     # ..................{ MIXIN ~ property : value           }..................
     @property

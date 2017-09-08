@@ -14,7 +14,7 @@ from betse.util.type.types import type_check, GeneratorType
 from contextlib import contextmanager
 
 # ....................{ SUPERCLASSES                       }....................
-class QBetseeUndoCommandWidgetABC(QUndoCommand):
+class QBetseeWidgetUndoCommandABC(QUndoCommand):
     '''
     Abstract base class of all widget-specific undo command subclasses,
     encapsulating both the application and restoration of the contents of a
@@ -25,7 +25,7 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
     _id : int
         Integer uniquely identifying the concrete subclass implementing this
         abstract base class of this undo command.
-    _widget : QBetseeWidgetEditMixin
+    _widget : QBetseeEditWidgetMixin
         Application-specific widget operated upon by this undo command.
     _synopsis : str
         Human-readable string synopsizing the operation performed by this
@@ -39,7 +39,7 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
     def __init__(
         self,
         # Avoid circular import dependencies.
-        widget: 'betsee.util.widget.guiwdg.QBetseeWidgetEditMixin',
+        widget: 'betsee.util.widget.guiwdg.QBetseeEditWidgetMixin',
         synopsis: str,
     ) -> None:
         '''
@@ -47,7 +47,7 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
 
         Parameters
         ----------
-        widget : QBetseeWidgetEditMixin
+        widget : QBetseeEditWidgetMixin
             Application-specific widget operated upon by this undo command.
         synopsis : str
             Human-readable string synopsizing the operation performed by this
@@ -108,8 +108,8 @@ class QBetseeUndoCommandWidgetABC(QUndoCommand):
         this context.
 
         This context manager enables and then guaranteeably disables the
-        :attr:`QBetseeWidgetEditMixin.is_undo_cmd_pushable` boolean even when
-        fatal exceptions are raised, preventing :attr:`QBetseeWidgetEditMixin`
+        :attr:`QBetseeEditWidgetMixin.is_undo_cmd_pushable` boolean even when
+        fatal exceptions are raised, preventing :attr:`QBetseeEditWidgetMixin`
         subclass slots from recursively pushing additional undo commands onto
         the undo stack when already applying an undo command. Why? Because doing
         so induces infinite recursion, which is bad.

@@ -97,6 +97,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Iteratively initialize all widgets associated with each stacked page.
         self._init_page_path(main_window)
+        self._init_page_space(main_window)
         self._init_page_time(main_window)
 
     # ..................{ INITIALIZERS ~ tree                }..................
@@ -194,7 +195,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
     @type_check
     def _init_page_path(self, main_window: QMainWindow) -> None:
         '''
-        Initialize the "File Management" page of this stack widget.
+        Initialize the filesystem page of this stack widget.
 
         Parameters
         ----------
@@ -241,11 +242,31 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             sim_conf=sim_conf,
             line_edit=main_window.sim_conf_path_sim_exp_dir_line)
 
+    # ..................{ INITIALIZERS ~ page : space        }..................
+    @type_check
+    def _init_page_space(self, main_window: QMainWindow) -> None:
+        '''
+        Initialize the spatial page of this stack widget.
+
+        Parameters
+        ----------
+        main_window: QBetseeMainWindow
+            Parent :class:`QMainWindow` widget to initialize this widget with.
+        '''
+
+        # Simulation configuration state object.
+        sim_conf = main_window.sim_conf
+
+        #FIXME: Uncomment after properly implemented.
+        # Initialize all environmental grid widgets on this page.
+        # main_window.sim_conf_space_env_grid_size.init(
+        #     sim_conf=sim_conf, sim_conf_alias=Parameters.grid_size,)
+
     # ..................{ INITIALIZERS ~ page : time         }..................
     @type_check
     def _init_page_time(self, main_window: QMainWindow) -> None:
         '''
-        Initialize the "Time Settings" page of this stack widget.
+        Initialize the temporal page of this stack widget.
 
         Parameters
         ----------

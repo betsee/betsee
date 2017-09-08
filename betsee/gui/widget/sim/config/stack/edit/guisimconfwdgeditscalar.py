@@ -9,17 +9,18 @@ subclasses instantiated in pages of the top-level stack.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import Slot
+from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
-from betse.util.type.types import type_check  #, CallableTypes
+from betse.util.type.types import type_check, ClassOrNoneTypes
+from betsee.guiexceptions import BetseePySideWidgetException
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
-    QBetseeSimConfWidgetEditMixin)
-from betsee.util.widget.guiundocmd import QBetseeUndoCommandWidgetABC
+    QBetseeSimConfEditWidgetMixin)
+from betsee.util.widget.guiundocmd import QBetseeWidgetUndoCommandABC
 
 # ....................{ MIXINS                             }....................
-class QBetseeSimConfWidgetEditScalarMixin(QBetseeSimConfWidgetEditMixin):
+class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
     '''
     Abstract base class of all **editable scalar simulation configuration
     widget** (i.e., widget interactively editing scalar simulation configuration
@@ -58,6 +59,45 @@ class QBetseeSimConfWidgetEditScalarMixin(QBetseeSimConfWidgetEditMixin):
         # Connect all relevant signals to slots *AFTER* initializing our
         # superclass. See the superclass method for details.
         self.editingFinished.connect(self._editing_finished_undoable)
+
+        # If all of the following conditions are satisified:
+        if (
+            # This widget is constrained to values of only a single type.
+            self._widget_type_strict is not None and
+            # This simulation configuration alias accepts values of either...
+            (
+                # Multiple types excluding this single required type *OR*...
+                (
+                    self._sim_conf_alias_type is tuple and
+                    self._widget_type_strict not in self._sim_conf_alias_type
+                ) or
+                # A single type incompatible with this single required type.
+                (
+                    self._sim_conf_alias_type is not tuple and not issubclass(
+                        self._sim_conf_alias_type, self._widget_type_strict)
+                )
+            )
+        # Then this widget is fundamentally incompatible with this alias.
+        ):
+            raise BetseePySideWidgetException(QCoreApplication.translate(
+                'QBetseeSimConfEditScalarWidgetMixin',
+                'Widget scalar type {0!r} incompatible with '
+                'YAML alias type(s) {1!r}.'.format(
+                    self._sim_conf_alias_type, self._widget_type_strict)))
+
+    # ..................{ PRIVATE ~ property : read-only     }..................
+    @property
+    def _widget_type_strict(self) -> ClassOrNoneTypes:
+        '''
+        Type of all scalar values displayed by this scalar widget if this widget
+        is strictly constrained to values of only a single type *or* ``None``
+        otherwise (i.e., if this widget loosely displays values satisfying any
+        one of several different types).
+
+        By default, this method returns ``None``.
+        '''
+
+        return None
 
     # ..................{ SUBCLASS ~ property : read-only    }..................
     # Subclasses are required to implement the following properties.
@@ -168,7 +208,7 @@ class QBetseeSimConfWidgetEditScalarMixin(QBetseeSimConfWidgetEditMixin):
         ):
             # Push an undo command onto the stack (permitting this edit to be
             # undone) *BEFORE* updating the "_value_prev" variable.
-            undo_cmd = QBetseeUndoCommandEditSimConfScalarWidget(
+            undo_cmd = QBetseeSimConfEditScalarWidgetUndoCommand(
                 widget=self, value_old=self._value_prev)
             self._push_undo_cmd_if_safe(undo_cmd)
 
@@ -252,7 +292,7 @@ class QBetseeSimConfWidgetEditScalarMixin(QBetseeSimConfWidgetEditMixin):
             self._clear_widget_value()
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeUndoCommandEditSimConfScalarWidget(QBetseeUndoCommandWidgetABC):
+class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
     '''
     Undo command generically applicable to all editable scalar simulation
     configuration widgets, implementing the application and restoration of the
@@ -276,7 +316,7 @@ class QBetseeUndoCommandEditSimConfScalarWidget(QBetseeUndoCommandWidgetABC):
     @type_check
     def __init__(
         self,
-        widget: QBetseeSimConfWidgetEditScalarMixin,
+        widget: QBetseeSimConfEditScalarWidgetMixin,
         value_old: object,
         *args, **kwargs
     ) -> None:
@@ -285,7 +325,7 @@ class QBetseeUndoCommandEditSimConfScalarWidget(QBetseeUndoCommandWidgetABC):
 
         Parameters
         ----------
-        widget : QBetseeSimConfWidgetEditScalarMixin
+        widget : QBetseeSimConfEditScalarWidgetMixin
             Scalar widget operated upon by this undo command.
         value_old : object
             Prior value of the scalar widget associated with this undo command.

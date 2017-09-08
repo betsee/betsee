@@ -8,14 +8,14 @@
 '''
 
 # ....................{ IMPORTS                            }....................
-#from PySide2.QtCore import Slot
+from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QLineEdit
 #from betse.util.io.log import logs
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
-    QBetseeSimConfWidgetEditScalarMixin)
+    QBetseeSimConfEditScalarWidgetMixin)
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeSimConfLineEdit(QBetseeSimConfWidgetEditScalarMixin, QLineEdit):
+class QBetseeSimConfLineEdit(QBetseeSimConfEditScalarWidgetMixin, QLineEdit):
     '''
     Simulation configuration-specific line edit widget, permitting a simulation
     configuration string value backed by an external YAML file to be
@@ -41,7 +41,8 @@ class QBetseeSimConfLineEdit(QBetseeSimConfWidgetEditScalarMixin, QLineEdit):
     # ..................{ MIXIN ~ property : read-only       }..................
     @property
     def undo_synopsis(self) -> str:
-        return 'edits to a text box'
+        return QCoreApplication.translate(
+            'QBetseeSimConfLineEdit', 'edits to a text box')
 
     # ..................{ MIXIN ~ property : value           }..................
     @property
