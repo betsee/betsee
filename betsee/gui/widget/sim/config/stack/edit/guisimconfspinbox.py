@@ -68,23 +68,13 @@ from betse.util.type.types import ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 
-# ....................{ SUBCLASSES                         }....................
-#FIXME: Refactor as follows:
-#
-#* Define a new "QBetseeSimConfSpinBoxWidgetMixin" subclass of the
-#  "QBetseeSimConfEditScalarWidgetMixin" superclass in this submodule.
-#* Shift all functionality of this "QBetseeSimConfDoubleSpinBox" subclass into
-#  that newly defined subclass, excluding functionality specific to floats.
-#* Inherit this subclass from that newly defined subclass.
-#* Define a new "QBetseeSimConfIntegerSpinBox" subclass of the same newly
-#  defined subclass in this submodule as well.
-#* Promote the "Grid size:" spin box to ""QBetseeSimConfIntegerSpinBox".
-class QBetseeSimConfDoubleSpinBox(
-    QBetseeSimConfEditScalarWidgetMixin, QDoubleSpinBox):
+# ....................{ SUPERCLASSES                       }....................
+class QBetseeSimConfSpinBoxWidgetMixin(
+    QBetseeSimConfEditScalarWidgetMixin):
     '''
-    Simulation configuration-specific floating point spin box widget, permitting
-    a simulation configuration floating point value backed by an external YAML
-    file to be interactively edited.
+    Abstract base class of all simulation configuration-specific subclasses,
+    permitting numeric values (i.e., integers, floating point values) backed by
+    external simulation configuration files to be interactively edited.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -126,24 +116,56 @@ class QBetseeSimConfDoubleSpinBox(
         # simulation configuration alias to this widget's current value.
         self._set_alias_to_widget_value_if_sim_conf_open()
 
-    # ..................{ PRIVATE ~ property : read-only     }..................
-    @property
-    def _widget_type_strict(self) -> ClassOrNoneTypes:
-        return float
-
-    # ..................{ MIXIN ~ property : read-only       }..................
+    # ..................{ MIXIN ~ property                   }..................
     @property
     def undo_synopsis(self) -> str:
         return QCoreApplication.translate(
-            'QBetseeSimConfDoubleSpinBox', 'edits to a spin box')
+            'QBetseeSimConfSpinBoxWidgetMixin', 'edits to a spin box')
 
-    # ..................{ MIXIN ~ property : value           }..................
+
     @property
     def widget_value(self) -> object:
         return self.value()
 
+# ....................{ SUBCLASSES                         }....................
+class QBetseeSimConfIntegerSpinBox(
+    QBetseeSimConfSpinBoxWidgetMixin, QDoubleSpinBox):
+    '''
+    Simulation configuration-specific integer spin box widget, permitting
+    integers backed by external simulation configuration files to be
+    interactively edited.
+    '''
 
-    @widget_value.setter
+    # ..................{ MIXIN                              }..................
+    @property
+    def _widget_type_strict(self) -> ClassOrNoneTypes:
+        return int
+
+
+    @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
+    def widget_value(self, widget_value: object) -> None:
+        super().setValue(widget_value)
+
+
+    def _clear_widget_value(self) -> None:
+        self.widget_value = 0
+
+
+class QBetseeSimConfDoubleSpinBox(
+    QBetseeSimConfSpinBoxWidgetMixin, QDoubleSpinBox):
+    '''
+    Simulation configuration-specific floating point spin box widget, permitting
+    floating point values backed by external simulation configuration files to
+    be interactively edited.
+    '''
+
+    # ..................{ MIXIN                              }..................
+    @property
+    def _widget_type_strict(self) -> ClassOrNoneTypes:
+        return float
+
+
+    @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
     def widget_value(self, widget_value: object) -> None:
 
         # Precision (i.e., significand length) of this floating point number.
@@ -164,6 +186,6 @@ class QBetseeSimConfDoubleSpinBox(
         # preventing infinite recursion. (See the superclass method docstring.)
         super().setValue(widget_value)
 
-    # ..................{ MIXIN ~ method                     }..................
+
     def _clear_widget_value(self) -> None:
         self.widget_value = 0.0

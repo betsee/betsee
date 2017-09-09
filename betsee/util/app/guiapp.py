@@ -23,6 +23,7 @@ from PySide2.QtCore import Qt, QCoreApplication
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtWidgets import QApplication
 from betsee import guimetadata
+from os import environ
 
 # ....................{ GLOBALS                            }....................
 # This global is initialized by the _init() function called below.
@@ -141,25 +142,33 @@ def _init_qt_dpi() -> None:
         attributes initialized by this method.
     '''
 
-    #FIXME: Wayland also natively supports high-DPI scaling. If the current
-    #display manager is a Wayland compositor (e.g., Weston), this attribute
-    #should *NOT* be enabled.
-
-    # If the current platform is *NOT* macOS, emulate high-DPI scaling. The
-    # Windows and X11 display environments both fail to natively support
-    # high-DPI scaling, mandating that Qt attempt to do so via emulation at
-    # the framework level. This emulation converts all previously physical
-    # pixels defined throughout the application into logic pixels portable
+    # If none of the following conditions is satisfied:
+    #
+    # * The current platform is macOS, which natively supports high-DPI scaling.
+    #   Moreover, the official documentation for the Qt attribute set below
+    #   explicitly states: "Supported platforms are X11, Windows and Android."
+    #   For safety, this attribute is *NOT* enabled under macOS.
+    # * The current platform is Linux and the current display server is a
+    #   Wayland compositor, which all natively support high-DPI scaling.
+    #
+    # Then the current display environment does *NOT* natively support high-DPI
+    # scaling. Notably, the Windows and X11 display environments both fail to
+    # do so. In this case, we inform Qt that it should attempt to do so via
+    # emulation at the framework level, converting all previously physical
+    # pixels defined throughout this application into logical pixels portable
     # across displays sporting varying DPI.
     #
     # MacOS already implicitly enables high-DPI scaling out-of-the-box.
-    # Moreover, this attribute's official documentation explicitly states:
-    # "Supported platforms are X11, Windows and Android." For safety, this
-    # attribute is *NOT* enabled under macOS.
     #
     # Since BETSE is *NOT* guaranteed to be available at this point, this
-    # conditional reimplements the betse.util.os.oses.is_macos() function.
-    if platform.system() != 'Darwin':
+    # conditional reimplements the following BETSE-specific functions:
+    #
+    # * betse.util.os.oses.is_macos().
+    # * betse.util.os.displays.is_linux_wayland().
+    if not (
+        platform.system() == 'Darwin' or
+        environ.get('XDG_SESSION_TYPE', None) == 'wayland'
+    ):
         logging.debug('Emulating high-DPI scaling...')
         QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 
@@ -172,6 +181,10 @@ def _init_qt_app() -> None:
     '''
     Instantiate the :class:`QApplication` singleton for this application.
     '''
+
+    # Avoid circular import dependencies.
+    from betsee.util.filter.guifiltertooltip import (
+        QBetseePlaintextTooltipEventFilter)
 
     # Permit the following globals to be redefined.
     global APP_GUI
@@ -201,6 +214,10 @@ def _init_qt_app() -> None:
 
     # Nullify all application-specific instance variables of this singleton.
     APP_GUI.betsee_main_window = None
+
+    # Install an application-wide event filter globally addressing severe issues
+    # in Qt's default plaintext tooltip behaviour.
+    APP_GUI.installEventFilter(QBetseePlaintextTooltipEventFilter(APP_GUI))
 
 # ....................{ MAIN                               }....................
 # Initialize this submodule.

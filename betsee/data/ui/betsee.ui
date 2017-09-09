@@ -1430,7 +1430,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QSpinBox" name="sim_conf_space_env_grid_size">
+               <widget class="QBetseeSimConfIntegerSpinBox" name="sim_conf_space_env_grid_size">
                 <property name="toolTip">
                  <string>Number of square grid spaces (in both the horizontal and vertical directions) to computationally divide this simulation's square environment into. Increasing this number increases simulation granularity and hence stability at a quadratic cost in space and time consumption. This number is strongly recommended to reside in the range [10, 60] for most simulations.</string>
                 </property>
@@ -4514,6 +4514,11 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QW
   <customwidget>
    <class>QBetseeSimConfDoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
+   <header>betsee/gui/widget/sim/config/stack/edit/guisimconfspinbox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeSimConfIntegerSpinBox</class>
+   <extends>QSpinBox</extends>
    <header>betsee/gui/widget/sim/config/stack/edit/guisimconfspinbox.h</header>
   </customwidget>
  </customwidgets>

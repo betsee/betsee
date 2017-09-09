@@ -713,7 +713,7 @@ class Ui_main_window(object):
         self.label_74 = QtWidgets.QLabel(self.groupBox_16)
         self.label_74.setObjectName("label_74")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_74)
-        self.sim_conf_space_env_grid_size = QtWidgets.QSpinBox(self.groupBox_16)
+        self.sim_conf_space_env_grid_size = QBetseeSimConfIntegerSpinBox(self.groupBox_16)
         self.sim_conf_space_env_grid_size.setObjectName("sim_conf_space_env_grid_size")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_env_grid_size)
         self.label_12 = QtWidgets.QLabel(self.groupBox_16)
@@ -2426,12 +2426,12 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

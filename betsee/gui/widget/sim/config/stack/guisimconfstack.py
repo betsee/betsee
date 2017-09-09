@@ -257,10 +257,9 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
 
-        #FIXME: Uncomment after properly implemented.
         # Initialize all environmental grid widgets on this page.
-        # main_window.sim_conf_space_env_grid_size.init(
-        #     sim_conf=sim_conf, sim_conf_alias=Parameters.grid_size,)
+        main_window.sim_conf_space_env_grid_size.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.grid_size,)
 
     # ..................{ INITIALIZERS ~ page : time         }..................
     @type_check

@@ -17,8 +17,8 @@ from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfLineEdit(QBetseeSimConfEditScalarWidgetMixin, QLineEdit):
     '''
-    Simulation configuration-specific line edit widget, permitting a simulation
-    configuration string value backed by an external YAML file to be
+    Simulation configuration-specific line edit widget, permitting single-line
+    strings backed by external simulation configuration files to be
     interactively edited.
     '''
 
