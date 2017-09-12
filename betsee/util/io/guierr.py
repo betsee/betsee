@@ -191,8 +191,8 @@ def show_exception(exception: Exception) -> None:
     # Attempt to obtain an exception traceback via BETSE, which is *NOT*
     # guaranteed to exist at this point.
     try:
-        from betse.util.io import exceptions
-        _, exception_traceback = exceptions.get_metadata(exception)
+        from betse.util.io import ioexceptions
+        _, exception_traceback = ioexceptions.get_metadata(exception)
     # If BETSE is unimportable, ignore this exception traceback.
     except ImportError:
         exception_traceback = None

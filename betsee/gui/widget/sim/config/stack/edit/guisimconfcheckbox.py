@@ -4,35 +4,29 @@
 # See "LICENSE" for further details.
 
 '''
-:class:`QLineEdit`-based simulation configuration widget subclasses.
+:class:`QCheckBox`-based simulation configuration widget subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal
-from PySide2.QtWidgets import QLineEdit
-#from betse.util.io.log import logs
+from PySide2.QtWidgets import QCheckBox
+from betse.util.type.types import ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeSimConfLineEdit(QBetseeSimConfEditScalarWidgetMixin, QLineEdit):
+class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
     '''
-    Simulation configuration-specific line edit widget, permitting single-line
-    strings backed by external simulation configuration files to be
-    interactively edited.
+    Simulation configuration-specific check box widget, permitting booleans
+    backed by external simulation configuration files to be interactively
+    edited.
     '''
-
-    # ..................{ INITIALIZERS                       }..................
-    def __init__(self, *args, **kwargs) -> None:
-
-        # Initialize our superclass with all passed arguments.
-        super().__init__(*args, **kwargs)
 
     # ..................{ SUPERCLASS ~ setter                }..................
-    def setText(self, text_new: str) -> None:
+    def setChecked(self, value_new: bool) -> None:
 
         # Defer to the superclass setter.
-        super().setText(text_new)
+        super().setChecked(value_new)
 
         # If this configuration is currently open, set the current value of this
         # simulation configuration alias to this widget's current value.
@@ -42,34 +36,32 @@ class QBetseeSimConfLineEdit(QBetseeSimConfEditScalarWidgetMixin, QLineEdit):
     @property
     def undo_synopsis(self) -> str:
         return QCoreApplication.translate(
-            'QBetseeSimConfLineEdit', 'edits to a text box')
+            'QBetseeSimConfSpinBoxWidgetMixin', 'edits to a check box')
 
 
     @property
     def _finalize_widget_edit_signal(self) -> Signal:
-        return self.editingFinished
+        return self.toggled
+
+
+    @property
+    def _widget_type_strict(self) -> ClassOrNoneTypes:
+        return bool
 
     # ..................{ MIXIN ~ property : value           }..................
     @property
     def widget_value(self) -> object:
-        return self.text()
+        return self.isChecked()
 
 
     @widget_value.setter
     def widget_value(self, widget_value: object) -> None:
 
-        # If this value is *NOT* a string, coerce this value into a string.
-        # Since effectively all scalar values are safely coercable into strings
-        # (due to their implementation of the special __str__() method), this is
-        # guaranteed to be safe and hence need *NOT* be checked.
-        if not isinstance(widget_value, str):
-            widget_value = str(widget_value)
-
         # Set this widget's displayed value to the passed value by calling the
-        # setText() method of our superclass rather than this subclass,
+        # setChecked() method of our superclass rather than this subclass,
         # preventing infinite recursion. (See the superclass method docstring.)
-        super().setText(widget_value)
+        super().setChecked(widget_value)
 
-    # ..................{ MIXIN ~ method                     }..................
+    # ..................{ MIXIN                              }..................
     def _clear_widget_value(self) -> None:
-        self.widget_value = ''
+        self.widget_value = False

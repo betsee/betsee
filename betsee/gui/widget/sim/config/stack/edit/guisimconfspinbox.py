@@ -4,7 +4,7 @@
 # See "LICENSE" for further details.
 
 '''
-:class:`QLineEdit`-based simulation configuration widget subclasses.
+:class:`QAbstractSpinBox`-based simulation configuration widget subclasses.
 '''
 
 #FIXME: Improve the init() method to internally call the self.setMinimum()
@@ -60,7 +60,7 @@
 #users from entering invalid numeric data. (Let us see this through, please.)
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, Qt
+from PySide2.QtCore import QCoreApplication, Qt, Signal
 from PySide2.QtWidgets import QDoubleSpinBox
 #from betse.util.io.log import logs
 from betse.util.type.numeric import floats
@@ -126,6 +126,11 @@ class QBetseeSimConfSpinBoxWidgetMixin(
     @property
     def widget_value(self) -> object:
         return self.value()
+
+
+    @property
+    def _finalize_widget_edit_signal(self) -> Signal:
+        return self.editingFinished
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfIntegerSpinBox(

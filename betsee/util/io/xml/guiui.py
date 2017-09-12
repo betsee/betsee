@@ -9,18 +9,21 @@ XML-formatted user interface (UI) files exported by the external Qt Designer
 application.
 '''
 
+from io import StringIO
+
 # ....................{ IMPORTS                            }....................
 from PySide2 import QtWidgets
 from PySide2.QtCore import QCoreApplication
+
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
-from betse.util.type import modules, regexes, types
+from betse.util.type import modules, types
+from betse.util.type.text import regexes
 from betse.util.type.types import type_check, SequenceTypes
 from betsee import guimetadata
-from betsee.lib import libs
 from betsee.guiexceptions import BetseeCacheException
-from io import StringIO
+from betsee.lib import libs
 
 # ....................{ GLOBALS                            }....................
 # To avoid conflict with PySide2-generated attribute names, obfuscate this

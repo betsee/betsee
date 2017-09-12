@@ -58,7 +58,7 @@ FORM_WIDGET_TYPE_TO_SIGNALS_CHANGE = {
     # is emitted exactly once for each such toggling. Despite nomenclature
     # suggesting this signal to apply *ONLY* to interactive clicks, this signal
     # is emitted on interactive and programmatic clicks and keyboard shortcuts.
-    QCheckBox: {'stateChanged',},
+    QCheckBox: {'toggled',}, # QCheckBox: {'stateChanged',},
     QButtonGroup: {'buttonClicked',},
 
     # Date and time widgets.

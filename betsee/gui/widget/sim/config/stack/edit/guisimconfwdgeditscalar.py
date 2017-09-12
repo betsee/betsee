@@ -9,7 +9,7 @@ subclasses instantiated in pages of the top-level stack.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, Slot
+from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
@@ -58,7 +58,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         # Connect all relevant signals to slots *AFTER* initializing our
         # superclass. See the superclass method for details.
-        self.editingFinished.connect(self._editing_finished_undoable)
+        self._finalize_widget_edit_signal.connect(self._finalize_widget_edit)
 
         # If all of the following conditions are satisified:
         if (
@@ -85,7 +85,9 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
                 'YAML alias type(s) {1!r}.'.format(
                     self._sim_conf_alias_type, self._widget_type_strict)))
 
-    # ..................{ PRIVATE ~ property : read-only     }..................
+    # ..................{ SUBCLASS ~ optional : property     }..................
+    # Subclasses may optionally implement the following properties.
+
     @property
     def _widget_type_strict(self) -> ClassOrNoneTypes:
         '''
@@ -99,7 +101,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         return None
 
-    # ..................{ SUBCLASS ~ property : read-only    }..................
+    # ..................{ SUBCLASS ~ mandatory : property    }..................
     # Subclasses are required to implement the following properties.
 
     @property
@@ -111,8 +113,6 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         raise BetseMethodUnimplementedException()
 
-    # ..................{ SUBCLASS ~ property : value        }..................
-    # Subclasses are required to implement the following properties.
 
     @property
     def widget_value(self) -> object:
@@ -154,7 +154,20 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         raise BetseMethodUnimplementedException()
 
-    # ..................{ SUBCLASS ~ clear                   }..................
+
+    @property
+    def _finalize_widget_edit_signal(self) -> Signal:
+        '''
+        Signal signalled on each finalized interactive user (but *not*
+        programmatic) edit of the contents of this widget.
+
+        The :meth:`init` method implicitly connects this signal to the
+        :meth:`_finalize_widget_edit` slot.
+        '''
+
+        raise BetseMethodUnimplementedException()
+
+    # ..................{ SUBCLASS ~ mandatory : method      }..................
     # Subclasses are required to implement the following methods.
 
     def _clear_widget_value(self) -> None:
@@ -186,7 +199,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
 
     @Slot()
-    def _editing_finished_undoable(self) -> None:
+    def _finalize_widget_edit(self) -> None:
         '''
         Slot signalled on each finalized interactive user (but *not*
         programmatic) edit of the contents of this widget.
@@ -263,7 +276,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         self._sim_conf_alias.set(alias_value)
 
         # Finalize this programmatic change to the contents of this widget.
-        self._editing_finished_undoable()
+        self._finalize_widget_edit()
 
 
     @type_check

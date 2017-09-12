@@ -11,13 +11,15 @@ with each high-level feature of a simulation configuration.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
+
 from betse.science.parameters import Parameters
 from betse.util.io.log import logs
-from betse.util.type import strs
 from betse.util.type.obj import objects
+from betse.util.type.text import strs
 from betse.util.type.types import type_check
-from betsee.guiexceptions import BetseePySideTreeWidgetException
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
+from betsee.guiexceptions import BetseePySideTreeWidgetException
+
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfStackedWidget(QStackedWidget):
@@ -257,9 +259,14 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
 
-        # Initialize all environmental grid widgets on this page.
-        main_window.sim_conf_space_env_grid_size.init(
+        # Initialize all intracellular widgets on this page.
+        # Initialize all extracellular widgets on this page.
+        main_window.sim_conf_space_extra_grid_size.init(
             sim_conf=sim_conf, sim_conf_alias=Parameters.grid_size,)
+        main_window.sim_conf_space_extra_is_ecm.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.is_ecm,)
+        main_window.sim_conf_space_extra_world_len.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.world_len,)
 
     # ..................{ INITIALIZERS ~ page : time         }..................
     @type_check

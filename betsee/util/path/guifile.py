@@ -9,9 +9,10 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtWidgets import QFileDialog
+
 # from betse.util.io.log import logs
 # from betse.util.path import dirs, pathnames
-from betse.util.type import strs
+from betse.util.type.text import strs
 from betse.util.type.types import (
     type_check,
     CallableTypes,
@@ -20,6 +21,7 @@ from betse.util.type.types import (
     StrOrNoneTypes,
 )
 from betsee.util.app.guiapp import APP_GUI
+
 
 # ....................{ SELECTORS                          }....................
 @type_check
