@@ -636,6 +636,22 @@ class Ui_main_window(object):
         self.label_18 = QtWidgets.QLabel(self.groupBox_17)
         self.label_18.setObjectName("label_18")
         self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_18)
+        self.widget_17 = QtWidgets.QWidget(self.groupBox_17)
+        self.widget_17.setObjectName("widget_17")
+        self.horizontalLayout_17 = QtWidgets.QHBoxLayout(self.widget_17)
+        self.horizontalLayout_17.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_17.setObjectName("horizontalLayout_17")
+        self.sim_conf_space_intra_cell_radius = QBetseeSimConfDoubleSpinBox(self.widget_17)
+        self.sim_conf_space_intra_cell_radius.setToolTip("")
+        self.sim_conf_space_intra_cell_radius.setObjectName("sim_conf_space_intra_cell_radius")
+        self.horizontalLayout_17.addWidget(self.sim_conf_space_intra_cell_radius)
+        self.label_83 = QtWidgets.QLabel(self.widget_17)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_83.setFont(font)
+        self.label_83.setObjectName("label_83")
+        self.horizontalLayout_17.addWidget(self.label_83)
+        self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.widget_17)
         self.label_81 = QtWidgets.QLabel(self.groupBox_17)
         self.label_81.setObjectName("label_81")
         self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_81)
@@ -653,9 +669,6 @@ class Ui_main_window(object):
         self.dsb_latticeDisorder.setSingleStep(0.1)
         self.dsb_latticeDisorder.setObjectName("dsb_latticeDisorder")
         self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.dsb_latticeDisorder)
-        self.sim_conf_space_extra_grid_size_2 = QtWidgets.QDoubleSpinBox(self.groupBox_17)
-        self.sim_conf_space_extra_grid_size_2.setObjectName("sim_conf_space_extra_grid_size_2")
-        self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_extra_grid_size_2)
         self.verticalLayout_17.addWidget(self.groupBox_17)
         self.groupBox_16 = QtWidgets.QGroupBox(self.groupBox_53)
         self.groupBox_16.setObjectName("groupBox_16")
@@ -2214,19 +2227,20 @@ class Ui_main_window(object):
         self.groupBox_17.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation\'s cell cluster.", None, -1))
         self.groupBox_17.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Cluster", None, -1))
         self.label_18.setText(QtWidgets.QApplication.translate("main_window", "Cell radius:", None, -1))
+        self.widget_17.setToolTip(QtWidgets.QApplication.translate("main_window", "Radius in meters of each cell in this cluster. This should typically be within an order of magnitude of the recommended default of 5.0e-6.", None, -1))
+        self.label_83.setText(QtWidgets.QApplication.translate("main_window", "meters", None, -1))
         self.label_81.setText(QtWidgets.QApplication.translate("main_window", "Lattice type:", None, -1))
         self.comboBox_latticeType_2.setItemText(0, QtWidgets.QApplication.translate("main_window", "Hexagonal", None, -1))
         self.comboBox_latticeType_2.setItemText(1, QtWidgets.QApplication.translate("main_window", "Rectangular", None, -1))
         self.label_20.setText(QtWidgets.QApplication.translate("main_window", "Lattice disorder:", None, -1))
-        self.sim_conf_space_extra_grid_size_2.setToolTip(QtWidgets.QApplication.translate("main_window", "Number of square grid spaces (in both the horizontal and vertical directions) to computationally divide this simulation\'s square environment into. Increasing this increases simulation granularity and hence stability at a quadratic increase in space and time costs. A grid size in the range [10, 60] is recommended.", None, -1))
         self.groupBox_16.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation\'s extracellular environment.", None, -1))
         self.groupBox_16.setTitle(QtWidgets.QApplication.translate("main_window", "Environment", None, -1))
-        self.label_17.setText(QtWidgets.QApplication.translate("main_window", "Physical length:", None, -1))
+        self.label_17.setText(QtWidgets.QApplication.translate("main_window", "World length:", None, -1))
         self.widget_15.setToolTip(QtWidgets.QApplication.translate("main_window", "Length in meters of both the X and Y dimensions of this simulation\'s square environment. This should typically be in the range [80e-6, 1000e-6].", None, -1))
         self.label_19.setText(QtWidgets.QApplication.translate("main_window", "meters", None, -1))
-        self.label_74.setText(QtWidgets.QApplication.translate("main_window", "Abstract grid size:", None, -1))
+        self.label_74.setText(QtWidgets.QApplication.translate("main_window", "World grid size:", None, -1))
         self.widget_16.setToolTip(QtWidgets.QApplication.translate("main_window", "Number of square grid spaces (in both the X and Y dimensions) to computationally divide this simulation\'s square environment into. Increasing this increases simulation granularity and hence stability at a quadratic increase in space and time costs. This should typically be in the range [10, 60].", None, -1))
-        self.label_82.setText(QtWidgets.QApplication.translate("main_window", "grid squares", None, -1))
+        self.label_82.setText(QtWidgets.QApplication.translate("main_window", "squares", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("main_window", "Extracellular matrix:", None, -1))
         self.sim_conf_space_extra_is_ecm.setToolTip(QtWidgets.QApplication.translate("main_window", "Enable the extracellular matrix (ECM), simulating the environmental spaces surrounding each cell in the cluster? Disabling this substantially reduces simulation accuracy at a substantial reduction in space and time costs.", None, -1))
         self.groupBox_TissueProfiles.setTitle(QtWidgets.QApplication.translate("main_window", "Tissue Profiles", None, -1))
@@ -2414,12 +2428,12 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
 import betsee_rc
 

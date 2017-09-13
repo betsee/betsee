@@ -7,11 +7,82 @@
 Concrete subclasses defining this application's command line interface (CLI).
 '''
 
-#FIXME: Add support for an optional positional argument providing the absolute
-#or relative paths of a YAML-formatted simulation configuration files to be
-#preopened at application startup. For example:
+#FIXME: Display a splash screen in the BetseeCLI.__init__() method. Fortunately,
+#Qt 5 makes this absurdly simple via the stock "QSplashScreen" class -- which
+#comes self-provisioned with multi-threading capability, preventing us from
+#having to interface with multi-threading merely to display a splash screen --
+#which is pretty awesome, actually.
 #
-#    betsee -v ~/BETSEE/muh_sim/muh_sim.yaml
+#It's trivially simple to use. The "QSplashScreen" documentation actually turns
+#out to be the most useful help here. In particular, the workflow appears to
+#resemble:
+#
+#* Define a new "betsee.util.app.guiappsplash" submodule containing:
+#
+#    from PySide2.QtCore import QPixmap
+#    from PySide2.QtWidgets import QSplashScreen
+#    from betsee.util.app.guiapp import APP_GUI
+#
+#    GUI_APP_SPLASH = None
+#    '''
+#    Singleton :class:`QSplashScreen`-based widget
+#    '''
+#
+#    class QBetseeSplashScreen(QSplashScreen):
+#        '''
+#        :class:`QSplashScreen`-based widget displaying a non-modal splash
+#        screen, typically used to present a multi-threaded loading screen
+#        during time-consuming application startup.
+#        '''
+#
+#        @type_check
+#        def __init__(self, image_uri: str) -> None:
+#
+#            pixmap = QPixmap(image_uri)
+#            super().__init__(pixmap)
+#            self.show()
+#            APP_GUI.processEvents()
+#
+#        def set_info(self, info: str) -> None:
+#            '''
+#            Display the passed human-readable single-line string as the
+#            current progress message for this splash screen.
+#            '''
+#
+#            self.showMessage(info)
+#            APP_GUI.processEvents()
+#
+#
+#* In this submodule, improve the existing
+#
+#    from betsee.util.widget import guisplash
+#    from betsee.util.widget.guisplash import QBetseeSplashScreen
+#
+#
+#    def __init__(self) -> None:
+#
+#        #FIXME: Non-ideal way to set a singleton, but... meh.
+#        guisplash.GUI_SPLASH = QBetseeSplashScreen(
+#            image_uri=':/GUI_SPLASH.png')
+#
+#        # Loading some items
+#        guisplash.GUI_SPLASH.set_info("Loaded modules")
+#
+#        # Establishing connections
+#        guisplash.GUI_SPLASH.set_info("Established connections")
+#
+#        #FIXME: This obviously needs to happen elsewhere. Since "GUI_SPLASH" is
+#        #a globally accessible singleton, this shouldn't be an issue. *shrug*
+#        # Create the main window.
+#        main_window = QMainWindow()
+#        guisplash.GUI_SPLASH.finish(main_window)
+#
+#        # Populate and show the main window.
+#        main_window.show()
+#        APP_GUI.exec_()
+#        guisplash.GUI_SPLASH = None
+#
+#It's all pretty trivial stuff, frankly. Awesomeness!
 
 # ....................{ IMPORTS                            }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -35,7 +106,7 @@ class BetseeCLI(CLIABC):
     '''
     Command line interface (CLI) for this application.
 
-    Parameters
+    Attributes
     ----------
     _sim_conf_filename : StrOrNoneTypes
         Absolute or relative path of the initial YAML-formatted simulation
@@ -54,7 +125,6 @@ class BetseeCLI(CLIABC):
 
     # ..................{ SUPERCLASS ~ header                }..................
     def _show_header(self) -> None:
-
         logs.log_info(cliinfo.get_header())
 
     # ..................{ SUPERCLASS ~ properties            }..................

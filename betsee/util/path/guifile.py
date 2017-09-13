@@ -20,7 +20,7 @@ from betse.util.type.types import (
     # SequenceTypes,
     StrOrNoneTypes,
 )
-from betsee.util.app.guiapp import APP_GUI
+from betsee.util.app.guiapp import GUI_APP
 
 
 # ....................{ SELECTORS                          }....................
@@ -132,7 +132,7 @@ def _call_file_dialog_func(
     # List of all arguments to be returned.
     file_dialog_args = [
         # Parent widget of this dialog.
-        APP_GUI.betsee_main_window,
+        GUI_APP.betsee_main_window,
 
         # Translated title of this dialog.
         title,

@@ -182,8 +182,9 @@ class QBetseeSimConfDoubleSpinBox(
             3,
             # The current precision of this widget's displayed value.
             self.decimals(),
-            # The current precision of this alias' actual value.
-            widget_value_precision,
+            # The current precision of this alias' actual value, incremented by
+            # one to permit this value to be decreased an additional place.
+            widget_value_precision + 1,
         ))
 
         # Set this widget's displayed value to the passed value by calling the

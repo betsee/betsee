@@ -45,7 +45,7 @@ def install_exception_hook() -> None:
     Caveats
     ----------
     Ideally, this function should be called *before* entering this event loop
-    (i.e., calling the :meth:`betsee.util.app.guiapp.APP_GUI._exec` method).
+    (i.e., calling the :meth:`betsee.util.app.guiapp.GUI_APP._exec` method).
     '''
 
     # Default insane global exception hook, preserved in case of catastrophe.

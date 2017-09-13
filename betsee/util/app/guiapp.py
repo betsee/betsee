@@ -4,17 +4,16 @@
 # See "LICENSE" for further details.
 
 '''
-:class:`QApplication` singleton for this application, containing all Qt objects
-(e.g., widgets) to be displayed.
+Submodule both instantiating and initializing the :class:`QApplication`
+singleton for this application with sane defaults on submodule importation.
 '''
 
 # ....................{ IMPORTS                            }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the
 # top-level of this module may import *ONLY* from submodules guaranteed to:
-# * Exist, including standard Python and BETSEE modules. This does *NOT* include
-#   BETSE modules, which is *NOT* guaranteed to exist at this point. For
-#   simplicity, PySide2 is assumed to exist.
+# * Exist, including standard Python, PySide2, and BETSEE modules. This does
+#   *NOT* include BETSE modules, whose importability has yet to be validated.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -27,7 +26,7 @@ from os import environ
 
 # ....................{ GLOBALS                            }....................
 # This global is initialized by the _init() function called below.
-APP_GUI = None
+GUI_APP = None
 '''
 :class:`QApplication` singleton for this application, containing all Qt objects
 (e.g., widgets) to be displayed.
@@ -187,7 +186,7 @@ def _init_qt_app() -> None:
         QBetseePlaintextTooltipEventFilter)
 
     # Permit the following globals to be redefined.
-    global APP_GUI
+    global GUI_APP
 
     # Log this instantiation.
     logging.debug('Instantiating application singleton...')
@@ -210,14 +209,14 @@ def _init_qt_app() -> None:
     # encourages conflicts with future versions of Qt. In theory, Qt could
     # expand the subset of arguments parsed by this object to those already
     # parsed by the current CLI! That's bad.
-    APP_GUI = QApplication([])
+    GUI_APP = QApplication([])
 
     # Nullify all application-specific instance variables of this singleton.
-    APP_GUI.betsee_main_window = None
+    GUI_APP.betsee_main_window = None
 
     # Install an application-wide event filter globally addressing severe issues
     # in Qt's default plaintext tooltip behaviour.
-    APP_GUI.installEventFilter(QBetseePlaintextTooltipEventFilter(APP_GUI))
+    GUI_APP.installEventFilter(QBetseePlaintextTooltipEventFilter(GUI_APP))
 
 # ....................{ MAIN                               }....................
 # Initialize this submodule.

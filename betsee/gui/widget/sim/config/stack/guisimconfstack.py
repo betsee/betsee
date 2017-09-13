@@ -210,15 +210,15 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all seed line edit widgets on this page.
         main_window.sim_conf_path_seed_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.seed_pickle_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.seed_pickle_basename)
 
         # Initialize all initialization line edit widgets on this page.
         main_window.sim_conf_path_init_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_dirname)
         main_window.sim_conf_path_init_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_basename)
         main_window.sim_conf_path_init_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_export_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_export_dirname)
 
         # Initialize all initialization push button widgets on this page.
         main_window.sim_conf_path_init_pick_dir_btn.init(
@@ -230,11 +230,11 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all simulation line edit widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_dirname)
         main_window.sim_conf_path_sim_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_basename,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_basename)
         main_window.sim_conf_path_sim_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_export_dirname,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_export_dirname)
 
         # Initialize all simulation push button widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_btn.init(
@@ -260,13 +260,16 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         sim_conf = main_window.sim_conf
 
         # Initialize all intracellular widgets on this page.
+        main_window.sim_conf_space_intra_cell_radius.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.cell_radius)
+
         # Initialize all extracellular widgets on this page.
         main_window.sim_conf_space_extra_grid_size.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.grid_size,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.grid_size)
         main_window.sim_conf_space_extra_is_ecm.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.is_ecm,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.is_ecm)
         main_window.sim_conf_space_extra_world_len.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.world_len,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.world_len)
 
     # ..................{ INITIALIZERS ~ page : time         }..................
     @type_check
@@ -285,19 +288,19 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all initialization spin box widgets on this page.
         main_window.sim_conf_time_init_total.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_total,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_total)
         main_window.sim_conf_time_init_step.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_step,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_step)
         main_window.sim_conf_time_init_sampling.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_sampling,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_sampling)
 
         # Initialize all simulation spin box widgets on this page.
         main_window.sim_conf_time_sim_total.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_total,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_total)
         main_window.sim_conf_time_sim_step.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_step,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_step)
         main_window.sim_conf_time_sim_sampling.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_sampling,)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_sampling)
 
     # ..................{ SLOTS ~ public                     }..................
     # The following public slots are connected to from other widgets.
