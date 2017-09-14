@@ -408,8 +408,8 @@ class Main(QMainWindow, Ui_MainWindow):
 
             self.prepopulate()
 
-            self.path_to_seed = pathnames.join(self.p.init_path, self.p.world_filename)
-            self.path_to_init = pathnames.join(self.p.init_path, self.p.init_filename)
+            self.path_to_seed = pathnames.join(self.p.init_pickle_dirname, self.p.world_filename)
+            self.path_to_init = pathnames.join(self.p.init_pickle_dirname, self.p.init_filename)
             self.path_to_sim = pathnames.join(self.p.sim_path, self.p.sim_filename)
 
             self.seedRun.set_up(self.path_to_seed, self.p)
@@ -573,8 +573,8 @@ class Main(QMainWindow, Ui_MainWindow):
 
             self.prepopulate()
 
-            self.path_to_seed = pathnames.join(self.p.init_path, self.p.world_filename)
-            self.path_to_init = pathnames.join(self.p.init_path, self.p.init_filename)
+            self.path_to_seed = pathnames.join(self.p.init_pickle_dirname, self.p.world_filename)
+            self.path_to_init = pathnames.join(self.p.init_pickle_dirname, self.p.init_filename)
             self.path_to_sim = pathnames.join(self.p.sim_path, self.p.sim_filename)
 
             # Set up the threads with necessary information:
@@ -603,7 +603,7 @@ class Main(QMainWindow, Ui_MainWindow):
         """
 
         # Make the BETSE-specific cache directories if they're not found.
-        betse_init_dir = os.path.expanduser(self.p.init_path)
+        betse_init_dir = os.path.expanduser(self.p.init_pickle_dirname)
         os.makedirs(betse_init_dir, exist_ok=True)
 
         betse_sim_dir = os.path.expanduser(self.p.sim_path)

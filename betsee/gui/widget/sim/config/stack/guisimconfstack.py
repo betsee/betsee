@@ -214,11 +214,11 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all initialization line edit widgets on this page.
         main_window.sim_conf_path_init_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_dirname)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_dirname_relative)
         main_window.sim_conf_path_init_pick_file_line.init(
             sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_basename)
         main_window.sim_conf_path_init_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_export_dirname)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.init_export_dirname_relative)
 
         # Initialize all initialization push button widgets on this page.
         main_window.sim_conf_path_init_pick_dir_btn.init(
@@ -230,11 +230,11 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all simulation line edit widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_dirname)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_dirname_relative)
         main_window.sim_conf_path_sim_pick_file_line.init(
             sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_basename)
         main_window.sim_conf_path_sim_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_export_dirname)
+            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_export_dirname_relative)
 
         # Initialize all simulation push button widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_btn.init(

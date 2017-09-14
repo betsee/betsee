@@ -20,7 +20,6 @@ from betsee.util.type import guistrs
 # ....................{ CLASSES                            }....................
 #FIXME: When working, submit as a PySide2-specific solution to the following
 #StackOverflow question and open Qt issue:
-#    https://stackoverflow.com/questions/4795757/is-there-a-better-way-to-wordwrap-text-in-qtooltip-than-just-using-regexp
 #    https://bugreports.qt.io/browse/QTBUG-41051
 
 class QBetseePlaintextTooltipEventFilter(QObject):
@@ -82,9 +81,8 @@ class QBetseePlaintextTooltipEventFilter(QObject):
             # Tooltip for this widget if any *OR* the empty string otherwise.
             tooltip = widget.toolTip()
 
-            # If this tooltip both exists and is non-empty *AND* is not already
-            # rich text, this is a non-empty plaintext tooltip known to be
-            # blatantly broken.
+            # If this tooltip is both non-empty and not already rich text, this
+            # is a non-empty plaintext tooltip known to be blatantly broken.
             #
             # Unfortunately, the shiboken2 Qt 5 bindings parser internally
             # leveraged by PySide2 fails to create valid bindings for a variety
