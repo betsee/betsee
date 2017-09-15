@@ -555,11 +555,17 @@ class QBetseeSimConf(QObject):
             label_to_filetypes={'YAML files': yamls.FILETYPES,},
         )
 
-    # ..................{ SETTERS                            }..................
+    # ..................{ UPDATERS                           }..................
     def _update_widget_state(self) -> None:
         '''
         Update the state (e.g., enabled or disabled, displayed or hidden) of all
         widgets owned or otherwise associated with this object.
+
+        See Also
+        ----------
+        :meth:`QBetseeMainWindow._set_widget_focus`
+            Slot updating the state of all actions copying, cutting, and pasting
+            into and from the system clipboard.
         '''
 
         # Enable or disable actions requiring an open simulation configuration.

@@ -17,12 +17,11 @@ singleton for this application with sane defaults on submodule importation.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-import logging, platform
+import logging
 from PySide2.QtCore import Qt, QCoreApplication
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtWidgets import QApplication
 from betsee import guimetadata
-from os import environ
 
 # ....................{ GLOBALS                            }....................
 # This global is initialized by the _init() function called below.
@@ -141,35 +140,38 @@ def _init_qt_dpi() -> None:
         attributes initialized by this method.
     '''
 
-    # If none of the following conditions is satisfied:
-    #
-    # * The current platform is macOS, which natively supports high-DPI scaling.
-    #   Moreover, the official documentation for the Qt attribute set below
-    #   explicitly states: "Supported platforms are X11, Windows and Android."
-    #   For safety, this attribute is *NOT* enabled under macOS.
-    # * The current platform is Linux and the current display server is a
-    #   Wayland compositor, which all natively support high-DPI scaling.
-    #
-    # Then the current display environment does *NOT* natively support high-DPI
-    # scaling. Notably, the Windows and X11 display environments both fail to
-    # do so. In this case, we inform Qt that it should attempt to do so via
-    # emulation at the framework level, converting all previously physical
-    # pixels defined throughout this application into logical pixels portable
-    # across displays sporting varying DPI.
-    #
-    # MacOS already implicitly enables high-DPI scaling out-of-the-box.
-    #
-    # Since BETSE is *NOT* guaranteed to be available at this point, this
-    # conditional reimplements the following BETSE-specific functions:
-    #
-    # * betse.util.os.oses.is_macos().
-    # * betse.util.os.displays.is_linux_wayland().
-    if not (
-        platform.system() == 'Darwin' or
-        environ.get('XDG_SESSION_TYPE', None) == 'wayland'
-    ):
-        logging.debug('Emulating high-DPI scaling...')
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    # Attempt to...
+    try:
+        # Import BETSE submodules, whose importability has yet to be validated.
+        from betse.util.os import oses
+        from betse.util.os import displays
+
+        # If none of the following conditions is satisfied:
+        #
+        # * The current platform is macOS, which natively supports high-DPI
+        #   scaling out-of-the-box. Moreover, the official documentation for the
+        #   Qt attribute set below explicitly states: "Supported platforms are
+        #   X11, Windows and Android." For safety, this attribute is *NOT*
+        #   enabled under macOS.
+        # * The current platform is Linux and the current display server is a
+        #   Wayland compositor, which all natively support high-DPI scaling.
+        #
+        # Then the current display environment does *NOT* natively support
+        # high-DPI scaling. Notably, the Windows and X11 display environments
+        # both fail to do so. In this case, we inform Qt that it should attempt
+        # to do so via emulation at the framework level, converting all
+        # previously physical pixels defined throughout this application into
+        # logical pixels portable across displays sporting varying DPI.
+        if not (oses.is_macos() or displays.is_linux_wayland()):
+            logging.debug('Emulating high-DPI scaling...')
+            QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    # If any such submodule is unimportable, log a non-fatal error and continue.
+    # Since BETSE is a mandatory dependency, its unimportability would typically
+    # constitute a fatal error. Since subsequent dependency checking is
+    # guaranteed to raise a human-readable exception on our behalf, however, we
+    # needn't uselessly duplicate this checking here.
+    except ImportError as exception:
+        logging.error(str(exception))
 
     # Permit the QIcon.pixmap() method to generate high-DPI pixmaps larger
     # than the requested size (i.e., a devicePixelRatio() larger than 1.0).

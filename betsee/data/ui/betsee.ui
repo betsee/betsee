@@ -10,6 +10,9 @@
     <height>1154</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
   <property name="styleSheet">
    <string notr="true">/* ------------------( SYNOPSIS                           )---------------------
 Root stylesheet for this application, attached to the main window widget from
@@ -400,7 +403,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1440,6 +1443,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
                    <property name="toolTip">
                     <string/>
                    </property>
+                   <property name="singleStep">
+                    <double>0.000010000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -1486,6 +1492,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
                   <widget class="QBetseeSimConfIntegerSpinBox" name="sim_conf_space_extra_grid_size">
                    <property name="toolTip">
                     <string/>
+                   </property>
+                   <property name="maximum">
+                    <number>999</number>
                    </property>
                   </widget>
                  </item>

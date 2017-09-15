@@ -119,10 +119,28 @@ class BetseePySideException(BetseeException):
 
     pass
 
+
+class BetseePySideClipboardException(BetseePySideException):
+    '''
+    General-purpose exception applicable to all interaction with the
+    platform-specific system clipboard.
+    '''
+
+    pass
+
 # ....................{ EXCEPTIONS ~ psd : widget          }....................
 class BetseePySideWidgetException(BetseePySideException):
     '''
     General-purpose exception applicable to :mod:`PySide2` widgets.
+    '''
+
+    pass
+
+
+class BetseePySideFocusException(BetseePySideWidgetException):
+    '''
+    General-purpose exception applicable to all handling of interactive keyboard
+    input focus for widgets.
     '''
 
     pass

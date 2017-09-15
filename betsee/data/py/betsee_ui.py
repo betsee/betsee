@@ -4,6 +4,7 @@ class Ui_main_window(object):
     def setupUi(self, main_window):
         main_window.setObjectName("main_window")
         main_window.resize(1572, 1154)
+        main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
         main_window.setStyleSheet("/* ------------------( SYNOPSIS                           )---------------------\n"
 "Root stylesheet for this application, attached to the main window widget from\n"
 "Qt [Creator|Designer] to preserve the WYSIWYG metaphor.\n"
@@ -684,6 +685,7 @@ class Ui_main_window(object):
         self.horizontalLayout_15.setObjectName("horizontalLayout_15")
         self.sim_conf_space_extra_world_len = QBetseeSimConfDoubleSpinBox(self.widget_15)
         self.sim_conf_space_extra_world_len.setToolTip("")
+        self.sim_conf_space_extra_world_len.setSingleStep(1e-05)
         self.sim_conf_space_extra_world_len.setObjectName("sim_conf_space_extra_world_len")
         self.horizontalLayout_15.addWidget(self.sim_conf_space_extra_world_len)
         self.label_19 = QtWidgets.QLabel(self.widget_15)
@@ -703,6 +705,7 @@ class Ui_main_window(object):
         self.horizontalLayout_16.setObjectName("horizontalLayout_16")
         self.sim_conf_space_extra_grid_size = QBetseeSimConfIntegerSpinBox(self.widget_16)
         self.sim_conf_space_extra_grid_size.setToolTip("")
+        self.sim_conf_space_extra_grid_size.setMaximum(999)
         self.sim_conf_space_extra_grid_size.setObjectName("sim_conf_space_extra_grid_size")
         self.horizontalLayout_16.addWidget(self.sim_conf_space_extra_grid_size)
         self.label_82 = QtWidgets.QLabel(self.widget_16)
@@ -2129,7 +2132,7 @@ class Ui_main_window(object):
         self.tool_bar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(3)
+        self.sim_conf_stack.setCurrentIndex(0)
         self.sim_phase_tabs.setCurrentIndex(0)
         self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
@@ -2428,12 +2431,12 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
 from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
 import betsee_rc
 
