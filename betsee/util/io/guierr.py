@@ -34,13 +34,15 @@ def install_exception_hook() -> None:
 
     By default, :mod:`PySide2`:
 
-    #. Catches exceptions raised during the GUI's event loop processing.
-    #, Prints the tracebacks for these exceptions to stderr.
+    #. Catches **uncaught exceptions** (i.e., exceptions automatically
+       propagated up the call stack without being caught) raised during the
+       GUI's event loop processing.
+    #. Prints the tracebacks for these exceptions to stderr.
     #. Ignores these exceptions by silently returning to GUI processing.
 
-    Such behaviour is invisible to end users and hence insane. This function
-    amends this insanity by installing a new handler both interactively
-    displaying and non-interactively logging these exceptions.
+    This behaviour is entirely invisible to end users and hence insane. This
+    function addresses this by installing a new handler both interactively
+    displaying *and* non-interactively logging exceptions.
 
     Caveats
     ----------
@@ -76,7 +78,7 @@ def install_exception_hook() -> None:
             show_exception(exception)
         # If this exception handling itself raises an exception...
         except Exception as exception_exception:
-            # Defer to the default global exception hook, presumably prining
+            # Defer to the default global exception hook, presumably printing
             # both this new and the prior exception to stderr.
             default_exception_handler(
                 type(exception_exception),

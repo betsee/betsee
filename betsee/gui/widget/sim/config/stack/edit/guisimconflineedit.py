@@ -70,6 +70,22 @@ class QBetseeSimConfLineEdit(QBetseeSimConfEditScalarWidgetMixin, QLineEdit):
         # preventing infinite recursion. (See the superclass method docstring.)
         super().setText(widget_value)
 
-    # ..................{ MIXIN ~ method                     }..................
+
     def _clear_widget_value(self) -> None:
         self.widget_value = ''
+
+    # ..................{ MIXIN ~ clipboard                  }..................
+    # No, thank *YOU*, QLineEdit superclass.
+
+    @property
+    def is_clipboardable(self) -> bool:
+        return True
+
+    def copy_selection_to_clipboard(self) -> None:
+        self.copy()
+
+    def cut_selection_to_clipboard(self) -> None:
+        self.cut()
+
+    def paste_clipboard_to_selection(self) -> None:
+        self.paste()

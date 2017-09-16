@@ -10,8 +10,8 @@ which arbitrary strings may be copied and cut to and pasted from) functionality.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication
-from PySide2.QtGui import QGuiApplication
-# from PySide2.QtWidgets import QApplication, QWidget
+from PySide2.QtGui import QClipboard, QGuiApplication
+from betse.util.type.call.memoizers import callable_cached
 from betsee.guiexceptions import BetseePySideClipboardException
 
 # ....................{ EXCEPTIONS                         }....................
@@ -33,9 +33,12 @@ def die_unless_clipboard_text() -> None:
 
     if not is_clipboard_text():
         raise BetseePySideClipboardException(
-            QCoreApplication.translate(
+            title=QCoreApplication.translate(
+                'die_if_clipboard_empty', 'Clipboard Error'),
+            synopsis=QCoreApplication.translate(
                 'die_if_clipboard_empty',
-                'System clipboard text buffer empty.'))
+                'System clipboard text buffer empty.'),
+        )
 
 # ....................{ TESTERS                            }....................
 def is_clipboard_text() -> bool:
@@ -45,9 +48,21 @@ def is_clipboard_text() -> bool:
     windowing session).
     '''
 
-    return not not QGuiApplication.clipboard().text()
+    return not not get_clipboard().text()
 
 # ....................{ GETTERS                            }....................
+@callable_cached
+def get_clipboard() -> QClipboard:
+    '''
+    System clipboard.
+
+    This getter is a convenience wrapper for the stock
+    :func:`QGuiApplication.clipboard` getter, reducing import statement bloat.
+    '''
+
+    return QGuiApplication.clipboard()
+
+
 def get_clipboard_text() -> str:
     '''
     All text in the system clipboard's plaintext buffer if non-empty *or* raise
@@ -69,4 +84,4 @@ def get_clipboard_text() -> str:
     die_unless_clipboard_text()
 
     # Else, this buffer is non-empty. Return its contents.
-    return QGuiApplication.clipboard().text()
+    return get_clipboard().text()

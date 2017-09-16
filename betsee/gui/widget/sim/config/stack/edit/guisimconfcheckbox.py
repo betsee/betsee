@@ -62,6 +62,6 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
         # preventing infinite recursion. (See the superclass method docstring.)
         super().setChecked(widget_value)
 
-    # ..................{ MIXIN                              }..................
+
     def _clear_widget_value(self) -> None:
         self.widget_value = False

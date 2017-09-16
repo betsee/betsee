@@ -2083,23 +2083,26 @@ class Ui_main_window(object):
         self.action_cut = QtWidgets.QAction(main_window)
         self.action_cut.setObjectName("action_cut")
         self.action_copy = QtWidgets.QAction(main_window)
+        icon24 = QtGui.QIcon()
+        icon24.addFile(":/icon/open_iconic/clipboard.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_copy.setIcon(icon24)
         self.action_copy.setObjectName("action_copy")
         self.action_paste = QtWidgets.QAction(main_window)
         self.action_paste.setObjectName("action_paste")
         self.action_close_sim = QtWidgets.QAction(main_window)
-        icon24 = QtGui.QIcon()
-        icon24.addFile(":/icon/open_iconic/x.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_close_sim.setIcon(icon24)
+        icon25 = QtGui.QIcon()
+        icon25.addFile(":/icon/open_iconic/x.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_close_sim.setIcon(icon25)
         self.action_close_sim.setObjectName("action_close_sim")
         self.action_sim_conf_tree_item_append = QtWidgets.QAction(main_window)
-        icon25 = QtGui.QIcon()
-        icon25.addFile(":/icon/open_iconic/plus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_sim_conf_tree_item_append.setIcon(icon25)
+        icon26 = QtGui.QIcon()
+        icon26.addFile(":/icon/open_iconic/plus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_sim_conf_tree_item_append.setIcon(icon26)
         self.action_sim_conf_tree_item_append.setObjectName("action_sim_conf_tree_item_append")
         self.action_sim_conf_tree_item_remove = QtWidgets.QAction(main_window)
-        icon26 = QtGui.QIcon()
-        icon26.addFile(":/icon/open_iconic/minus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_sim_conf_tree_item_remove.setIcon(icon26)
+        icon27 = QtGui.QIcon()
+        icon27.addFile(":/icon/open_iconic/minus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_sim_conf_tree_item_remove.setIcon(icon27)
         self.action_sim_conf_tree_item_remove.setObjectName("action_sim_conf_tree_item_remove")
         self.sim_conf_tree_toolbar.addAction(self.action_sim_conf_tree_item_append)
         self.sim_conf_tree_toolbar.addAction(self.action_sim_conf_tree_item_remove)
@@ -2126,6 +2129,8 @@ class Ui_main_window(object):
         self.tool_bar.addAction(self.action_open_sim)
         self.tool_bar.addAction(self.action_save_sim)
         self.tool_bar.addAction(self.action_close_sim)
+        self.tool_bar.addSeparator()
+        self.tool_bar.addAction(self.action_copy)
         self.tool_bar.addSeparator()
         self.tool_bar.addAction(self.action_start_phase_seed)
         self.tool_bar.addAction(self.action_start_phase_sim)
@@ -2418,10 +2423,13 @@ class Ui_main_window(object):
         self.action_about_betse.setToolTip(QtWidgets.QApplication.translate("main_window", "Display a textual synopsis of the underlying engine.", None, -1))
         self.action_save_sim_as.setText(QtWidgets.QApplication.translate("main_window", "Save Simulation &As...", None, -1))
         self.action_cut.setText(QtWidgets.QApplication.translate("main_window", "Cu&t", None, -1))
+        self.action_cut.setToolTip(QtWidgets.QApplication.translate("main_window", "Cut the current selection to the clipboard.", None, -1))
         self.action_cut.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+X", None, -1))
         self.action_copy.setText(QtWidgets.QApplication.translate("main_window", "&Copy", None, -1))
+        self.action_copy.setToolTip(QtWidgets.QApplication.translate("main_window", "Copy the current selection to the clipboard.", None, -1))
         self.action_copy.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+C", None, -1))
         self.action_paste.setText(QtWidgets.QApplication.translate("main_window", "&Paste", None, -1))
+        self.action_paste.setToolTip(QtWidgets.QApplication.translate("main_window", "Paste the contents of the clipboard over the current selection.", None, -1))
         self.action_paste.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+V", None, -1))
         self.action_close_sim.setText(QtWidgets.QApplication.translate("main_window", "&Close Simulation", None, -1))
         self.action_close_sim.setToolTip(QtWidgets.QApplication.translate("main_window", "Close the currently open simulation.", None, -1))
@@ -2432,12 +2440,12 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
 from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
 from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

@@ -12,6 +12,7 @@ the current application widget) functionality.
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QApplication, QWidget
 from betsee.guiexceptions import BetseePySideFocusException
+from betsee.util.type.guitypes import QWidgetOrNoneTypes
 
 # ....................{ EXCEPTIONS                         }....................
 def die_unless_widget_focused() -> None:
@@ -32,8 +33,11 @@ def die_unless_widget_focused() -> None:
 
     if not is_widget_focused():
         raise BetseePySideFocusException(
-            QCoreApplication.translate(
-                'die_unless_widget_focused', 'No widget currently focused.'))
+            title=QCoreApplication.translate(
+                'die_unless_widget_focused', 'Focus Error'),
+            synopsis=QCoreApplication.translate(
+                'die_unless_widget_focused', 'No widget currently focused.'),
+        )
 
 # ....................{ TESTERS                            }....................
 def is_widget_focused() -> bool:
@@ -67,3 +71,21 @@ def get_widget_focused() -> QWidget:
 
     # Else, some widget is currently focused. Return this widget.
     return QApplication.focusWidget()
+
+
+def get_widget_focused_or_none() -> QWidgetOrNoneTypes:
+    '''
+    Application widget that currently has the interactive keyboard input focus
+    if any *or* ``None`` otherwise.
+
+    Returns
+    ----------
+    QWidgetOrNoneTypes
+        Currently focused widget if any *or* ``None`` otherwise.
+    '''
+
+    # Currently focused widget if any or 0 otherwise.
+    widget_focused = QApplication.focusWidget()
+
+    # Return None if no widget is focused or this widget otherwise.
+    return None if widget_focused == 0 else widget_focused

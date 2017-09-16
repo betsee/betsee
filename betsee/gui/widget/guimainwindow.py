@@ -71,15 +71,8 @@ from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import guimetadata
 from betsee.gui.guisignal import QBetseeSignaler
 from betsee.util.io import guierr
-from betsee.util.io.key import guifocus
 from betsee.util.io.log import guilogconf
 from betsee.util.io.xml import guiui
-
-#FIXME: Clipboard-specific imports. *sigh*
-from PySide2.QtWidgets import QWidget
-from betsee.util.app.guiapp import GUI_APP
-from betsee.util.io import guiclipboard
-from betsee.util.type.guitypes import QWidgetOrNoneTypes
 
 # ....................{ GLOBALS                            }....................
 MAIN_WINDOW_BASE_CLASSES = guiui.get_ui_module_base_classes(
@@ -124,6 +117,8 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
     Attributes (Private)
     ----------
+    _clipboard : QBetseeMainClipboard
+        Object encapsulating high-level application clipboard state.
     _sim_conf_filename : StrOrNoneTypes
         Absolute or relative path of the initial YAML-formatted simulation
         configuration file to be initially opened if any *or* ``None``
@@ -165,6 +160,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Nullify all remaining instance variables for safety.
         self.sim_conf = None
+        self._clipboard = None
 
         # Log this initialization.
         logs.log_debug('Generating main window...')
@@ -204,9 +200,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Customize all physical top-level widgets of this main window.
         self._init_widgets()
 
-        # Customize the application object with respect to this main window.
-        self._init_app()
-
     # ..................{ INITIALIZERS ~ actions             }..................
     def _init_actions(self) -> None:
         '''
@@ -226,9 +219,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # end user that this action has yet to be implemented.
         for action in (
             # "Edit" menu.
-            self.action_copy,
-            self.action_cut,
-            self.action_paste,
             self.action_edit_prefs,
 
             # "Help" menu.
@@ -251,11 +241,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
         Customize all QAction widgets of the top-level ``Edit`` menu.
         '''
-
-        #FIXME: Uncomment us up once working.
-        # Associate QAction signals with Python slots.
-        # self.action_copy.triggered.connect(
-        #     self.copy_widget_value_selected_to_clipboard)
 
         pass
 
@@ -288,10 +273,15 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         # Avoid circular import dependencies.
+        from betsee.gui.widget.guimainclipboard import QBetseeMainClipboard
         from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConf
 
         # Initialize the status bar with a sensible startup message.
         self._show_status('Welcome to {}'.format(guimetadata.NAME))
+
+        # Object encapsulating high-level application clipboard state,
+        # instantiated in arbitrary order.
+        self._clipboard = QBetseeMainClipboard(main_window=self)
 
         # Object encapsulating high-level simulation configuration state,
         # instantiated *BEFORE* initializing widgets assuming this state to
@@ -310,24 +300,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # finalizing all widgets.
         if self._sim_conf_filename is not None:
             self.sim_conf.load(self._sim_conf_filename)
-
-    # ..................{ INITIALIZERS ~ app                 }..................
-    def _init_app(self) -> None:
-        '''
-        Customize the :class:`QApplication` singleton with respect to this main
-        window.
-        '''
-
-        # Connect all relevant application-wide slots to corresponding signals
-        # on this main window. Since this application strictly adheres to the
-        # SDI metaphor, there exists a one-to-one correspondence between this
-        # application and this main window. (That is, this application always
-        # contains exactly one main window.)
-        GUI_APP.focusChanged.connect(self._set_widget_focus)
-
-        # Signal no widgets to currently be focused, initializing the state of
-        # all actions depependent upon this focus state.
-        self._set_widget_focus(None, None)
 
     # ..................{ EVENTS                             }..................
     def closeEvent(self, event: QCloseEvent) -> None:
@@ -409,146 +381,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # has platform-specific effects usually including appending an asterisk
         # to the current window title.
         self.setWindowModified(is_sim_conf_dirty)
-
-    # ..................{ SLOTS ~ widget                     }..................
-    #FIXME: For maintainability:
-    #
-    #* Shift all of the following clipboard-specific functionality into a new
-    #  "QBetseeMainClipboard" subclass of the "QObject" base class in a new
-    #  "betsee.gui.widget.guimainclipboard" submodule.
-    #* Instantiate an instance of that subclass in the _init() method above.
-    #
-    #Note that the structure of this "QBetseeMainClipboard" subclass should
-    #ideally be patterned after that of the "QBetseeSimConf" subclass, which
-    #serves a similar managerial role.
-
-    @Slot(QWidget, QWidget)
-    def _set_widget_focus(
-        self,
-        widget_focused_old: QWidgetOrNoneTypes,
-        widget_focused_new: QWidgetOrNoneTypes,
-    ) -> None:
-        '''
-        Slot signalled when an application widget loses and/or gains interactive
-        keyboard input focus (e.g., due to the tab-key being pressed, this
-        widget being clicked, or this main window being made active).
-
-        The slot is signalled *after* both widgets have been notified of this
-        :class:`QFocusEvent`.
-
-        Parameters
-        ----------
-        widget_focused_old : QWidgetOrNoneTypes
-            Previously focused widget if any *or* ``None`` otherwise.
-        widget_focused_new : QWidgetOrNoneTypes
-            Previously focused widget if any *or* ``None`` otherwise.
-        '''
-
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # WARNING: This is a fundamentally fragile slot. Exceptions accidentally
-        # raised by this slot's implementation may induce infinite recursion.
-        # See the "except" block below for further commentary.
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        # Attempt to...
-        try:
-            # Avoid circular import dependencies.
-            from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
-                QBetseeSimConfEditWidgetMixin)
-
-            #FIXME: *ALL* editable widgets (simulation configuration-specific or
-            #not) should support copying, cutting, and pasting into and from the
-            #system clipboard. Once this is the case, this test may be reduced to:
-            #
-            #    is_widget_focused_new_cliboardable = widget_focused_new is not None
-            #
-            #For this reason, this and the following slots reside in this class.
-            is_widget_clipboardable = isinstance(
-                widget_focused_new, QBetseeSimConfEditWidgetMixin)
-
-            # Enable or disable actions requiring such a widget to be focused.
-            self.action_copy.setEnabled(is_widget_clipboardable)
-            self.action_cut .setEnabled(is_widget_clipboardable)
-
-            #FIXME: Insufficient, as this fails to synchronize with changes to the
-            #system clipboard. To do so, we'll need to define a new slot connected
-            #to the existing QClipboard.dataChanged() signal. Note, however, that:
-            #
-            #   "On macOS and with Qt version 4.3 or higher, clipboard changes made
-            #    by other applications will only be detected when the application is
-            #    activated."
-            #
-            #Is this actually a problem? Only if Qt actually ignores rather than
-            #buffers clipboard changes that occur when this application is *NOT* the
-            #active application. In that case, we'll need to also define a new slot
-            #connecting to the application activation signal (...whatever that is)
-            #manually invoking this slot.
-
-            # Enable or disable actions requiring such a widget to be focused
-            # *AND* the system clipboard's plaintext buffer to be non-empty.
-            self.action_paste.setEnabled(
-                is_widget_clipboardable and guiclipboard.is_clipboard_text())
-        # If an exception is raised, infinite recursion in the Qt event loop
-        # mest be explicitly avoided by permanently disconnecting this slot from
-        # its corresponding signal *BEFORE* this exception is propagated up the
-        # callstack. While slightly destructive, this is the least-worst option.
-        #
-        # Failing to do so provokes the following infinite recursion:
-        #
-        # * This slot raises an exception.
-        # * This exception is propagated up to the default exception handler.
-        # * This handler displays a PySide2 widget graphically presenting this
-        #   exception to the user.
-        # * This widget implicitly obtains the interactive keyboard input focus.
-        # * This focus change invokes the signal connected to this slot.
-        # * This slot raises an exception.
-        #
-        # The only alternatives would be to:
-        #
-        # * Prevent the PySide2 widget displayed by the default exception
-        #   handler from obtaining the focus -- a fragile, platform-specific,
-        #   and possibly unenforceable constraint in the best case.
-        # * Call the GUI_APP.blockSignals() method, preventing the "GUI_APP"
-        #   object from signalling *ANY* other slots -- which is even more
-        #   heavy-handed and hence undesirable than the current approach.
-        except:
-            # Disconnect this signal from this slot... *PERMANENTLY.*
-            GUI_APP.focusChanged.disconnect(self._set_widget_focus)
-
-            # Propagate this exception up the callstack.
-            raise
-
-
-
-    @Slot(str)
-    def copy_widget_value_selected_to_clipboard(self) -> None:
-        '''
-        Slot invoked in response to a user-driven request to copy the currently
-        selected portion of the currently focused widget's value(s) to the
-        system clipboard, silently replacing the prior contents of that
-        clipboard if any.
-        '''
-
-        # Currently focused widget. Since the action signalling this slot should
-        # *ONLY* be enabled when a widget is currently focused, this call should
-        # *NEVER* raise exceptions.
-        widget_focused = guifocus.get_widget_focused()
-
-        #FIXME: Actually do something here. The difficulty, of course, is that
-        #most stock QWidget subclasses do *NOT* support the concept of
-        #cut-copy-paste. The only one that appears to, in fact, is "QLineEdit".
-        #For the remainder, we'll need to implement such functionality manually.
-        #Consider:
-        #
-        #* Raise an exception unless this focused widget is an instance of the
-        #  "QBetseeSimConfEditScalarWidgetMixin" base class. This implies, of
-        #  course, that this action should be disabled if this is not the case.
-        #* Augment this base class with the following three new methods:
-        #  * copy_widget_value_selected_to_clipboard().
-        #  * cut_widget_value_selected_to_clipboard().
-        #  * paste_clipboard_to_widget_value_selected().
-        #
-        #This shouldn't be *TOO* terribly difficult -- merely tedious.
 
     # ..................{ RESIZERS                           }..................
     def resize_full(self) -> None:

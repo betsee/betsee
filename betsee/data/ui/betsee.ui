@@ -4329,6 +4329,8 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
    <addaction name="action_save_sim"/>
    <addaction name="action_close_sim"/>
    <addaction name="separator"/>
+   <addaction name="action_copy"/>
+   <addaction name="separator"/>
    <addaction name="action_start_phase_seed"/>
    <addaction name="action_start_phase_sim"/>
    <addaction name="action_stop_phase"/>
@@ -4503,13 +4505,23 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
    <property name="text">
     <string>Cu&amp;t</string>
    </property>
+   <property name="toolTip">
+    <string>Cut the current selection to the clipboard.</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
    </property>
   </action>
   <action name="action_copy">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/open_iconic/clipboard.svg</normaloff>:/icon/open_iconic/clipboard.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Copy</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy the current selection to the clipboard.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -4518,6 +4530,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
   <action name="action_paste">
    <property name="text">
     <string>&amp;Paste</string>
+   </property>
+   <property name="toolTip">
+    <string>Paste the contents of the clipboard over the current selection.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>

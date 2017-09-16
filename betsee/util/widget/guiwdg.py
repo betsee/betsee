@@ -35,6 +35,7 @@ from PySide2.QtWidgets import (
     QUndoStack,
 )
 # from betse.util.io.log import logs
+from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.type.types import type_check
 
 # ....................{ GLOBALS                            }....................
@@ -179,14 +180,15 @@ class QBetseeWidgetMixin(object):
 class QBetseeEditWidgetMixin(QBetseeWidgetMixin):
     '''
     Abstract base class of most application-specific **editable widget** (i.e.,
-    widget interactively editing one or more simulation configuration values
-    stored in external YAML files) subclasses.
+    widget interactively editing one or more values in an undoable manner
+    supporting copying, cutting, and pasting to and from the system clipboard)
+    subclasses.
 
     Attributes
     ----------
     is_undo_cmd_pushable : bool
         ``True`` only if undo commands are safely pushable from this widget onto
-        the undo stack *or* ``False`` when:
+        the undo stack *or* ``False`` when either:
         * This widget's content is currently being programmatically populated.
         * A previous undo command is already being applied to this widget.
         In both cases, changes to this widget's content are program- rather than
@@ -211,21 +213,70 @@ class QBetseeEditWidgetMixin(QBetseeWidgetMixin):
         # Unset the undo stack to which this widget pushes undo commands.
         self._unset_undo_stack()
 
+    # ..................{ PROPERTIES                         }..................
+    @property
+    def is_clipboardable(self) -> bool:
+        '''
+        ``True`` only if this widget transparently supports copying, cutting,
+        and pasting into and from the system clipboard -- typically but *not*
+        necessarily into the clipboard's plaintext buffer.
+
+        If this property is:
+
+        * ``True``, the following clipboard-related methods are safely callable:
+
+          * :meth:`copy_selection_to_clipboard`.
+          * :meth:`cut_selection_to_clipboard`.
+          * :meth:`paste_selection_to_clipboard`.
+
+        * ``False``, no such methods are safely callable. Doing so raises
+          :class:`BetseMethodUnimplementedException` exceptions by default.
+
+        Design
+        ----------
+        This property defaults to ``False``. Subclasses supporting clipboard
+        operations should override:
+
+        * This property to return ``True``.
+        * All clipboard-related methods listed above to behave as expected.
+        '''
+
+        return False
+
+    # ..................{ SUBCLASS ~ mandatory : method      }..................
+    # Subclasses are required to implement the following methods.
+
+    def copy_selection_to_clipboard(self) -> None:
+        '''
+        Copy this widget's **current selection** (i.e., currently selected
+        subset of this widget's value(s)) to the system clipboard, silently
+        replacing the prior contents if any.
+        '''
+
+        raise BetseMethodUnimplementedException()
+
+
+    def cut_selection_to_clipboard(self) -> None:
+        '''
+        **Cut** (i.e., copy and then remove as a single atomic operation) the
+        this widget's **current selection** (i.e., currently selected subset of
+        this widget's value(s)) to the system clipboard, silently replacing the
+        prior contents if any.
+        '''
+
+        raise BetseMethodUnimplementedException()
+
+
+    def paste_clipboard_to_selection(self) -> None:
+        '''
+        Paste the contents of the system clipboard over this widget's **current
+        selection** (i.e., currently selected subset of this widget's value(s)),
+        silently replacing the prior selection if any.
+        '''
+
+        raise BetseMethodUnimplementedException()
+
     # ..................{ UNDO STACK ~ set                   }..................
-    def _unset_undo_stack(self) -> None:
-        '''
-        Unset the undo stack to which this widget pushes undo commands,
-        preventing the :meth:`_push_undo_cmd_if_safe` method from pushing undo
-        commands from this widget.
-        '''
-
-        # Classify all passed parameters.
-        self._undo_stack = None
-
-        # Undo commands are now safely pushable from this widget.
-        self.is_undo_cmd_pushable = False
-
-
     @type_check
     def _set_undo_stack(self, undo_stack: QUndoStack) -> None:
         '''
@@ -239,6 +290,20 @@ class QBetseeEditWidgetMixin(QBetseeWidgetMixin):
 
         # Undo commands are now safely pushable from this widget.
         self.is_undo_cmd_pushable = True
+
+
+    def _unset_undo_stack(self) -> None:
+        '''
+        Unset the undo stack to which this widget pushes undo commands,
+        preventing the :meth:`_push_undo_cmd_if_safe` method from pushing undo
+        commands from this widget.
+        '''
+
+        # Classify all passed parameters.
+        self._undo_stack = None
+
+        # Undo commands are now safely pushable from this widget.
+        self.is_undo_cmd_pushable = False
 
     # ..................{ UNDO STACK ~ other                 }..................
     def _is_undo_stack_dirty(self) -> bool:

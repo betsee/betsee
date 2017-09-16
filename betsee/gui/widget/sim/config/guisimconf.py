@@ -31,7 +31,7 @@ class QBetseeSimConf(QObject):
     * Whether or not a simulation configuration is currently open.
     * Whether or not an open simulation configuration has unsaved changes.
 
-    Attributes (Non-widgets: Public)
+    Attributes (Public)
     ----------
     p : Parameters
         High-level simulation configuration encapsulating a low-level dictionary
@@ -40,13 +40,13 @@ class QBetseeSimConf(QObject):
         Undo stack for the currently open simulation configuration if any *or*
         the empty undo stack otherwise.
 
-    Attributes (Non-widgets: Private)
+    Attributes (Private: Non-widgets)
     ----------
     _is_dirty : bool
         ``True`` only if a simulation configuration is currently open *and* this
         configuration is **dirty** (i.e., has unsaved changes).
 
-    Attributes (widgets)
+    Attributes (Private: Actions)
     ----------
     _action_make_sim : QAction
         Alias of the :attr:`QBetseeMainWindow.action_make_sim` action.
@@ -182,8 +182,10 @@ class QBetseeSimConf(QObject):
 
         # Set the state of all widgets dependent upon this simulation
         # configuration state *AFTER* connecting all relavant signals and slots.
-        # Since this slot only accepts strings, pass the empty string rather
-        # than "None" for safety.
+        # Initially, no simulation configuration has yet to be opened.
+        #
+        # Note that, as this slot only accepts strings, the empty string rather
+        # than "None" is intentionally passed for safety.
         self.set_filename_signal.emit('')
 
     # ..................{ PROPERTIES ~ bool                  }..................
@@ -268,13 +270,6 @@ class QBetseeSimConf(QObject):
 
         # Notify all interested slots that no unsaved changes remain, regardless
         # of whether a simulation configuration has just been opened or closed.
-        # Since this implicitly calls the _update_widget_state() method to set the
-        # state of all widgets owned by this object, this method is
-        # intentionally *NOT* called again here.
-        #
-        # Note that, as this slot is already connected to the
-        # "set_filename_signal", this signal must *NOT* be re-emitted here;
-        # doing so would provoke infinite recursion.
         self.set_dirty_signal.emit(False)
 
 
@@ -284,6 +279,10 @@ class QBetseeSimConf(QObject):
         Slot signalled on each change of the **dirty state** (i.e., existence of
         unsaved in-memory changes) of the currently open simulation
         configuration if any.
+
+        This slot internally updates the state (e.g., enabled or disabled,
+        displayed or hidden) of all widgets owned or otherwise associated with
+        this object.
 
         Parameters
         ----------
@@ -295,8 +294,22 @@ class QBetseeSimConf(QObject):
         # Classify this parameter.
         self._is_dirty = is_dirty
 
-        # Set the state of all widgets owned by this object.
-        self._update_widget_state()
+        # Enable or disable actions requiring an open simulation configuration.
+        self._action_close_sim  .setEnabled(self.p.is_loaded)
+        self._action_save_sim_as.setEnabled(self.p.is_loaded)
+
+        # Enable or disable actions requiring an open simulation configuration
+        # associated with an existing file and having unsaved changes.
+        self._action_save_sim.setEnabled(self.p.is_loaded and is_dirty)
+
+        # Show or hide widgets requiring an open simulation configuration.
+        self._sim_conf_stack     .setEnabled(self.p.is_loaded)
+        self._sim_conf_tree_frame.setEnabled(self.p.is_loaded)
+        self._sim_phase_tabs     .setEnabled(self.p.is_loaded)
+
+        # If no simulation configuration is open, clear the undo stack.
+        if not self.p.is_loaded:
+            self.undo_stack.clear()
 
     # ..................{ SLOTS ~ action                     }..................
     @Slot()
@@ -554,41 +567,3 @@ class QBetseeSimConf(QObject):
                 'QBetseeSimConf', 'New Simulation Configuration'),
             label_to_filetypes={'YAML files': yamls.FILETYPES,},
         )
-
-    # ..................{ UPDATERS                           }..................
-    def _update_widget_state(self) -> None:
-        '''
-        Update the state (e.g., enabled or disabled, displayed or hidden) of all
-        widgets owned or otherwise associated with this object.
-
-        See Also
-        ----------
-        :meth:`QBetseeMainWindow._set_widget_focus`
-            Slot updating the state of all actions copying, cutting, and pasting
-            into and from the system clipboard.
-        '''
-
-        # Enable or disable actions requiring an open simulation configuration.
-        self._action_close_sim  .setEnabled(self.p.is_loaded)
-        self._action_save_sim_as.setEnabled(self.p.is_loaded)
-
-        # Enable or disable actions requiring an open simulation configuration
-        # associated with an existing file and having unsaved changes.
-        self._action_save_sim.setEnabled(self.p.is_loaded and self._is_dirty)
-
-        # Show or hide widgets requiring an open simulation configuration.
-        self._sim_conf_stack     .setEnabled(self.p.is_loaded)
-        self._sim_conf_tree_frame.setEnabled(self.p.is_loaded)
-        self._sim_phase_tabs     .setEnabled(self.p.is_loaded)
-
-        # If a simulation configuration is open...
-        if self.p.is_loaded:
-            pass
-
-            #FIXME: Excise the following, which is no longer required.
-            # ...and this configuration is clean, mark the undo stack as clean.
-            # if not self._is_dirty:
-            #     self.undo_stack.setClean()
-        # Else, no simulation configuration is open. Clear the undo stack.
-        else:
-            self.undo_stack.clear()
