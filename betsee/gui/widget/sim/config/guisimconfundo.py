@@ -100,7 +100,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         self._init_menu_edit(main_window)
 
         # Create all buttons of the main toolbar requiring these actions.
-        self._init_tool_bar(main_window)
+        self._init_toolbar(main_window)
 
         #FIXME: Connect these actions to appropriate "sim_config" slots and
         #signals. (See the "FIXME" above for commentary on exactly what.)
@@ -202,7 +202,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
 
 
     @type_check
-    def _init_tool_bar(self, main_window: QBetseeMainWindow) -> None:
+    def _init_toolbar(self, main_window: QBetseeMainWindow) -> None:
         '''
         Create all buttons of the main toolbar requiring actions previously
         created by the :meth:`_init_actions` method.
@@ -214,7 +214,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         '''
 
         # List of all actions in the main toolbar.
-        tool_bar_actions = main_window.tool_bar.actions()
+        tool_bar_actions = main_window.toolbar.actions()
 
         # For each such action...
         for first_separator in tool_bar_actions:
@@ -226,7 +226,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
                 #
                 # * The former separator will precede the undo and redo actions.
                 # * The latter separator will succeed the undo and redo actions.
-                main_window.tool_bar.insertSeparator(first_separator)
+                main_window.toolbar.insertSeparator(first_separator)
 
                 # Cease searching.
                 break
@@ -238,8 +238,8 @@ class QBetseeUndoStackSimConf(QUndoStack):
             first_separator = 0
 
         # Insert undo and redo actions before this separator in this toolbar.
-        main_window.tool_bar.insertAction(first_separator, self._undo_action)
-        main_window.tool_bar.insertAction(first_separator, self._redo_action)
+        main_window.toolbar.insertAction(first_separator, self._undo_action)
+        main_window.toolbar.insertAction(first_separator, self._redo_action)
 
     # ..................{ PUSHERS                            }..................
     def push(self, undo_command: QUndoCommand) -> None:

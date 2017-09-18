@@ -37,6 +37,7 @@ from PySide2.QtWidgets import (
 # from betse.util.io.log import logs
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.type.types import type_check
+from betsee.util.type.guitypes import QWidgetOrNoneTypes
 
 # ....................{ GLOBALS                            }....................
 #FIXME: Map all possible editable widgets.
@@ -105,6 +106,28 @@ content changes. For generality, this dictionary nonetheless maps each widget
 subclass to a set of only the name of that signal rather than to that name
 directly.
 '''
+
+@type_check
+def get_label(widget: QWidgetOrNoneTypes) -> str:
+    '''
+    Human-readable label synopsizing the passed widget if any.
+
+    Parameters
+    ----------
+    widget : QWidgetOrNoneTypes
+        Either:
+        * :class`QWidget` instance to be synopsized.
+        * ``None``, in which case the absence of such a widget is synopsized.
+
+    Returns
+    ----------
+    str
+        Human-readable label synopsizing this widget if any.
+    '''
+
+    return (
+        'widget "{}"'.format(widget.objectName()) if widget is not None else
+        'no widget')
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all

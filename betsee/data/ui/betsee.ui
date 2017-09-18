@@ -10,9 +10,6 @@
     <height>1154</height>
    </rect>
   </property>
-  <property name="focusPolicy">
-   <enum>Qt::ClickFocus</enum>
-  </property>
   <property name="styleSheet">
    <string notr="true">/* ------------------( SYNOPSIS                           )---------------------
 Root stylesheet for this application, attached to the main window widget from
@@ -4305,7 +4302,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
    <addaction name="menu_edit"/>
    <addaction name="menu_help"/>
   </widget>
-  <widget class="QToolBar" name="tool_bar">
+  <widget class="QToolBar" name="toolbar">
    <property name="sizePolicy">
     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
      <horstretch>0</horstretch>
@@ -4524,7 +4521,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
     <string>Copy the current selection to the clipboard.</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+C</string>
+    <string>Ctrl+D</string>
    </property>
   </action>
   <action name="action_paste">

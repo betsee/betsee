@@ -32,6 +32,20 @@ class QBetseeMainClipboard(QObject):
     * Whether or not the platform-specific system clipboard's plaintext buffer
       is currently empty (i.e., contains the empty string).
 
+    Attributes
+    ----------
+    _widget_focused_if_any : QWidgetOrNoneTypes
+        Widget currently receiving the interactive keyboard input focus if any
+        *or* ``None`` otherwise. Ideally, the
+        :func:`betsee.util.io.key.guifocus.get_widget_focused` getter would be
+        called as needed to query for this widget rather than classifying this
+        widget. Sadly, that getter appears to raise spurious exceptions on
+        attempting to query for this widget when a toolbar button (notably, the
+        copy, cut, or paste buttons) is clicked. Why? Presumably due to Qt
+        subtleties in which the currently focused widget is temporarily
+        defocused when a toolbar button is clicked -- regardless of that
+        button's focus policy. In short, Qt issues.
+
     Attributes (Actions)
     ----------
     _action_copy : QAction
@@ -69,6 +83,9 @@ class QBetseeMainClipboard(QObject):
 
         # Log this initialization.
         logs.log_debug('Sanitizing system clipboard state...')
+
+        # Nullify all instance variables for safety.
+        self._widget_focused_if_any = None
 
         # Classify actions subsequently required by this object. Since this main
         # window owns this object, since weak references are unsafe in a
@@ -164,15 +181,26 @@ class QBetseeMainClipboard(QObject):
 
         # Attempt to...
         try:
-            # True only if tf the currently focused widget is an
+            # Log this focus change.
+            # from betsee.util.widget import guiwdg
+            # logs.log_debug(
+            #     'Changing focus from %s to %s...',
+            #     guiwdg.get_label(widget_focused_old),
+            #     guiwdg.get_label(widget_focused_new))
+
+            # Classify this widget for subsequent lookup *BEFORE* calling the
+            # _is_widget_clipboardable() method.
+            self._widget_focused_if_any = widget_focused_new
+
+            # True only if the currently focused widget is an
             # application-specific editable widget transparently supporting
             # copying, cutting, and pasting into and from the system clipboard.
-            is_widget_clipboardable = self._is_widget_clipboardable(
-                widget_focused_new)
+            is_widget_focused_clipboardable = (
+                self._is_widget_focused_clipboardable())
 
             # Enable or disable actions requiring such a widget to be focused.
-            self._action_copy.setEnabled(is_widget_clipboardable)
-            self._action_cut .setEnabled(is_widget_clipboardable)
+            self._action_copy.setEnabled(is_widget_focused_clipboardable)
+            self._action_cut .setEnabled(is_widget_focused_clipboardable)
 
             # Enable or disable actions requiring such a widget to be focused
             # *AND* the system clipboard's plaintext buffer to be non-empty.
@@ -186,7 +214,8 @@ class QBetseeMainClipboard(QObject):
             # defers to this slot on each change to the state of this buffer and
             # hence guarantees this logic to be reevaluated as needed.
             self._action_paste.setEnabled(
-                is_widget_clipboardable and guiclipboard.is_clipboard_text())
+                is_widget_focused_clipboardable and
+                guiclipboard.is_clipboard_text())
         # If an exception is raised, infinite recursion in the Qt event loop
         # mest be explicitly avoided by permanently disconnecting this slot from
         # its corresponding signal *BEFORE* this exception is propagated up the
@@ -218,18 +247,6 @@ class QBetseeMainClipboard(QObject):
             raise
 
     # ..................{ SLOTS ~ action                     }..................
-    #FIXME: *sigh* The current implementation of this and the following slots is
-    #fundamentally flawed. Why? Because once the copy button is clicked, the
-    #currently focused widget is no longer focused. Why? Because the copy button
-    #is itself a widget, of course, which has now grabbed the focus. Makes
-    #sense, but a bit irksome. The solution is to:
-    #
-    #* Classify the previously focused widget in the _widget_focus_set() handler
-    #  as a new instance variable (e.g., "widget_focused_prev").
-    #* Rewrite the _get_widget_focused_clipboardable() to internally leverage
-    #  that instance variable instead.
-    #
-    #In theory, that should get us there. Maybe?
     @Slot()
     def _copy_widget_focused_selection_to_clipboard(self) -> None:
         '''
@@ -239,18 +256,16 @@ class QBetseeMainClipboard(QObject):
         silently replacing the prior contents if any.
         '''
 
-        # Currently focused application-specific editable widget. Since the
-        # action signalling this slot should *ONLY* be enabled when such a
-        # widget is focused, this call should *NEVER* raise exceptions.
-        widget_focused_clipboardable = self._get_widget_focused_clipboardable()
+        # If no clipboardable widget is currently focused, raise an exception.
+        self._die_unless_widget_focused_clipboardable()
 
         # Log this copy.
         logs.log_debug(
-            'Copying widget "{}" selection to clipboard...',
-            widget_focused_clipboardable.object_name)
+            'Copying widget "%s" selection to clipboard...',
+            self._widget_focused_if_any.object_name)
 
         # Copy this widget's current selection to the clipboard.
-        widget_focused_clipboardable.copy_selection_to_clipboard()
+        self._widget_focused_if_any.copy_selection_to_clipboard()
 
 
     @Slot()
@@ -263,18 +278,16 @@ class QBetseeMainClipboard(QObject):
         replacing the prior contents if any.
         '''
 
-        # Currently focused application-specific editable widget. Since the
-        # action signalling this slot should *ONLY* be enabled when such a
-        # widget is focused, this call should *NEVER* raise exceptions.
-        widget_focused_clipboardable = self._get_widget_focused_clipboardable()
+        # If no clipboardable widget is currently focused, raise an exception.
+        self._die_unless_widget_focused_clipboardable()
 
         # Log this cut.
         logs.log_debug(
-            'Cutting widget "{}" selection to clipboard...',
-            widget_focused_clipboardable.object_name)
+            'Cutting widget "%s" selection to clipboard...',
+            self._widget_focused_if_any.object_name)
 
         # Cut this widget's current selection to the clipboard.
-        widget_focused_clipboardable.cut_selection_to_clipboard()
+        self._widget_focused_if_any.cut_selection_to_clipboard()
 
 
     @Slot()
@@ -286,32 +299,50 @@ class QBetseeMainClipboard(QObject):
         silently replacing the prior selection if any.
         '''
 
-        # Currently focused application-specific editable widget. Since the
-        # action signalling this slot should *ONLY* be enabled when such a
-        # widget is focused, this call should *NEVER* raise exceptions.
-        widget_focused_clipboardable = self._get_widget_focused_clipboardable()
+        # If no clipboardable widget is currently focused, raise an exception.
+        self._die_unless_widget_focused_clipboardable()
 
         # Log this paste.
         logs.log_debug(
-            'Pasting clipboard over widget "{}" selection...',
-            widget_focused_clipboardable.object_name)
+            'Pasting clipboard over widget "%s" selection...',
+            self._widget_focused_if_any.object_name)
 
         # Paste the clipboard over this widget's current selection.
-        widget_focused_clipboardable.paste_clipboard_to_selection()
+        self._widget_focused_if_any.paste_clipboard_to_selection()
+
+    # ..................{ EXCEPTIONS                         }..................
+    def _die_unless_widget_focused_clipboardable(self) -> None:
+        '''
+        Raise an exception unless an application-specific widget transparently
+        supporting copying, cutting, and pasting into and from the system
+        clipboard is currently focused.
+
+        Raises
+        ----------
+        BetseePySideFocusException
+            If *no* widget is currently focused.
+        BetseePySideClipboardException
+            If a widget is currently focused but this widget is *not* an
+            application-specific editable widget supporting clipboard operation.
+        '''
+
+        # If this widget is *NOT* an application-specific editable widget, raise
+        # an exception.
+        if not self._is_widget_focused_clipboardable():
+            raise BetseePySideClipboardException(QCoreApplication.translate(
+                'QBetseeMainClipboard',
+                'Focused widget "{0}" not clipboardable (i.e., not '
+                'an instance of "QBetseeEditWidgetMixin" '
+                'whose "is_clipboardable" property is True).'.format(
+                    self._widget_focused_if_any)))
 
     # ..................{ TESTERS                            }..................
     @type_check
-    def _is_widget_clipboardable(self, widget: QWidgetOrNoneTypes) -> bool:
+    def _is_widget_focused_clipboardable(self) -> bool:
         '''
-        ``True`` only if the passed widget is an application-specific editable
-        widget transparently supporting copying, cutting, and pasting into and
-        from the system clipboard.
-
-        Parameters
-        ----------
-        widget : QWidgetOrNoneTypes
-            Widget to be tested if any *or* ``None`` otherwise, in which this
-            method *always* returns ``False``.
+        ``True`` only if the currently focused widget (if any) is an
+        application-specific editable widget transparently supporting copying,
+        cutting, and pasting into and from the system clipboard.
 
         Returns
         ----------
@@ -326,49 +357,8 @@ class QBetseeMainClipboard(QObject):
         # Return True only if all of the following apply:
         return (
             # This widget is an application-specific editable widget.
-            isinstance(widget, QBetseeEditWidgetMixin) and
+            isinstance(self._widget_focused_if_any, QBetseeEditWidgetMixin) and
             # This widget transparently supports copying, cutting, and pasting
             # into and from the system clipboard.
-            widget.is_clipboardable
+            self._widget_focused_if_any.is_clipboardable
         )
-
-    # ..................{ GETTERS                            }..................
-    def _get_widget_focused_clipboardable(self) -> (
-        'betsee.util.widget.guiwdg.QBetseeEditWidgetMixin'):
-        '''
-        Currently focused application-specific editable widget transparently
-        supporting copying, cutting, and pasting into and from the system
-        clipboard if any *or* raise an exception otherwise.
-
-        Returns
-        ----------
-        QBetseeEditWidgetMixin
-            Currently focused application-specific clipboardable widget.
-
-        Raises
-        ----------
-        BetseePySideFocusException
-            If *no* widget is currently focused.
-        BetseePySideClipboardException
-            If a widget is currently focused but this widget is *not* an
-            application-specific editable widget supporting clipboard operation.
-        '''
-
-        # Currently focused widget if any *OR* raise an exception otherwise.
-        widget_focused = guifocus.get_widget_focused()
-
-        # If this widget is *NOT* an application-specific editable widget, raise
-        # an exception.
-        if not self._is_widget_clipboardable(widget_focused):
-            raise BetseePySideClipboardException(
-                title=QCoreApplication.translate(
-                    'QBetseeMainClipboard', 'Clipboard Error'),
-                synopsis=QCoreApplication.translate(
-                    'QBetseeMainClipboard',
-                    'Focused widget "{0}" not clipboardable (i.e., not '
-                    'an instance of "QBetseeEditWidgetMixin" '
-                    'whose "is_clipboardable" property is True).'.format(
-                        widget_focused)))
-
-        # Return this widget.
-        return widget_focused

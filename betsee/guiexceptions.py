@@ -126,7 +126,19 @@ class BetseePySideClipboardException(BetseePySideException):
     platform-specific system clipboard.
     '''
 
-    pass
+    # ..................{ INITIALIZERS                       }..................
+    def __init__(
+        self, synopsis: str, title: str = None, exegesis: str = None,) -> None:
+
+        # Defer third-party dependency imports.
+        from PySide2.QtCore import QCoreApplication
+
+        # Initialize our superclass with these parameters.
+        super().__init__(
+            title=(title if title is not None else QCoreApplication.translate(
+                'BetseePySideClipboardException', 'Clipboard Error')),
+            synopsis=synopsis,
+            exegesis=exegesis,)
 
 # ....................{ EXCEPTIONS ~ psd : widget          }....................
 class BetseePySideWidgetException(BetseePySideException):

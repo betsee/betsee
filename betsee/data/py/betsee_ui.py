@@ -4,7 +4,6 @@ class Ui_main_window(object):
     def setupUi(self, main_window):
         main_window.setObjectName("main_window")
         main_window.resize(1572, 1154)
-        main_window.setFocusPolicy(QtCore.Qt.ClickFocus)
         main_window.setStyleSheet("/* ------------------( SYNOPSIS                           )---------------------\n"
 "Root stylesheet for this application, attached to the main window widget from\n"
 "Qt [Creator|Designer] to preserve the WYSIWYG metaphor.\n"
@@ -2013,15 +2012,15 @@ class Ui_main_window(object):
         self.menu_edit = QtWidgets.QMenu(self.menu_bar)
         self.menu_edit.setObjectName("menu_edit")
         main_window.setMenuBar(self.menu_bar)
-        self.tool_bar = QtWidgets.QToolBar(main_window)
+        self.toolbar = QtWidgets.QToolBar(main_window)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tool_bar.sizePolicy().hasHeightForWidth())
-        self.tool_bar.setSizePolicy(sizePolicy)
-        self.tool_bar.setIconSize(QtCore.QSize(16, 16))
-        self.tool_bar.setObjectName("tool_bar")
-        main_window.addToolBar(QtCore.Qt.TopToolBarArea, self.tool_bar)
+        sizePolicy.setHeightForWidth(self.toolbar.sizePolicy().hasHeightForWidth())
+        self.toolbar.setSizePolicy(sizePolicy)
+        self.toolbar.setIconSize(QtCore.QSize(16, 16))
+        self.toolbar.setObjectName("toolbar")
+        main_window.addToolBar(QtCore.Qt.TopToolBarArea, self.toolbar)
         self.status_bar = QtWidgets.QStatusBar(main_window)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -2125,16 +2124,16 @@ class Ui_main_window(object):
         self.menu_bar.addAction(self.menu_file.menuAction())
         self.menu_bar.addAction(self.menu_edit.menuAction())
         self.menu_bar.addAction(self.menu_help.menuAction())
-        self.tool_bar.addAction(self.action_make_sim)
-        self.tool_bar.addAction(self.action_open_sim)
-        self.tool_bar.addAction(self.action_save_sim)
-        self.tool_bar.addAction(self.action_close_sim)
-        self.tool_bar.addSeparator()
-        self.tool_bar.addAction(self.action_copy)
-        self.tool_bar.addSeparator()
-        self.tool_bar.addAction(self.action_start_phase_seed)
-        self.tool_bar.addAction(self.action_start_phase_sim)
-        self.tool_bar.addAction(self.action_stop_phase)
+        self.toolbar.addAction(self.action_make_sim)
+        self.toolbar.addAction(self.action_open_sim)
+        self.toolbar.addAction(self.action_save_sim)
+        self.toolbar.addAction(self.action_close_sim)
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.action_copy)
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.action_start_phase_seed)
+        self.toolbar.addAction(self.action_start_phase_sim)
+        self.toolbar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
         self.sim_conf_stack.setCurrentIndex(0)
@@ -2427,7 +2426,7 @@ class Ui_main_window(object):
         self.action_cut.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+X", None, -1))
         self.action_copy.setText(QtWidgets.QApplication.translate("main_window", "&Copy", None, -1))
         self.action_copy.setToolTip(QtWidgets.QApplication.translate("main_window", "Copy the current selection to the clipboard.", None, -1))
-        self.action_copy.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+C", None, -1))
+        self.action_copy.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+D", None, -1))
         self.action_paste.setText(QtWidgets.QApplication.translate("main_window", "&Paste", None, -1))
         self.action_paste.setToolTip(QtWidgets.QApplication.translate("main_window", "Paste the contents of the clipboard over the current selection.", None, -1))
         self.action_paste.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+V", None, -1))
@@ -2439,13 +2438,13 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

@@ -65,6 +65,7 @@ submodule has locally created and cached that module for the current user.
 # subpackage, contrary to pure-Python expectation.
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtGui import QCloseEvent
+from PySide2.QtWidgets import QToolButton
 from betse.util.io.log import logs
 from betse.util.path import pathnames
 from betse.util.type.types import type_check, StrOrNoneTypes
@@ -194,11 +195,16 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # any subsequent logic possibly performing logging.
         guilogconf.log_to_text_edit(self.log_box)
 
-        # Customize all abstract QAction widgets of this main window.
+        # Customize all abstract actions of this main window.
         self._init_actions()
 
-        # Customize all physical top-level widgets of this main window.
+        # Customize all physical top-level widgets of this main window *AFTER*
+        # customizing all abstract actions required by these widgets.
         self._init_widgets()
+
+        # Finalize the initialization of this main window *AFTER* customizing
+        # all physical and abstract widgets of this window .
+        self._init_end()
 
     # ..................{ INITIALIZERS ~ actions             }..................
     def _init_actions(self) -> None:
@@ -296,8 +302,35 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Initialize the simulation configuration tree widget.
         self.sim_conf_tree.init(main_window=self)
 
-        # If opening an initial simulation configuration file, do so *AFTER*
-        # finalizing all widgets.
+    # ..................{ INITIALIZERS ~ end                 }..................
+    def _init_end(self) -> None:
+        '''
+        Finalize the initialization of this main window.
+
+        As this method's name implies, this method is called *after* all widgets
+        of this main window have been initialized. This method then performs all
+        remaining logic assuming these widgets to be initialized -- including:
+
+        * **Toolbar button sanitization.** Since widget initialization typically
+          programmatically inserts additional buttons into the toolbar,
+          sanitizing these buttons *must* be deferred until this method.
+        '''
+
+        # Prevent toolbar buttons from receiving the keyboard input focus,
+        # ensuring that the currently focused widget if any retains focus even
+        # when the user clicks one or more of these buttons. For safety, this
+        # is done *AFTER* finalizing all widgets and hence programmatically
+        # inserting all remaining toolbar buttons into the toolbar.
+        #
+        # By default, toolbar buttons are *ALWAYS* permitted to receive focus
+        # regardless of whether the toolbar containing these buttons is
+        # permitted to do so (i.e., has a focus policy of "NoFocus") and despite
+        # there being no demonstrable use case for focusing these buttons.
+        for toolbar_button in self.toolbar.findChildren(QToolButton):
+            toolbar_button.setFocusPolicy(Qt.NoFocus)
+
+        # If opening an initial simulation configuration file, do so as this
+        # method's last logic (i.e., *AFTER* all finalization performed above).
         if self._sim_conf_filename is not None:
             self.sim_conf.load(self._sim_conf_filename)
 
