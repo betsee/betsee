@@ -352,13 +352,9 @@ class QBetseeMainClipboard(QObject):
         '''
 
         # Avoid circular import dependencies.
-        from betsee.util.widget.guiwdg import QBetseeEditWidgetMixin
+        from betsee.util.widget.guiwdgclipboard import (
+            QBetseeClipboardWidgetMixin)
 
-        # Return True only if all of the following apply:
-        return (
-            # This widget is an application-specific editable widget.
-            isinstance(self._widget_focused_if_any, QBetseeEditWidgetMixin) and
-            # This widget transparently supports copying, cutting, and pasting
-            # into and from the system clipboard.
-            self._widget_focused_if_any.is_clipboardable
-        )
+        # Return True if the currently focused widget if any is clipboardable.
+        return isinstance(
+            self._widget_focused_if_any, QBetseeClipboardWidgetMixin)

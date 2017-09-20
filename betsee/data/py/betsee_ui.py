@@ -169,7 +169,7 @@ class Ui_main_window(object):
         item_0.setIcon(0, icon10)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon11 = QtGui.QIcon()
-        icon11.addFile("://icon/open_iconic/folder_fill.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon11.addFile(":/icon/open_iconic/folder.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon11)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon12 = QtGui.QIcon()
@@ -655,20 +655,20 @@ class Ui_main_window(object):
         self.label_81 = QtWidgets.QLabel(self.groupBox_17)
         self.label_81.setObjectName("label_81")
         self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_81)
-        self.comboBox_latticeType_2 = QtWidgets.QComboBox(self.groupBox_17)
-        self.comboBox_latticeType_2.setObjectName("comboBox_latticeType_2")
-        self.comboBox_latticeType_2.addItem("")
-        self.comboBox_latticeType_2.addItem("")
-        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.comboBox_latticeType_2)
+        self.sim_conf_space_intra_lattice_type = QtWidgets.QComboBox(self.groupBox_17)
+        self.sim_conf_space_intra_lattice_type.setObjectName("sim_conf_space_intra_lattice_type")
+        self.sim_conf_space_intra_lattice_type.addItem("")
+        self.sim_conf_space_intra_lattice_type.addItem("")
+        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_type)
         self.label_20 = QtWidgets.QLabel(self.groupBox_17)
         self.label_20.setObjectName("label_20")
         self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_20)
-        self.dsb_latticeDisorder = QtWidgets.QDoubleSpinBox(self.groupBox_17)
-        self.dsb_latticeDisorder.setDecimals(1)
-        self.dsb_latticeDisorder.setMaximum(1.0)
-        self.dsb_latticeDisorder.setSingleStep(0.1)
-        self.dsb_latticeDisorder.setObjectName("dsb_latticeDisorder")
-        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.dsb_latticeDisorder)
+        self.sim_conf_space_intra_lattice_disorder = QBetseeSimConfDoubleSpinBox(self.groupBox_17)
+        self.sim_conf_space_intra_lattice_disorder.setDecimals(1)
+        self.sim_conf_space_intra_lattice_disorder.setMaximum(1.0)
+        self.sim_conf_space_intra_lattice_disorder.setSingleStep(0.1)
+        self.sim_conf_space_intra_lattice_disorder.setObjectName("sim_conf_space_intra_lattice_disorder")
+        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_disorder)
         self.verticalLayout_17.addWidget(self.groupBox_17)
         self.groupBox_16 = QtWidgets.QGroupBox(self.groupBox_53)
         self.groupBox_16.setObjectName("groupBox_16")
@@ -2080,28 +2080,34 @@ class Ui_main_window(object):
         self.action_save_sim_as = QtWidgets.QAction(main_window)
         self.action_save_sim_as.setObjectName("action_save_sim_as")
         self.action_cut = QtWidgets.QAction(main_window)
+        icon24 = QtGui.QIcon()
+        icon24.addFile(":/icon/entypo+/scissors.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_cut.setIcon(icon24)
         self.action_cut.setObjectName("action_cut")
         self.action_copy = QtWidgets.QAction(main_window)
-        icon24 = QtGui.QIcon()
-        icon24.addFile(":/icon/open_iconic/clipboard.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_copy.setIcon(icon24)
+        icon25 = QtGui.QIcon()
+        icon25.addFile(":/icon/entypo+/copy.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_copy.setIcon(icon25)
         self.action_copy.setObjectName("action_copy")
         self.action_paste = QtWidgets.QAction(main_window)
+        icon26 = QtGui.QIcon()
+        icon26.addFile(":/icon/entypo+/clipboard.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_paste.setIcon(icon26)
         self.action_paste.setObjectName("action_paste")
         self.action_close_sim = QtWidgets.QAction(main_window)
-        icon25 = QtGui.QIcon()
-        icon25.addFile(":/icon/open_iconic/x.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_close_sim.setIcon(icon25)
+        icon27 = QtGui.QIcon()
+        icon27.addFile(":/icon/open_iconic/x.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_close_sim.setIcon(icon27)
         self.action_close_sim.setObjectName("action_close_sim")
         self.action_sim_conf_tree_item_append = QtWidgets.QAction(main_window)
-        icon26 = QtGui.QIcon()
-        icon26.addFile(":/icon/open_iconic/plus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_sim_conf_tree_item_append.setIcon(icon26)
+        icon28 = QtGui.QIcon()
+        icon28.addFile(":/icon/open_iconic/plus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_sim_conf_tree_item_append.setIcon(icon28)
         self.action_sim_conf_tree_item_append.setObjectName("action_sim_conf_tree_item_append")
         self.action_sim_conf_tree_item_remove = QtWidgets.QAction(main_window)
-        icon27 = QtGui.QIcon()
-        icon27.addFile(":/icon/open_iconic/minus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_sim_conf_tree_item_remove.setIcon(icon27)
+        icon29 = QtGui.QIcon()
+        icon29.addFile(":/icon/open_iconic/minus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_sim_conf_tree_item_remove.setIcon(icon29)
         self.action_sim_conf_tree_item_remove.setObjectName("action_sim_conf_tree_item_remove")
         self.sim_conf_tree_toolbar.addAction(self.action_sim_conf_tree_item_append)
         self.sim_conf_tree_toolbar.addAction(self.action_sim_conf_tree_item_remove)
@@ -2129,14 +2135,16 @@ class Ui_main_window(object):
         self.toolbar.addAction(self.action_save_sim)
         self.toolbar.addAction(self.action_close_sim)
         self.toolbar.addSeparator()
+        self.toolbar.addAction(self.action_cut)
         self.toolbar.addAction(self.action_copy)
+        self.toolbar.addAction(self.action_paste)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.action_start_phase_seed)
         self.toolbar.addAction(self.action_start_phase_sim)
         self.toolbar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(0)
+        self.sim_conf_stack.setCurrentIndex(3)
         self.sim_phase_tabs.setCurrentIndex(0)
         self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
@@ -2237,9 +2245,18 @@ class Ui_main_window(object):
         self.widget_17.setToolTip(QtWidgets.QApplication.translate("main_window", "Radius in meters of each cell in this cluster. This should typically be within an order of magnitude of the recommended default of 5.0e-6.", None, -1))
         self.label_83.setText(QtWidgets.QApplication.translate("main_window", "meters", None, -1))
         self.label_81.setText(QtWidgets.QApplication.translate("main_window", "Lattice type:", None, -1))
-        self.comboBox_latticeType_2.setItemText(0, QtWidgets.QApplication.translate("main_window", "Hexagonal", None, -1))
-        self.comboBox_latticeType_2.setItemText(1, QtWidgets.QApplication.translate("main_window", "Rectangular", None, -1))
+        self.sim_conf_space_intra_lattice_type.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
+"Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied), such that:\n"
+"</p><ul><li>\n"
+"<b>Hexagonal</b> situates cells along a hexagonal grid.\n"
+"</li><li>\n"
+"<b>Square</b> situates cells along a square grid.\n"
+"</li></ul>\n"
+"</body></html>", None, -1))
+        self.sim_conf_space_intra_lattice_type.setItemText(0, QtWidgets.QApplication.translate("main_window", "Hexagonal", None, -1))
+        self.sim_conf_space_intra_lattice_type.setItemText(1, QtWidgets.QApplication.translate("main_window", "Square", None, -1))
         self.label_20.setText(QtWidgets.QApplication.translate("main_window", "Lattice disorder:", None, -1))
+        self.sim_conf_space_intra_lattice_disorder.setToolTip(QtWidgets.QApplication.translate("main_window", "Degree to which cell boundaries spatially deviate from the line segments of the underlying base cell lattice. If 0.0, cells rigidly conform to these segments; else, cells randomly deviate from these segments. Increasing this increases the entropy (i.e., randomness) of this deviation, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].", None, -1))
         self.groupBox_16.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation\'s extracellular environment.", None, -1))
         self.groupBox_16.setTitle(QtWidgets.QApplication.translate("main_window", "Environment", None, -1))
         self.label_17.setText(QtWidgets.QApplication.translate("main_window", "World length:", None, -1))
@@ -2438,13 +2455,13 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.util.widget.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

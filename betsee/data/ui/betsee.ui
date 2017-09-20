@@ -284,8 +284,8 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
            <string>Paths</string>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/folder_fill.svg</normaloff>://icon/open_iconic/folder_fill.svg</iconset>
+           <iconset resource="../qrc/betsee.qrc">
+            <normaloff>:/icon/open_iconic/folder.svg</normaloff>:/icon/open_iconic/folder.svg</iconset>
           </property>
          </item>
          <item>
@@ -400,7 +400,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1365,7 +1365,17 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QComboBox" name="comboBox_latticeType_2">
+               <widget class="QComboBox" name="sim_conf_space_intra_lattice_type">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied), such that:
+&lt;/p&gt;&lt;ul&gt;&lt;li&gt;
+&lt;b&gt;Hexagonal&lt;/b&gt; situates cells along a hexagonal grid.
+&lt;/li&gt;&lt;li&gt;
+&lt;b&gt;Square&lt;/b&gt; situates cells along a square grid.
+&lt;/li&gt;&lt;/ul&gt;
+&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <item>
                  <property name="text">
                   <string>Hexagonal</string>
@@ -1373,7 +1383,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
                 </item>
                 <item>
                  <property name="text">
-                  <string>Rectangular</string>
+                  <string>Square</string>
                  </property>
                 </item>
                </widget>
@@ -1386,7 +1396,10 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QDoubleSpinBox" name="dsb_latticeDisorder">
+               <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_lattice_disorder">
+                <property name="toolTip">
+                 <string>Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].</string>
+                </property>
                 <property name="decimals">
                  <number>1</number>
                 </property>
@@ -4326,7 +4339,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
    <addaction name="action_save_sim"/>
    <addaction name="action_close_sim"/>
    <addaction name="separator"/>
+   <addaction name="action_cut"/>
    <addaction name="action_copy"/>
+   <addaction name="action_paste"/>
    <addaction name="separator"/>
    <addaction name="action_start_phase_seed"/>
    <addaction name="action_start_phase_sim"/>
@@ -4499,6 +4514,10 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
    </property>
   </action>
   <action name="action_cut">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/entypo+/scissors.svg</normaloff>:/icon/entypo+/scissors.svg</iconset>
+   </property>
    <property name="text">
     <string>Cu&amp;t</string>
    </property>
@@ -4512,7 +4531,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
   <action name="action_copy">
    <property name="icon">
     <iconset resource="../qrc/betsee.qrc">
-     <normaloff>:/icon/open_iconic/clipboard.svg</normaloff>:/icon/open_iconic/clipboard.svg</iconset>
+     <normaloff>:/icon/entypo+/copy.svg</normaloff>:/icon/entypo+/copy.svg</iconset>
    </property>
    <property name="text">
     <string>&amp;Copy</string>
@@ -4525,6 +4544,10 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
    </property>
   </action>
   <action name="action_paste">
+   <property name="icon">
+    <iconset resource="../qrc/betsee.qrc">
+     <normaloff>:/icon/entypo+/clipboard.svg</normaloff>:/icon/entypo+/clipboard.svg</iconset>
+   </property>
    <property name="text">
     <string>&amp;Paste</string>
    </property>

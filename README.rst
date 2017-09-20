@@ -116,9 +116,12 @@ BETSEE is open-source software `released <LICENSE>`__ under the permissive `BSD
 2-clause license`_. BETSEE contains third-party assets also released under
 `BSD-compatible licenses <license compatibility_>`__, including:
 
-* All `Open Iconic`_ icons distributed in the
-  ``betsee/data/qrc/icon/open_iconic`` subdirectory, `released <Open Iconic
-  license_>`__ under the permissive `MIT license`_.
+* All `Entypo+ icons`_ `distributed with BETSEE <BETSEE Entypo+ icons_>`__,
+  `kindly released <Entypo+ license_>`__ under the permissive `CC BY-SA 4.0
+  license`_ by `Daniel Bruce`_.
+* All `Open Iconic icons`_ `distributed with BETSEE <BETSEE Open Iconic
+  icons_>`__, `kindly released <Open Iconic license_>`__ under the permissive
+  `MIT license`_.
 
 Reference
 =========
@@ -236,8 +239,6 @@ biologically misaligned, and simply unusable.
    http://www.numpy.org
 .. _MEncoder:
    https://en.wikipedia.org/wiki/MEncoder
-.. _Open Iconic:
-   https://github.com/iconic/open-iconic
 .. _POSIX:
    https://en.wikipedia.org/wiki/POSIX
 .. _PPA:
@@ -252,6 +253,18 @@ biologically misaligned, and simply unusable.
    http://www.scipy.org
 .. _YAML:
    http://yaml.org
+
+.. # ------------------( LINKS ~ software : icon            )------------------
+.. _BETSEE Entypo+ icons:
+   betsee/data/qrc/icon/entypo+
+.. _BETSEE Open Iconic icons:
+   betsee/data/qrc/icon/open_iconic
+.. _Daniel Bruce:
+   http://www.danielbruce.se
+.. _Entypo+ icons:
+   http://entypo.com
+.. _Open Iconic icons:
+   https://github.com/iconic/open-iconic
 
 .. # ------------------( LINKS ~ software : linux           )------------------
 .. _APT:
@@ -291,6 +304,10 @@ biologically misaligned, and simply unusable.
    https://en.wikipedia.org/wiki/License_compatibility#Compatibility_of_FOSS_licenses
 .. _BSD 2-clause license:
    https://opensource.org/licenses/BSD-2-Clause
+.. _CC BY-SA 4.0 license:
+   https://creativecommons.org/licenses/by-sa/4.0
+.. _Entypo+ license:
+   licenses/entypo+
 .. _MIT license:
    https://opensource.org/licenses/MIT
 .. _Open Iconic license:

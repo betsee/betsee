@@ -11,7 +11,6 @@ with each high-level feature of a simulation configuration.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
-
 from betse.science.parameters import Parameters
 from betse.util.io.log import logs
 from betse.util.type.obj import objects
@@ -19,7 +18,6 @@ from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.guiexceptions import BetseePySideTreeWidgetException
-
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfStackedWidget(QStackedWidget):
@@ -262,6 +260,8 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         # Initialize all intracellular widgets on this page.
         main_window.sim_conf_space_intra_cell_radius.init(
             sim_conf=sim_conf, sim_conf_alias=Parameters.cell_radius)
+        main_window.sim_conf_space_intra_lattice_disorder.init(
+            sim_conf=sim_conf, sim_conf_alias=Parameters.cell_lattice_disorder)
 
         # Initialize all extracellular widgets on this page.
         main_window.sim_conf_space_extra_grid_size.init(

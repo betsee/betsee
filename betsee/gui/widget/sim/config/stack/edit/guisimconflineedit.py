@@ -13,9 +13,14 @@ from PySide2.QtWidgets import QLineEdit
 #from betse.util.io.log import logs
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
+from betsee.util.widget.guiwdgclipboard import QBetseeClipboardScalarWidgetMixin
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeSimConfLineEdit(QBetseeSimConfEditScalarWidgetMixin, QLineEdit):
+class QBetseeSimConfLineEdit(
+    QBetseeClipboardScalarWidgetMixin,
+    QBetseeSimConfEditScalarWidgetMixin,
+    QLineEdit,
+):
     '''
     Simulation configuration-specific line edit widget, permitting single-line
     strings backed by external simulation configuration files to be
@@ -73,19 +78,3 @@ class QBetseeSimConfLineEdit(QBetseeSimConfEditScalarWidgetMixin, QLineEdit):
 
     def _clear_widget_value(self) -> None:
         self.widget_value = ''
-
-    # ..................{ MIXIN ~ clipboard                  }..................
-    # No, thank *YOU*, QLineEdit superclass.
-
-    @property
-    def is_clipboardable(self) -> bool:
-        return True
-
-    def copy_selection_to_clipboard(self) -> None:
-        self.copy()
-
-    def cut_selection_to_clipboard(self) -> None:
-        self.cut()
-
-    def paste_clipboard_to_selection(self) -> None:
-        self.paste()

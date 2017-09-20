@@ -91,11 +91,13 @@ class QBetseePlaintextTooltipEventFilter(QObject):
             # appears to be rich text. Hence, we defer to a homegrown (albeit
             # presumably less reliable) solution.
             if tooltip and not guistrs.is_rich(tooltip):
-                # Convert this plaintext tooltip into a rich text tooltip by:
+                # Convert this plaintext into a rich text tooltip by (in order):
                 #
                 #* Escaping all HTML syntax in this tooltip.
+                #* Replacing each newline with a "<br/>" tag.
                 #* Embedding this tooltip in the Qt-specific "<qt>...</qt>" tag.
-                tooltip = '<qt>{}</qt>'.format(mls.escape_ml(tooltip))
+                tooltip = '<qt>{}</qt>'.format(
+                    mls.tagify_newlines(mls.escape_ml(tooltip)))
 
                 # Replace this widget's non-working plaintext tooltip with this
                 # working rich text tooltip.
