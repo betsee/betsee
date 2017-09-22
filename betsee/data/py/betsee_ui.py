@@ -657,8 +657,6 @@ class Ui_main_window(object):
         self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_81)
         self.sim_conf_space_intra_lattice_type = QtWidgets.QComboBox(self.groupBox_17)
         self.sim_conf_space_intra_lattice_type.setObjectName("sim_conf_space_intra_lattice_type")
-        self.sim_conf_space_intra_lattice_type.addItem("")
-        self.sim_conf_space_intra_lattice_type.addItem("")
         self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_type)
         self.label_20 = QtWidgets.QLabel(self.groupBox_17)
         self.label_20.setObjectName("label_20")
@@ -2253,10 +2251,8 @@ class Ui_main_window(object):
 "<b>Square</b> situates cells along a square grid.\n"
 "</li></ul>\n"
 "</body></html>", None, -1))
-        self.sim_conf_space_intra_lattice_type.setItemText(0, QtWidgets.QApplication.translate("main_window", "Hexagonal", None, -1))
-        self.sim_conf_space_intra_lattice_type.setItemText(1, QtWidgets.QApplication.translate("main_window", "Square", None, -1))
         self.label_20.setText(QtWidgets.QApplication.translate("main_window", "Lattice disorder:", None, -1))
-        self.sim_conf_space_intra_lattice_disorder.setToolTip(QtWidgets.QApplication.translate("main_window", "Degree to which cell boundaries spatially deviate from the line segments of the underlying base cell lattice. If 0.0, cells rigidly conform to these segments; else, cells randomly deviate from these segments. Increasing this increases the entropy (i.e., randomness) of this deviation, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].", None, -1))
+        self.sim_conf_space_intra_lattice_disorder.setToolTip(QtWidgets.QApplication.translate("main_window", "Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].", None, -1))
         self.groupBox_16.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation\'s extracellular environment.", None, -1))
         self.groupBox_16.setTitle(QtWidgets.QApplication.translate("main_window", "Environment", None, -1))
         self.label_17.setText(QtWidgets.QApplication.translate("main_window", "World length:", None, -1))
@@ -2455,13 +2451,13 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

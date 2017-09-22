@@ -9,11 +9,12 @@ instantiated in pages of the top-level stack.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import Slot
+from PySide2.QtCore import QCoreApplication, Slot
 from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
-from betse.util.type.types import type_check  #, CallableTypes
+from betse.util.type.types import type_check, ClassOrNoneTypes
+from betsee.guiexceptions import BetseePySideWidgetException
 from betsee.util.widget.guiwdg import QBetseeEditWidgetMixin
 
 # ....................{ MIXINS                             }....................
@@ -109,8 +110,82 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         # Type(s) required by this data descriptor if any or "None" otherwise.
         self._sim_conf_alias_type = sim_conf_alias.expr_alias_cls
 
+        # If these type(s) are unsupported by this subclass, raise an exception.
+        self._die_if_sim_conf_alias_type_invalid()
+
         # Populate this widget when opening a simulation configuration.
         self._sim_conf.set_filename_signal.connect(self._set_filename)
+
+    # ..................{ SUBCLASS ~ optional                }..................
+    # Subclasses may optionally reimplement the following methods.
+
+    @property
+    def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
+        '''
+        Superclass of all low-level values defined by the simulation
+        configuration associated with this widget if this widget is strictly
+        constrained to values of only a single type *or* ``None`` otherwise
+        (i.e., if this widget loosely displays values satisfying any one of
+        several different types).
+
+        By default, this method returns ``None``.
+
+        Caveats
+        ----------
+        This low-level type is simulation configuration-specific and hence
+        distinct from the high-level type(s) of all :mod:`PySide2`-specific
+        scalar values displayed by this widget. See the
+        :meth:`QBetseeSimConfEditScalarWidgetMixin.widget_value` property for
+        discussion of the distinction between these two related types.
+        '''
+
+        return None
+
+
+    def _die_if_sim_conf_alias_type_invalid(self) -> None:
+        '''
+        Raise an exception if the types of low-level values exposed by the
+        simulation configuration alias associated with this widget are
+        unsupported by this widget's subclass.
+        '''
+
+        # If this widget is *NOT* constrained to values of only a single type,
+        # silently noop. In this case, the subclass is required to manually
+        # validate these values.
+        if self._sim_conf_alias_type_strict is None:
+            return
+        # Else, this widget is constrained to values of only a single type.
+
+        # True only if this widget is incompatible with this alias.
+        is_sim_conf_alias_type_invalid = None
+
+        # This widget is incompatible with this alias if the latter accepts
+        # either:
+        #
+        # * Multiple types excluding this single type.
+        # * A single type incompatible with this single type.
+        if self._sim_conf_alias_type is tuple:
+            is_sim_conf_alias_type_invalid = (
+                self._sim_conf_alias_type_strict not in
+                self._sim_conf_alias_type)
+        else:
+            is_sim_conf_alias_type_invalid = not issubclass(
+                self._sim_conf_alias_type,
+                self._sim_conf_alias_type_strict)
+
+        # If this widget is incompatible with this alias, raise an exception.
+        if is_sim_conf_alias_type_invalid:
+            raise BetseePySideWidgetException(
+                title=QCoreApplication.translate(
+                    'QBetseeSimConfEditWidgetMixin', 'Widget Type Error'),
+                synopsis=QCoreApplication.translate(
+                    'QBetseeSimConfEditWidgetMixin',
+                    'Widget "{0}" YAML alias type {1!r} != {2!r} '
+                    '(i.e., expected a type compatible with {2!r} '
+                    'but received an incompatible type {1!r}).'.format(
+                        self.object_name,
+                        self._sim_conf_alias_type,
+                        self._sim_conf_alias_type_strict,)))
 
     # ..................{ PROPERTIES                         }..................
     @property

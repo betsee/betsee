@@ -1376,16 +1376,6 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
 &lt;/li&gt;&lt;/ul&gt;
 &lt;/body&gt;&lt;/html&gt;</string>
                 </property>
-                <item>
-                 <property name="text">
-                  <string>Hexagonal</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Square</string>
-                 </property>
-                </item>
                </widget>
               </item>
               <item row="2" column="0">

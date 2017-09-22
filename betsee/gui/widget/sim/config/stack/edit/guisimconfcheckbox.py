@@ -36,7 +36,7 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
     @property
     def undo_synopsis(self) -> str:
         return QCoreApplication.translate(
-            'QBetseeSimConfSpinBoxWidgetMixin', 'edits to a check box')
+            'QBetseeSimConfCheckBox', 'edits to a check box')
 
 
     @property
@@ -45,7 +45,7 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
 
 
     @property
-    def _widget_type_strict(self) -> ClassOrNoneTypes:
+    def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
         return bool
 
     # ..................{ MIXIN ~ property : value           }..................

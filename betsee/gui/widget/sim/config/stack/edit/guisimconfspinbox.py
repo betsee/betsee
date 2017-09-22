@@ -144,7 +144,7 @@ class QBetseeSimConfIntegerSpinBox(
 
     # ..................{ MIXIN                              }..................
     @property
-    def _widget_type_strict(self) -> ClassOrNoneTypes:
+    def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
         return int
 
 
@@ -167,7 +167,7 @@ class QBetseeSimConfDoubleSpinBox(
 
     # ..................{ MIXIN                              }..................
     @property
-    def _widget_type_strict(self) -> ClassOrNoneTypes:
+    def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
         return float
 
 

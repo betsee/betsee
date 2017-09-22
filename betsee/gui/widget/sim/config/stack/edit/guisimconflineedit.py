@@ -27,12 +27,6 @@ class QBetseeSimConfLineEdit(
     interactively edited.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
-    def __init__(self, *args, **kwargs) -> None:
-
-        # Initialize our superclass with all passed arguments.
-        super().__init__(*args, **kwargs)
-
     # ..................{ SUPERCLASS ~ setter                }..................
     def setText(self, text_new: str) -> None:
 

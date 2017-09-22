@@ -9,12 +9,11 @@ subclasses instantiated in pages of the top-level stack.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, Signal, Slot
+from PySide2.QtCore import Signal, Slot  # QCoreApplication
 from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
-from betse.util.type.types import type_check, ClassOrNoneTypes
-from betsee.guiexceptions import BetseePySideWidgetException
+from betse.util.type.types import type_check  #, ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
 from betsee.util.widget.guiundocmd import QBetseeWidgetUndoCommandABC
@@ -60,47 +59,6 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # superclass. See the superclass method for details.
         self._finalize_widget_edit_signal.connect(self._finalize_widget_edit)
 
-        # If all of the following conditions are satisified:
-        if (
-            # This widget is constrained to values of only a single type.
-            self._widget_type_strict is not None and
-            # This simulation configuration alias accepts values of either...
-            (
-                # Multiple types excluding this single required type *OR*...
-                (
-                    self._sim_conf_alias_type is tuple and
-                    self._widget_type_strict not in self._sim_conf_alias_type
-                ) or
-                # A single type incompatible with this single required type.
-                (
-                    self._sim_conf_alias_type is not tuple and not issubclass(
-                        self._sim_conf_alias_type, self._widget_type_strict)
-                )
-            )
-        # Then this widget is fundamentally incompatible with this alias.
-        ):
-            raise BetseePySideWidgetException(QCoreApplication.translate(
-                'QBetseeSimConfEditScalarWidgetMixin',
-                'Widget scalar type {0!r} incompatible with '
-                'YAML alias type(s) {1!r}.'.format(
-                    self._sim_conf_alias_type, self._widget_type_strict)))
-
-    # ..................{ SUBCLASS ~ optional : property     }..................
-    # Subclasses may optionally implement the following properties.
-
-    @property
-    def _widget_type_strict(self) -> ClassOrNoneTypes:
-        '''
-        Type of all scalar values displayed by this scalar widget if this widget
-        is strictly constrained to values of only a single type *or* ``None``
-        otherwise (i.e., if this widget loosely displays values satisfying any
-        one of several different types).
-
-        By default, this method returns ``None``.
-        '''
-
-        return None
-
     # ..................{ SUBCLASS ~ mandatory : property    }..................
     # Subclasses are required to implement the following properties.
 
@@ -119,6 +77,10 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         '''
         Scalar value currently displayed by this scalar widget.
 
+        This value must be either of the exact type(s) required by the
+        simulation configuration alias associated with this widget *or* of a
+        similar type safely convertible into such an exact type.
+
         Design
         ----------
         Each subclass typically implements this Python property in terms of an
@@ -131,8 +93,8 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
     @widget_value.setter
     def widget_value(self, widget_value: object) -> None:
         '''
-        Set the scalar value currently displayed by this scalar widget to the
-        passed value.
+        Set the high-level :mod:`PySide2`-specific scalar value currently
+        displayed by this scalar widget to the passed value.
 
         Design
         ----------
@@ -235,7 +197,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # edit.
         self._value_prev = value_curr
 
-    # ..................{ CONVERTERS ~ concrete              }..................
+    # ..................{ CONVERTERS ~ alias to widget       }..................
     def _set_alias_to_widget_value_if_sim_conf_open(self) -> None:
         '''
         Set the current value of the simulation configuration alias associated
@@ -253,24 +215,8 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         if not self._is_open:
             return
 
-        # Displayed value of this widget.
-        alias_value = self.widget_value
-
-        # If this value is *NOT* of the type required by this simulation
-        # configuration alias...
-        if not isinstance(alias_value, self._sim_conf_alias_type):
-            alias_type = self._sim_conf_alias_type
-
-            #FIXME: Non-ideal, obviously. Sadly, no better ideas come to mind.
-
-            # If this type is an tuple of such types (e.g., "NumericTypes")
-            # rather than a single type, arbitrarily coerce this value into the
-            # type selected by the first item of this tuple.
-            if alias_type is tuple:
-                alias_type = alias_type[0]
-
-            # Coerce this value into this type.
-            alias_value = alias_type(alias_value)
+        # Value to set this alias to, coerced from this widget's current value.
+        alias_value = self._get_alias_from_widget_value()
 
         # Set this alias' current value to this coerced value.
         self._sim_conf_alias.set(alias_value)
@@ -279,6 +225,46 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         self._finalize_widget_edit()
 
 
+    def _get_alias_from_widget_value(self) -> object:
+        '''
+        Value displayed by this widget, coerced into a type expected by this
+        simulation configuration alias.
+
+        Design
+        ----------
+        The default implementation should suffice for most subclasses. However,
+        subclasses for which the following test fails to validate that the value
+        displayed by this widget is of the type required by this simulation
+        configuration alias must override this method to do so in a
+        subclass-specific manner:
+
+            >>> isinstance(self.widget_value, self._sim_conf_alias_type)
+        '''
+
+        # Value displayed by this widget.
+        alias_value = self.widget_value
+
+        # Type(s) required by this simulation configuration alias, localized to
+        # permit reduction from a tuple to non-tuple below.
+        alias_type = self._sim_conf_alias_type
+
+        # If this value is *NOT* of the type required by this simulation
+        # configuration alias...
+        if not isinstance(alias_value, alias_type):
+            #FIXME: Non-ideal, obviously. Sadly, no better ideas come to mind.
+            # If this type is an tuple of such types (e.g., "NumericTypes")
+            # rather than a single type, arbitrarily coerce this value into the
+            # type selected by the first item of this tuple.
+            if alias_type is tuple:
+                alias_type = alias_type[0]
+
+            # Attempt to coerce this value into this type.
+            alias_value = alias_type(alias_value)
+
+        # Return this coerced value.
+        return alias_value
+
+    # ..................{ CONVERTERS ~ widget to alias       }..................
     @type_check
     def _set_widget_to_alias_value(self, filename: str) -> None:
         '''
