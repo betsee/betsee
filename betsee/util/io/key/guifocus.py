@@ -32,12 +32,8 @@ def die_unless_widget_focused() -> None:
     '''
 
     if not is_widget_focused():
-        raise BetseePySideFocusException(
-            title=QCoreApplication.translate(
-                'die_unless_widget_focused', 'Focus Error'),
-            synopsis=QCoreApplication.translate(
-                'die_unless_widget_focused', 'No widget currently focused.'),
-        )
+        raise BetseePySideFocusException(QCoreApplication.translate(
+            'die_unless_widget_focused', 'No widget currently focused.'))
 
 # ....................{ TESTERS                            }....................
 def is_widget_focused() -> bool:

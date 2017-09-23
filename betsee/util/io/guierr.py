@@ -18,13 +18,12 @@ See Also
 # top-level of this module may import *ONLY* from submodules guaranteed to:
 # * Exist, including standard Python and BETSEE modules. This does *NOT* include
 #   BETSE modules, which are *NOT* guaranteed to exist at this point. For
-#   simplicity, PySide2 is assumed to exist.
+#   simplicity, however, all core PySide2 submodules are assumed to exist.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import re, sys, traceback
 from PySide2.QtWidgets import QMessageBox
-from betsee.guiexceptions import BetseeException
 
 # ....................{ INSTALLERS                         }....................
 def install_exception_hook() -> None:
@@ -170,25 +169,26 @@ def show_exception(exception: Exception) -> None:
     from betsee.util.app import guiapp
     if False: guiapp  # squelch IDE warnings
 
-    # If this is an application exception annotated with human-readable metadata
-    # intended to be displayed, do so.
-    if isinstance(exception, BetseeException):
+    # Human-readable synopsis and exegesis of this exception if defined (e.g.,
+    # if this exception is an instance of the "BetseeException" superclass) *OR*
+    # this exception message and None otherwise.
+    exception_synopsis = getattr(exception, 'synopsis', str(exception))
+    exception_exegesis = getattr(exception, 'exegesis', None)
+
+    # If this exception has a human-readable title, use this title as is.
+    if hasattr(exception, 'title'):
         exception_title = exception.title
-        exception_synopsis = exception.synopsis
-        exception_exegesis = exception.exegesis
-    # Else, synthesize this metadata from the contents of this exception.
+    # Else, synthesize this title from metadata associated with this exception.
     else:
         # Class name of this exception.
         exception_classname = type(exception).__name__
 
-        # Human-readable type of this exception, synthesized from this
+        # Human-readable title of this exception, synthesized from this
         # machine-readable class name by inserting spaces between all
         # boundaries between non-capitalized and capitalized letters (e.g., from
         # "ValueError" to "Value Error").
         exception_title = re.sub(
             r'([a-z])([A-Z])', r'\1 \2', exception_classname,)
-        exception_synopsis = str(exception)
-        exception_exegesis = None
 
     # Attempt to obtain an exception traceback via BETSE, which is *NOT*
     # guaranteed to exist at this point.

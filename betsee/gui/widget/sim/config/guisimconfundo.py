@@ -188,13 +188,10 @@ class QBetseeUndoStackSimConf(QUndoStack):
 
             # If this action is *NOT* a separator, raise an exception.
             if not first_separator.isSeparator():
-                raise BetseePySideMenuException(
-                    title=QCoreApplication.translate(
-                        'QBetseeUndoStackSimConf', 'Edit Menu Malformed'),
-                    synopsis=QCoreApplication.translate(
-                        'QBetseeUndoStackSimConf',
-                        'First "Edit" menu action '
-                        '"{0}" not a separator.'.format(first_separator.text())))
+                raise BetseePySideMenuException(QCoreApplication.translate(
+                    'QBetseeUndoStackSimConf',
+                    'First "Edit" menu action '
+                    '"{0}" not a separator.'.format(first_separator.text())))
 
         # Insert undo and redo actions before this separator in this menu.
         main_window.menu_edit.insertAction(first_separator, self._undo_action)

@@ -181,9 +181,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             # If no such page exists, raise an exception.
             if stack_page is None:
                 raise BetseePySideTreeWidgetException(
-                    title=QCoreApplication.translate(
-                       'QBetseeSimConfTreeWidget', 'Stacked Page not Found'),
-                    synopsis=QCoreApplication.translate(
+                    QCoreApplication.translate(
                         'QBetseeSimConfTreeWidget',
                         'Simulation configuration stacked page '
                         '"{0}" not found.'.format(stack_page_name)))

@@ -175,17 +175,14 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
 
         # If this widget is incompatible with this alias, raise an exception.
         if is_sim_conf_alias_type_invalid:
-            raise BetseePySideWidgetException(
-                title=QCoreApplication.translate(
-                    'QBetseeSimConfEditWidgetMixin', 'Widget Type Error'),
-                synopsis=QCoreApplication.translate(
-                    'QBetseeSimConfEditWidgetMixin',
-                    'Widget "{0}" YAML alias type {1!r} != {2!r} '
-                    '(i.e., expected a type compatible with {2!r} '
-                    'but received an incompatible type {1!r}).'.format(
-                        self.object_name,
-                        self._sim_conf_alias_type,
-                        self._sim_conf_alias_type_strict,)))
+            raise BetseePySideWidgetException(QCoreApplication.translate(
+                'QBetseeSimConfEditWidgetMixin',
+                'Widget "{0}" YAML alias type {1!r} != {2!r} '
+                '(i.e., expected a type compatible with {2!r} '
+                'but received an incompatible type {1!r}).'.format(
+                    self.object_name,
+                    self._sim_conf_alias_type,
+                    self._sim_conf_alias_type_strict,)))
 
     # ..................{ PROPERTIES                         }..................
     @property

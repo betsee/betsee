@@ -13,6 +13,7 @@ See Also
 '''
 
 # ....................{ IMPORTS                            }....................
+from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QMessageBox
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.guiexceptions import BetseePySideMessageBoxException
@@ -118,13 +119,15 @@ def show_message(
 
     # If the "buttons" bit field is empty, raise an exception.
     if buttons == 0:
-        raise BetseePySideMessageBoxException('Button bit field empty.')
+        raise BetseePySideMessageBoxException(QCoreApplication.translate(
+            'show_message', 'Button bit field empty.'))
 
     # If the "buttons" bit field does *NOT* enable this bit, raise an exception.
     if button_default & buttons == 0:
-        raise BetseePySideMessageBoxException(
-            'Default button bit "%d" not enabled by button bit field "%d".',
-            button_default, buttons)
+        raise BetseePySideMessageBoxException(QCoreApplication.translate(
+            'show_message',
+            'Default button bit "{0}" not enabled by '
+            'button bit field "{1}".'.format(button_default, buttons)))
 
     # Message box displaying this warning.
     message_box = QMessageBox()

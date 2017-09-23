@@ -10,9 +10,12 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QComboBox
+from betse.util.type.mapping import maputil
 from betse.util.type.types import ClassOrNoneTypes, EnumType
+from betsee.guiexceptions import BetseePySideComboBoxException
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
+from collections import OrderedDict
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfEnumComboBox(
@@ -47,23 +50,24 @@ class QBetseeSimConfEnumComboBox(
         # default, this is sufficiently important to warrant disabling anyway.)
         self.setEditable(False)
 
-    #FIXME: If do actually require dictionary reversibility, the simplest
-    #solution would be to simply require callers pass specific
-    #"OneToOneDict"-based dictionaries rather than "MappingType" instances.
+
     @type_check
     def init(
-        self, enum_member_to_item_text: MappingType, *args, **kwargs) -> None:
+        self, enum_member_to_item_text: OrderedDict, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this widget.
 
         Parameters
         ----------
-        enum_member_to_item_text : MappingType
-            Dictionary mapping from each member of the enumeration provided by
-            the passed ``sim_conf_alias`` parameter to the human-readable text
-            of the combo box item describing that member. If this dictionary is
-            *not* safely invertible (i.e., if any value of this dictionary is
-            non-uniquely assigned to two or more keys), an exception is raised.
+        enum_member_to_item_text : OrderedDict
+            Ordered dictionary mapping from each member of the enumeration
+            encapsulated by the passed ``sim_conf_alias`` parameter to the
+            human-readable text of the combo box item describing that member.
+            The dictionary ordering of these enumeration members exactly defines
+            the order in which the corresponding combo box items are listed. If
+            this dictionary is *not* safely invertible (i.e., if any value of
+            this dictionary is non-uniquely assigned to two or more keys), an
+            exception is raised.
 
         All remaining parameters are passed as is to the superclass method.
         '''
@@ -71,11 +75,20 @@ class QBetseeSimConfEnumComboBox(
         # Initialize our superclass with all remaining parameters.
         super().init(*args, **kwargs)
 
+        # If this dictionary duplicates any combo box items, raise an exception.
+        maputil.die_unless_values_unique(enum_member_to_item_text)
+
         # Enumeration constraining this simulation configuration alias.
         enum_type = self._sim_conf_alias.data_desc.expr_enum_alias_type
 
-        #FIXME: If the size of this dictionary differs from that of this
-        #enumeration, raise an exception.
+        # If the number of members in this enumeration differs from the number
+        # of members mapped by this dictionary, raise an exception.
+        if len(enum_type) != len(enum_member_to_item_text):
+            raise BetseePySideComboBoxException(QCoreApplication.translate(
+                'QBetseeSimConfEnumComboBox',
+                'Number of enumeration members {0} differs from '
+                'number of mapped enumeration members {1}'.format(
+                    len(enum_type), len(enum_member_to_item_text))))
 
         #FIXME: Populate the contents of this combo box from this dictionary.
 

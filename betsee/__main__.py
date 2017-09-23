@@ -27,7 +27,36 @@ import sys
 from betsee import guimetadata
 from betsee.guimetadata import NAME
 from betsee.guimetadeps import BETSE_VERSION_REQUIRED_MIN
-from betsee.guiexceptions import BetseeException, BetseeLibException
+
+# ....................{ EXCEPTIONS                         }....................
+class _BetseNotFoundException(Exception):
+    '''
+    Exception raised on detecting BETSE (i.e., this application's core mandatory
+    dependency) to be unimportable under the active Python interpreter.
+
+    Design
+    ----------
+    This subclass intentionally complies with the public API of the
+    :class:`betsee.guiexceptions.BetseeException` superclass to enable duck
+    typing between the two classes (e.g., by the
+    :func:`betsee.util.io.ioerr.show_exception` function). As the
+    :mod:`betsee.guiexceptions` submodule necessarily imports from and hence
+    assumes the importability of the mandatory third-party :mod:`PySide2`
+    package whose importability has *not* yet been validated at this early time
+    in the application lifecycle, this submodule *cannot* safely import from
+    that submodule and hence explicitly subclass that superclass.
+    '''
+
+    # ..................{ INITIALIZERS                       }..................
+    def __init__(self, title: str, synopsis: str, exegesis: str) -> None:
+
+        # Initialize our superclass.
+        super().__init__(synopsis)
+
+        # Classify all passed parameters to enable duck typing.
+        self.title = title
+        self.synopsis = synopsis
+        self.exegesis = exegesis
 
 # ....................{ MAIN                               }....................
 def main(arg_list: list = None) -> int:
@@ -58,7 +87,7 @@ def main(arg_list: list = None) -> int:
         _die_unless_betse()
     # If BETSE is unsatisfied, display this exception in an appropriate manner
     # and return the exit status of doing so.
-    except BetseeLibException as exception:
+    except _BetseNotFoundException as exception:
         return _show_betse_exception(exception)
 
     # Else, BETSE is satisfied. Import us up the BETSEE package tree, most of
@@ -77,7 +106,7 @@ def _die_unless_betse() -> None:
 
     Raises
     ----------
-    BetseeLibException
+    _BetseNotFoundException
         If BETSE is unsatisfied (i.e., either unimportable or of a version
         less than that required by this application).
     '''
@@ -91,7 +120,7 @@ def _die_unless_betse() -> None:
     # If BETSE is unimportable, chain this low-level "ImportError" exception
     # into a higher-level application-specific exception.
     except ImportError as import_error:
-        raise BetseeLibException(
+        raise _BetseNotFoundException(
             title=EXCEPTION_TITLE,
             synopsis='BETSE not found.',
             exegesis='Python package "betse" not importable.',
@@ -106,7 +135,7 @@ def _die_unless_betse() -> None:
 
     # If the current version of BETSE is insufficient, raise an exception.
     if betse.__version_info__ < BETSE_VERSION_REQUIRED_MIN_PARTS:
-        raise BetseeLibException(
+        raise _BetseNotFoundException(
             title=EXCEPTION_TITLE,
             synopsis='Obsolete version of BETSE found.',
             exegesis=(
@@ -114,14 +143,15 @@ def _die_unless_betse() -> None:
                 'but only BETSE {} is currently installed.'.format(
                     NAME, BETSE_VERSION_REQUIRED_MIN, betse.__version__)))
 
-    # raise BetseeLibException(
+    # Purely for testing purposes.
+    # raise _BetseNotFoundException(
     #     title=EXCEPTION_TITLE,
     #     synopsis='BETSE not found.',
     #     exegesis='Python package "betse" not importable.',
     # )
 
 # ....................{ EXCEPTIONS                         }....................
-def _show_betse_exception(exception: BetseeException) -> int:
+def _show_betse_exception(exception: _BetseNotFoundException) -> int:
     '''
     Display the passed exception signifying BETSE to be unsatisfied in an
     appropriate manner.
@@ -137,8 +167,8 @@ def _show_betse_exception(exception: BetseeException) -> int:
         Exit status implying failure (i.e., 1).
     '''
 
-    assert isinstance(exception, BetseeLibException), (
-        '"{}" not a BETSEE library exception.'.format(exception))
+    assert isinstance(exception, _BetseNotFoundException), (
+        '"{}" not a BETSE not found exception.'.format(exception))
 
     # Always redirect this exception message to the standard error file handle
     # for the terminal running this CLI command if any.

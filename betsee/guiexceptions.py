@@ -9,12 +9,15 @@ Application-specific exception hierarchy.
 
 # ....................{ IMPORTS                            }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# WARNING: To avoid race conditions during application startup, this module may
-# import *ONLY* from modules guaranteed to exist at startup. This includes all
-# standard Python and application modules but *NOT* third-party dependencies,
-# which if unimportable will only be validated at some later time in startup.
+# WARNING: To raise human-readable exceptions on application startup, the
+# top-level of this module may import *ONLY* from submodules guaranteed to:
+# * Exist, including standard Python and BETSEE modules. This does *NOT* include
+#   BETSE modules, which are *NOT* guaranteed to exist at this point. For
+#   simplicity, however, all core PySide2 submodules are assumed to exist.
+# * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+from PySide2.QtCore import QCoreApplication
 from abc import ABCMeta
 
 # ....................{ EXCEPTIONS                         }....................
@@ -40,13 +43,10 @@ class BetseeException(Exception, metaclass=ABCMeta):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    #FIXME: The title should be optional. If absent, a suitable title should be
-    #synthesized from the name of the concrete leaf subclass implementing this
-    #abstract base class.
     def __init__(
         self,
-        title: str,
         synopsis: str,
+        title: str = None,
         exegesis: str = None,
     ) -> None:
         '''
@@ -54,12 +54,14 @@ class BetseeException(Exception, metaclass=ABCMeta):
 
         Parameters
         ----------
-        title : str
-            Human-readable title associated with this exception, typically
-            constrained to at most two to three words.
         synopsis : str
             Human-readable synopsis tersely describing this exception, typically
             constrained to a single sentence.
+        title : optional[str]
+            Human-readable title associated with this exception, typically
+            constrained to at most two to three words. Defaults to ``None``, in
+            which case the title defaults to the translated string returned by
+            the :meth:`_title_default` property.
         exegesis : optional[str]
             Human-readable explanation fully detailing this exception, typically
             spanning multiple sentences. Defaults to ``None``, in which case no
@@ -68,8 +70,9 @@ class BetseeException(Exception, metaclass=ABCMeta):
 
         # Since the @type_check decorator is unavailable at this early point in
         # application startup, manually assert the types of these parameters.
-        assert isinstance(title, str), '"{}" not a string.'.format(title)
         assert isinstance(synopsis, str), '"{}" not a string.'.format(synopsis)
+        assert isinstance(title, (str, type(None))), (
+            '"{}" neither a string nor "None".'.format(title))
         assert isinstance(exegesis, (str, type(None))), (
             '"{}" neither a string nor "None".'.format(exegesis))
 
@@ -79,10 +82,25 @@ class BetseeException(Exception, metaclass=ABCMeta):
         super().__init__(
             synopsis + (' ' + exegesis if exegesis is not None else ''))
 
+        # If no title was explicitly passed, fallback to the default title
+        # defined by this exception subclass.
+        if title is None:
+            title = self._title_default
+
         # Classify all passed parameters.
         self.title = title
         self.synopsis = synopsis
         self.exegesis = exegesis
+
+    # ..................{ PROPERTIES                         }..................
+    @property
+    def _title_default(self) -> str:
+        '''
+        Default human-readable title associated with *all* exceptions of this
+        type for which no ``title`` parameter is passed at instantiation time.
+        '''
+
+        return QCoreApplication.translate('BetseeException', 'Horrible Error')
 
 # ....................{ EXCEPTIONS ~ general               }....................
 class BetseeCacheException(BetseeException):
@@ -91,7 +109,9 @@ class BetseeCacheException(BetseeException):
     dynamic generation of pure-Python modules imported at runtime.
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate('BetseeCacheException', 'Cache Error')
 
 
 class BetseeSimConfException(BetseeException):
@@ -100,15 +120,10 @@ class BetseeSimConfException(BetseeException):
     handling (e.g., whether a simulation configuration is currently open).
     '''
 
-    pass
-
-# ....................{ EXCEPTIONS ~ lib                   }....................
-class BetseeLibException(BetseeException):
-    '''
-    General-purpose exception applicable to third-party dependencies.
-    '''
-
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseeSimConfException', 'Simulation Configuration Error')
 
 # ....................{ EXCEPTIONS ~ psd                   }....................
 class BetseePySideException(BetseeException):
@@ -117,7 +132,10 @@ class BetseePySideException(BetseeException):
     principal third-party dependency.
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideException', 'PySide2 Error')
 
 
 class BetseePySideClipboardException(BetseePySideException):
@@ -126,19 +144,22 @@ class BetseePySideClipboardException(BetseePySideException):
     platform-specific system clipboard.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
-    def __init__(
-        self, synopsis: str, title: str = None, exegesis: str = None,) -> None:
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideClipboardException', 'Clipboard Error'),
 
-        # Defer third-party dependency imports.
-        from PySide2.QtCore import QCoreApplication
 
-        # Initialize our superclass with these parameters.
-        super().__init__(
-            title=(title if title is not None else QCoreApplication.translate(
-                'BetseePySideClipboardException', 'Clipboard Error')),
-            synopsis=synopsis,
-            exegesis=exegesis,)
+class BetseePySideFocusException(BetseePySideException):
+    '''
+    General-purpose exception applicable to all handling of interactive keyboard
+    input focus for widgets.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideFocusException', 'Widget Focus Error')
 
 # ....................{ EXCEPTIONS ~ psd : widget          }....................
 class BetseePySideWidgetException(BetseePySideException):
@@ -146,16 +167,22 @@ class BetseePySideWidgetException(BetseePySideException):
     General-purpose exception applicable to :mod:`PySide2` widgets.
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideWidgetException', 'Widget Error')
 
 
-class BetseePySideFocusException(BetseePySideWidgetException):
+class BetseePySideComboBoxException(BetseePySideWidgetException):
     '''
-    General-purpose exception applicable to all handling of interactive keyboard
-    input focus for widgets.
+    General-purpose exception applicable to
+    :class:`PySide2.QtWidgets.QComboBox` instances.
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideComboBoxException', 'Combo Box Error')
 
 
 class BetseePySideMenuException(BetseePySideWidgetException):
@@ -164,7 +191,10 @@ class BetseePySideMenuException(BetseePySideWidgetException):
     :class:`PySide2.QtWidgets.QMenu` instances.
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideMenuException', 'Menu Error')
 
 
 class BetseePySideMessageBoxException(BetseePySideWidgetException):
@@ -173,7 +203,10 @@ class BetseePySideMessageBoxException(BetseePySideWidgetException):
     :class:`PySide2.QtWidgets.QMessageBox` instances.
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideMessageBoxException', 'Message Box Error')
 
 
 class BetseePySideSpinBoxException(BetseePySideWidgetException):
@@ -183,7 +216,10 @@ class BetseePySideSpinBoxException(BetseePySideWidgetException):
     :class:`PySide2.QtWidgets.QDoubleSpinBox` instances).
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideSpinBoxException', 'Spin Box Error')
 
 
 class BetseePySideTreeWidgetException(BetseePySideWidgetException):
@@ -192,4 +228,7 @@ class BetseePySideTreeWidgetException(BetseePySideWidgetException):
     :class:`PySide2.QtWidgets.QTreeWidget` instances.
     '''
 
-    pass
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideTreeWidgetException', 'Tree Widget Error')
