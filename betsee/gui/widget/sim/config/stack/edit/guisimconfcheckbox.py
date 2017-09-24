@@ -63,5 +63,5 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
         super().setChecked(widget_value)
 
 
-    def _clear_widget_value(self) -> None:
+    def _reset_widget_value(self) -> None:
         self.widget_value = False

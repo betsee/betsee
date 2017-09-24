@@ -75,16 +75,35 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
     @property
     def widget_value(self) -> object:
         '''
-        Scalar value currently displayed by this scalar widget.
-
-        This value must be either of the exact type(s) required by the
-        simulation configuration alias associated with this widget *or* of a
-        similar type safely convertible into such an exact type.
+        High-level :mod:`PySide2`-specific scalar value currently displayed by
+        this scalar widget.
 
         Design
         ----------
         Each subclass typically implements this Python property in terms of an
         unprefixed getter method of this widget (e.g., :meth:`QLineEdit.text`).
+
+        Caveats
+        ----------
+        If this value is neither of the exact type(s) required by the simulation
+        configuration alias associated with this widget *nor* of a similar type
+        safely convertible into such a type, the subclass *must* redefine both
+        the :meth:`_get_alias_from_widget_value` and
+        :meth:`_get_widget_from_alias_value` methods to convert this value to
+        and from such a type.
+
+        This high-level value is purely :mod:`PySide2`-specific and hence
+        distinct from the associated low-level scalar value defined by the
+        simulation configuration. In particular, these two values are typically
+        but *not* necessarily of the same type.
+
+        For example, for the :class:`QBetseeSimConfEnumComboBox` subclass:
+
+        * The high-level :meth:`QBetseeSimConfEnumComboBox.widget_value`
+          property returns an integer (i.e., the 0-based index of the currently
+          selected item in that combo box).
+        * The low-level :meth:`QBetseeSimConfEnumComboBox._sim_conf_alias.get`
+          getter returns the enumeration member corresponding to this item.
         '''
 
         raise BetseMethodUnimplementedException()
@@ -132,15 +151,17 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
     # ..................{ SUBCLASS ~ mandatory : method      }..................
     # Subclasses are required to implement the following methods.
 
-    def _clear_widget_value(self) -> None:
+    def _reset_widget_value(self) -> None:
         '''
-        Clear the scalar value currently displayed by this scalar widget.
+        Reset the scalar value currently displayed by this scalar widget, thus
+        reverting this widget to its default state divorced from an underlying
+        model.
 
-        Specifically, if this widget displays:
+        For example, if this widget displays:
 
-        * A string value, set this value to the empty string.
-        * A float value, set this value to 0.0.
-        * An integer value, set this value to 0.
+        * A string value, this method should set this value to the empty string.
+        * A float value, this method should set this value to 0.0.
+        * An integer value, this method should set this value to 0.
         '''
 
         raise BetseMethodUnimplementedException()
@@ -282,13 +303,27 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         '''
 
         # If a simulation configuration is currently open, set this widget's
-        # displayed value to this alias' current value.
+        # displayed value from this alias' current value.
         if filename and self._is_open:
-            self.widget_value = self._sim_conf_alias.get()
+            self.widget_value = self._get_widget_from_alias_value()
         # Else, no simulation configuration is currently open. In this case,
         # clear this widget's displayed value.
         else:
-            self._clear_widget_value()
+            self._reset_widget_value()
+
+
+    def _get_widget_from_alias_value(self) -> object:
+        '''
+        Value of the simulation configuration alias associated with this widget,
+        coerced into a type displayable by this widget.
+
+        See Also
+        ----------
+        :meth:`_get_alias_from_widget_value`
+            Further details.
+        '''
+
+        return self._sim_conf_alias.get()
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):

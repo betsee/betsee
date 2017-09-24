@@ -153,7 +153,7 @@ class QBetseeSimConfIntegerSpinBox(
         super().setValue(widget_value)
 
 
-    def _clear_widget_value(self) -> None:
+    def _reset_widget_value(self) -> None:
         self.widget_value = 0
 
 
@@ -194,5 +194,5 @@ class QBetseeSimConfDoubleSpinBox(
         super().setValue(widget_value)
 
 
-    def _clear_widget_value(self) -> None:
+    def _reset_widget_value(self) -> None:
         self.widget_value = 0.0

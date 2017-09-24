@@ -10,8 +10,9 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QComboBox
+from betse.util.type import iterables
 from betse.util.type.mapping import maputil
-from betse.util.type.types import ClassOrNoneTypes, EnumType
+from betse.util.type.types import type_check, ClassOrNoneTypes, EnumType
 from betsee.guiexceptions import BetseePySideComboBoxException
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
@@ -31,12 +32,13 @@ class QBetseeSimConfEnumComboBox(
 
     Attributes
     ----------
-    _item_index_to_enum_member : MappingType
-        Dictionary mapping from each member of the enumeration provided by
-        the passed ``sim_conf_alias`` parameter to the human-readable text
-        of the combo box item describing that member. If this dictionary is
-        *not* safely invertible (i.e., if any value of this dictionary is
-        non-uniquely assigned to two or more keys), an exception is raised.
+    _enum_member_to_item_index : MappingType
+        Dictionary mapping from each member of the enumeration constraining this
+        combo box to the 0-based index of the corresponding combo box item.
+    _item_index_to_enum_member : SequenceTypes
+        Sequence of all enumeration members, efficiently mapping from the
+        0-based index of each combo box item to the corresponding member of the
+        enumeration constraining this combo box.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -44,6 +46,10 @@ class QBetseeSimConfEnumComboBox(
 
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
+
+        # Nullify all instance variables for safety.
+        self._enum_member_to_item_index = None
+        self._item_index_to_enum_member = None
 
         # Disable editability, preventing users from manually editing item text.
         # (Though editability is technically disabled by our superclass by
@@ -87,18 +93,27 @@ class QBetseeSimConfEnumComboBox(
             raise BetseePySideComboBoxException(QCoreApplication.translate(
                 'QBetseeSimConfEnumComboBox',
                 'Number of enumeration members {0} differs from '
-                'number of mapped enumeration members {1}'.format(
+                'number of mapped enumeration members {1}.'.format(
                     len(enum_type), len(enum_member_to_item_text))))
 
-        #FIXME: Populate the contents of this combo box from this dictionary.
+        # Sequence of the human-readable text of all combo box items.
+        items_text = enum_member_to_item_text.values()
+
+        # Populate the contents of this combo box from this sequence.
+        self.addItems(items_text)
+
+        # Sequence mapping from combo box item indices to enumeration members.
+        self._item_index_to_enum_member = tuple(enum_member_to_item_text.keys())
+
+        # Dictionary mapping from enumeration members to combo box item indices.
+        self._enum_member_to_item_index = iterables.invert_iterable_unique(
+            self._item_index_to_enum_member)
 
     # ..................{ SUPERCLASS ~ setter                }..................
-    #FIXME: Blatantly wrong, obviously. No idea what superclass method should be
-    #overridden here, at the moment.
-    def setComboed(self, value_new: bool) -> None:
+    def setCurrentIndex(self, value_new: int) -> None:
 
         # Defer to the superclass setter.
-        super().setComboed(value_new)
+        super().setCurrentIndex(value_new)
 
         # If this configuration is currently open, set the current value of this
         # simulation configuration alias to this widget's current value.
@@ -111,15 +126,9 @@ class QBetseeSimConfEnumComboBox(
             'QBetseeSimConfComboBox', 'changes to a combo box')
 
 
-    #FIXME: Actually, this should probably just be "currentIndexChanged" in this
-    #case, no?
     @property
     def _finalize_widget_edit_signal(self) -> Signal:
-
-        # All other modification signals exposed by our widget superclass (e.g.,
-        # "QComboBox.currentIndexChanged") are subsumed by the following
-        # general-purpose parent signal.
-        return self.currentTextChanged
+        return self.currentIndexChanged
 
 
     @property
@@ -129,37 +138,59 @@ class QBetseeSimConfEnumComboBox(
     # ..................{ MIXIN ~ property : value           }..................
     @property
     def widget_value(self) -> object:
-        return .
+        return self.currentIndex()
 
 
-    #FIXME: Patch us up, please.
     @widget_value.setter
     def widget_value(self, widget_value: object) -> None:
 
         # Set this widget's displayed value to the passed value by calling the
-        # setComboed() method of our superclass rather than this subclass,
+        # setCurrentIndex() method of our superclass rather than this subclass,
         # preventing infinite recursion. (See the superclass method docstring.)
-        super().setComboed(widget_value)
+        super().setCurrentIndex(widget_value)
 
 
-    #FIXME: Arbitrarily select the first item in this combo box.
-    def _clear_widget_value(self) -> None:
-        self.widget_value =
+    def _reset_widget_value(self) -> None:
+
+        # "Reset" the combo box by arbitrarily selecting its first item. Note
+        # this is distinct from the clear() method defined by our superclass,
+        # removing all existing items from this combo box. Calling that method
+        # would be highly undesirable here.
+        self.widget_value = 0
 
 
     def _get_alias_from_widget_value(self) -> object:
 
-        # Value displayed by this widget, coerced into a type expected by this
-        # simulation configuration alias. Since both expect the same type of
-        # enumeration members, the same value is safely usable in both contexts
-        # *WITHOUT* requiring type coercion.
-        #
-        # The standard isinstance()-style test performed by our superclass
-        # method fails to suffice for enumerations, requiring that we manually
-        # reduce this method to a trivial getter. Specifically:
-        #
-        #     # This test *ALWAYS* evaluates to False, as "self.widget_value" is
-        #     # an enumeration member and "self._sim_conf_alias_types" simply an
-        #     # an enumeration. (Such is code life.)
-        #     isinstance(self.widget_value, self._sim_conf_alias_type)
-        return self.widget_value
+        # 0-based index of the current combo box item.
+        item_index = self.widget_value
+
+        # If this index exceeds the length of the internal sequence mapping from
+        # such indices, raise an exception. While this should *NEVER* be the
+        # case, explicit sanity validation is the stuff of legend.
+        if item_index >= len(self._item_index_to_enum_member):
+            raise BetseePySideComboBoxException(QCoreApplication.translate(
+                'QBetseeSimConfEnumComboBox',
+                'Item index {0} invalid '
+                '(i.e., not in the range [0, {1}]).'.format(
+                    item_index, len(self._item_index_to_enum_member) - 1)))
+
+        # Return the enumeration member corresponding to this item.
+        return self._item_index_to_enum_member[item_index]
+
+
+    def _get_widget_from_alias_value(self) -> object:
+
+        # Current value of this simulation configuration alias.
+        enum_member = self._sim_conf_alias.get()
+
+        # If this is *NOT* a member of this enumeration, raise an exception.
+        # While this should *NEVER* be the case, should should never be a word.
+        if enum_member not in self._enum_member_to_item_index:
+            raise BetseePySideComboBoxException(QCoreApplication.translate(
+                'QBetseeSimConfEnumComboBox',
+                'Enumeration member "{0}" unrecognized.'.format(
+                    str(enum_member))))
+
+        # Return the 0-based index of the combo box item corresponding to this
+        # enumeration member.
+        return self._enum_member_to_item_index[enum_member]

@@ -70,5 +70,5 @@ class QBetseeSimConfLineEdit(
         super().setText(widget_value)
 
 
-    def _clear_widget_value(self) -> None:
+    def _reset_widget_value(self) -> None:
         self.widget_value = ''
