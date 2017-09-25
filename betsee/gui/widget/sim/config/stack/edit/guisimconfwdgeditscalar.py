@@ -185,7 +185,16 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
     def _finalize_widget_edit(self) -> None:
         '''
         Slot signalled on each finalized interactive user (but *not*
-        programmatic) edit of the contents of this widget.
+        programmatic) change to the contents of this widget.
+
+        Design
+        ----------
+        While *not* directly signalled on each programmatic change, this slot is
+        called as a method by the
+        :meth:`_set_alias_to_widget_value_if_sim_conf_open` method, which is
+        called by the subclass implementation of this widget's principal setter
+        method (e.g., :meth:`QLineEdit.setText`). Hence, this method is *always*
+        called on each finalized widget change.
         '''
 
         # Log this edit.
@@ -228,7 +237,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         Design
         ----------
         This method should typically be explicitly called in the subclass
-        implementation of the :attr:`value_setter` method (e.g.,
+        implementation of this widget's principal setter method (e.g.,
         :meth:`QLineEdit.setText`).
         '''
 

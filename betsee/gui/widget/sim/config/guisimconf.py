@@ -46,7 +46,7 @@ class QBetseeSimConf(QObject):
         ``True`` only if a simulation configuration is currently open *and* this
         configuration is **dirty** (i.e., has unsaved changes).
 
-    Attributes (Private: Actions)
+    Attributes (Private: Widgets)
     ----------
     _action_make_sim : QAction
         Alias of the :attr:`QBetseeMainWindow.action_make_sim` action.
@@ -68,6 +68,8 @@ class QBetseeSimConf(QObject):
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.
     _sim_phase_tabs : QTabWidget
         Alias of the :attr:`QBetseeMainWindow.sim_phase_tabs` widget.
+    _status_bar : QStatusBar
+        Alias of the :attr:`QBetseeMainWindow.status_bar` widget.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -128,6 +130,7 @@ class QBetseeSimConf(QObject):
         self._sim_conf_tree       = main_window.sim_conf_tree
         self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
         self._sim_phase_tabs      = main_window.sim_phase_tabs
+        self._status_bar          = main_window.status_bar
 
         # Initialize all widgets pertaining to the state of this simulation
         # configuration *BEFORE* connecting all relevant signals and slots
@@ -343,6 +346,10 @@ class QBetseeSimConf(QObject):
         # Deserialize this low-level file into a high-level configuration.
         self.load(conf_filename)
 
+        # Update the status bar *AFTER* successfully completing this action.
+        self._status_bar.showMessage(QCoreApplication.translate(
+            'QBetseeSimConf', 'Simulation created.'))
+
 
     @Slot()
     def _open_sim(self) -> None:
@@ -366,6 +373,10 @@ class QBetseeSimConf(QObject):
 
         # Deserialize this low-level file into a high-level configuration.
         self.load(conf_filename)
+
+        # Update the status bar *AFTER* successfully completing this action.
+        self._status_bar.showMessage(QCoreApplication.translate(
+            'QBetseeSimConf', 'Simulation opened.'))
 
 
     @Slot()
@@ -391,6 +402,10 @@ class QBetseeSimConf(QObject):
         # Notify all interested slots of this event.
         self.set_filename_signal.emit('')
 
+        # Update the status bar *AFTER* successfully completing this action.
+        self._status_bar.showMessage(QCoreApplication.translate(
+            'QBetseeSimConf', 'Simulation closed.'))
+
 
     @Slot()
     def _save_sim(self) -> None:
@@ -406,6 +421,10 @@ class QBetseeSimConf(QObject):
 
         # Notify all interested slots of this event.
         self.set_dirty_signal.emit(False)
+
+        # Update the status bar *AFTER* successfully completing this action.
+        self._status_bar.showMessage(QCoreApplication.translate(
+            'QBetseeSimConf', 'Simulation saved.'))
 
 
     @Slot()
@@ -429,6 +448,10 @@ class QBetseeSimConf(QObject):
 
         # Notify all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
+
+        # Update the status bar *AFTER* successfully completing this action.
+        self._status_bar.showMessage(QCoreApplication.translate(
+            'QBetseeSimConf', 'Simulation saved.'))
 
     # ..................{ LOADERS                            }..................
     @type_check

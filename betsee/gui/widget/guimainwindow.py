@@ -448,6 +448,9 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         self.setWindowState(self.windowState() | Qt.WindowMaximized)
 
     # ..................{ STATUS                             }..................
+    #FIXME: This method appears to be useless and hence should probably be
+    #excised. Why? Because it's not safely callable, as doing so would require
+    #callers to retain a circular reference to this main window.
     @type_check
     def _show_status(self, text: str) -> None:
         '''
@@ -464,6 +467,9 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         self.status_bar.showMessage(text)
 
 
+    #FIXME: This method appears to be useless and hence should probably be
+    #excised. Why? Because it's not safely callable, as doing so would require
+    #callers to retain a circular reference to this main window.
     def _clear_status(self) -> None:
         '''
         Remove the temporary message currently displayed in the status bar if

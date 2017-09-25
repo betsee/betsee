@@ -655,7 +655,7 @@ class Ui_main_window(object):
         self.label_81 = QtWidgets.QLabel(self.groupBox_17)
         self.label_81.setObjectName("label_81")
         self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_81)
-        self.sim_conf_space_intra_lattice_type = QtWidgets.QComboBox(self.groupBox_17)
+        self.sim_conf_space_intra_lattice_type = QBetseeSimConfEnumComboBox(self.groupBox_17)
         self.sim_conf_space_intra_lattice_type.setObjectName("sim_conf_space_intra_lattice_type")
         self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_type)
         self.label_20 = QtWidgets.QLabel(self.groupBox_17)
@@ -2451,13 +2451,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

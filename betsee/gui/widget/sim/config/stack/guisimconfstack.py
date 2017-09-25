@@ -13,6 +13,7 @@ from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.science.parameters import Parameters
 from betse.util.io.log import logs
+from betse.util.type.mapping.mapcls import OrderedArgsDict
 from betse.util.type.obj import objects
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
@@ -182,7 +183,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             if stack_page is None:
                 raise BetseePySideTreeWidgetException(
                     QCoreApplication.translate(
-                        'QBetseeSimConfTreeWidget',
+                        'QBetseeSimConfStackedWidget',
                         'Simulation configuration stacked page '
                         '"{0}" not found.'.format(stack_page_name)))
 
@@ -226,11 +227,14 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all simulation line edit widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_dirname_relative)
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.sim_pickle_dirname_relative)
         main_window.sim_conf_path_sim_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_pickle_basename)
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.sim_pickle_basename)
         main_window.sim_conf_path_sim_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_export_dirname_relative)
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.sim_export_dirname_relative)
 
         # Initialize all simulation push button widgets on this page.
         main_window.sim_conf_path_sim_pick_dir_btn.init(
@@ -252,6 +256,9 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
 
+        # Isolate page-specific imports.
+        from betse.science.config.confenum import CellLatticeType
+
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
 
@@ -260,6 +267,16 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             sim_conf=sim_conf, sim_conf_alias=Parameters.cell_radius)
         main_window.sim_conf_space_intra_lattice_disorder.init(
             sim_conf=sim_conf, sim_conf_alias=Parameters.cell_lattice_disorder)
+        main_window.sim_conf_space_intra_lattice_type.init(
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.cell_lattice_type,
+            enum_member_to_item_text=OrderedArgsDict(
+                CellLatticeType.HEXAGONAL, QCoreApplication.translate(
+                    'QBetseeSimConfStackedWidget', 'Hexagonal'),
+                CellLatticeType.SQUARE, QCoreApplication.translate(
+                    'QBetseeSimConfStackedWidget', 'Square'),
+            ),
+        )
 
         # Initialize all extracellular widgets on this page.
         main_window.sim_conf_space_extra_grid_size.init(

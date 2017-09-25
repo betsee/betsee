@@ -10,9 +10,10 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QComboBox
+from betse.util.io.log import logs
 from betse.util.type import iterables
 from betse.util.type.mapping import maputil
-from betse.util.type.types import type_check, ClassOrNoneTypes, EnumType
+from betse.util.type.types import type_check, ClassOrNoneTypes, EnumClassType
 from betsee.guiexceptions import BetseePySideComboBoxException
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
@@ -85,7 +86,7 @@ class QBetseeSimConfEnumComboBox(
         maputil.die_unless_values_unique(enum_member_to_item_text)
 
         # Enumeration constraining this simulation configuration alias.
-        enum_type = self._sim_conf_alias.data_desc.expr_enum_alias_type
+        enum_type = self._sim_conf_alias.data_desc.expr_alias_cls
 
         # If the number of members in this enumeration differs from the number
         # of members mapped by this dictionary, raise an exception.
@@ -97,7 +98,21 @@ class QBetseeSimConfEnumComboBox(
                     len(enum_type), len(enum_member_to_item_text))))
 
         # Sequence of the human-readable text of all combo box items.
-        items_text = enum_member_to_item_text.values()
+        # Since a view of ordered dictionary values is a valid sequence, the
+        # QComboBox.addItems() method passed this sequence below should
+        # technically accept this view *WITHOUT* requiring explicit coercion
+        # into a tuple. It does not, raising the following exception on
+        # attempting to do so:
+        #
+        #    TypeError: 'PySide2.QtWidgets.QComboBox.addItems' called with wrong argument types:
+        #      PySide2.QtWidgets.QComboBox.addItems(ValuesView)
+        #    Supported signatures:
+        #      PySide2.QtWidgets.QComboBox.addItems(QStringList)
+        #
+        # Presumably, the underlying bindings generator (i.e., Shiboken2) only
+        # implicitly coerces tuples and lists into "QStringList" instances.
+        # Curiously, generic sequences appear to remain unsupported.
+        items_text = tuple(enum_member_to_item_text.values())
 
         # Populate the contents of this combo box from this sequence.
         self.addItems(items_text)
@@ -110,7 +125,33 @@ class QBetseeSimConfEnumComboBox(
             self._item_index_to_enum_member)
 
     # ..................{ SUPERCLASS ~ setter                }..................
+    #FIXME: O.K. So, the principal issue appears to be that Qt never internally
+    #calls this method to perform work; this method is only exposed as a
+    #convenience to users. Is there actually a meaningfully overridable setter
+    #method for this widget superclass? Try setCurrentText(), but don't expect
+    #much. The ultimate solution *MIGHT* be to wire up the
+    #"currentIndexChanged" slot to handle this. The non-triviality there, of
+    #course, is that the superclass already connects this slot to the
+    #_finalize_widget_edit() slot, which is also called by the
+    #_set_alias_to_widget_value_if_sim_conf_open(), which is what we *REALLY*
+    #want to actually call. The solution then might be to:
+    #
+    #* Prevent our superclass from performing the following connection in the
+    #  init() method:
+    #    self._finalize_widget_edit_signal.connect(self._finalize_widget_edit)
+    #* Define a new trivial slot calling the desired method:
+    #    @Slot(int)
+    #    def _current_index_changed(int index_new) -> None:
+    #        _set_alias_to_widget_value_if_sim_conf_open()
+    #* Manually connect this slot to the desired signal:
+    #    self.currentIndexChanged.connect(self._current_index_changed)
+    #
+    #Might work? No idea. Let's give it a go, anyway.
+
     def setCurrentIndex(self, value_new: int) -> None:
+
+        # Log this selection.
+        logs.log_debug('Selecting combo box index "%d"...', value_new)
 
         # Defer to the superclass setter.
         super().setCurrentIndex(value_new)
@@ -133,7 +174,12 @@ class QBetseeSimConfEnumComboBox(
 
     @property
     def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
-        return EnumType
+
+        # Enumeration types are subclasses of this superclass and instances of
+        # the "EnumType" type. Since the superclass
+        # _die_if_sim_conf_alias_type_invalid() method validates types with
+        # issubclass() rather than isinstance(), the former type is returned.
+        return EnumClassType
 
     # ..................{ MIXIN ~ property : value           }..................
     @property
