@@ -31,7 +31,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
     Attributes
     ----------
-    _value_prev : object
+    _widget_value_last : object
         Previously displayed value of this widget cached on the completion of
         the most recent user edit (i.e., :meth:`editingFinished` signal),
         possibly but *not* necessarily reflecting this widget's current state.
@@ -47,7 +47,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         super().__init__(*args, **kwargs)
 
         # Nullify all remaining instance variables for safety.
-        self._value_prev = None
+        self._widget_value_last = None
 
 
     def init(self, *args, **kwargs) -> bool:
@@ -57,7 +57,12 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         # Connect all relevant signals to slots *AFTER* initializing our
         # superclass. See the superclass method for details.
-        self._finalize_widget_edit_signal.connect(self._finalize_widget_edit)
+        #
+        # On each finalized change to the value displayed by this widget, set
+        # the current value of the simulation configuration alias associated
+        # with this widget to this widget's displayed value.
+        self._finalize_widget_change_signal.connect(
+            self._set_alias_to_widget_value_if_sim_conf_open)
 
     # ..................{ SUBCLASS ~ mandatory : property    }..................
     # Subclasses are required to implement the following properties.
@@ -78,8 +83,6 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         High-level :mod:`PySide2`-specific scalar value currently displayed by
         this scalar widget.
 
-        Design
-        ----------
         Each subclass typically implements this Python property in terms of an
         unprefixed getter method of this widget (e.g., :meth:`QLineEdit.text`).
 
@@ -115,12 +118,12 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         Set the high-level :mod:`PySide2`-specific scalar value currently
         displayed by this scalar widget to the passed value.
 
-        Design
-        ----------
         Each subclass typically implements this Python property in terms of a
         ``set``-prefixed setter method of this widget (e.g.,
         :meth:`QLineEdit.setText`).
 
+        Caveats
+        ----------
         To avoid infinite recursion, the superclass rather than subclass
         implementation of this setter method should typically be called.
         For the :class:`QBetseeSimConfLineEdit` subclass, for example,
@@ -137,13 +140,13 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
 
     @property
-    def _finalize_widget_edit_signal(self) -> Signal:
+    def _finalize_widget_change_signal(self) -> Signal:
         '''
         Signal signalled on each finalized interactive user (but *not*
         programmatic) edit of the contents of this widget.
 
         The :meth:`init` method implicitly connects this signal to the
-        :meth:`_finalize_widget_edit` slot.
+        :meth:`_set_alias_to_widget_value_if_sim_conf_open` slot.
         '''
 
         raise BetseMethodUnimplementedException()
@@ -177,44 +180,67 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # simulation configuration alias.
         self._set_widget_to_alias_value(filename)
 
-        # Cache this value in preparation for the next edit.
-        self._value_prev = self.widget_value
-
-
+    # ..................{ CONVERTERS ~ alias to widget       }..................
     @Slot()
-    def _finalize_widget_edit(self) -> None:
+    def _set_alias_to_widget_value_if_sim_conf_open(self) -> None:
         '''
-        Slot signalled on each finalized interactive user (but *not*
-        programmatic) change to the contents of this widget.
+        Slot signalled on each finalized interactive user edit (and possibly but
+        *not* necessarily each non-interactive programmatic change) to the
+        value displayed by this widget, setting the current value of the
+        simulation configuration alias associated with this widget to this
+        widget's displayed value if a simulation configuration is currently open
+        *or* reduce to a noop otherwise.
 
         Design
         ----------
-        While *not* directly signalled on each programmatic change, this slot is
-        called as a method by the
-        :meth:`_set_alias_to_widget_value_if_sim_conf_open` method, which is
-        called by the subclass implementation of this widget's principal setter
-        method (e.g., :meth:`QLineEdit.setText`). Hence, this method is *always*
-        called on each finalized widget change.
+        If Qt signals the :meth:`_finalize_widget_change_signal` connected to
+        this slot *only* on each finalized interactive user edit (rather than
+        both each such edit *and* each non-interactive programmatic change),
+        the subclass *must* explicitly call this method on each non-interactive
+        programmatic change -- typically in the subclass implementation of this
+        widget's main setter method (e.g., :meth:`QLineEdit.setText`),
+        guaranteed to be called on each such change.
+
+        While *not* necessarily directly signalled on each programmatic change,
+        this method is called by the
+        :meth:`_set_alias_to_widget_value_if_sim_conf_open` method, typically
+        called by the subclass implementation of this widget's main setter
+        method (e.g., :meth:`QLineEdit.setText`). This method should *always* be
+        called on each finalized widget change -- programmatic or otherwise.
         '''
 
-        # Log this edit.
-        logs.log_debug(
-            'Finalizing editable widget "%s" change...', self.object_name)
+        # logs.log_debug('In _set_alias_to_widget_value_if_sim_conf_open()...')
 
         # Value currently displayed by this widget.
-        value_curr = self.widget_value
+        widget_value = self.widget_value
 
-        # If this widget's contents have changed: specifically, if...
+        # If either:
         if (
-            # Prior text has been cached for this widget.
-            self._value_prev is not None and
-            # This prior text differs from this current text.
-            self._value_prev != value_curr
+            # This widget's value remains unchanged.
+            widget_value == self._widget_value_last or
+            # No simulation configuration is currently open.
+            not self._is_open
+        # Then reduce to a noop.
         ):
+            return
+
+        # Value to set this alias to, coerced from this widget's current value.
+        alias_value = self._get_alias_from_widget_value()
+
+        # Log this setting.
+        logs.log_debug(
+            'Setting widget "%s" alias value to %r...',
+            self.object_name, alias_value)
+
+        # Set this alias' current value to this coerced value.
+        self._sim_conf_alias.set(alias_value)
+
+        # If this widget has a prior value to be undone...
+        if self._widget_value_last is not None:
             # Push an undo command onto the stack (permitting this edit to be
-            # undone) *BEFORE* updating the "_value_prev" variable.
+            # undone) *BEFORE* updating the "_widget_value_last" variable.
             undo_cmd = QBetseeSimConfEditScalarWidgetUndoCommand(
-                widget=self, value_old=self._value_prev)
+                widget=self, value_old=self._widget_value_last)
             self._push_undo_cmd_if_safe(undo_cmd)
 
             # Notify all connected slots that the currently open simulation
@@ -223,36 +249,8 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
             # unsaved changes by deferring to the stack state.
             self._update_sim_conf_dirty()
 
-        # Cache this widget's newly displayed value in preparation for the next
-        # edit.
-        self._value_prev = value_curr
-
-    # ..................{ CONVERTERS ~ alias to widget       }..................
-    def _set_alias_to_widget_value_if_sim_conf_open(self) -> None:
-        '''
-        Set the current value of the simulation configuration alias associated
-        with this widget to this widget's displayed value if a simulation
-        configuration is currently open *or* reduce to a noop otherwise.
-
-        Design
-        ----------
-        This method should typically be explicitly called in the subclass
-        implementation of this widget's principal setter method (e.g.,
-        :meth:`QLineEdit.setText`).
-        '''
-
-        # If no simulation configuration is currently open, reduce to a noop.
-        if not self._is_open:
-            return
-
-        # Value to set this alias to, coerced from this widget's current value.
-        alias_value = self._get_alias_from_widget_value()
-
-        # Set this alias' current value to this coerced value.
-        self._sim_conf_alias.set(alias_value)
-
-        # Finalize this programmatic change to the contents of this widget.
-        self._finalize_widget_edit()
+        # Cache this widget's current value in preparation for the next change.
+        self._widget_value_last = widget_value
 
 
     def _get_alias_from_widget_value(self) -> object:
@@ -311,14 +309,23 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
             no such file is open).
         '''
 
-        # If a simulation configuration is currently open, set this widget's
-        # displayed value from this alias' current value.
+        # If a simulation configuration is currently open...
         if filename and self._is_open:
+            # Set this widget's displayed value from this alias' current value.
             self.widget_value = self._get_widget_from_alias_value()
-        # Else, no simulation configuration is currently open. In this case,
-        # clear this widget's displayed value.
+
+            # Log this setting.
+            logs.log_debug(
+                'Setting widget "%s" display value to %r...',
+                self.object_name, self.widget_value)
+
+            # Cache this widget's value in preparation for the next change.
+            self._widget_value_last = self.widget_value
+        # Else, no simulation configuration is currently open.
         else:
+            # Clear this widget's displayed and cached values.
             self._reset_widget_value()
+            self._widget_value_last = None
 
 
     def _get_widget_from_alias_value(self) -> object:

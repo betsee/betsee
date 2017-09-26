@@ -22,16 +22,6 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
     edited.
     '''
 
-    # ..................{ SUPERCLASS ~ setter                }..................
-    def setChecked(self, value_new: bool) -> None:
-
-        # Defer to the superclass setter.
-        super().setChecked(value_new)
-
-        # If this configuration is currently open, set the current value of this
-        # simulation configuration alias to this widget's current value.
-        self._set_alias_to_widget_value_if_sim_conf_open()
-
     # ..................{ MIXIN ~ property : read-only       }..................
     @property
     def undo_synopsis(self) -> str:
@@ -40,7 +30,7 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
 
 
     @property
-    def _finalize_widget_edit_signal(self) -> Signal:
+    def _finalize_widget_change_signal(self) -> Signal:
         return self.toggled
 
 

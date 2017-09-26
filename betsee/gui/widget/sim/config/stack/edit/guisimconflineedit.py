@@ -45,7 +45,7 @@ class QBetseeSimConfLineEdit(
 
 
     @property
-    def _finalize_widget_edit_signal(self) -> Signal:
+    def _finalize_widget_change_signal(self) -> Signal:
         return self.editingFinished
 
     # ..................{ MIXIN ~ property : value           }..................

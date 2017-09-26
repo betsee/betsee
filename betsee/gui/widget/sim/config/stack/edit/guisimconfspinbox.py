@@ -61,8 +61,8 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Qt, Signal
-from PySide2.QtWidgets import QDoubleSpinBox
-#from betse.util.io.log import logs
+from PySide2.QtWidgets import QDoubleSpinBox, QSpinBox
+# from betse.util.io.log import logs
 from betse.util.type.numeric import floats
 from betse.util.type.types import ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
@@ -110,6 +110,8 @@ class QBetseeSimConfSpinBoxWidgetMixin(
     # ..................{ SUPERCLASS ~ setter                }..................
     def setValue(self, value_new: str) -> None:
 
+        # logs.log_debug('In QBetseeSimConfSpinBoxWidgetMixin.setValue()...')
+
         # Defer to the superclass setter.
         super().setValue(value_new)
 
@@ -130,12 +132,13 @@ class QBetseeSimConfSpinBoxWidgetMixin(
 
 
     @property
-    def _finalize_widget_edit_signal(self) -> Signal:
+    def _finalize_widget_change_signal(self) -> Signal:
         return self.editingFinished
 
 # ....................{ SUBCLASSES                         }....................
+#FIXME: Rename to "QBetseeSimConfIntSpinBox" for consistency.
 class QBetseeSimConfIntegerSpinBox(
-    QBetseeSimConfSpinBoxWidgetMixin, QDoubleSpinBox):
+    QBetseeSimConfSpinBoxWidgetMixin, QSpinBox):
     '''
     Simulation configuration-specific integer spin box widget, permitting
     integers backed by external simulation configuration files to be
@@ -150,13 +153,20 @@ class QBetseeSimConfIntegerSpinBox(
 
     @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
     def widget_value(self, widget_value: object) -> None:
-        super().setValue(widget_value)
+
+        # logs.log_debug('In QBetseeSimConfIntegerSpinBox.widget_value()...')
+
+        # Set this widget's displayed value to the passed value by calling the
+        # setValue() method of our superclass rather than this subclass,
+        # preventing infinite recursion. (See the superclass method docstring.)
+        QSpinBox.setValue(self, widget_value)
 
 
     def _reset_widget_value(self) -> None:
         self.widget_value = 0
 
 
+#FIXME: Rename to "QBetseeSimConfFloatSpinBox" for disambiguity.
 class QBetseeSimConfDoubleSpinBox(
     QBetseeSimConfSpinBoxWidgetMixin, QDoubleSpinBox):
     '''
@@ -173,6 +183,8 @@ class QBetseeSimConfDoubleSpinBox(
 
     @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
     def widget_value(self, widget_value: object) -> None:
+
+        # logs.log_debug('In QBetseeSimConfDoubleSpinBox.widget_value()...')
 
         # Precision (i.e., significand length) of this floating point number.
         widget_value_precision = floats.get_precision(widget_value)
@@ -191,7 +203,7 @@ class QBetseeSimConfDoubleSpinBox(
         # Set this widget's displayed value to the passed value by calling the
         # setValue() method of our superclass rather than this subclass,
         # preventing infinite recursion. (See the superclass method docstring.)
-        super().setValue(widget_value)
+        QDoubleSpinBox.setValue(self, widget_value)
 
 
     def _reset_widget_value(self) -> None:

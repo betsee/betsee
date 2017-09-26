@@ -8,9 +8,9 @@
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, Signal
+from PySide2.QtCore import QCoreApplication, Signal  #, Slot
 from PySide2.QtWidgets import QComboBox
-from betse.util.io.log import logs
+# from betse.util.io.log import logs
 from betse.util.type import iterables
 from betse.util.type.mapping import maputil
 from betse.util.type.types import type_check, ClassOrNoneTypes, EnumClassType
@@ -124,42 +124,6 @@ class QBetseeSimConfEnumComboBox(
         self._enum_member_to_item_index = iterables.invert_iterable_unique(
             self._item_index_to_enum_member)
 
-    # ..................{ SUPERCLASS ~ setter                }..................
-    #FIXME: O.K. So, the principal issue appears to be that Qt never internally
-    #calls this method to perform work; this method is only exposed as a
-    #convenience to users. Is there actually a meaningfully overridable setter
-    #method for this widget superclass? Try setCurrentText(), but don't expect
-    #much. The ultimate solution *MIGHT* be to wire up the
-    #"currentIndexChanged" slot to handle this. The non-triviality there, of
-    #course, is that the superclass already connects this slot to the
-    #_finalize_widget_edit() slot, which is also called by the
-    #_set_alias_to_widget_value_if_sim_conf_open(), which is what we *REALLY*
-    #want to actually call. The solution then might be to:
-    #
-    #* Prevent our superclass from performing the following connection in the
-    #  init() method:
-    #    self._finalize_widget_edit_signal.connect(self._finalize_widget_edit)
-    #* Define a new trivial slot calling the desired method:
-    #    @Slot(int)
-    #    def _current_index_changed(int index_new) -> None:
-    #        _set_alias_to_widget_value_if_sim_conf_open()
-    #* Manually connect this slot to the desired signal:
-    #    self.currentIndexChanged.connect(self._current_index_changed)
-    #
-    #Might work? No idea. Let's give it a go, anyway.
-
-    def setCurrentIndex(self, value_new: int) -> None:
-
-        # Log this selection.
-        logs.log_debug('Selecting combo box index "%d"...', value_new)
-
-        # Defer to the superclass setter.
-        super().setCurrentIndex(value_new)
-
-        # If this configuration is currently open, set the current value of this
-        # simulation configuration alias to this widget's current value.
-        self._set_alias_to_widget_value_if_sim_conf_open()
-
     # ..................{ MIXIN ~ property : read-only       }..................
     @property
     def undo_synopsis(self) -> str:
@@ -168,7 +132,7 @@ class QBetseeSimConfEnumComboBox(
 
 
     @property
-    def _finalize_widget_edit_signal(self) -> Signal:
+    def _finalize_widget_change_signal(self) -> Signal:
         return self.currentIndexChanged
 
 
