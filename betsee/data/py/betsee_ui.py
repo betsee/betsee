@@ -79,11 +79,17 @@ class Ui_main_window(object):
 "    font-size: 11pt;\n"
 "}\n"
 "\n"
-"/* Widgets at any depth of a top-level group box in a page. */\n"
+"/* Widgets either:\n"
+" *\n"
+" * * Direct children of a page rather than a top-level group box. Thanks to\n"
+" *   conflict resolution, the specificity of the prior selector selecting\n"
+" *   top-level group boxes in a page takes precedence over this selector.\n"
+" * * At any depth of a top-level group box in a page.\n"
+" */\n"
+"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QWidget,\n"
 "QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox QWidget {\n"
 "    font-size: 10pt;\n"
-"}\n"
-"")
+"}")
         main_window.setUnifiedTitleAndToolBarOnMac(True)
         self.centralWidget = QtWidgets.QWidget(main_window)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -128,7 +134,7 @@ class Ui_main_window(object):
         item_0.setIcon(0, icon1)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon2 = QtGui.QIcon()
-        icon2.addFile("://icon/open_iconic/cog.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addFile("://icon/entypo+/sports-club.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon2)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon3 = QtGui.QIcon()
@@ -609,16 +615,9 @@ class Ui_main_window(object):
         self.label_14.setFont(font)
         self.label_14.setObjectName("label_14")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_14)
-        self.comboBox_ionProfile = QtWidgets.QComboBox(self.groupBox_52)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.comboBox_ionProfile.setFont(font)
-        self.comboBox_ionProfile.setObjectName("comboBox_ionProfile")
-        self.comboBox_ionProfile.addItem("")
-        self.comboBox_ionProfile.addItem("")
-        self.comboBox_ionProfile.addItem("")
-        self.comboBox_ionProfile.addItem("")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.comboBox_ionProfile)
+        self.sim_conf_ion_profile = QBetseeSimConfEnumComboBox(self.groupBox_52)
+        self.sim_conf_ion_profile.setObjectName("sim_conf_ion_profile")
+        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_ion_profile)
         self.gridLayout_21.addWidget(self.groupBox_52, 0, 0, 1, 1)
         self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Ions)
         self.sim_conf_stack_page_Space = QtWidgets.QWidget()
@@ -1579,9 +1578,7 @@ class Ui_main_window(object):
         self.formLayout_15.setObjectName("formLayout_15")
         self.label_68 = QtWidgets.QLabel(self.groupBox_10)
         font = QtGui.QFont()
-        font.setPointSize(9)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(10)
         self.label_68.setFont(font)
         self.label_68.setObjectName("label_68")
         self.formLayout_15.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_68)
@@ -2142,7 +2139,7 @@ class Ui_main_window(object):
         self.toolbar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(3)
+        self.sim_conf_stack.setCurrentIndex(2)
         self.sim_phase_tabs.setCurrentIndex(0)
         self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
@@ -2228,12 +2225,46 @@ class Ui_main_window(object):
         self.label_80.setText(QtWidgets.QApplication.translate("main_window", "Sampling rate:", None, -1))
         self.widget_14.setToolTip(QtWidgets.QApplication.translate("main_window", "Duration in seconds between each sampled time step (inclusive) of this simulation\'s simulation phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.", None, -1))
         self.label_11.setText(QtWidgets.QApplication.translate("main_window", "seconds", None, -1))
-        self.groupBox_52.setTitle(QtWidgets.QApplication.translate("main_window", "Ion Profile", None, -1))
+        self.groupBox_52.setToolTip(QtWidgets.QApplication.translate("main_window", "Ion-related properties of this simulation.", None, -1))
+        self.groupBox_52.setTitle(QtWidgets.QApplication.translate("main_window", "Ions", None, -1))
         self.label_14.setText(QtWidgets.QApplication.translate("main_window", "Ion profile:", None, -1))
-        self.comboBox_ionProfile.setItemText(0, QtWidgets.QApplication.translate("main_window", "Basic", None, -1))
-        self.comboBox_ionProfile.setItemText(1, QtWidgets.QApplication.translate("main_window", "Basic Ca", None, -1))
-        self.comboBox_ionProfile.setItemText(2, QtWidgets.QApplication.translate("main_window", "Animal", None, -1))
-        self.comboBox_ionProfile.setItemText(3, QtWidgets.QApplication.translate("main_window", "Custom", None, -1))
+        self.sim_conf_ion_profile.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
+"Type of ion profile (i.e., predefined set of all extracellular and cytosolic\n"
+"ions enabled by this simulation), such that:\n"
+"</p><ul><li>\n"
+"<b>Basic</b> enables M<sup><b>-</b></sup> (charge-balance),\n"
+"Na<sup><b>+</b></sup> (sodium), K<sup><b>+</b></sup> (potassium), and\n"
+"proteins<sup><b>-</b></sup> ions. This profile is the proper subset of all other\n"
+"predefined ion profiles.\n"
+"</li><li>\n"
+"<b>Basic + Ca<sup>2+</sup></b> enables M<sup><b>-</b></sup>\n"
+"(charge-balance), Na<sup><b>+</b></sup> (sodium), K<sup><b>+</b></sup>\n"
+"(potassium), proteins<sup><b>-</b></sup>, and Ca<sup>2<b>+</b></sup> ions. This\n"
+"profile is the superset of the <b>Basic</b> profile enabling\n"
+"Ca<sup>2<b>+</b></sup> ions.\n"
+"</li><li>\n"
+"<b>Mammal</b> enables M<sup><b>-</b></sup> (charge-balance),\n"
+"Na<sup><b>+</b></sup> (sodium), K<sup><b>+</b></sup> (potassium),\n"
+"proteins<sup><b>-</b></sup>, Ca<sup>2<b>+</b></sup>, Cl<sup><b>-</b></sup>\n"
+"(chloride), and H<sup><b>+</b></sup> (hydrogen) ions expressed in amniotic\n"
+"environmental concentrations, principally intended for mammalian cell clusters.\n"
+"This profile is the superset of the <b>Basic + Ca<sup>2+</sup></b> profile\n"
+"enabling Cl<sup><b>-</b></sup> and H<sup><b>+</b></sup> ions.\n"
+"</li><li>\n"
+"<b>Amphibian</b> enables M<sup><b>-</b></sup> (charge-balance),\n"
+"Na<sup><b>+</b></sup> (sodium), K<sup><b>+</b></sup> (potassium),\n"
+"proteins<sup><b>-</b></sup>, Ca<sup>2<b>+</b></sup>, Cl<sup><b>-</b></sup>\n"
+"(chloride), and H<sup><b>+</b></sup> (hydrogen) ions expressed in aquatic\n"
+"environmental concentrations, principally intended for amphibian cell clusters.\n"
+"This profile enables the same ions as the <b>Mammal</b> profile – albeit in\n"
+"differing concentrations.\n"
+"</li><li>\n"
+"<b>Custom</b> creates a user-defined ion profile enabling all extracellular and\n"
+"cytosolic ions in the concentrations specified below.\n"
+"</li></ul><p>\n"
+"All ion profiles contain an unidentified charge-balance anion denoted\n"
+"M<sup><b>-</b></sup>, as required for both simulation stability and correctness. \n"
+"</p></body></html", None, -1))
         self.sim_conf_stack_page_Space.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation.", None, -1))
         self.groupBox_53.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation.", None, -1))
         self.groupBox_53.setTitle(QtWidgets.QApplication.translate("main_window", "Spatial Settings", None, -1))
@@ -2451,14 +2482,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

@@ -18,7 +18,12 @@ from betse.util.type.obj import objects
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
+from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerion import (
+    QBetseeSimConfIonStackedWidgetPager)
 from betsee.guiexceptions import BetseePySideTreeWidgetException
+
+#FIXME: Excise.
+QBetseeSimConfIonStackedWidgetPager
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfStackedWidget(QStackedWidget):
@@ -35,9 +40,13 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
     Parameters
     ----------
+    _pagers : tuple
+        Tuple of all high-level objects controlling the state of each stack
+        widget page, persisted as a tuple both for simplicity and to prevent
+        Python from erroneously garbage collecting these objects.
     _sim_conf : QBetseeSimConf
-        High-level object encapsulating simulation configuration state.
-    _sim_conf_tree_item_to_page : dict
+        High-level object controlling simulation configuration state.
+    _tree_item_to_stack_page : dict
         Dictionary mapping from each :class:`QTreeWidgetItem` in the
         :class:`QTreeWidget` associated with this stack widget to each page
         widget in the stack widget. This dictionary is principally used to
@@ -59,7 +68,9 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         super().__init__(*args, **kwargs)
 
         # Initialize all instance variables for safety.
-        self._sim_conf_tree_item_to_page = None
+        self._pagers = None
+        self._sim_conf = None
+        self._tree_item_to_stack_page = None
 
 
     # To avoid circular import dependencies, this parameter is validated to be
@@ -96,7 +107,8 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         # Integrate this stack widget with this window's top-level tree widget.
         self._init_tree_to_stack(main_window)
 
-        # Iteratively initialize all widgets associated with each stacked page.
+        # Initialize all pages of this stack widget.
+        self._init_pagers(main_window)
         self._init_page_path(main_window)
         self._init_page_space(main_window)
         self._init_page_time(main_window)
@@ -105,7 +117,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
     @type_check
     def _init_tree_to_stack(self, main_window: QMainWindow) -> None:
         '''
-        Initialize the :attr:`_sim_conf_tree_item_to_page` dictionary to
+        Initialize the :attr:`_tree_item_to_stack_page` dictionary to
         integrate the tree widget contained in the passed parent main window
         with this stack widget.
 
@@ -116,7 +128,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         '''
 
         # Initialize this dictionary.
-        self._sim_conf_tree_item_to_page = {}
+        self._tree_item_to_stack_page = {}
 
         # Set of the text of each tree widget item for which no corresponding
         # stack widget page exists (e.g., due to this item acting as a
@@ -188,7 +200,30 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
                         '"{0}" not found.'.format(stack_page_name)))
 
             # Map this tree widget item to this stack widget page.
-            self._sim_conf_tree_item_to_page[tree_item_top] = stack_page
+            self._tree_item_to_stack_page[tree_item_top] = stack_page
+
+    # ..................{ INITIALIZERS ~ pagers              }..................
+    @type_check
+    def _init_pagers(self, main_window: QMainWindow) -> None:
+        '''
+        Initialize all pages of this stack widget, typically by instantiating
+        each page-specific controller encapsulating that page's state.
+        Python from erroneously garbage collecting these objects.
+
+        Parameters
+        ----------
+        main_window: QBetseeMainWindow
+            Parent :class:`QMainWindow` widget to initialize this widget with.
+        '''
+
+        # Tuple of all stack widget page controllers.
+        self._pagers = (
+            QBetseeSimConfIonStackedWidgetPager(main_window),
+        )
+
+        # Iteratively initialize these controllers (in arbitrary order).
+        for pager in self._pagers:
+            pager.init(main_window)
 
     # ..................{ INITIALIZERS ~ page : path         }..................
     @type_check
@@ -211,11 +246,14 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all initialization line edit widgets on this page.
         main_window.sim_conf_path_init_pick_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_dirname_relative)
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.init_pickle_dirname_relative)
         main_window.sim_conf_path_init_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_pickle_basename)
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.init_pickle_basename)
         main_window.sim_conf_path_init_exp_dir_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_export_dirname_relative)
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.init_export_dirname_relative)
 
         # Initialize all initialization push button widgets on this page.
         main_window.sim_conf_path_init_pick_dir_btn.init(
@@ -340,7 +378,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Stack widget page associated with this tree widget item if any or
         # "None" otherwise.
-        stack_page = self._sim_conf_tree_item_to_page.get(tree_item_curr, None)
+        stack_page = self._tree_item_to_stack_page.get(tree_item_curr, None)
 
         # If no such page exists (e.g., due to this tree widget item being a
         # placeholder container for child items for which pages do exist),

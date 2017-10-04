@@ -86,11 +86,17 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox {
     font-size: 11pt;
 }
 
-/* Widgets at any depth of a top-level group box in a page. */
+/* Widgets either:
+ *
+ * * Direct children of a page rather than a top-level group box. Thanks to
+ *   conflict resolution, the specificity of the prior selector selecting
+ *   top-level group boxes in a page takes precedence over this selector.
+ * * At any depth of a top-level group box in a page.
+ */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QWidget,
 QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget {
     font-size: 10pt;
-}
-</string>
+}</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>
@@ -179,7 +185,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
           </property>
           <property name="icon">
            <iconset>
-            <normaloff>://icon/open_iconic/cog.svg</normaloff>://icon/open_iconic/cog.svg</iconset>
+            <normaloff>://icon/entypo+/sports-club.svg</normaloff>://icon/entypo+/sports-club.svg</iconset>
           </property>
          </item>
          <item>
@@ -400,7 +406,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1237,8 +1243,11 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
        <layout class="QGridLayout" name="gridLayout_21">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_52">
+          <property name="toolTip">
+           <string>Ion-related properties of this simulation.</string>
+          </property>
           <property name="title">
-           <string>Ion Profile</string>
+           <string>Ions</string>
           </property>
           <layout class="QFormLayout" name="formLayout_2">
            <item row="1" column="0">
@@ -1254,32 +1263,46 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QComboBox" name="comboBox_ionProfile">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
+            <widget class="QBetseeSimConfEnumComboBox" name="sim_conf_ion_profile">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Type of ion profile (i.e., predefined set of all extracellular and cytosolic
+ions enabled by this simulation), such that:
+&lt;/p&gt;&lt;ul&gt;&lt;li&gt;
+&lt;b&gt;Basic&lt;/b&gt; enables M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt; (charge-balance),
+Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (sodium), K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (potassium), and
+proteins&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt; ions. This profile is the proper subset of all other
+predefined ion profiles.
+&lt;/li&gt;&lt;li&gt;
+&lt;b&gt;Basic + Ca&lt;sup&gt;2+&lt;/sup&gt;&lt;/b&gt; enables M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;
+(charge-balance), Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (sodium), K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt;
+(potassium), proteins&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, and Ca&lt;sup&gt;2&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; ions. This
+profile is the superset of the &lt;b&gt;Basic&lt;/b&gt; profile enabling
+Ca&lt;sup&gt;2&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; ions.
+&lt;/li&gt;&lt;li&gt;
+&lt;b&gt;Mammal&lt;/b&gt; enables M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt; (charge-balance),
+Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (sodium), K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (potassium),
+proteins&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, Ca&lt;sup&gt;2&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt;, Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;
+(chloride), and H&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (hydrogen) ions expressed in amniotic
+environmental concentrations, principally intended for mammalian cell clusters.
+This profile is the superset of the &lt;b&gt;Basic + Ca&lt;sup&gt;2+&lt;/sup&gt;&lt;/b&gt; profile
+enabling Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt; and H&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; ions.
+&lt;/li&gt;&lt;li&gt;
+&lt;b&gt;Amphibian&lt;/b&gt; enables M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt; (charge-balance),
+Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (sodium), K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (potassium),
+proteins&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, Ca&lt;sup&gt;2&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt;, Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;
+(chloride), and H&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (hydrogen) ions expressed in aquatic
+environmental concentrations, principally intended for amphibian cell clusters.
+This profile enables the same ions as the &lt;b&gt;Mammal&lt;/b&gt; profile – albeit in
+differing concentrations.
+&lt;/li&gt;&lt;li&gt;
+&lt;b&gt;Custom&lt;/b&gt; creates a user-defined ion profile enabling all extracellular and
+cytosolic ions in the concentrations specified below.
+&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;
+All ion profiles contain an unidentified charge-balance anion denoted
+M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, as required for both simulation stability and correctness. 
+&lt;/p&gt;&lt;/body&gt;&lt;/html</string>
              </property>
-             <item>
-              <property name="text">
-               <string>Basic</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Basic Ca</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Animal</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Custom</string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>
@@ -3374,9 +3397,7 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
             <widget class="QLabel" name="label_68">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
+               <pointsize>10</pointsize>
               </font>
              </property>
              <property name="text">

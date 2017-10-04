@@ -224,8 +224,8 @@ install_apt_package qt56-meta-full qt56creator
 
 # Enable Qt 5.6.2 in the local Bash shell environment.
 info 'Enabling Qt 5.6.2...'
-echo ". /opt/qt56/bin/qt56-env.sh" >> ~/.bashrc
-. ~/.bashrc
+echo 'source /opt/qt56/bin/qt56-env.sh' >> ~/.bashrc
+source ~/.bashrc
 
 # Install the Ubuntu 16.04- and Python 3-specific PySide2 wheel.
 info 'Installing PySide2...'

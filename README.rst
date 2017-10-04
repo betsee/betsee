@@ -68,7 +68,7 @@ BETSEE is installable as follows:
 
       .. code:: bash
 
-         wget https://gitlab.com/betse/betsee/raw/master/bin/install/linux/betsee_ubuntu_16_04.bash && bash betsee_ubuntu_16_04.bash
+         wget https://gitlab.com/betse/betsee/raw/master/bin/install/linux/betsee_ubuntu_16_04.bash && source betsee_ubuntu_16_04.bash
 
 #. Under all other platforms, by manually installing BETSEE and BETSE via your
    preferred package manager.
