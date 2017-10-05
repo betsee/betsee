@@ -39,7 +39,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
     def __init__(
         self,
         # Avoid circular import dependencies.
-        widget: 'betsee.util.widget.guiwdg.QBetseeEditWidgetMixin',
+        widget: 'betsee.util.widget.abc.guiwdgabc.QBetseeEditWidgetMixin',
         synopsis: str,
     ) -> None:
         '''

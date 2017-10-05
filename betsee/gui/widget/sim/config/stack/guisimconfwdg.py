@@ -11,7 +11,7 @@ instantiated in pages of the top-level stack.
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.guiwdg import QBetseeWidgetMixin
+from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all

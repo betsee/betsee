@@ -4,11 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based stack widget exposing all low-level settings associated
-with each high-level feature of a simulation configuration.
+:mod:`PySide2`-based stack widget page controllers specific to ions.
 '''
-
-#FIXME: Refactor all other stacked pages similarly.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication #, Signal, Slot
@@ -17,23 +14,21 @@ from betse.science.parameters import Parameters
 from betse.science.config.confenum import IonProfileType
 # from betse.util.io.log import logs
 from betse.util.type.mapping.mapcls import OrderedArgsDict
-from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerabc import (
-    QBetseeSimConfStackedWidgetPagerABC)
+from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeSimConfIonStackedWidgetPager(
-    QBetseeSimConfStackedWidgetPagerABC):
+class QBetseeSimConfIonStackedWidgetPager(QBetseeControllerABC):
     '''
     :mod:`PySide2`-based stack widget page controller, connecting all editable
-    widgets of the "Ion" page with the corresponding low-level settings of the
+    widgets of the ion page with the corresponding low-level settings of the
     current simulation configuration.
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def init(self, main_window: QMainWindow) -> None:
+    def __init__(self, main_window: QMainWindow) -> None:
 
-        # Initialize our superclass.
-        super().init(main_window)
+        # Initialize our superclass with all passed parameters.
+        super().__init__(main_window)
 
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf

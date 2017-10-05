@@ -11,19 +11,12 @@ with each high-level feature of a simulation configuration.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
-from betse.science.parameters import Parameters
 from betse.util.io.log import logs
-from betse.util.type.mapping.mapcls import OrderedArgsDict
 from betse.util.type.obj import objects
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
-from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerion import (
-    QBetseeSimConfIonStackedWidgetPager)
 from betsee.guiexceptions import BetseePySideTreeWidgetException
-
-#FIXME: Excise.
-QBetseeSimConfIonStackedWidgetPager
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfStackedWidget(QStackedWidget):
@@ -109,9 +102,6 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         # Initialize all pages of this stack widget.
         self._init_pagers(main_window)
-        self._init_page_path(main_window)
-        self._init_page_space(main_window)
-        self._init_page_time(main_window)
 
     # ..................{ INITIALIZERS ~ tree                }..................
     @type_check
@@ -216,144 +206,23 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
 
-        # Tuple of all stack widget page controllers.
+        # Defer method-specific imports for maintainability.
+        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerion import (
+            QBetseeSimConfIonStackedWidgetPager)
+        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerpath import (
+            QBetseeSimConfPathStackedWidgetPager)
+        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerspace import (
+            QBetseeSimConfSpaceStackedWidgetPager)
+        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagertime import (
+            QBetseeSimConfTimeStackedWidgetPager)
+
+        # Tuple of all stack widget page controllers defined in arbitrary order.
         self._pagers = (
             QBetseeSimConfIonStackedWidgetPager(main_window),
+            QBetseeSimConfPathStackedWidgetPager(main_window),
+            QBetseeSimConfSpaceStackedWidgetPager(main_window),
+            QBetseeSimConfTimeStackedWidgetPager(main_window),
         )
-
-        # Iteratively initialize these controllers (in arbitrary order).
-        for pager in self._pagers:
-            pager.init(main_window)
-
-    # ..................{ INITIALIZERS ~ page : path         }..................
-    @type_check
-    def _init_page_path(self, main_window: QMainWindow) -> None:
-        '''
-        Initialize the filesystem page of this stack widget.
-
-        Parameters
-        ----------
-        main_window: QBetseeMainWindow
-            Parent :class:`QMainWindow` widget to initialize this widget with.
-        '''
-
-        # Simulation configuration state object.
-        sim_conf = main_window.sim_conf
-
-        # Initialize all seed line edit widgets on this page.
-        main_window.sim_conf_path_seed_pick_file_line.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.seed_pickle_basename)
-
-        # Initialize all initialization line edit widgets on this page.
-        main_window.sim_conf_path_init_pick_dir_line.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=Parameters.init_pickle_dirname_relative)
-        main_window.sim_conf_path_init_pick_file_line.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=Parameters.init_pickle_basename)
-        main_window.sim_conf_path_init_exp_dir_line.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=Parameters.init_export_dirname_relative)
-
-        # Initialize all initialization push button widgets on this page.
-        main_window.sim_conf_path_init_pick_dir_btn.init(
-            sim_conf=sim_conf,
-            line_edit=main_window.sim_conf_path_init_pick_dir_line)
-        main_window.sim_conf_path_init_exp_dir_btn.init(
-            sim_conf=sim_conf,
-            line_edit=main_window.sim_conf_path_init_exp_dir_line)
-
-        # Initialize all simulation line edit widgets on this page.
-        main_window.sim_conf_path_sim_pick_dir_line.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=Parameters.sim_pickle_dirname_relative)
-        main_window.sim_conf_path_sim_pick_file_line.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=Parameters.sim_pickle_basename)
-        main_window.sim_conf_path_sim_exp_dir_line.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=Parameters.sim_export_dirname_relative)
-
-        # Initialize all simulation push button widgets on this page.
-        main_window.sim_conf_path_sim_pick_dir_btn.init(
-            sim_conf=sim_conf,
-            line_edit=main_window.sim_conf_path_sim_pick_dir_line)
-        main_window.sim_conf_path_sim_exp_dir_btn.init(
-            sim_conf=sim_conf,
-            line_edit=main_window.sim_conf_path_sim_exp_dir_line)
-
-    # ..................{ INITIALIZERS ~ page : space        }..................
-    @type_check
-    def _init_page_space(self, main_window: QMainWindow) -> None:
-        '''
-        Initialize the spatial page of this stack widget.
-
-        Parameters
-        ----------
-        main_window: QBetseeMainWindow
-            Parent :class:`QMainWindow` widget to initialize this widget with.
-        '''
-
-        # Isolate page-specific imports.
-        from betse.science.config.confenum import CellLatticeType
-
-        # Simulation configuration state object.
-        sim_conf = main_window.sim_conf
-
-        # Initialize all intracellular widgets on this page.
-        main_window.sim_conf_space_intra_cell_radius.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.cell_radius)
-        main_window.sim_conf_space_intra_lattice_disorder.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.cell_lattice_disorder)
-        main_window.sim_conf_space_intra_lattice_type.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=Parameters.cell_lattice_type,
-            enum_member_to_item_text=OrderedArgsDict(
-                CellLatticeType.HEXAGONAL, QCoreApplication.translate(
-                    'QBetseeSimConfStackedWidget', 'Hexagonal'),
-                CellLatticeType.SQUARE, QCoreApplication.translate(
-                    'QBetseeSimConfStackedWidget', 'Square'),
-            ),
-        )
-
-        # Initialize all extracellular widgets on this page.
-        main_window.sim_conf_space_extra_grid_size.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.grid_size)
-        main_window.sim_conf_space_extra_is_ecm.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.is_ecm)
-        main_window.sim_conf_space_extra_world_len.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.world_len)
-
-    # ..................{ INITIALIZERS ~ page : time         }..................
-    @type_check
-    def _init_page_time(self, main_window: QMainWindow) -> None:
-        '''
-        Initialize the temporal page of this stack widget.
-
-        Parameters
-        ----------
-        main_window: QBetseeMainWindow
-            Parent :class:`QMainWindow` widget to initialize this widget with.
-        '''
-
-        # Simulation configuration state object.
-        sim_conf = main_window.sim_conf
-
-        # Initialize all initialization spin box widgets on this page.
-        main_window.sim_conf_time_init_total.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_total)
-        main_window.sim_conf_time_init_step.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_step)
-        main_window.sim_conf_time_init_sampling.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_sampling)
-
-        # Initialize all simulation spin box widgets on this page.
-        main_window.sim_conf_time_sim_total.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_total)
-        main_window.sim_conf_time_sim_step.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_step)
-        main_window.sim_conf_time_sim_sampling.init(
-            sim_conf=sim_conf, sim_conf_alias=Parameters.sim_time_sampling)
 
     # ..................{ SLOTS ~ public                     }..................
     # The following public slots are connected to from other widgets.

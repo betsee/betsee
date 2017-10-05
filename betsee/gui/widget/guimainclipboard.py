@@ -102,7 +102,7 @@ class QBetseeMainClipboard(QObject):
             self._cut_widget_focused_selection_to_clipboard)
         self._action_paste.triggered.connect(
             self._paste_clipboard_to_widget_focused_selection)
-        logs.log_debug('Wiring everything up...')
+        # logs.log_debug('Wiring everything up...')
 
         # System clipboard.
         clipboard = guiclipboard.get_clipboard()
@@ -182,11 +182,11 @@ class QBetseeMainClipboard(QObject):
         # Attempt to...
         try:
             # Log this focus change.
-            # from betsee.util.widget import guiwdg
+            # from betsee.util.widget.abc import guiwdgabc
             # logs.log_debug(
             #     'Changing focus from %s to %s...',
-            #     guiwdg.get_label(widget_focused_old),
-            #     guiwdg.get_label(widget_focused_new))
+            #     guiwdgabc.get_label(widget_focused_old),
+            #     guiwdgabc.get_label(widget_focused_new))
 
             # Classify this widget for subsequent lookup *BEFORE* calling the
             # _is_widget_clipboardable() method.
@@ -352,7 +352,7 @@ class QBetseeMainClipboard(QObject):
         '''
 
         # Avoid circular import dependencies.
-        from betsee.util.widget.guiwdgclipboard import (
+        from betsee.util.widget.abc.guiclipboardabc import (
             QBetseeClipboardWidgetMixin)
 
         # Return True if the currently focused widget if any is clipboardable.

@@ -4,8 +4,7 @@
 # See "LICENSE" for further details.
 
 '''
-Abstract base classes of all :mod:`PySide2`-based stack widget page controller
-subclasses.
+Abstract base classes of all :mod:`PySide2`-based controller subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -14,12 +13,16 @@ from PySide2.QtWidgets import QMainWindow
 from betse.util.type.types import type_check
 
 # ....................{ SUPERCLASSES                       }....................
-class QBetseeSimConfStackedWidgetPagerABC(QObject):
+class QBetseeControllerABC(QObject):
     '''
-    Abstract base class of all :mod:`PySide2`-based stack widget page controller
-    subclasses, each connecting all editable widgets of the corresponding page
-    with all low-level settings associated with some high-level feature of the
-    current simulation configuration.
+    Abstract base class of all :mod:`PySide2`-based controller subclasses in the
+    standard model-view-controller (MVC) understanding of that term.
+
+    Each instance of this class is a controller encapsulating all abstract state
+    (including connective logic like signals and slots) required to sanely
+    display a separate physical view (i.e., widget). To minimally integrate with
+    Qt concurrency and signalling, this controller is a minimal :class:`QObject`
+    instance rather than a full-fledged :class:`QWidget` instance.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -30,10 +33,9 @@ class QBetseeSimConfStackedWidgetPagerABC(QObject):
     # module which imports the current submodule. Since this application only
     # contains one main window, this current validation suffices.
     @type_check
-    def init(self, main_window: QMainWindow) -> None:
+    def __init__(self, main_window: QMainWindow) -> None:
         '''
-        Initialize this stacked widget page against the passed parent main
-        window.
+        Initialize this controller against the passed parent main window.
 
         To avoid circular references, this method is guaranteed to *not* retain
         a reference to this main window on returning. References to child
@@ -42,9 +44,10 @@ class QBetseeSimConfStackedWidgetPagerABC(QObject):
 
         Parameters
         ----------
-        main_window: QBetseeMainWindow
+        parent: QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this widget.
         '''
 
-        pass
+        # Initialize our superclass with all passed parameters.
+        super().__init__(main_window)

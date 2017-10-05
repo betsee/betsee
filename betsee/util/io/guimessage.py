@@ -12,6 +12,8 @@ See Also
     Error-specific :class:`QMessageBox` facilities.
 '''
 
+#FIXME: Move into the "betsee.util.io" submodule.
+
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QMessageBox

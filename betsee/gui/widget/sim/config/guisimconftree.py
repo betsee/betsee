@@ -13,7 +13,7 @@ simulation configuration.
 from PySide2.QtWidgets import QMainWindow
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.guitreewdg import QBetseeTreeWidget
+from betsee.util.widget.stock.guitreewdg import QBetseeTreeWidget
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfTreeWidget(QBetseeTreeWidget):

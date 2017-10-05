@@ -80,12 +80,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox {
     font-size: 13pt;
 }
 
-/* Top-level group box in a page. */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox {
-    font-weight: bold;
-    font-size: 11pt;
-}
-
+/* ..................{ STACK ~ group : widget             }.....................
 /* Widgets either:
  *
  * * Direct children of a page rather than a top-level group box. Thanks to
@@ -95,6 +90,34 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox {
  */
 QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QWidget,
 QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget {
+    font-size: 10pt;
+}
+
+/* Widgets at any depth of a second-level group box in a page.
+ */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget {
+    font-size: 9pt;
+}
+
+/* ..................{ STACK ~ group                      }.....................
+ * To ensure that group box selectors take precedence over selectors intended to
+ * be applicable *ONLY* to the children of these selectors, the former are
+ * intentionally specified after rather than before the latter. Technically, Qt
+ * documentation explicitly insists that selectors of greater class specificity
+ * (e.g., &quot;QGroupBox&quot;) take precedence over those of lesser class specificity
+ * (e.g., &quot;QWidget&quot;). Unfortunately, that does *NOT* appear to be the case.
+ */
+
+/* Top-level group box in a page. */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox {
+    font-weight: bold;
+    font-size: 11pt;
+}
+
+
+/* Second-level group box in a page. */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
+    font-weight: bold;
     font-size: 10pt;
 }</string>
   </property>
@@ -1249,23 +1272,32 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget
           <property name="title">
            <string>Ions</string>
           </property>
-          <layout class="QFormLayout" name="formLayout_2">
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_14">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Ion profile:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QBetseeSimConfEnumComboBox" name="sim_conf_ion_profile">
+          <layout class="QVBoxLayout" name="verticalLayout_24">
+           <item>
+            <widget class="QGroupBox" name="groupBox_20">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+              <string>Predefined ion profiles enabling ions in typical combinations at typical initial concentrations.</string>
+             </property>
+             <property name="title">
+              <string>Preset</string>
+             </property>
+             <layout class="QFormLayout" name="formLayout_2">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_14">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Ion profile:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QBetseeSimConfEnumComboBox" name="sim_conf_ion_profile">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
 Type of ion profile (i.e., predefined set of all extracellular and cytosolic
 ions enabled by this simulation), such that:
 &lt;/p&gt;&lt;ul&gt;&lt;li&gt;
@@ -1301,8 +1333,311 @@ cytosolic ions in the concentrations specified below.
 &lt;/li&gt;&lt;/ul&gt;&lt;p&gt;
 All ion profiles contain an unidentified charge-balance anion denoted
 M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, as required for both simulation stability and correctness. 
-&lt;/p&gt;&lt;/body&gt;&lt;/html</string>
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QWidget" name="widget_24" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_24">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_19">
+             <property name="toolTip">
+              <string>User-defined ion profile explicitly specifying the initial extracellular and cystolic concentrations of all ions at the first simulation time step.</string>
              </property>
+             <property name="title">
+              <string>Custom</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_23">
+              <item>
+               <widget class="QGroupBox" name="groupBox_18">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Initial extracellular concentrations of all ions at the first simulation time step. Note that these concentrations should ideally sum to zero charge by treating:&lt;/p&gt;&lt;ul&gt;
+&lt;li&gt;
+Cations as positive charges of magnitude equal to their concentrations.
+&lt;/li&gt;&lt;li&gt;
+Anions as negative charges of magnitude equal to their concentrations.
+&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="title">
+                 <string>Extracellular Concentrations</string>
+                </property>
+                <layout class="QFormLayout" name="formLayout_19">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_84">
+                   <property name="text">
+                    <string>Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt;:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QWidget" name="widget_18" native="true">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Initial extracellular concentration of the Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (sodium) cation at the first simulation time step.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_18">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QDoubleSpinBox" name="sim_conf_time_sim_total_2">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
+                      <property name="toolTip">
+                       <string/>
+                      </property>
+                      <property name="suffix">
+                       <string/>
+                      </property>
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_85">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>mmol/L</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_86">
+                   <property name="text">
+                    <string>K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt;:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QWidget" name="widget_19" native="true">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Initial extracellular concentration of the K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/sup&gt; (potassium) cation at the first simulation time step.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_19">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QDoubleSpinBox" name="sim_conf_time_sim_step_2">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
+                      <property name="toolTip">
+                       <string/>
+                      </property>
+                      <property name="suffix">
+                       <string/>
+                      </property>
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_87">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>mmol/L</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_88">
+                   <property name="text">
+                    <string>Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QWidget" name="widget_20" native="true">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt; (chloride) anion at the first simulation time step.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_20">
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QDoubleSpinBox" name="sim_conf_time_sim_sampling_2">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
+                      <property name="toolTip">
+                       <string/>
+                      </property>
+                      <property name="suffix">
+                       <string/>
+                      </property>
+                      <property name="decimals">
+                       <number>3</number>
+                      </property>
+                      <property name="singleStep">
+                       <double>0.100000000000000</double>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="label_89">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>mmol/L</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QWidget" name="widget_21" native="true">
+                <property name="toolTip">
+                 <string>Duration in seconds of this simulation's simulation phase.</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_21">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QWidget" name="widget_22" native="true">
+                <property name="toolTip">
+                 <string>Duration in seconds of each time step (both sampled and unsampled) of this simulation's simulation phase.</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_22">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QWidget" name="widget_23" native="true">
+                <property name="toolTip">
+                 <string>Duration in seconds between each sampled time step (inclusive) of this simulation's simulation phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_23">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                </layout>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -4614,7 +4949,7 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
   <customwidget>
    <class>QBetseePlainTextEdit</class>
    <extends>QPlainTextEdit</extends>
-   <header>betsee/util/widget/guitextedit.h</header>
+   <header>betsee/util/widget/stock/guitextedit.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseePushButtonSubDirSimConf</class>

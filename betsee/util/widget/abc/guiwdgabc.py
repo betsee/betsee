@@ -278,7 +278,8 @@ class QBetseeEditWidgetMixin(QBetseeWidgetMixin):
     def _push_undo_cmd_if_safe(
         self,
         # To avoid circular imports, this type is validated dynamically.
-        undo_cmd: 'betsee.util.widget.guiundocmd.QBetseeWidgetUndoCommandABC',
+        undo_cmd: (
+            'betsee.util.widget.abc.guiundocmdabc.QBetseeWidgetUndoCommandABC'),
     ) -> None:
         '''
         Push the passed widget-specific undo command onto the undo stack

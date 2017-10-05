@@ -67,7 +67,8 @@ from betse.util.type.numeric import floats
 from betse.util.type.types import ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
-from betsee.util.widget.guiwdgclipboard import QBetseeClipboardScalarWidgetMixin
+from betsee.util.widget.abc.guiclipboardabc import (
+    QBetseeClipboardScalarWidgetMixin)
 
 # ....................{ SUPERCLASSES                       }....................
 class QBetseeSimConfSpinBoxWidgetMixin(

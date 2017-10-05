@@ -97,9 +97,8 @@ from betse.cli.cliabc import CLIABC
 from betse.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, MappingType
-from betsee import guiignition
-from betsee import guimetadata
-from betsee.cli import cliinfo
+from betsee import guiignition, guimetadata
+from betsee.util.io.log import guilogs
 
 # ....................{ SUBCLASS                           }....................
 class BetseeCLI(CLIABC):
@@ -125,7 +124,7 @@ class BetseeCLI(CLIABC):
 
     # ..................{ SUPERCLASS ~ header                }..................
     def _show_header(self) -> None:
-        logs.log_info(cliinfo.get_header())
+        guilogs.log_header()
 
     # ..................{ SUPERCLASS ~ properties            }..................
     @property

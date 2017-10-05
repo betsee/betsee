@@ -16,7 +16,7 @@ from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
-from betsee.util.widget.guiundocmd import QBetseeWidgetUndoCommandABC
+from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
 
 # ....................{ MIXINS                             }....................
 class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):

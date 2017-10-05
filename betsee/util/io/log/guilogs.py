@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                            )--------------------
-# Copyright 2014-2017 by Alexis Pietak & Cecil Curry
+# Copyright 2017 by Alexis Pietak & Cecil Curry
 # See "LICENSE" for further details.
 
 '''
-Low-level metadata facilities.
+Low-level application-specific logging facilities.
 '''
 
 # ....................{ IMPORTS                            }....................
-from betse  import metadata as betse_metadata
+from betse import metadata as betse_metadata
+from betse.util.io.log import logs
 from betsee import guimetadata as betsee_metadata
 
-# ....................{ GETTERS                            }....................
-def get_header() -> str:
+# ....................{ LOGGERS                            }....................
+def log_header() -> None:
     '''
-    Single-line string synopsizing the current installation of this application.
+    Log a single-line human-readable sentence synopsizing the state of the
+    current application (e.g., name, codename, version).
     '''
 
-    return (
+    logs.log_info(
         'Welcome to <<'
         '{betsee_name} {betsee_version} | '
         '{betse_name} {betse_version} | '

@@ -15,7 +15,7 @@ from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
 from betse.util.type.types import type_check, ClassOrNoneTypes
 from betsee.guiexceptions import BetseePySideWidgetException
-from betsee.util.widget.guiwdg import QBetseeEditWidgetMixin
+from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all

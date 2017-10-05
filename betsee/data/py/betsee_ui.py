@@ -73,12 +73,7 @@ class Ui_main_window(object):
 "    font-size: 13pt;\n"
 "}\n"
 "\n"
-"/* Top-level group box in a page. */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox {\n"
-"    font-weight: bold;\n"
-"    font-size: 11pt;\n"
-"}\n"
-"\n"
+"/* ..................{ STACK ~ group : widget             }.....................\n"
 "/* Widgets either:\n"
 " *\n"
 " * * Direct children of a page rather than a top-level group box. Thanks to\n"
@@ -88,6 +83,34 @@ class Ui_main_window(object):
 " */\n"
 "QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QWidget,\n"
 "QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox QWidget {\n"
+"    font-size: 10pt;\n"
+"}\n"
+"\n"
+"/* Widgets at any depth of a second-level group box in a page.\n"
+" */\n"
+"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox > QGroupBox QWidget {\n"
+"    font-size: 9pt;\n"
+"}\n"
+"\n"
+"/* ..................{ STACK ~ group                      }.....................\n"
+" * To ensure that group box selectors take precedence over selectors intended to\n"
+" * be applicable *ONLY* to the children of these selectors, the former are\n"
+" * intentionally specified after rather than before the latter. Technically, Qt\n"
+" * documentation explicitly insists that selectors of greater class specificity\n"
+" * (e.g., \"QGroupBox\") take precedence over those of lesser class specificity\n"
+" * (e.g., \"QWidget\"). Unfortunately, that does *NOT* appear to be the case.\n"
+" */\n"
+"\n"
+"/* Top-level group box in a page. */\n"
+"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox {\n"
+"    font-weight: bold;\n"
+"    font-size: 11pt;\n"
+"}\n"
+"\n"
+"\n"
+"/* Second-level group box in a page. */\n"
+"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox > QGroupBox {\n"
+"    font-weight: bold;\n"
 "    font-size: 10pt;\n"
 "}")
         main_window.setUnifiedTitleAndToolBarOnMac(True)
@@ -607,17 +630,131 @@ class Ui_main_window(object):
         self.gridLayout_21.setObjectName("gridLayout_21")
         self.groupBox_52 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Ions)
         self.groupBox_52.setObjectName("groupBox_52")
-        self.formLayout_2 = QtWidgets.QFormLayout(self.groupBox_52)
+        self.verticalLayout_24 = QtWidgets.QVBoxLayout(self.groupBox_52)
+        self.verticalLayout_24.setObjectName("verticalLayout_24")
+        self.groupBox_20 = QtWidgets.QGroupBox(self.groupBox_52)
+        self.groupBox_20.setObjectName("groupBox_20")
+        self.formLayout_2 = QtWidgets.QFormLayout(self.groupBox_20)
         self.formLayout_2.setObjectName("formLayout_2")
-        self.label_14 = QtWidgets.QLabel(self.groupBox_52)
+        self.label_14 = QtWidgets.QLabel(self.groupBox_20)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_14.setFont(font)
         self.label_14.setObjectName("label_14")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_14)
-        self.sim_conf_ion_profile = QBetseeSimConfEnumComboBox(self.groupBox_52)
+        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_14)
+        self.sim_conf_ion_profile = QBetseeSimConfEnumComboBox(self.groupBox_20)
         self.sim_conf_ion_profile.setObjectName("sim_conf_ion_profile")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_ion_profile)
+        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sim_conf_ion_profile)
+        self.widget_24 = QtWidgets.QWidget(self.groupBox_20)
+        self.widget_24.setObjectName("widget_24")
+        self.horizontalLayout_24 = QtWidgets.QHBoxLayout(self.widget_24)
+        self.horizontalLayout_24.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_24.setObjectName("horizontalLayout_24")
+        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.widget_24)
+        self.verticalLayout_24.addWidget(self.groupBox_20)
+        self.groupBox_19 = QtWidgets.QGroupBox(self.groupBox_52)
+        self.groupBox_19.setObjectName("groupBox_19")
+        self.verticalLayout_23 = QtWidgets.QVBoxLayout(self.groupBox_19)
+        self.verticalLayout_23.setObjectName("verticalLayout_23")
+        self.groupBox_18 = QtWidgets.QGroupBox(self.groupBox_19)
+        self.groupBox_18.setObjectName("groupBox_18")
+        self.formLayout_19 = QtWidgets.QFormLayout(self.groupBox_18)
+        self.formLayout_19.setObjectName("formLayout_19")
+        self.label_84 = QtWidgets.QLabel(self.groupBox_18)
+        self.label_84.setObjectName("label_84")
+        self.formLayout_19.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_84)
+        self.widget_18 = QtWidgets.QWidget(self.groupBox_18)
+        self.widget_18.setObjectName("widget_18")
+        self.horizontalLayout_18 = QtWidgets.QHBoxLayout(self.widget_18)
+        self.horizontalLayout_18.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_18.setObjectName("horizontalLayout_18")
+        self.sim_conf_time_sim_total_2 = QtWidgets.QDoubleSpinBox(self.widget_18)
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.sim_conf_time_sim_total_2.setFont(font)
+        self.sim_conf_time_sim_total_2.setToolTip("")
+        self.sim_conf_time_sim_total_2.setSuffix("")
+        self.sim_conf_time_sim_total_2.setDecimals(3)
+        self.sim_conf_time_sim_total_2.setSingleStep(0.1)
+        self.sim_conf_time_sim_total_2.setObjectName("sim_conf_time_sim_total_2")
+        self.horizontalLayout_18.addWidget(self.sim_conf_time_sim_total_2)
+        self.label_85 = QtWidgets.QLabel(self.widget_18)
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.label_85.setFont(font)
+        self.label_85.setObjectName("label_85")
+        self.horizontalLayout_18.addWidget(self.label_85)
+        self.formLayout_19.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.widget_18)
+        self.label_86 = QtWidgets.QLabel(self.groupBox_18)
+        self.label_86.setObjectName("label_86")
+        self.formLayout_19.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_86)
+        self.widget_19 = QtWidgets.QWidget(self.groupBox_18)
+        self.widget_19.setObjectName("widget_19")
+        self.horizontalLayout_19 = QtWidgets.QHBoxLayout(self.widget_19)
+        self.horizontalLayout_19.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_19.setObjectName("horizontalLayout_19")
+        self.sim_conf_time_sim_step_2 = QtWidgets.QDoubleSpinBox(self.widget_19)
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.sim_conf_time_sim_step_2.setFont(font)
+        self.sim_conf_time_sim_step_2.setToolTip("")
+        self.sim_conf_time_sim_step_2.setSuffix("")
+        self.sim_conf_time_sim_step_2.setDecimals(3)
+        self.sim_conf_time_sim_step_2.setSingleStep(0.1)
+        self.sim_conf_time_sim_step_2.setObjectName("sim_conf_time_sim_step_2")
+        self.horizontalLayout_19.addWidget(self.sim_conf_time_sim_step_2)
+        self.label_87 = QtWidgets.QLabel(self.widget_19)
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.label_87.setFont(font)
+        self.label_87.setObjectName("label_87")
+        self.horizontalLayout_19.addWidget(self.label_87)
+        self.formLayout_19.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.widget_19)
+        self.label_88 = QtWidgets.QLabel(self.groupBox_18)
+        self.label_88.setObjectName("label_88")
+        self.formLayout_19.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_88)
+        self.widget_20 = QtWidgets.QWidget(self.groupBox_18)
+        self.widget_20.setObjectName("widget_20")
+        self.horizontalLayout_20 = QtWidgets.QHBoxLayout(self.widget_20)
+        self.horizontalLayout_20.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_20.setObjectName("horizontalLayout_20")
+        self.sim_conf_time_sim_sampling_2 = QtWidgets.QDoubleSpinBox(self.widget_20)
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.sim_conf_time_sim_sampling_2.setFont(font)
+        self.sim_conf_time_sim_sampling_2.setToolTip("")
+        self.sim_conf_time_sim_sampling_2.setSuffix("")
+        self.sim_conf_time_sim_sampling_2.setDecimals(3)
+        self.sim_conf_time_sim_sampling_2.setSingleStep(0.1)
+        self.sim_conf_time_sim_sampling_2.setObjectName("sim_conf_time_sim_sampling_2")
+        self.horizontalLayout_20.addWidget(self.sim_conf_time_sim_sampling_2)
+        self.label_89 = QtWidgets.QLabel(self.widget_20)
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.label_89.setFont(font)
+        self.label_89.setObjectName("label_89")
+        self.horizontalLayout_20.addWidget(self.label_89)
+        self.formLayout_19.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.widget_20)
+        self.verticalLayout_23.addWidget(self.groupBox_18)
+        self.widget_21 = QtWidgets.QWidget(self.groupBox_19)
+        self.widget_21.setObjectName("widget_21")
+        self.horizontalLayout_21 = QtWidgets.QHBoxLayout(self.widget_21)
+        self.horizontalLayout_21.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_21.setObjectName("horizontalLayout_21")
+        self.verticalLayout_23.addWidget(self.widget_21)
+        self.widget_22 = QtWidgets.QWidget(self.groupBox_19)
+        self.widget_22.setObjectName("widget_22")
+        self.horizontalLayout_22 = QtWidgets.QHBoxLayout(self.widget_22)
+        self.horizontalLayout_22.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_22.setObjectName("horizontalLayout_22")
+        self.verticalLayout_23.addWidget(self.widget_22)
+        self.widget_23 = QtWidgets.QWidget(self.groupBox_19)
+        self.widget_23.setObjectName("widget_23")
+        self.horizontalLayout_23 = QtWidgets.QHBoxLayout(self.widget_23)
+        self.horizontalLayout_23.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_23.setObjectName("horizontalLayout_23")
+        self.verticalLayout_23.addWidget(self.widget_23)
+        self.verticalLayout_24.addWidget(self.groupBox_19)
         self.gridLayout_21.addWidget(self.groupBox_52, 0, 0, 1, 1)
         self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Ions)
         self.sim_conf_stack_page_Space = QtWidgets.QWidget()
@@ -2227,6 +2364,8 @@ class Ui_main_window(object):
         self.label_11.setText(QtWidgets.QApplication.translate("main_window", "seconds", None, -1))
         self.groupBox_52.setToolTip(QtWidgets.QApplication.translate("main_window", "Ion-related properties of this simulation.", None, -1))
         self.groupBox_52.setTitle(QtWidgets.QApplication.translate("main_window", "Ions", None, -1))
+        self.groupBox_20.setToolTip(QtWidgets.QApplication.translate("main_window", "Predefined ion profiles enabling ions in typical combinations at typical initial concentrations.", None, -1))
+        self.groupBox_20.setTitle(QtWidgets.QApplication.translate("main_window", "Preset", None, -1))
         self.label_14.setText(QtWidgets.QApplication.translate("main_window", "Ion profile:", None, -1))
         self.sim_conf_ion_profile.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
 "Type of ion profile (i.e., predefined set of all extracellular and cytosolic\n"
@@ -2264,7 +2403,35 @@ class Ui_main_window(object):
 "</li></ul><p>\n"
 "All ion profiles contain an unidentified charge-balance anion denoted\n"
 "M<sup><b>-</b></sup>, as required for both simulation stability and correctness. \n"
-"</p></body></html", None, -1))
+"</p></body></html>", None, -1))
+        self.groupBox_19.setToolTip(QtWidgets.QApplication.translate("main_window", "User-defined ion profile explicitly specifying the initial extracellular and cystolic concentrations of all ions at the first simulation time step.", None, -1))
+        self.groupBox_19.setTitle(QtWidgets.QApplication.translate("main_window", "Custom", None, -1))
+        self.groupBox_18.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
+"Initial extracellular concentrations of all ions at the first simulation time step. Note that these concentrations should ideally sum to zero charge by treating:</p><ul>\n"
+"<li>\n"
+"Cations as having positive charges of magnitude equal to their concentrations.\n"
+"</li><li>\n"
+"Anions as having negative charges of magnitude equal to their concentrations.\n"
+"</ul></body></html>", None, -1))
+        self.groupBox_18.setTitle(QtWidgets.QApplication.translate("main_window", "Extracellular Concentrations", None, -1))
+        self.label_84.setText(QtWidgets.QApplication.translate("main_window", "Na<sup><b>+</b></sup>:", None, -1))
+        self.widget_18.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
+"Initial extracellular concentration of the Na<sup><b>+</b></sup> (sodium) cation at the first simulation time step.\n"
+"</p></body></html>", None, -1))
+        self.label_85.setText(QtWidgets.QApplication.translate("main_window", "mmol/L", None, -1))
+        self.label_86.setText(QtWidgets.QApplication.translate("main_window", "K<sup><b>+</b></sup>:", None, -1))
+        self.widget_19.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
+"Initial extracellular concentration of the K<sup><b>+</b></sup> (potassium) cation at the first simulation time step.\n"
+"</p></body></html>", None, -1))
+        self.label_87.setText(QtWidgets.QApplication.translate("main_window", "mmol/L", None, -1))
+        self.label_88.setText(QtWidgets.QApplication.translate("main_window", "Cl<sup><b>-</b></sup>:", None, -1))
+        self.widget_20.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
+"Initial extracellular concentration of the Cl<sup><b>-</b></sup> (chloride) anion at the first simulation time step.\n"
+"</p></body></html>", None, -1))
+        self.label_89.setText(QtWidgets.QApplication.translate("main_window", "mmol/L", None, -1))
+        self.widget_21.setToolTip(QtWidgets.QApplication.translate("main_window", "Duration in seconds of this simulation\'s simulation phase.", None, -1))
+        self.widget_22.setToolTip(QtWidgets.QApplication.translate("main_window", "Duration in seconds of each time step (both sampled and unsampled) of this simulation\'s simulation phase.", None, -1))
+        self.widget_23.setToolTip(QtWidgets.QApplication.translate("main_window", "Duration in seconds between each sampled time step (inclusive) of this simulation\'s simulation phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.", None, -1))
         self.sim_conf_stack_page_Space.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation.", None, -1))
         self.groupBox_53.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation.", None, -1))
         self.groupBox_53.setTitle(QtWidgets.QApplication.translate("main_window", "Spatial Settings", None, -1))
@@ -2482,14 +2649,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
 from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntegerSpinBox
+from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

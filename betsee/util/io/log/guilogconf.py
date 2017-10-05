@@ -16,8 +16,9 @@ from betse.util.io.log import logconfig
 from betse.util.io.log.logenum import LogLevel
 from betse.util.io.log.logfilter import LogFilterThirdPartyDebug
 from betse.util.type.types import type_check
+from betsee.util.io.log import guilogs
 from betsee.util.io.log.guiloghandle import LogHandlerSignal
-from betsee.util.widget.guitextedit import QBetseePlainTextEdit
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 
 # ....................{ INITIALIZERS                       }....................
 @type_check
@@ -61,20 +62,6 @@ def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
     # Register this handler with the root logger.
     log_config.logger_root.addHandler(logger_root_handler_signal)
 
-    #FIXME: Generalize the existing BetseeCLI._show_header() method to be
-    #reusable here, presumably by extracting that method into a public function.
-    from betse import metadata as betse_metadata
-    from betse.util.io.log import logs
-    from betsee import guimetadata as betsee_metadata
-    logs.log_info(
-        'Welcome to <<'
-        '{betsee_name} {betsee_version} | '
-        '{betse_name} {betse_version} | '
-        '{betse_codename}'
-        '>>.'.format(
-            betsee_name=betsee_metadata.NAME,
-            betsee_version=betsee_metadata.VERSION,
-            betse_name=betse_metadata.NAME,
-            betse_version=betse_metadata.VERSION,
-            betse_codename=betse_metadata.CODENAME,
-        ))
+    # Log a single-line sentence synopsizing the state of this application
+    # *AFTER* finalizing logging reconfiguration.
+    guilogs.log_header()

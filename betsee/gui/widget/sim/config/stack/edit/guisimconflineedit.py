@@ -13,7 +13,8 @@ from PySide2.QtWidgets import QLineEdit
 #from betse.util.io.log import logs
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
-from betsee.util.widget.guiwdgclipboard import QBetseeClipboardScalarWidgetMixin
+from betsee.util.widget.abc.guiclipboardabc import (
+    QBetseeClipboardScalarWidgetMixin)
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfLineEdit(
