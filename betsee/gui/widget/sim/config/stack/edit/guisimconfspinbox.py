@@ -167,7 +167,6 @@ class QBetseeSimConfIntegerSpinBox(
         self.widget_value = 0
 
 
-#FIXME: Rename to "QBetseeSimConfFloatSpinBox" for disambiguity.
 class QBetseeSimConfDoubleSpinBox(
     QBetseeSimConfSpinBoxWidgetMixin, QDoubleSpinBox):
     '''
@@ -186,6 +185,11 @@ class QBetseeSimConfDoubleSpinBox(
     def widget_value(self, widget_value: object) -> None:
 
         # logs.log_debug('In QBetseeSimConfDoubleSpinBox.widget_value()...')
+
+        #FIXME: Refactor this to *ONLY* be performed on each call to the
+        #_get_widget_from_alias_value() method, which occurs only once on
+        #loading the current simulation configuration. That might fix everything
+        #for us elsewhere with respect to IEEE 754 issues - maybe?
 
         # Precision (i.e., significand length) of this floating point number.
         widget_value_precision = floats.get_precision(widget_value)

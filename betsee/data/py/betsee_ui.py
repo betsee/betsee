@@ -2276,7 +2276,7 @@ class Ui_main_window(object):
         self.toolbar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(2)
+        self.sim_conf_stack.setCurrentIndex(3)
         self.sim_phase_tabs.setCurrentIndex(0)
         self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
@@ -2409,9 +2409,9 @@ class Ui_main_window(object):
         self.groupBox_18.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
 "Initial extracellular concentrations of all ions at the first simulation time step. Note that these concentrations should ideally sum to zero charge by treating:</p><ul>\n"
 "<li>\n"
-"Cations as having positive charges of magnitude equal to their concentrations.\n"
+"Cations as positive charges of magnitude equal to their concentrations.\n"
 "</li><li>\n"
-"Anions as having negative charges of magnitude equal to their concentrations.\n"
+"Anions as negative charges of magnitude equal to their concentrations.\n"
 "</ul></body></html>", None, -1))
         self.groupBox_18.setTitle(QtWidgets.QApplication.translate("main_window", "Extracellular Concentrations", None, -1))
         self.label_84.setText(QtWidgets.QApplication.translate("main_window", "Na<sup><b>+</b></sup>:", None, -1))
@@ -2649,14 +2649,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
