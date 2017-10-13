@@ -790,19 +790,32 @@ class Ui_main_window(object):
         self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.widget_17)
         self.label_81 = QtWidgets.QLabel(self.groupBox_17)
         self.label_81.setObjectName("label_81")
-        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_81)
+        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_81)
         self.sim_conf_space_intra_lattice_type = QBetseeSimConfEnumComboBox(self.groupBox_17)
         self.sim_conf_space_intra_lattice_type.setObjectName("sim_conf_space_intra_lattice_type")
-        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_type)
+        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_type)
         self.label_20 = QtWidgets.QLabel(self.groupBox_17)
         self.label_20.setObjectName("label_20")
-        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_20)
-        self.sim_conf_space_intra_lattice_disorder = QBetseeSimConfDoubleSpinBox(self.groupBox_17)
+        self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_20)
+        self.widget_25 = QtWidgets.QWidget(self.groupBox_17)
+        self.widget_25.setObjectName("widget_25")
+        self.horizontalLayout_25 = QtWidgets.QHBoxLayout(self.widget_25)
+        self.horizontalLayout_25.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_25.setObjectName("horizontalLayout_25")
+        self.sim_conf_space_intra_lattice_disorder = QBetseeSimConfDoubleSpinBox(self.widget_25)
+        self.sim_conf_space_intra_lattice_disorder.setToolTip("")
         self.sim_conf_space_intra_lattice_disorder.setDecimals(1)
         self.sim_conf_space_intra_lattice_disorder.setMaximum(1.0)
         self.sim_conf_space_intra_lattice_disorder.setSingleStep(0.1)
         self.sim_conf_space_intra_lattice_disorder.setObjectName("sim_conf_space_intra_lattice_disorder")
-        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_disorder)
+        self.horizontalLayout_25.addWidget(self.sim_conf_space_intra_lattice_disorder)
+        self.label_90 = QtWidgets.QLabel(self.widget_25)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_90.setFont(font)
+        self.label_90.setObjectName("label_90")
+        self.horizontalLayout_25.addWidget(self.label_90)
+        self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.widget_25)
         self.verticalLayout_17.addWidget(self.groupBox_17)
         self.groupBox_16 = QtWidgets.QGroupBox(self.groupBox_53)
         self.groupBox_16.setObjectName("groupBox_16")
@@ -836,7 +849,7 @@ class Ui_main_window(object):
         self.horizontalLayout_16 = QtWidgets.QHBoxLayout(self.widget_16)
         self.horizontalLayout_16.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_16.setObjectName("horizontalLayout_16")
-        self.sim_conf_space_extra_grid_size = QBetseeSimConfIntegerSpinBox(self.widget_16)
+        self.sim_conf_space_extra_grid_size = QBetseeSimConfIntSpinBox(self.widget_16)
         self.sim_conf_space_extra_grid_size.setToolTip("")
         self.sim_conf_space_extra_grid_size.setMaximum(999)
         self.sim_conf_space_extra_grid_size.setObjectName("sim_conf_space_extra_grid_size")
@@ -2450,7 +2463,8 @@ class Ui_main_window(object):
 "</li></ul>\n"
 "</body></html>", None, -1))
         self.label_20.setText(QtWidgets.QApplication.translate("main_window", "Lattice disorder:", None, -1))
-        self.sim_conf_space_intra_lattice_disorder.setToolTip(QtWidgets.QApplication.translate("main_window", "Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].", None, -1))
+        self.widget_25.setToolTip(QtWidgets.QApplication.translate("main_window", "Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].", None, -1))
+        self.label_90.setText(QtWidgets.QApplication.translate("main_window", "/ 1.00", None, -1))
         self.groupBox_16.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation\'s extracellular environment.", None, -1))
         self.groupBox_16.setTitle(QtWidgets.QApplication.translate("main_window", "Environment", None, -1))
         self.label_17.setText(QtWidgets.QApplication.translate("main_window", "World length:", None, -1))
@@ -2649,14 +2663,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntegerSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

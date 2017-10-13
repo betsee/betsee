@@ -8,13 +8,12 @@ General-purpose :mod:`QAbstractSpinBox` widget subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import Signal, Slot
+# from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QValidator
-from PySide2.QtGui.QValidator import State
 from PySide2.QtWidgets import QDoubleSpinBox
 from betse.util.type.numeric import floats
 from betse.util.type.text import regexes
-from betse.util.type.types import type_check, RegexCompiledType
+from betse.util.type.types import type_check
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeDoubleSpinBox(QDoubleSpinBox):
@@ -30,10 +29,16 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
     * Scientific notation (e.g., digits, signs, the radix point, and the letter
       "e" in both capitalized and uncapitalized variants).
 
+    Attributes
+    ----------
+    _validator : QBetseeDoubleValidator
+        Application-specific validator validating floating point numbers in both
+        decimal and scientific notation.
+
     See Also
     ----------
     https://jdreaver.com/posts/2014-07-28-scientific-notation-spin-box-pyside.html
-        Blog post strongly inspiring this implementation.
+        Blog post partially inspiring this implementation.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -43,54 +48,68 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
         super().__init__(*args, **kwargs)
 
         # Connect the text appending signal to the corresponding slot.
-        self.append_text_signal.connect(self.append_text)
+        self._validator = QBetseeDoubleValidator()
 
-    # ..................{ SIGNALS                            }..................
-    append_text_signal = Signal(str)
-    '''
-    Signal accepting a single string, connected to a slot of the same widget at
-    widget initialization time to intelligently append this string to this
-    widget.
+        # Prevent Qt from constraining displayed floating point numbers to an
+        # arbitrary maximum of 99.99, an insane default with no correspondence
+        # to actual reality.
+        #
+        # By contrast, we silently permit Qt to retains its default behaviour of
+        # constraining displayed floating point numbers to a minimum of 0, a
+        # sane default given the inability of most measurable physical
+        # quantities to "go negative."
+        #
+        # Note that overriding the default maximum here still permits callers to
+        # override this with a widget- or subclass-specific maximum. Hence, this
+        # override has *NO* unintended or harmful side effects.
+        self.setMaximum(floats.FLOAT_MAX)
 
-    This signal is connected to the :meth:`append_text` slot at widget
-    initialization time, enabling callers in different threads to thread-safely
-    append text to this widget.
-    '''
+    # ..................{ VALIDATORS                         }..................
+    # See the "QBetseeDoubleValidator" class for commentary.
 
-    # ..................{ SLOTS                              }..................
-    @Slot(str)
-    def append_text(self, text: str) -> None:
+    def validate(self, text: str, char_index: int) -> QValidator.State:
+        return self._validator.validate(text, char_index)
+
+    def fixup(self, text: str) -> str:
+        return self._validator.fixup(text)
+
+    # ..................{ VALIDATORS                         }..................
+    def valueFromText(self, text: str) -> float:
         '''
-        Append the passed plain text to the text currently displayed by this
-        widget and scroll this widget to display that text.
-
-        This slot is connected to the :attr:`append_text_signal` signal at
-        widget initialization time, permitting callers in different threads to
-        thread-safely append text to this widget.
-
-        Parameters
-        ----------
-        text : str
-            Text to be appended.
+        Floating point number converted from the passed human-readable string.
         '''
 
-        pass
+        return float(text)
+
+
+    def textFromValue(self, number: float) -> str:
+        '''
+        Human-readable string converted from the passed floating point number.
+        '''
+
+        # For readability, a high-level utility function wrapping the low-level
+        # "{:g}" format specifier is preferred.
+        return floats.to_str(number)
 
 # ....................{ SUBCLASSES ~ validator             }....................
 class QBetseeDoubleValidator(QValidator):
     '''
-    :mod:`QDoubleSpinBox`-specific validator permitting entry and display of
-    floating point numbers in both decimal and scientific notation by the
-    :mod:`QBetseeDoubleSpinBox` class.
+    Validator enabling the :mod:`QBetseeDoubleSpinBox` widget to input and
+    display floating point numbers in both decimal and scientific notation.
 
     This application-specific widget augments the stock
     :class:`QDoubleValidator` validator with additional support for scientific
     notation.
 
-    Parameters
+    Attributes
     ----------
     _float_regex : RegexCompiledType
         Compiled regular expression matching a floating point number.
+
+    See Also
+    ----------
+    https://jdreaver.com/posts/2014-07-28-scientific-notation-spin-box-pyside.html
+        Blog post partially inspiring this implementation.
     '''
 
     # ..................{ CONSTANTS                          }..................
@@ -113,10 +132,22 @@ class QBetseeDoubleValidator(QValidator):
 
     # ..................{ VALIDATORS                         }..................
     @type_check
-    def validate(self, text: str, char_index: int) -> State:
+    def validate(self, text: str, char_index: int) -> QValidator.State:
         '''
         Validate the passed input text at the passed character index of this
         text to be a valid floating point number or not.
+
+        Specifically, this method returns:
+
+        * :attr:`State.Acceptable` if this text is guaranteed to be an valid
+          floating point number.
+        * :attr:`State.Intermediate` if this text is currently an invalid
+          floating point number but could conceivably be transformed into a
+          valid floating point number by subsequent input of one or more
+          printable characters.
+        * :attr:`State.Invalid` if this text is guaranteed to be an invalid
+          floating point number regardless of subsequently input printable
+          characters.
 
         Parameters
         ----------
@@ -133,7 +164,7 @@ class QBetseeDoubleValidator(QValidator):
 
         # If this text is a valid floating point number, inform the caller.
         if floats.is_float_str(text):
-            return State.Acceptable
+            return QValidator.State.Acceptable
         # Else, this text is *NOT* a valid floating point number.
         #
         # If this text is either the empty string *OR* the character
@@ -142,16 +173,18 @@ class QBetseeDoubleValidator(QValidator):
         # conceivably be transformed into a valid floating point number by
         # subsequent entry of one or more printable characters.
         elif text == '' or text[char_index-1] in self._CHARS_NONDIGIT:
-            return State.Intermediate
+            return QValidator.State.Intermediate
         # Else, this text is definitively an invalid floating point number.
         else:
-            return State.Invalid
+            return QValidator.State.Invalid
 
 
     @type_check
     def fixup(self, text: str) -> str:
         '''
-        Intermediate or valid input munged from the passed invalid input.
+        Input guaranteed to be in either the :attr:`State.Intermediate` or
+        :attr:`State.Valid` states, sanitized from the passed input guaranteed
+        to be in the :attr:`State.Invalid` state.
 
         Specifically, this function returns:
 

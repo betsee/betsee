@@ -61,14 +61,15 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Qt, Signal
-from PySide2.QtWidgets import QDoubleSpinBox, QSpinBox
-# from betse.util.io.log import logs
+from PySide2.QtWidgets import QSpinBox  #QDoubleSpinBox
+#from betse.util.io.log import logs
 from betse.util.type.numeric import floats
 from betse.util.type.types import ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
     QBetseeClipboardScalarWidgetMixin)
+from betsee.util.widget.stock.guispinbox import QBetseeDoubleSpinBox
 
 # ....................{ SUPERCLASSES                       }....................
 class QBetseeSimConfSpinBoxWidgetMixin(
@@ -137,8 +138,7 @@ class QBetseeSimConfSpinBoxWidgetMixin(
         return self.editingFinished
 
 # ....................{ SUBCLASSES                         }....................
-#FIXME: Rename to "QBetseeSimConfIntSpinBox" for consistency.
-class QBetseeSimConfIntegerSpinBox(
+class QBetseeSimConfIntSpinBox(
     QBetseeSimConfSpinBoxWidgetMixin, QSpinBox):
     '''
     Simulation configuration-specific integer spin box widget, permitting
@@ -155,7 +155,7 @@ class QBetseeSimConfIntegerSpinBox(
     @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
     def widget_value(self, widget_value: object) -> None:
 
-        # logs.log_debug('In QBetseeSimConfIntegerSpinBox.widget_value()...')
+        # logs.log_debug('In QBetseeSimConfIntSpinBox.widget_value()...')
 
         # Set this widget's displayed value to the passed value by calling the
         # setValue() method of our superclass rather than this subclass,
@@ -168,10 +168,10 @@ class QBetseeSimConfIntegerSpinBox(
 
 
 class QBetseeSimConfDoubleSpinBox(
-    QBetseeSimConfSpinBoxWidgetMixin, QDoubleSpinBox):
+    QBetseeSimConfSpinBoxWidgetMixin, QBetseeDoubleSpinBox):
     '''
     Simulation configuration-specific floating point spin box widget, permitting
-    floating point values backed by external simulation configuration files to
+    floating point numbers backed by external simulation configuration files to
     be interactively edited.
     '''
 
@@ -208,7 +208,7 @@ class QBetseeSimConfDoubleSpinBox(
         # Set this widget's displayed value to the passed value by calling the
         # setValue() method of our superclass rather than this subclass,
         # preventing infinite recursion. (See the superclass method docstring.)
-        QDoubleSpinBox.setValue(self, widget_value)
+        QBetseeDoubleSpinBox.setValue(self, widget_value)
 
 
     def _reset_widget_value(self) -> None:
