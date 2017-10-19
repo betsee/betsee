@@ -14,6 +14,7 @@ from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, ClassOrNoneTypes
+from betsee.guiexceptions import BetseePySideWidgetException
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
 from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
@@ -314,6 +315,15 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
             # Set this widget's displayed value from this alias' current value.
             self.widget_value = self._get_widget_from_alias_value()
 
+            # If no such value is returned, (e.g., due to a subclass overriding
+            # the _get_widget_from_alias_value() function poorly), raise an
+            # exception. *NO* simulation configuration alias currently returns
+            # None as a valid value.
+            if self.widget_value is None:
+                raise BetseePySideWidgetException(
+                    'Editable scalar widget "{}" value "None" invalid.'.format(
+                        self.object_name))
+
             # Log this setting.
             logs.log_debug(
                 'Setting widget "%s" display value to %r...',
@@ -332,6 +342,9 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         '''
         Value of the simulation configuration alias associated with this widget,
         coerced into a type displayable by this widget.
+
+        This method is typically called *only* once per open simulation
+        configuration file on the first loading of that file.
 
         See Also
         ----------

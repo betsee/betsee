@@ -652,11 +652,11 @@ class Ui_main_window(object):
         self.horizontalLayout_24.setObjectName("horizontalLayout_24")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.widget_24)
         self.verticalLayout_24.addWidget(self.groupBox_20)
-        self.groupBox_19 = QtWidgets.QGroupBox(self.groupBox_52)
-        self.groupBox_19.setObjectName("groupBox_19")
-        self.verticalLayout_23 = QtWidgets.QVBoxLayout(self.groupBox_19)
+        self.sim_conf_ion_custom = QtWidgets.QGroupBox(self.groupBox_52)
+        self.sim_conf_ion_custom.setObjectName("sim_conf_ion_custom")
+        self.verticalLayout_23 = QtWidgets.QVBoxLayout(self.sim_conf_ion_custom)
         self.verticalLayout_23.setObjectName("verticalLayout_23")
-        self.groupBox_18 = QtWidgets.QGroupBox(self.groupBox_19)
+        self.groupBox_18 = QtWidgets.QGroupBox(self.sim_conf_ion_custom)
         self.groupBox_18.setObjectName("groupBox_18")
         self.formLayout_19 = QtWidgets.QFormLayout(self.groupBox_18)
         self.formLayout_19.setObjectName("formLayout_19")
@@ -736,25 +736,25 @@ class Ui_main_window(object):
         self.horizontalLayout_20.addWidget(self.label_89)
         self.formLayout_19.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.widget_20)
         self.verticalLayout_23.addWidget(self.groupBox_18)
-        self.widget_21 = QtWidgets.QWidget(self.groupBox_19)
+        self.widget_21 = QtWidgets.QWidget(self.sim_conf_ion_custom)
         self.widget_21.setObjectName("widget_21")
         self.horizontalLayout_21 = QtWidgets.QHBoxLayout(self.widget_21)
         self.horizontalLayout_21.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_21.setObjectName("horizontalLayout_21")
         self.verticalLayout_23.addWidget(self.widget_21)
-        self.widget_22 = QtWidgets.QWidget(self.groupBox_19)
+        self.widget_22 = QtWidgets.QWidget(self.sim_conf_ion_custom)
         self.widget_22.setObjectName("widget_22")
         self.horizontalLayout_22 = QtWidgets.QHBoxLayout(self.widget_22)
         self.horizontalLayout_22.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_22.setObjectName("horizontalLayout_22")
         self.verticalLayout_23.addWidget(self.widget_22)
-        self.widget_23 = QtWidgets.QWidget(self.groupBox_19)
+        self.widget_23 = QtWidgets.QWidget(self.sim_conf_ion_custom)
         self.widget_23.setObjectName("widget_23")
         self.horizontalLayout_23 = QtWidgets.QHBoxLayout(self.widget_23)
         self.horizontalLayout_23.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_23.setObjectName("horizontalLayout_23")
         self.verticalLayout_23.addWidget(self.widget_23)
-        self.verticalLayout_24.addWidget(self.groupBox_19)
+        self.verticalLayout_24.addWidget(self.sim_conf_ion_custom)
         self.gridLayout_21.addWidget(self.groupBox_52, 0, 0, 1, 1)
         self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Ions)
         self.sim_conf_stack_page_Space = QtWidgets.QWidget()
@@ -2289,7 +2289,7 @@ class Ui_main_window(object):
         self.toolbar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(3)
+        self.sim_conf_stack.setCurrentIndex(2)
         self.sim_phase_tabs.setCurrentIndex(0)
         self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
@@ -2417,8 +2417,8 @@ class Ui_main_window(object):
 "All ion profiles contain an unidentified charge-balance anion denoted\n"
 "M<sup><b>-</b></sup>, as required for both simulation stability and correctness. \n"
 "</p></body></html>", None, -1))
-        self.groupBox_19.setToolTip(QtWidgets.QApplication.translate("main_window", "User-defined ion profile explicitly specifying the initial extracellular and cystolic concentrations of all ions at the first simulation time step.", None, -1))
-        self.groupBox_19.setTitle(QtWidgets.QApplication.translate("main_window", "Custom", None, -1))
+        self.sim_conf_ion_custom.setToolTip(QtWidgets.QApplication.translate("main_window", "User-defined ion profile explicitly specifying the initial extracellular and cystolic concentrations of all ions at the first simulation time step.", None, -1))
+        self.sim_conf_ion_custom.setTitle(QtWidgets.QApplication.translate("main_window", "Custom", None, -1))
         self.groupBox_18.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
 "Initial extracellular concentrations of all ions at the first simulation time step. Note that these concentrations should ideally sum to zero charge by treating:</p><ul>\n"
 "<li>\n"
@@ -2663,14 +2663,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

@@ -50,3 +50,17 @@ class QBetseeSimConfIonStackedWidgetPager(QBetseeControllerABC):
                     'QBetseeSimConfIonStackedWidgetPage', 'Custom'),
             ),
         )
+
+        #FIXME: Excise this after custom ion profile settings stabilize in the
+        #BETSE core. When doing so:
+        #
+        #* Define a new _ion_profile_current_index_changed() slot in this class.
+        #* Connect the "main_window.sim_conf_ion_profile.currentIndexChanged"
+        #  signal to this slot.
+        #* In the body of this slot:
+        #  1. Add a one-liner disabling or enabling the
+        #     "main_window.sim_conf_ion_custom" group box based on whether the
+        #     newly selected ion profile type is the custom type or not.
+
+        # Disable all currently non-working widgets on this page.
+        main_window.sim_conf_ion_custom.setVisible(False)

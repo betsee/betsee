@@ -429,7 +429,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1359,7 +1359,7 @@ M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, as required for both simulation st
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox_19">
+            <widget class="QGroupBox" name="sim_conf_ion_custom">
              <property name="toolTip">
               <string>User-defined ion profile explicitly specifying the initial extracellular and cystolic concentrations of all ions at the first simulation time step.</string>
              </property>

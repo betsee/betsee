@@ -11,6 +11,7 @@
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QLineEdit
 #from betse.util.io.log import logs
+from betse.util.type.types import type_check  #, ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
@@ -51,12 +52,13 @@ class QBetseeSimConfLineEdit(
 
     # ..................{ MIXIN ~ property : value           }..................
     @property
-    def widget_value(self) -> object:
+    def widget_value(self) -> str:
         return self.text()
 
 
     @widget_value.setter
-    def widget_value(self, widget_value: object) -> None:
+    @type_check
+    def widget_value(self, widget_value: str) -> None:
 
         # If this value is *NOT* a string, coerce this value into a string.
         # Since effectively all scalar values are safely coercable into strings

@@ -62,9 +62,9 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Qt, Signal
 from PySide2.QtWidgets import QSpinBox  #QDoubleSpinBox
-#from betse.util.io.log import logs
+from betse.util.io.log import logs
 from betse.util.type.numeric import floats
-from betse.util.type.types import ClassOrNoneTypes
+from betse.util.type.types import type_check, ClassOrNoneTypes
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
@@ -153,7 +153,8 @@ class QBetseeSimConfIntSpinBox(
 
 
     @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
-    def widget_value(self, widget_value: object) -> None:
+    @type_check
+    def widget_value(self, widget_value: int) -> None:
 
         # logs.log_debug('In QBetseeSimConfIntSpinBox.widget_value()...')
 
@@ -181,29 +182,77 @@ class QBetseeSimConfDoubleSpinBox(
         return float
 
 
-    @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
-    def widget_value(self, widget_value: object) -> None:
+    # This method is typically called *ONLY* once on loading the current
+    # simulation configuration, enabling this widget to reinitialize itself in a
+    # manner dependent upon the current value of the associated alias.
+    def _get_widget_from_alias_value(self) -> object:
 
-        # logs.log_debug('In QBetseeSimConfDoubleSpinBox.widget_value()...')
-
-        #FIXME: Refactor this to *ONLY* be performed on each call to the
-        #_get_widget_from_alias_value() method, which occurs only once on
-        #loading the current simulation configuration. That might fix everything
-        #for us elsewhere with respect to IEEE 754 issues - maybe?
+        # Initial value of the floating point number returned by the simulation
+        # configuration alias associated with this widget.
+        widget_value = super()._get_widget_from_alias_value()
 
         # Precision (i.e., significand length) of this floating point number.
         widget_value_precision = floats.get_precision(widget_value)
 
-        # Set the precision of this widget's displayed value to the largest of:
-        self.setDecimals(max(
+        #FIXME: Implement as follows:
+        #
+        #* Define a new betse.util.type.numeric.decimals submodule. Ideally,
+        #  this submodule should accept input *ONLY* as unrounded strings. To
+        #  avoid rounding errors, floats should be strictly prohibited.
+        #* Obtain the base-10 exponent associated with this number via the
+        #  Decimal.as_tuple() method. The difficulty with this approach,
+        #  unfortunately, is that we require the underlying raw unrounded string
+        #  rather than the overlaid rounded float that we currently only have
+        #  access to. Ideally, we can obtain the latter by querying the
+        #  "self._sim_conf_alias" alias for... something. We'll need to examine
+        #  the "expralias" submodule further. Due to the rounding issues
+        #  inherent in IEEE 754-style floats, we may ultimately need to special
+        #  case the "expralias" submodule yet again (*sigh*) as follows:
+        #  * In the expr_alias() function:
+        #    * If the passed "cls" parameter is a tuple containing both
+        #      "(float, str)"...
+        #  *WAIT.* That's a bit overkill. We should instead be able to define a
+        #  new general-purpose "is_str_exposed"....
+        #  *WAIT.* None of this actually matters, because PyYAML implicitly
+        #  converts all float-like strings to floats. Perhaps more importantly,
+        #  rounding errors do *NOT* matter at all for the purpose of obtaining
+        #  the base-10 exponent for a float, which is a much more coarse-grained
+        #  quantity.
+        #* Ergo, the betse.util.type.numeric.decimals should *ABSOLUTELY* define
+        #  a get_exponent() function silently accepting both strings and floats
+        #  as valid input. It should be noted in this function that floats are
+        #  intentionally accepted (whereas most other functions in this
+        #  submodule would ideally prohibit floats), due to the typical
+        #  irrelevance of miniscule rounding errors in this getter. *shrug*
+
+        # Set the fractional value by which to increment and decrement this
+        # widget's displayed value on each push of an up or down arrow.
+        # self.setSingleStep()
+
+        # Refine this precision to the largest of:
+        widget_value_precision = max(
+            # This alias' precision, incremented by one to permit the end user
+            # to interactively decrease this number an additional decimal place.
+            widget_value_precision + 1,
             # A reasonable default precision.
             3,
-            # The current precision of this widget's displayed value.
-            self.decimals(),
-            # The current precision of this alias' actual value, incremented by
-            # one to permit this value to be decreased an additional place.
-            widget_value_precision + 1,
-        ))
+        )
+
+        # Set the precision of this widget's displayed value to this precision.
+        # logs.log_debug(
+        #     'Setting "%s" precision given %s to %d...',
+        #     self.object_name, widget_value, widget_value_precision)
+        self.setDecimals(widget_value_precision)
+
+        # Return this value.
+        return widget_value
+
+
+    @QBetseeSimConfSpinBoxWidgetMixin.widget_value.setter
+    @type_check
+    def widget_value(self, widget_value: float) -> None:
+
+        # logs.log_debug('In QBetseeSimConfDoubleSpinBox.widget_value()...')
 
         # Set this widget's displayed value to the passed value by calling the
         # setValue() method of our superclass rather than this subclass,

@@ -147,12 +147,13 @@ class QBetseeSimConfEnumComboBox(
 
     # ..................{ MIXIN ~ property : value           }..................
     @property
-    def widget_value(self) -> object:
+    def widget_value(self) -> int:
         return self.currentIndex()
 
 
     @widget_value.setter
-    def widget_value(self, widget_value: object) -> None:
+    @type_check
+    def widget_value(self, widget_value: int) -> None:
 
         # Set this widget's displayed value to the passed value by calling the
         # setCurrentIndex() method of our superclass rather than this subclass,
