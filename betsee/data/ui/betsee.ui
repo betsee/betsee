@@ -429,7 +429,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1760,9 +1760,6 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
                    <property name="maximum">
                     <double>1.000000000000000</double>
                    </property>
-                   <property name="singleStep">
-                    <double>0.100000000000000</double>
-                   </property>
                   </widget>
                  </item>
                  <item>
@@ -1821,9 +1818,6 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_extra_world_len">
                    <property name="toolTip">
                     <string/>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.000010000000000</double>
                    </property>
                   </widget>
                  </item>

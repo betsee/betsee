@@ -806,7 +806,6 @@ class Ui_main_window(object):
         self.sim_conf_space_intra_lattice_disorder.setToolTip("")
         self.sim_conf_space_intra_lattice_disorder.setDecimals(1)
         self.sim_conf_space_intra_lattice_disorder.setMaximum(1.0)
-        self.sim_conf_space_intra_lattice_disorder.setSingleStep(0.1)
         self.sim_conf_space_intra_lattice_disorder.setObjectName("sim_conf_space_intra_lattice_disorder")
         self.horizontalLayout_25.addWidget(self.sim_conf_space_intra_lattice_disorder)
         self.label_90 = QtWidgets.QLabel(self.widget_25)
@@ -831,7 +830,6 @@ class Ui_main_window(object):
         self.horizontalLayout_15.setObjectName("horizontalLayout_15")
         self.sim_conf_space_extra_world_len = QBetseeSimConfDoubleSpinBox(self.widget_15)
         self.sim_conf_space_extra_world_len.setToolTip("")
-        self.sim_conf_space_extra_world_len.setSingleStep(1e-05)
         self.sim_conf_space_extra_world_len.setObjectName("sim_conf_space_extra_world_len")
         self.horizontalLayout_15.addWidget(self.sim_conf_space_extra_world_len)
         self.label_19 = QtWidgets.QLabel(self.widget_15)
@@ -2289,7 +2287,7 @@ class Ui_main_window(object):
         self.toolbar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(2)
+        self.sim_conf_stack.setCurrentIndex(3)
         self.sim_phase_tabs.setCurrentIndex(0)
         self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
@@ -2663,14 +2661,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
 from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
 from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseePushButtonSubDirSimConf
+from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

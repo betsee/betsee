@@ -41,6 +41,16 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
         Blog post partially inspiring this implementation.
     '''
 
+    # ..................{ CONSTANTS                          }..................
+    SINGLE_STEP_DEFAULT = 1.0
+    '''
+    Default Qt value for the :meth:`singleStep` property.
+
+    Testing the current value of the :meth:`singleStep` property against this
+    default permits subclasses to determine whether a widget-specific value for
+    this property has been specified or not.
+    '''
+
     # ..................{ INITIALIZERS                       }..................
     def __init__(self, *args, **kwargs) -> None:
 

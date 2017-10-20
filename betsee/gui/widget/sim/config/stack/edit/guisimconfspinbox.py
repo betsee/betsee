@@ -191,43 +191,30 @@ class QBetseeSimConfDoubleSpinBox(
         # configuration alias associated with this widget.
         widget_value = super()._get_widget_from_alias_value()
 
-        # Precision (i.e., significand length) of this floating point number.
-        widget_value_precision = floats.get_precision(widget_value)
+        # Base-10 precision (i.e., significand length) of this initial value.
+        widget_value_precision = floats.get_base_10_precision(widget_value)
 
-        #FIXME: Implement as follows:
-        #
-        #* Define a new betse.util.type.numeric.decimals submodule. Ideally,
-        #  this submodule should accept input *ONLY* as unrounded strings. To
-        #  avoid rounding errors, floats should be strictly prohibited.
-        #* Obtain the base-10 exponent associated with this number via the
-        #  Decimal.as_tuple() method. The difficulty with this approach,
-        #  unfortunately, is that we require the underlying raw unrounded string
-        #  rather than the overlaid rounded float that we currently only have
-        #  access to. Ideally, we can obtain the latter by querying the
-        #  "self._sim_conf_alias" alias for... something. We'll need to examine
-        #  the "expralias" submodule further. Due to the rounding issues
-        #  inherent in IEEE 754-style floats, we may ultimately need to special
-        #  case the "expralias" submodule yet again (*sigh*) as follows:
-        #  * In the expr_alias() function:
-        #    * If the passed "cls" parameter is a tuple containing both
-        #      "(float, str)"...
-        #  *WAIT.* That's a bit overkill. We should instead be able to define a
-        #  new general-purpose "is_str_exposed"....
-        #  *WAIT.* None of this actually matters, because PyYAML implicitly
-        #  converts all float-like strings to floats. Perhaps more importantly,
-        #  rounding errors do *NOT* matter at all for the purpose of obtaining
-        #  the base-10 exponent for a float, which is a much more coarse-grained
-        #  quantity.
-        #* Ergo, the betse.util.type.numeric.decimals should *ABSOLUTELY* define
-        #  a get_exponent() function silently accepting both strings and floats
-        #  as valid input. It should be noted in this function that floats are
-        #  intentionally accepted (whereas most other functions in this
-        #  submodule would ideally prohibit floats), due to the typical
-        #  irrelevance of miniscule rounding errors in this getter. *shrug*
+        # If this widget defers to the default single step (i.e., fractional
+        # value by which to increment and decrement this widget's displayed
+        # value on each push of this widget's up and down arrows) for
+        # "QDoubleSpinBox" widgets...
+        if self.singleStep() == self.SINGLE_STEP_DEFAULT:
+            # Base-10 exponent of this initial value.
+            widget_value_exponent = floats.get_base_10_exponent(widget_value)
 
-        # Set the fractional value by which to increment and decrement this
-        # widget's displayed value on each push of an up or down arrow.
-        # self.setSingleStep()
+            # Override the default single step with a widget-specific single
+            # step incrementing and decrementing by a fraction of this initial
+            # value. Specifically, a single step of a quarter of this initial
+            # value's order of magnitude is set.
+            #
+            # For example, given initial values of:
+            #
+            # * "0.009", a single step of "0.00025" will be set.
+            # * "1.729", a single step of "0.25" will be set.
+            single_step_new = 2.5 * 10**(widget_value_exponent - 1)
+            self.setSingleStep(single_step_new)
+        # Else, this widget has a non-default single step (typically specified
+        # at Qt Creator time). In this case, preserve this single step as is.
 
         # Refine this precision to the largest of:
         widget_value_precision = max(
