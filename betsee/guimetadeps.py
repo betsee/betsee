@@ -27,7 +27,7 @@ Metadata constants synopsizing high-level application dependencies.
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-BETSE_VERSION_REQUIRED_MIN = '0.5.1'
+BETSE_VERSION_REQUIRED_MIN = '0.5.3'
 '''
 Minimum version of BETSE, the low-level CLI underlying this high-level GUI,
 required by this application as a human-readable ``.``-delimited string.
@@ -67,7 +67,7 @@ See Also
 '''
 
 # ....................{ LIBS ~ runtime : optional          }....................
-#FIXME: Should these be dependencies also be added to our "setup.py" metadata,
+#FIXME: Should these dependencies also be added to our "setup.py" metadata,
 #perhaps as so-called "extras"? Contemplate. Consider. Devise.
 RUNTIME_OPTIONAL = {
     # To simplify subsequent lookup at runtime, project names for optional

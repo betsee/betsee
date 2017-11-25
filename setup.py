@@ -32,7 +32,7 @@ tasks (e.g., installation, freezing, test running) for this application.
 
 import setuptools
 from betsee import guimetadata, guimetadeps
-from betsee_setup import build, util
+from betsee_setup import betseebuild, betseeutil
 
 # ....................{ METADATA                           }....................
 # PyPI-specific metadata declared here rather than in the "betsee.metadata"
@@ -131,14 +131,14 @@ def init() -> None:
 
     # Description read from this description file.
     try:
-        _DESCRIPTION = util.get_chars(DESCRIPTION_FILENAME)
+        _DESCRIPTION = betseeutil.get_chars(DESCRIPTION_FILENAME)
         # print('description: {}'.format(_DESCRIPTION))
     # If this file is *NOT* readable, print a non-fatal warning and reduce this
     # description to the empty string. While unfortunate, this description is
     # *NOT* required for most operations and hence mostly ignorable.
     except Exception as exception:
         _DESCRIPTION = ''
-        util.output_warning(
+        betseeutil.output_warning(
             'Description file "{}" not found or not readable:\n{}'.format(
                 DESCRIPTION_FILENAME, exception))
 
@@ -291,7 +291,7 @@ setup_options = {
 Dictionary passed to the subsequent call to the :func:`setup` function.
 
 This dictionary signifies the set of all application-specific :mod:`setuptools`
-options. Submodules of the top-level :mod:`betse_setup` package subsequently
+options. Submodules of the top-level :mod:`betsee_setup` package subsequently
 customize these options (e.g., by defining custom commands).
 '''
 # print('extras: {}'.format(setup_options['extras_require']))
@@ -312,7 +312,7 @@ instead.
 
 # ....................{ COMMANDS                           }....................
 # Define all application-specific setuptools commands.
-for setup_module in (build,):
+for setup_module in (betseebuild,):
     setup_module.add_setup_commands(setup_options_custom, setup_options)
 
 # ....................{ SETUP                              }....................

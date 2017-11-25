@@ -20,15 +20,16 @@ BETSEE
 interface (GUI) for BETSE_, a  `finite volume`_ simulator for 2D computational
 multiphysics problems in the life sciences – including electrodiffusion_,
 electro-osmosis_, galvanotaxis_, `voltage-gated ion channels`_, `gene regulatory
-networks`_, and `biochemical reaction networks`_ (e.g., metabolism). BETSEE and
-BETSE_ are both associated with the `Paul Allen Discovery Center`_ at `Tufts
-University`_ and supported by a `Paul Allen Discovery Center award`_ from the
-`Paul G. Allen Frontiers Group`_.
+networks`_, and `biochemical reaction networks`_ (e.g., metabolism).
 
 Like BETSE_, BETSEE is `portably implemented <codebase_>`__ in pure `Python 3
 <Python_>`__, `continuously stress-tested <testing_>`__ with GitLab-CI_ **×**
 Appveyor_ **+** py.test_, and `permissively distributed <License_>`__ under the
 `BSD 2-clause license`_.
+
+BETSEE and BETSE_ are both associated with the `Paul Allen Discovery Center`_ at
+`Tufts University`_ and supported by a `Paul Allen Discovery Center award`_ from
+the `Paul G. Allen Frontiers Group`_.
 
 .. # ------------------( TABLE OF CONTENTS                  )------------------
 .. # Blank line. By default, Docutils appears to only separate the subsequent
@@ -63,7 +64,7 @@ BETSEE is installable as follows:
 #. Under `Ubuntu Linux 16.04 (Xenial Xerus)`_ and newer, by downloading and
    running an `automated command-line installer <Ubuntu 16.04 installer_>`__.
 
-   #. Open a **terminal.**
+   A. Open a **terminal.** [#terminal]_
    #. Download and run the `BETSE[E] installer <Ubuntu 16.04 installer_>`__.
 
       .. code:: bash
@@ -74,10 +75,10 @@ BETSEE is installable as follows:
    preferred package manager.
 
    #. Install the `unstable live version <BETSE live_>`__ of BETSE_.
-   #. Install Qt_ `5.6 <Qt 5.6_>`__. [#pyside2_install]_
-   #. Install the `stable 5.6 branch <_PySide2 5.6>`__ of PySide2_.
+   #. Install Qt_ `5.9 <Qt 5.9_>`__. [#pyside2_install]_
+   #. Install the `stable 5.9 branch <_PySide2 5.9>`__ of PySide2_.
       [#pyside2_install]_
-   #. Open a **terminal.**
+   A. Open a **terminal.** [#terminal]_
    #. Clone the ``master`` branch of this repository.
 
       .. code:: bash
@@ -93,6 +94,27 @@ BETSEE is installable as follows:
 
 Needless to say, `Ubuntu Linux`_ is *strongly* recommended for use of this
 pre-release version.
+
+
+.. [#terminal]
+   To open a `POSIX`_\ -compatible terminal under:
+
+   - **Windows:**
+
+     #. Install `Bash on Ubuntu on Windows`_.
+     #. Open the *Start* menu.
+     #. Open *Bash on Ubuntu on Windows*.
+
+   - **macOS:**
+
+     #. Open the *Finder*.
+     #. Open the *Applications* folder.
+     #. Open the *Utilities* folder.
+     #. Open *Terminal.app*.
+
+   - **Ubuntu Linux:**
+
+     #. Type ``Ctrl``\ +\ ``Alt``\ +\ ``t``.
 
 .. [#pyside2_install]
    Like BETSEE, PySide2_ is pre-release software under active development.
@@ -284,8 +306,8 @@ biologically misaligned, and simply unusable.
 .. # ------------------( LINKS ~ software : pyside2         )------------------
 .. _PySide2:
    https://wiki.qt.io/PySide2
-.. _PySide2 5.6:
-   https://code.qt.io/cgit/pyside/pyside.git/log/?h=5.6
+.. _PySide2 5.9:
+   http://code.qt.io/cgit/pyside/pyside-setup.git/log/?h=5.9
 .. _PySide2 feedstock:
    https://github.com/conda-forge/pyside2-feedstock
 .. _PySide2 installation:
@@ -296,8 +318,8 @@ biologically misaligned, and simply unusable.
    https://github.com/fredrikaverpil/pyside2-wheels/blob/master/QUICKSTART.md
 .. _Qt:
    https://www.qt.io
-.. _Qt 5.6:
-   https://wiki.qt.io/Qt_5.6_Release
+.. _Qt 5.9:
+   https://wiki.qt.io/Qt_5.9_Release
 
 .. # ------------------( LINKS ~ software : licenses        )------------------
 .. _license compatibility:

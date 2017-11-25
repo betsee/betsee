@@ -135,7 +135,7 @@ class BetseeCLI(CLIABC):
             'description': guimetadata.DESCRIPTION,
 
             #FIXME: Define an epilog encouraging users requiring full access to
-            #the BETSE's command-line suite of subcommands to call the "betse"
+            #BETSE's command-line suite of subcommands to call the "betse"
             #command instead.
 
             # Human-readable multi-sentence application help suffix.

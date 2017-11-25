@@ -26,6 +26,15 @@
 #
 #     wget https://gitlab.com/betse/betsee/raw/master/bin/install/linux/betsee_ubuntu_16_04.bash && bash betsee_ubuntu_16_04.bash
 
+#FIXME: Shift a portion of the "bin/install" directory from BETSEE into BETSE
+#itself. Perhaps the portion that is specific only to BETSE? This will then
+#require that the BETSEE installation script internally:
+#
+#* Perform a "wget" command to download the remote BETSE installation script
+#  into a local directory... somewhere. Say, "tmp"?
+#* Run this now local BETSE installation script with the same directories as
+#  were passed to the BETSEE installation script. *sigh*
+
 # ....................{ BASH                               }....................
 # Enable strict mode, terminating the script with non-zero exit status on the
 # first command or pipeline failing with non-zero exit status.

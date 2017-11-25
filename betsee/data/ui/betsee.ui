@@ -192,6 +192,15 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
            <iconset>
             <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
           </property>
+          <item>
+           <property name="text">
+            <string>Tissue</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
+           </property>
+          </item>
          </item>
          <item>
           <property name="text">
@@ -209,15 +218,6 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
           <property name="icon">
            <iconset>
             <normaloff>://icon/entypo+/sports-club.svg</normaloff>://icon/entypo+/sports-club.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Tissues</string>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
           </property>
          </item>
          <item>
@@ -524,7 +524,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Directory containing files pickled by the most recent seed and initialization runs of this simulation.</string>
+                    <string>Relative pathname of the directory containing files pickled by the most recent seed and initialization runs of this simulation.</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -532,14 +532,14 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_init_pick_dir_btn">
+                  <widget class="QBetseeSimConfPushButtonSubDir" name="sim_conf_path_init_pick_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Select this directory.</string>
+                    <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
                     <string>...</string>
@@ -617,7 +617,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Directory containing results exported by the most recent seed and initialization runs of this simulation.</string>
+                    <string>Relative pathname of the directory containing results exported by the most recent seed and initialization runs of this simulation.</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -625,14 +625,14 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_init_exp_dir_btn">
+                  <widget class="QBetseeSimConfPushButtonSubDir" name="sim_conf_path_init_exp_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Select this directory.</string>
+                    <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
                     <string>...</string>
@@ -692,7 +692,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Directory containing files pickled by the most recent simulation run of this simulation.</string>
+                    <string>Relative pathname of the directory containing files pickled by the most recent simulation run of this simulation.</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -700,14 +700,14 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_sim_pick_dir_btn">
+                  <widget class="QBetseeSimConfPushButtonSubDir" name="sim_conf_path_sim_pick_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Select this directory.</string>
+                    <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
                     <string>...</string>
@@ -785,7 +785,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Directory containing results exported by the most recent simulation run of this simulation.</string>
+                    <string>Relative pathname of the directory containing results exported by the most recent simulation run of this simulation.</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -793,14 +793,14 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseePushButtonSubDirSimConf" name="sim_conf_path_sim_exp_dir_btn">
+                  <widget class="QBetseeSimConfPushButtonSubDir" name="sim_conf_path_sim_exp_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>Select this directory.</string>
+                    <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
                     <string>...</string>
@@ -1669,13 +1669,76 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
              </property>
              <layout class="QFormLayout" name="formLayout_8">
               <item row="0" column="0">
+               <widget class="QLabel" name="label_91">
+                <property name="text">
+                 <string>Clipping mask:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QWidget" name="widget_26" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_26">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_space_intra_clip_mask_line">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>1</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string>Absolute or relative filename of the image whose non-transparent pixels define  of this simulation.</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QBetseeSimConfPushButtonSubDir" name="sim_conf_space_intra_clip_mask_btn">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string>Interactively browse the filesystem for this directory.</string>
+                   </property>
+                   <property name="text">
+                    <string>...</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="1" column="0">
                <widget class="QLabel" name="label_18">
                 <property name="text">
                  <string>Cell radius:</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
+              <item row="1" column="1">
                <widget class="QWidget" name="widget_17" native="true">
                 <property name="toolTip">
                  <string>Radius in meters of each cell in this cluster. This should typically be within an order of magnitude of the recommended default of 5.0e-6.</string>
@@ -4967,7 +5030,7 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
    <header>betsee/util/widget/stock/guitextedit.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseePushButtonSubDirSimConf</class>
+   <class>QBetseeSimConfPushButtonSubDir</class>
    <extends>QPushButton</extends>
    <header>betsee/gui/widget/sim/config/stack/guisimconfpushbtn.h</header>
   </customwidget>

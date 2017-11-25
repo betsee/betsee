@@ -15,8 +15,8 @@ from betse.util.type.types import type_check
 from betsee.gui.widget.sim.config.stack.guisimconfwdg import (
     QBetseeWidgetMixinSimConf)
 
-# ....................{ SUBCLASSES ~ dir                   }....................
-class QBetseePushButtonSubDirSimConf(QBetseeWidgetMixinSimConf, QPushButton):
+# ....................{ SUBCLASSES ~ subdir                }....................
+class QBetseeSimConfPushButtonSubDir(QBetseeWidgetMixinSimConf, QPushButton):
     '''
     :mod:`QPushButton`-based widget displaying a dialog on being clicked
     requesting the user select an existing subdirectory of an arbitrary parent
