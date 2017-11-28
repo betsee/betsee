@@ -9,12 +9,9 @@ XML-formatted user interface (UI) files exported by the external Qt Designer
 application.
 '''
 
-from io import StringIO
-
 # ....................{ IMPORTS                            }....................
 from PySide2 import QtWidgets
 from PySide2.QtCore import QCoreApplication
-
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
@@ -23,7 +20,8 @@ from betse.util.type.text import regexes
 from betse.util.type.types import type_check, SequenceTypes
 from betsee import guimetadata
 from betsee.guiexceptions import BetseeCacheException
-from betsee.lib import libs
+from betsee.lib import guilibs
+from io import StringIO
 
 # ....................{ GLOBALS                            }....................
 # To avoid conflict with PySide2-generated attribute names, obfuscate this
@@ -199,7 +197,7 @@ def convert_ui_to_py_file_if_able(ui_filename: str, py_filename: str) -> None:
 
     # If the optional third-party dependency required by this function is
     # unavailable, log a non-fatal warning and return.
-    if not libs.is_runtime_optional('pyside2uic'):
+    if not guilibs.is_runtime_optional('pyside2uic'):
         logs.log_warning(
             'Skipping! Package "pyside2uic" unimportable, '
             'probably due to "pyside2-tools" not being installed.')
@@ -213,7 +211,7 @@ def convert_ui_to_py_file_if_able(ui_filename: str, py_filename: str) -> None:
         return
 
     # Optional third-party dependencies required by this function.
-    pyside2uic = libs.import_runtime_optional('pyside2uic')
+    pyside2uic = guilibs.import_runtime_optional('pyside2uic')
     UICompiler = pyside2uic.Compiler.compiler.UICompiler
 
     # If this input file does *NOT* exist, raise an exception.

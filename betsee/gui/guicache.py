@@ -20,7 +20,7 @@ from betse.util.py import pys
 from betse.util.type import modules
 from betse.util.type.types import type_check, IterableTypes
 from betsee import guipathtree
-from betsee.lib import libs
+from betsee.lib import guilibs
 from betsee.util.io.xml import guiqrc, guiui
 
 # ....................{ CACHERS                            }....................
@@ -150,9 +150,9 @@ def _cache_py_ui_file() -> None:
     ]
 
     # If the optional third-party dependency "pyside2-tools" is installed...
-    if libs.is_runtime_optional('pyside2uic'):
+    if guilibs.is_runtime_optional('pyside2uic'):
         # Package installed by this dependency.
-        pyside2uic = libs.import_runtime_optional('pyside2uic')
+        pyside2uic = guilibs.import_runtime_optional('pyside2uic')
 
         # Append this package's directory for testing as well.
         input_pathnames.append(modules.get_dirname(pyside2uic))

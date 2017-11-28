@@ -16,11 +16,12 @@ such dependencies.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on missing mandatory dependencies,
 # the top-level of this module may import *ONLY* from packages guaranteed to
-# exist at installation time (i.e., standard Python and application packages,
+# exist at initial runtime (i.e., standard Python and application packages,
 # including both BETSEE and BETSE packages).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 from betse.lib import libs as betse_libs
-from betse.util.type.types import type_check  #, MappingType, StrOrNoneTypes
+from betse.util.type.types import type_check
 from betsee import guimetadeps
 
 # ....................{ EXCEPTIONS                         }....................

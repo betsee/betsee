@@ -82,7 +82,8 @@ def main(arg_list: list = None) -> int:
         (i.e., integer in the range ``[0, 255]``).
     '''
 
-    # Validate whether BETSE is satisfied or not.
+    # Validate BETSE to be satisfied *BEFORE* attempting to import from this
+    # application's package tree, most of which requires BETSE.
     try:
         _die_unless_betse()
     # If BETSE is unsatisfied, display this exception in an appropriate manner
@@ -90,11 +91,10 @@ def main(arg_list: list = None) -> int:
     except _BetseNotFoundException as exception:
         return _show_betse_exception(exception)
 
-    # Else, BETSE is satisfied. Import us up the BETSEE package tree, most of
-    # which assumes BETSE to be importable.
-    from betsee.cli.climain import BetseeCLI
+    # Import from this application's package tree *AFTER* validating BETSE.
+    from betsee.cli.guicli import BetseeCLI
 
-    # Run the BETSEE CLI and return the exit status of doing so.
+    # Run this application's CLI and return the exit status of doing so.
     return BetseeCLI().run(arg_list)
 
 # ....................{ EXCEPTIONS                         }....................
@@ -122,22 +122,22 @@ def _die_unless_betse() -> None:
     except ImportError as import_error:
         raise _BetseNotFoundException(
             title=EXCEPTION_TITLE,
-            synopsis='BETSE not found.',
-            exegesis='Python package "betse" not importable.',
+            synopsis='Mandatory dependency BETSE not found.',
+            exegesis='Python package "betse" unimportable.',
         ) from import_error
     # Else, BETSE is importable.
 
     # Minimum version of BETSE required by this application as a
     # machine-readable tuple of integers. Since this tuple is only required once
     # (namely, here), this tuple is *NOT* persisted as a "metadata" global.
-    BETSE_VERSION_REQUIRED_MIN_PARTS = guimetadata._convert_version_str_to_tuple(
-        BETSE_VERSION_REQUIRED_MIN)
+    BETSE_VERSION_REQUIRED_MIN_PARTS = (
+        guimetadata._convert_version_str_to_tuple(BETSE_VERSION_REQUIRED_MIN))
 
     # If the current version of BETSE is insufficient, raise an exception.
     if betse.__version_info__ < BETSE_VERSION_REQUIRED_MIN_PARTS:
         raise _BetseNotFoundException(
             title=EXCEPTION_TITLE,
-            synopsis='Obsolete version of BETSE found.',
+            synopsis='Obsolete version of mandatory dependency BETSE found.',
             exegesis=(
                 '{} requires at least BETSE {}, '
                 'but only BETSE {} is currently installed.'.format(

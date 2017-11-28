@@ -1692,7 +1692,7 @@ class SimThread(QThread):
         self._is_running = False
 
 # ....................{ MAIN                               }....................
-#FIXME: Shift the following logic into the "betsee.cli.climain" submodule.
+#FIXME: Shift the following logic into the "betsee.cli.guicli" submodule.
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)

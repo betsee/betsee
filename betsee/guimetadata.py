@@ -113,34 +113,6 @@ if sys.version_info[:3] < PYTHON_VERSION_MIN_PARTS:
             NAME, PYTHON_VERSION_MIN, PYTHON_VERSION))
 
 # ....................{ METADATA ~ version                 }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# WARNING: When modifying the current version of this application below,
-# consider adhering to the Semantic Versioning schema. Specifically, the version
-# should consist of three "."-delimited integers "{major}.{minor}.{patch}",
-# where:
-#
-# * "{major}" specifies the major version, incremented only when either:
-#   * Breaking configuration file backward compatibility. Since this
-#     application's public API is its configuration file format rather than a
-#     subset of the code itself (e.g., public subpackages, submodules, classes),
-#     no change to the code itself can be considered to break backward
-#     compatibility unless that change breaks the configuration file format.
-#   * Implementing headline-worthy functionality (e.g., a GUI). Technically,
-#     this condition breaks the Semantic Versioning schema, which stipulates
-#     that *ONLY* changes breaking backward compatibility warrant major bumps.
-#     But this is the real world. In the real world, significant improvements
-#     are rewarded with significant version changes.
-#   In either case, the minor and patch versions both reset to 0.
-# * "{minor}" specifies the minor version, incremented only when implementing
-#   customary functionality in a manner preserving such compatibility. In this
-#   case, the patch version resets to 0.
-# * "{patch}" specifies the patch version, incremented only when correcting
-#   outstanding issues in a manner preserving such compatibility.
-#
-# When in doubt, increment only the minor version and reset the patch version.
-# For further details, see http://semver.org.
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 VERSION = '0.0.1'
 '''
 Human-readable application version as a ``.``-delimited string.
@@ -157,7 +129,7 @@ Machine-readable application version as a tuple of integers.
 # "setup.py" script. This description is inefficiently culled from the contents
 # of the top-level "README.rst" file and hence omitted here. (Doing so here
 # would significantly increase program startup costs with little to no benefit.)
-SYNOPSIS = 'BETSEE, the Bioelectric Tissue Simulation Engine Environment.'
+SYNOPSIS = 'BETSEE, the BioElectric Tissue Simulation Engine Environment.'
 '''
 Human-readable single-line synopsis of this application.
 
@@ -166,7 +138,7 @@ By PyPI design, this string must *not* span multiple lines or paragraphs.
 
 
 DESCRIPTION = (
-    'The Bioelectric Tissue Simulation Engine Environment (BETSEE) is the '
+    'The BioElectric Tissue Simulation Engine Environment (BETSEE) is the '
     'official Qt 5-based graphical user interface (GUI) for BETSE, a '
     'finite volume simulator for 2D computational multiphysics problems in '
     'the life sciences -- including electrodiffusion, electro-osmosis, '

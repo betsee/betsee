@@ -191,16 +191,11 @@ class BetseeCLI(CLIABC):
         # application widget containing this GUI.
         app_gui = BetseeGUI(sim_conf_filename=self._sim_conf_filename)
 
-        #FIXME: Propagate the exit status returned by the following method call
-        #as the exit status of the entire process. To do so, we'll probably need
-        #to generalize the "CLIABC" superclass to provide an instance variable
-        #(e.g., "self.exit_status") defaulting to None. When non-None, the
-        #superclass returns this exit status rather than "SUCCESS".
+        # Run this GUI's event loop and display this GUI, propagating the
+        # returned exit status as this application's exit status.
+        self._exit_status = app_gui.run()
 
-        # Run this GUI's event loop and display this GUI.
-        exit_status = app_gui.run()
-
-        # Return this GUI.
+        # Return this GUI for optional profiling purposes.
         return app_gui
 
 
@@ -222,5 +217,3 @@ class BetseeCLI(CLIABC):
         # exception. Why? Because we have more significant fish to fry.
         except ImportError as import_error:
             logs.log_error(str(import_error))
-
-

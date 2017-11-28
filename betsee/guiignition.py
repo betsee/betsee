@@ -25,7 +25,7 @@ def reinit() -> None:
        :func:`betse.ignition.init` function.
     #. Validates but does *not* initialize mandatory third-party dependencies of
        this application, which must be initialized independently by the
-       :func:`betsee.lib.libs.init` function.
+       :func:`betsee.lib.guilibs.init` function.
 
     Design
     ----------
@@ -43,17 +43,17 @@ def reinit() -> None:
 
     # Defer heavyweight and possibly circular imports.
     from betse import ignition as betse_ignition
-    from betsee.lib import libs as betsee_libs
+    from betsee.lib import guilibs
 
     # Initialize all lower-level BETSE logic *BEFORE* any higher-level BETSEE
     # logic assuming the former to "be sane." See the
-    # betse.climain.BetseCLI._ignite_app() method for details on why the
+    # betse.guicli.BetseCLI._ignite_app() method for details on why the
     # betse_ignition.reinit() rather than betse_ignition.init() function is
     # called here.
     betse_ignition.reinit()
 
     # Validate mandatory dependencies. Avoid initializing these dependencies
-    # here (e.g., by calling libs.init()), which requires the logging
+    # here (e.g., by calling guilibs.init()), which requires the logging
     # configuration to have been finalized (e.g., by parsing CLI options), which
     # has yet to occur this early in the application lifecycle.
-    betsee_libs.die_unless_runtime_mandatory_all()
+    guilibs.die_unless_runtime_mandatory_all()
