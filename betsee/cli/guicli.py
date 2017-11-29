@@ -93,11 +93,11 @@ Concrete subclasses defining this application's command line interface (CLI).
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from betse.cli.cliabc import CLIABC
-from betse.cli.cliopt import CLIOptionArgStr
+from betse.cli.api.cliabc import CLIABC
+from betse.cli.api.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
-from betse.util.type.types import type_check, MappingType
-from betsee import guiignition, guimetadata
+from betse.util.type.types import type_check, MappingType, ModuleType
+from betsee import guimetadata
 from betsee.util.io.log import guilogs
 
 # ....................{ SUBCLASS                           }....................
@@ -108,9 +108,10 @@ class BetseeCLI(CLIABC):
     Attributes
     ----------
     _sim_conf_filename : StrOrNoneTypes
-        Absolute or relative path of the initial YAML-formatted simulation
-        configuration file to be initially opened if any *or* ``None`` otherwise
-        parsed from the passed options.
+        Absolute or relative filename of the initial YAML-formatted simulation
+        configuration file to be initially opened by this application's GUI if
+        any *or* ``None`` otherwise. This filename is parsed from command-line
+        options passed by the current user.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -128,19 +129,31 @@ class BetseeCLI(CLIABC):
 
     # ..................{ SUPERCLASS ~ properties            }..................
     @property
-    def _arg_parser_top_kwargs(self) -> MappingType:
+    def _help_epilog(self) -> str:
 
-        return {
-            # Human-readable multi-sentence application description.
-            'description': guimetadata.DESCRIPTION,
+        return '''
+To simulate any simulation produced by this GUI at the command line, consider
+running the "betse" command underlying this GUI instead. For example, to
+seed, initialize, and then simulate such a simulation in the current directory:
 
-            #FIXME: Define an epilog encouraging users requiring full access to
-            #BETSE's command-line suite of subcommands to call the "betse"
-            #command instead.
+;    betse seed sim_config.yaml
+;    betse init sim_config.yaml
+;    betse  sim sim_config.yaml
+'''
 
-            # Human-readable multi-sentence application help suffix.
-            # 'epilog': SUBCOMMANDS_SUFFIX,
-        }
+
+    @property
+    def _module_ignition(self) -> ModuleType:
+
+        from betsee import guiignition
+        return guiignition
+
+
+    @property
+    def _module_metadata(self) -> ModuleType:
+
+        from betsee import guimetadata
+        return guimetadata
 
     # ..................{ SUPERCLASS ~ options               }..................
     def _make_options_top(self) -> tuple:
@@ -168,12 +181,6 @@ class BetseeCLI(CLIABC):
         self._sim_conf_filename = self._args.sim_conf_filename
 
     # ..................{ SUPERCLASS ~ methods               }..................
-    def _ignite_app(self) -> None:
-
-        # (Re-)initialize both BETSEE and BETSE.
-        guiignition.reinit()
-
-
     def _do(self) -> object:
         '''
         Implement this command-line interface (CLI) by running the corresponding

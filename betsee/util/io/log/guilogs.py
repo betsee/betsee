@@ -7,12 +7,12 @@
 Low-level application-specific logging facilities.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ..................{ IMPORTS                                }..................
 from betse import metadata as betse_metadata
 from betse.util.io.log import logs
 from betsee import guimetadata as betsee_metadata
 
-# ....................{ LOGGERS                            }....................
+# ..................{ LOGGERS                                }..................
 def log_header() -> None:
     '''
     Log a single-line human-readable sentence synopsizing the state of the
