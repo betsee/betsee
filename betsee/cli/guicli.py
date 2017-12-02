@@ -93,12 +93,10 @@ Concrete subclasses defining this application's command line interface (CLI).
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from betse.cli.api.cliabc import CLIABC
-from betse.cli.api.cliopt import CLIOptionArgStr
+from betse.util.cli.cliabc import CLIABC
+from betse.util.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
-from betse.util.type.types import type_check, MappingType, ModuleType
-from betsee import guimetadata
-from betsee.util.io.log import guilogs
+from betse.util.type.types import type_check, ModuleType
 
 # ....................{ SUBCLASS                           }....................
 class BetseeCLI(CLIABC):
@@ -122,10 +120,6 @@ class BetseeCLI(CLIABC):
 
         # Nullify all instance variables for safety.
         self._sim_conf_filename = None
-
-    # ..................{ SUPERCLASS ~ header                }..................
-    def _show_header(self) -> None:
-        guilogs.log_header()
 
     # ..................{ SUPERCLASS ~ properties            }..................
     @property

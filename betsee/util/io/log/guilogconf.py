@@ -12,11 +12,10 @@ Low-level :mod:`PySide2`-specific logging configuration.
 #rather than a plain text edit widget.
 
 # ....................{ IMPORTS                            }....................
-from betse.util.io.log import logconfig
+from betse.util.io.log import logconfig, logs
 from betse.util.io.log.logenum import LogLevel
 from betse.util.io.log.logfilter import LogFilterThirdPartyDebug
 from betse.util.type.types import type_check
-from betsee.util.io.log import guilogs
 from betsee.util.io.log.guiloghandle import LogHandlerSignal
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 
@@ -64,4 +63,4 @@ def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
 
     # Log a single-line sentence synopsizing the state of this application
     # *AFTER* finalizing logging reconfiguration.
-    guilogs.log_header()
+    logs.log_info('Initializing GUI...')

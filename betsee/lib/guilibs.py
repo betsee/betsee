@@ -8,7 +8,7 @@ High-level **application dependency** (i.e., both mandatory and optional
 third-party Python packages required by this application) facilities.
 
 This low-level submodule defines functions intended to be called by high-level
-submodules (e.g., :mod:`betse.cli.api.cliabc`) *before* attempting to import any
+submodules (e.g., :mod:`betse.util.cli.cliabc`) *before* attempting to import any
 such dependencies.
 '''
 
