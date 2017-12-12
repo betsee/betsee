@@ -188,6 +188,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
           <property name="text">
            <string>Space</string>
           </property>
+          <property name="toolTip">
+           <string>Spatial properties of this simulation.</string>
+          </property>
           <property name="icon">
            <iconset>
             <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
@@ -195,6 +198,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
           <item>
            <property name="text">
             <string>Tissue</string>
+           </property>
+           <property name="toolTip">
+            <string>Tissue (i.e., regions of the cell cluster whose cells all share the same initial conditions) simulated by this simulation.</string>
            </property>
            <property name="icon">
             <iconset>
@@ -206,6 +212,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
           <property name="text">
            <string>Time</string>
           </property>
+          <property name="toolTip">
+           <string>Temporal properties of this simulation.</string>
+          </property>
           <property name="icon">
            <iconset>
             <normaloff>://icon/open_iconic/clock.svg</normaloff>://icon/open_iconic/clock.svg</iconset>
@@ -214,6 +223,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
          <item>
           <property name="text">
            <string>Ions</string>
+          </property>
+          <property name="toolTip">
+           <string>Ions (i.e., bioelectrically charged atoms and molecules) simulated by this simulation.</string>
           </property>
           <property name="icon">
            <iconset>
@@ -311,6 +323,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
          <item>
           <property name="text">
            <string>Paths</string>
+          </property>
+          <property name="toolTip">
+           <string>Pathnames of files and directories used by this simulation.</string>
           </property>
           <property name="icon">
            <iconset resource="../qrc/betsee.qrc">
@@ -429,14 +444,14 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_50">
           <property name="toolTip">
-           <string>Paths produced by this simulation.</string>
+           <string/>
           </property>
           <property name="title">
            <string>Path Settings</string>
@@ -542,7 +557,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
-                    <string>...</string>
+                    <string>Browse...</string>
                    </property>
                   </widget>
                  </item>
@@ -635,7 +650,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
-                    <string>...</string>
+                    <string>Browse...</string>
                    </property>
                   </widget>
                  </item>
@@ -710,7 +725,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
-                    <string>...</string>
+                    <string>Browse...</string>
                    </property>
                   </widget>
                  </item>
@@ -803,7 +818,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                     <string>Interactively browse the filesystem for this directory.</string>
                    </property>
                    <property name="text">
-                    <string>...</string>
+                    <string>Browse...</string>
                    </property>
                   </widget>
                  </item>
@@ -836,7 +851,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_51">
           <property name="toolTip">
-           <string>Time-related properties of this simulation.</string>
+           <string/>
           </property>
           <property name="title">
            <string>Temporal Settings</string>
@@ -861,7 +876,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
               <item row="0" column="1">
                <widget class="QWidget" name="widget_9" native="true">
                 <property name="toolTip">
-                 <string>Duration in seconds of this simulation's initialization phase.</string>
+                 <string>Duration in seconds [s] of this simulation's initialization phase.</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_9">
                  <property name="leftMargin">
@@ -924,7 +939,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
               <item row="1" column="1">
                <widget class="QWidget" name="widget_10" native="true">
                 <property name="toolTip">
-                 <string>Duration in seconds of each time step (both sampled and unsampled) of this simulation's initialization phase.</string>
+                 <string>Duration in seconds [s] of each time step (both sampled and unsampled) of this simulation's initialization phase.</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_10">
                  <property name="leftMargin">
@@ -987,7 +1002,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
               <item row="2" column="1">
                <widget class="QWidget" name="widget_11" native="true">
                 <property name="toolTip">
-                 <string>Duration in seconds between each sampled time step (inclusive) of this simulation's initialization phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.</string>
+                 <string>Duration in seconds [s] between each sampled time step (inclusive) of this simulation's initialization phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_11">
                  <property name="leftMargin">
@@ -1062,7 +1077,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
               <item row="0" column="1">
                <widget class="QWidget" name="widget_12" native="true">
                 <property name="toolTip">
-                 <string>Duration in seconds of this simulation's simulation phase.</string>
+                 <string>Duration in seconds [s] of this simulation's simulation phase.</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_12">
                  <property name="leftMargin">
@@ -1125,7 +1140,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
               <item row="1" column="1">
                <widget class="QWidget" name="widget_13" native="true">
                 <property name="toolTip">
-                 <string>Duration in seconds of each time step (both sampled and unsampled) of this simulation's simulation phase.</string>
+                 <string>Duration in seconds [s] of each time step (both sampled and unsampled) of this simulation's simulation phase.</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_13">
                  <property name="leftMargin">
@@ -1188,7 +1203,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
               <item row="2" column="1">
                <widget class="QWidget" name="widget_14" native="true">
                 <property name="toolTip">
-                 <string>Duration in seconds between each sampled time step (inclusive) of this simulation's simulation phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.</string>
+                 <string>Duration in seconds [s] between each sampled time step (inclusive) of this simulation's simulation phase. Decreasing this duration increases the number of time steps for which data is exported from this phase at a linear cost in space consumption.</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_14">
                  <property name="leftMargin">
@@ -1267,7 +1282,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_52">
           <property name="toolTip">
-           <string>Ion-related properties of this simulation.</string>
+           <string/>
           </property>
           <property name="title">
            <string>Ions</string>
@@ -1647,13 +1662,13 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
       </widget>
       <widget class="QWidget" name="sim_conf_stack_page_Space">
        <property name="toolTip">
-        <string>Space-related properties of this simulation.</string>
+        <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout_50">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_53">
           <property name="toolTip">
-           <string>Space-related properties of this simulation.</string>
+           <string/>
           </property>
           <property name="title">
            <string>Spatial Settings</string>
@@ -1669,79 +1684,16 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
              </property>
              <layout class="QFormLayout" name="formLayout_8">
               <item row="0" column="0">
-               <widget class="QLabel" name="label_91">
-                <property name="text">
-                 <string>Clipping mask:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QWidget" name="widget_26" native="true">
-                <layout class="QHBoxLayout" name="horizontalLayout_26">
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
-                 <item>
-                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_space_intra_clip_mask_line">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>1</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                     <weight>50</weight>
-                     <bold>false</bold>
-                    </font>
-                   </property>
-                   <property name="toolTip">
-                    <string>Absolute or relative filename of the image whose non-transparent pixels define  of this simulation.</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QBetseeSimConfPushButtonSubDir" name="sim_conf_space_intra_clip_mask_btn">
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                    </font>
-                   </property>
-                   <property name="toolTip">
-                    <string>Interactively browse the filesystem for this directory.</string>
-                   </property>
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="1" column="0">
                <widget class="QLabel" name="label_18">
                 <property name="text">
                  <string>Cell radius:</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
+              <item row="0" column="1">
                <widget class="QWidget" name="widget_17" native="true">
                 <property name="toolTip">
-                 <string>Radius in meters of each cell in this cluster. This should typically be within an order of magnitude of the recommended default of 5.0e-6.</string>
+                 <string>Radius in meters [m] of each cell in this cluster. This should typically be within an order of magnitude of the recommended default of 5.0e-6.</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_17">
                  <property name="leftMargin">
@@ -1778,14 +1730,14 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                 </layout>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item row="1" column="0">
                <widget class="QLabel" name="label_81">
                 <property name="text">
                  <string>Lattice type:</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="1" column="1">
                <widget class="QBetseeSimConfEnumComboBox" name="sim_conf_space_intra_lattice_type">
                 <property name="toolTip">
                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
@@ -1799,14 +1751,14 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
+              <item row="2" column="0">
                <widget class="QLabel" name="label_20">
                 <property name="text">
                  <string>Lattice disorder:</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
+              <item row="2" column="1">
                <widget class="QWidget" name="widget_25" native="true">
                 <property name="toolTip">
                  <string>Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].</string>
@@ -1862,7 +1814,7 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
               <item row="0" column="1">
                <widget class="QWidget" name="widget_15" native="true">
                 <property name="toolTip">
-                 <string>Length in meters of both the X and Y dimensions of this simulation's square environment. This should typically be in the range [80e-6, 1000e-6].</string>
+                 <string>Length in meters [m] of both the X and Y dimensions of this simulation's square environment. This should typically be in the range [80e-6, 1000e-6].</string>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_15">
                  <property name="leftMargin">
@@ -1987,226 +1939,540 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="sim_conf_stack_page_Tissues">
+      <widget class="QWidget" name="sim_conf_stack_page_Tissue">
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
          <widget class="QGroupBox" name="groupBox_TissueProfiles">
+          <property name="toolTip">
+           <string>Default tissue profile for all unselected cells (i.e., cells not already selected by a tissue profile listed to the left).</string>
+          </property>
           <property name="title">
-           <string>Tissue Profiles</string>
+           <string>Default Tissue</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
-            <spacer name="verticalSpacer_20">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
+            <widget class="QGroupBox" name="groupBox_22">
+             <property name="toolTip">
+              <string>General-purpose properties of the default tissue profile.</string>
              </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+             <property name="title">
+              <string>Properties</string>
              </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>16</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="rb_useProfiles">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>1</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Use tissue profiles</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_16">
-             <property name="text">
-              <string>Cluster Clipping Bitmap:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QWidget" name="widget_4" native="true">
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QLineEdit" name="lineEdit_ClippingBitmap"/>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton_clippingBrowse">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Browse</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QFrame" name="frame_profileWidget_0">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <property name="lineWidth">
-              <number>4</number>
-             </property>
-             <property name="midLineWidth">
-              <number>0</number>
-             </property>
-             <layout class="QFormLayout" name="formLayout_9">
+             <layout class="QFormLayout" name="formLayout_10">
               <item row="0" column="0">
-               <widget class="QLabel" name="label_51">
-                <property name="text">
-                 <string>Type:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="comboBox_profileType">
-                <item>
-                 <property name="text">
-                  <string>tissue</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>cut</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_52">
+               <widget class="QLabel" name="label_16">
                 <property name="text">
                  <string>Name:</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEdit_profileName"/>
-              </item>
-              <item row="2" column="0">
-               <widget class="QRadioButton" name="rb_profileInsular">
-                <property name="text">
-                 <string>Insular</string>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="lineEdit">
+                <property name="toolTip">
+                 <string>Arbitrary string uniquely identifying the default tissue profile. This name must be unique amongst (i.e., not shared by) any tissue profile listed to the left.</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_53">
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_19">
+             <property name="toolTip">
+              <string>Exterior shape of the entire cell cluster.</string>
+             </property>
+             <property name="title">
+              <string>Cell Cluster Shape</string>
+             </property>
+             <layout class="QFormLayout" name="formLayout_20">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_91">
                 <property name="text">
-                 <string>Bitmap:</string>
+                 <string>Image mask:</string>
                 </property>
                </widget>
               </item>
-              <item row="4" column="0" colspan="2">
-               <widget class="QWidget" name="widget_3" native="true">
-                <layout class="QHBoxLayout" name="horizontalLayout">
+              <item row="0" column="1">
+               <widget class="QWidget" name="widget_26" native="true">
+                <layout class="QHBoxLayout" name="horizontalLayout_26">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
                  <item>
-                  <widget class="QLineEdit" name="lineEdit_profileBitmap"/>
+                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_space_intra_clip_mask_line">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>1</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                     <weight>50</weight>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Absolute or relative filename of the image mask whose pure-black pixels (i.e., pixels whose red, green, and blue color components are all 0) define the exterior shape of the entire cell cluster. This image &lt;i&gt;must&lt;/i&gt;
+&lt;ul&gt;
+&lt;li&gt;Be square (i.e., have equal pixel dimensions).&lt;/li&gt;
+&lt;ul&gt;Contain no alpha transparency layer.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_profileBitmapBrowse">
+                  <widget class="QBetseeSimConfPushButtonSubDir" name="sim_conf_space_intra_clip_mask_btn">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string>Interactively browse the filesystem for this file.</string>
+                   </property>
                    <property name="text">
-                    <string>Browse</string>
+                    <string>Browse...</string>
                    </property>
                   </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="6" column="0" colspan="2">
-               <widget class="QWidget" name="widget_setDiffusion" native="true">
-                <layout class="QFormLayout" name="formLayout_10">
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_54">
-                   <property name="text">
-                    <string>Dm_Na</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="lineEdit_DmNa"/>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_55">
-                   <property name="text">
-                    <string>Dm_K</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QLineEdit" name="lineEdit_DmK"/>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_56">
-                   <property name="text">
-                    <string>Dm_Cl</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="lineEdit_DmCl"/>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_57">
-                   <property name="text">
-                    <string>Dm_Ca</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="lineEdit_DmCa"/>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label_58">
-                   <property name="text">
-                    <string>Dm_H</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="1">
-                  <widget class="QLineEdit" name="lineEdit_DmH"/>
-                 </item>
-                 <item row="6" column="0">
-                  <widget class="QLabel" name="label_59">
-                   <property name="text">
-                    <string>Dm_M</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="1">
-                  <widget class="QLineEdit" name="lineEdit_DmM"/>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="label_60">
-                   <property name="text">
-                    <string>Dm_P</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QLineEdit" name="lineEdit_DmP"/>
                  </item>
                 </layout>
                </widget>
               </item>
              </layout>
             </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_21">
+             <property name="toolTip">
+              <string>Default membrane diffusion constants for all unselected cells (i.e., cells not already selected by a tissue profile listed to the left).</string>
+             </property>
+             <property name="title">
+              <string>Membrane Diffusion Constants</string>
+             </property>
+             <layout class="QFormLayout" name="formLayout_9">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_54">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Sodium (&lt;i&gt;Na&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QWidget" name="widget_27" native="true">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which sodium cations (&lt;i&gt;Na&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_27">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_2">
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_92">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_55">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Potassium (&lt;i&gt;K&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QWidget" name="widget_28" native="true">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which potassium cations (&lt;i&gt;K&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_28">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_3">
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_93">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_56">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Chloride (&lt;i&gt;Cl&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QWidget" name="widget_29" native="true">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which chloride anions (&lt;i&gt;Cl&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_29">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_4">
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_94">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="label_57">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Calcium (&lt;i&gt;Ca&lt;sup&gt;2+&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QWidget" name="widget_30" native="true">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which calcium cations (&lt;i&gt;Ca&lt;sup&gt;2+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_30">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_5">
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_95">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="label_58">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Hydrogen (&lt;i&gt;H&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QWidget" name="widget_31" native="true">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which hydrogen cations (&lt;i&gt;H&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_31">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_6">
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_96">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="label_59">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Charge balance (&lt;i&gt;M&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QWidget" name="widget_32" native="true">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which charge balance anions (&lt;i&gt;M&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells. Charge balance anions are unidentified anions  dynamically fabricated by the simulator as necessary to preserve charge neutrality of the world as a whole.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_32">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_7">
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_97">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="label_60">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Protein (&lt;i&gt;P&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QWidget" name="widget_33" native="true">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which protein anions (&lt;i&gt;P&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_33">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_8">
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_98">
+                   <property name="font">
+                    <font>
+                     <pointsize>10</pointsize>
+                    </font>
+                   </property>
+                   <property name="toolTip">
+                    <string/>
+                   </property>
+                   <property name="text">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </widget>
@@ -2709,7 +2975,7 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
            <item>
             <widget class="QRadioButton" name="radioButton_2">
              <property name="text">
-              <string>Use network from external config:</string>
+              <string>Use network from e&amp;xternal config:</string>
              </property>
             </widget>
            </item>

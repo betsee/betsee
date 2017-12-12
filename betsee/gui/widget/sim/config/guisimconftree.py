@@ -24,19 +24,17 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     This application-specific widget augments the stock :class:`QTreeWidget`
     with support for handling simulation configurations, including:
 
+    * Auto-axpansion of all tree items by default.
     * Integration with the corresponding :class:`QStackedWidget`, exposing all
       low-level configuration settings for the high-level simulation feature
       currently selected from this tree.
-
-    Attributes
-    ----------
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def __init__(self, *args, **kwargs) -> None:
-
-        # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs) -> None:
+    #
+    #     # Initialize our superclass with all passed parameters.
+    #     super().__init__(*args, **kwargs)
 
 
     # To avoid circular import dependencies, this parameter is validated to be
@@ -49,6 +47,10 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     def init(self, main_window: QMainWindow) -> None:
         '''
         Initialize this tree widget against the passed parent main window.
+
+        This method is principally intended to perform **post-population
+        initialization** (i.e., initialization performed *after* this widget has
+        been completely pre-populated with all initial tree items).
 
         To avoid circular references, this method is guaranteed to *not* retain
         a reference to this main window on returning. References to child
@@ -65,8 +67,10 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Log this initialization.
         logs.log_debug('Initializing top-level tree widget...')
 
-        # Connect all relevant signals and slots of this tree and stack widget
-        # *AFTER* integrating these widgets, as required by these slots.
+        # Expand all items of this tree widget to arbitrary depth.
+        self.expandAll()
+
+        # Connect all relevant signals and slots of this tree and stack widget.
         self._init_connections(main_window)
 
 

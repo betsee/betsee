@@ -77,6 +77,10 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         '''
         Initialize this stacked widget against the passed parent main window.
 
+        This method is principally intended to perform **post-population
+        initialization** (i.e., initialization performed *after* the main window
+        has been completely pre-populated with all initial child widgets).
+
         To avoid circular references, this method is guaranteed to *not* retain
         a reference to this main window on returning. References to child
         widgets (e.g., simulation configuration stack widget) of this window may
