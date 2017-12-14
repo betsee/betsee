@@ -61,7 +61,7 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Qt, Signal
-from PySide2.QtWidgets import QSpinBox  #QDoubleSpinBox
+from PySide2.QtWidgets import QSpinBox
 from betse.util.io.log import logs
 from betse.util.type.numeric import floats
 from betse.util.type.types import type_check, ClassOrNoneTypes

@@ -444,7 +444,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1967,7 +1967,7 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QLineEdit" name="lineEdit">
+               <widget class="QBetseeSimConfLineEdit" name="sim_conf_tis_default_name">
                 <property name="toolTip">
                  <string>Arbitrary string uniquely identifying the default tissue profile. This name must be unique amongst (i.e., not shared by) any tissue profile listed to the left.</string>
                 </property>

@@ -209,6 +209,18 @@ class BetseePySideMessageBoxException(BetseePySideWidgetException):
             'BetseePySideMessageBoxException', 'Message Box Error')
 
 
+class BetseePySideRadioButtonException(BetseePySideWidgetException):
+    '''
+    General-purpose exception applicable to
+    :class:`PySide2.QtWidgets.QRadioButton` instances.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideRadioButtonException', 'Radio Button Error')
+
+
 class BetseePySideSpinBoxException(BetseePySideWidgetException):
     '''
     General-purpose exception applicable to all concrete

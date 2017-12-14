@@ -10,6 +10,7 @@ instantiated in pages of the top-level stack.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Slot
+from betse.lib.yaml.abc.yamlabc import YamlABCOrNoneTypes
 from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
@@ -63,11 +64,17 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
     @type_check
     def init(
         self,
+
+        # Mandatory parameters.
+        #
         # To avoid circularity from the "QBetseeSimConf" class importing the
         # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
         # importing instances of this class, this type is validated dynamically.
         sim_conf: 'betsee.gui.widget.sim.config.guisimconf.QBetseeSimConf',
         sim_conf_alias: YamlAliasABC,
+
+        # Optional parameters.
+        sim_conf_alias_parent: YamlABCOrNoneTypes = None,
     ) -> None:
         '''
         Finalize the initialization of this widget.
@@ -82,6 +89,11 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
             :class:`betse.science.params.Parameters`-specific class variable
             assigned the return value of the
             :func:`betse.science.config.confabc.yaml_alias` function.
+        sim_conf_alias_parent : YamlABCOrNoneTypes
+            YAML-backed simulation subconfiguration whose class declares the
+            passed data descriptor. Defaults to ``None``, in which case this
+            parameter defaults to ``sim_conf.p`` (i.e., the top-level
+            YAML-backed simulation configuration).
 
         See Also
         ----------
@@ -92,6 +104,11 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
             'Initializing editable widget "%s"...', self.object_name)
+
+        # If no parent simulation subconfiguration was passed, default to the
+        # the top-level simulation configuration.
+        if sim_conf_alias_parent is None:
+            sim_conf_alias_parent = sim_conf.p
 
         # Set the undo stack to which this widget pushes undo commands *BEFORE*
         # connecting signals to slots pushing such commands.
@@ -105,7 +122,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         # Wrap the passed low-level data descriptor with a high-level wrapper
         # bound to the "Parameters" instance associated with this GUI.
         self._sim_conf_alias = DataDescriptorBound(
-            obj=sim_conf.p, data_desc=sim_conf_alias)
+            obj=sim_conf_alias_parent, data_desc=sim_conf_alias)
 
         # Type(s) required by this data descriptor if any or "None" otherwise.
         self._sim_conf_alias_type = sim_conf_alias.expr_alias_cls

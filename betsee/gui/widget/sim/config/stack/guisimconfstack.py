@@ -36,7 +36,9 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
     _pagers : tuple
         Tuple of all high-level objects controlling the state of each stack
         widget page, persisted as a tuple both for simplicity and to prevent
-        Python from erroneously garbage collecting these objects.
+        Python from erroneously garbage collecting these objects. Since these
+        objects are *NOT* explicitly accessed after initial construction, this
+        simplistic scheme suffices.
     _sim_conf : QBetseeSimConf
         High-level object controlling simulation configuration state.
     _tree_item_to_stack_page : dict
@@ -219,6 +221,8 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             QBetseeSimConfSpaceStackedWidgetPager)
         from betsee.gui.widget.sim.config.stack.pager.guisimconfpagertime import (
             QBetseeSimConfTimeStackedWidgetPager)
+        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagertis import (
+            QBetseeSimConfTissueeStackedWidgetPager)
 
         # Tuple of all stack widget page controllers defined in arbitrary order.
         self._pagers = (
@@ -226,6 +230,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             QBetseeSimConfPathStackedWidgetPager(main_window),
             QBetseeSimConfSpaceStackedWidgetPager(main_window),
             QBetseeSimConfTimeStackedWidgetPager(main_window),
+            QBetseeSimConfTissueeStackedWidgetPager(main_window),
         )
 
     # ..................{ SLOTS ~ public                     }..................
