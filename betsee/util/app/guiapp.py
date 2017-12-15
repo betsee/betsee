@@ -24,6 +24,25 @@ from PySide2.QtWidgets import QApplication
 from betsee import guimetadata
 
 # ....................{ GLOBALS                            }....................
+#FIXME: This global appears to have been a profound, albeit ultimately trivial,
+#mistake. Maintaining yet another in-memory reference to the "qApp" singleton
+#appears to invite non-deterministic exceptions on window closure. It's also
+#completely unnecessary, as Qt already provides the "QApplication.qApp"
+#reference for exactly this purpose.
+#
+#Refactor the codebase as follows:
+#
+#* Define a new get_app() function in this submodule as follows:
+#
+#    def get_app() -> QApplication:
+#        return QApplication.qApp
+#
+#* Replace all references to "GUI_APP" with calls to guiapp.get_app(). Why a
+#  separate function? So that we can reuse the extensive (and extremely
+#  helpful) docstring defined below. Also, who knows? Having a separate getter
+#  function allows for all sorts of essential shenanigans in the future.
+#* Remove this global entirely.
+
 # This global is initialized by the _init() function called below.
 GUI_APP = None
 '''
@@ -66,12 +85,56 @@ def _init() -> None:
     Initialize the :class:`QApplication` singleton for this application.
     '''
 
+    # Destroy an existing "QApplication" singleton if any.
+    _deinit_qt_app()
+
     # Set static attributes of the "QApplication" class *BEFORE* defining the
     # singleton instance of this class.
     _init_qt()
 
     # Instantiate a singleton of this class.
     _init_qt_app()
+
+# ....................{ DEINITIALIZERS                     }....................
+#FIXME: Actually, this error appears to be induced by initializing third-party
+#BETSE libraries and hence the "Qt5Agg" backend *BEFORE* instantiating this
+#singleton here. Clearly, the order of these two operations needs to be
+#reversed. After that is done, this function should be:
+#
+#* Renamed to die_if_qt_app().
+#* Refactored to raise a human-readable exception, which should explicitly note
+#  the likelihood of a previously imported Python package (e.g., "matplotlib")
+#  having externally instantiated this singleton already.
+#* Redocumented as such.
+
+def _deinit_qt_app() -> None:
+    '''
+    Destroy the existing :class:`QApplication` singleton with a non-fatal
+    warning if such a singleton has been previously initialized elsewhere *or*
+    silently reduce to a noop otherwise.
+
+    While this condition should arguably constitute a fatal error inducing a
+    raised exception, various versions of PySide2 appear to erroneously
+    initialize this singleton on first importation without our explicit consent.
+    Since there isn't much we can do about that, this is the next best thing.
+
+    If this singleton is _not_ explicitly destroyed, PySide2 raises the
+    following exception on attempting to re-initialize another such singleton:
+
+        RuntimeError: Please destroy the QApplication singleton before creating a new QApplication instance.
+    '''
+
+    # Existing "QApplication" singleton if any or "None" otherwise.
+    app_prior = QCoreApplication.instance()
+
+    # If an existing "QApplication" singleton has already been initialized...
+    if app_prior is not None:
+        # Log a non-fatal warning.
+        logging.warning(
+            'Destroying erroneously instantiated Qt application singleton...')
+
+        # Destroy this singleton.
+        app_prior.quit()
 
 # ....................{ INITIALIZERS : qt                  }....................
 def _init_qt() -> None:
@@ -96,9 +159,6 @@ def _init_qt() -> None:
     # Avoid circular import dependencies.
     from betsee.util.io import guisettings
 
-    # Log this initialization.
-    logging.debug('Initializing static Qt attributes...')
-
     # Initialize all application-wide core attributes (e.g., name, version).
     _init_qt_core()
 
@@ -114,6 +174,9 @@ def _init_qt_core() -> None:
     Initialize all static attributes of the :class:`QCoreApplication` class
     signifying application-wide core properties (e.g., name, version).
     '''
+
+    # Log this initialization.
+    logging.debug('Initializing static Qt attributes...')
 
     # High-level human-readable application name intended *ONLY* for display.
     QGuiApplication.setApplicationDisplayName(guimetadata.NAME)
@@ -163,7 +226,7 @@ def _init_qt_dpi() -> None:
         # previously physical pixels defined throughout this application into
         # logical pixels portable across displays sporting varying DPI.
         if not (oses.is_macos() or displays.is_linux_wayland()):
-            logging.debug('Emulating high-DPI scaling...')
+            logging.debug('Initializing high-DPI scaling emulation...')
             QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     # If any such submodule is unimportable, log a non-fatal error and continue.
     # Since BETSE is a mandatory dependency, its unimportability would typically

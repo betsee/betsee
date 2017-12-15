@@ -7,6 +7,11 @@
 Concrete subclasses defining this application's command line interface (CLI).
 '''
 
+#FIXME: Refactor our "guiignition" submodule to initialize the main
+#"QApplication" singleton (e.g., by simply importing "guiapp"). This is
+#essential, as this singleton *MUST* be instantiated before the "Qt5Agg"
+#matplotlib backend has opportunity to do so.
+
 #FIXME: Display a splash screen in the BetseeCLI.__init__() method. Fortunately,
 #Qt 5 makes this absurdly simple via the stock "QSplashScreen" class -- which
 #comes self-provisioned with multi-threading capability, preventing us from
@@ -96,7 +101,8 @@ Concrete subclasses defining this application's command line interface (CLI).
 from betse.util.cli.cliabc import CLIABC
 from betse.util.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
-from betse.util.type.types import type_check, ModuleType
+from betse.util.type.types import (
+    type_check, ModuleType, SequenceTypes, StrOrNoneTypes)
 
 # ....................{ SUBCLASS                           }....................
 class BetseeCLI(CLIABC):
@@ -121,7 +127,34 @@ class BetseeCLI(CLIABC):
         # Nullify all instance variables for safety.
         self._sim_conf_filename = None
 
-    # ..................{ SUPERCLASS ~ properties            }..................
+    # ..................{ SUPERCLASS ~ properties : optional }..................
+    # The following properties *MAY* be implemented by subclasses.
+
+    @property
+    def _is_option_matplotlib_backend(self) -> bool:
+        '''
+        ``False``, preventing this CLI from exposing the
+        ``--matplotlib-backend`` option and hence permitting users to externally
+        specify an arbitrary matplotlib backend at the command line.
+
+        Of necessity, this Qt-based application strictly requires a single
+        Qt-based matplotlib backend (e.g., ``Qt5Agg``).
+        '''
+
+        return False
+
+
+    @property
+    def _matplotlib_backend_name(self) -> StrOrNoneTypes:
+        '''
+        Name of a Qt-based matplotlib backend specific to this application.
+        '''
+
+        return 'Qt5Agg'
+
+    # ..................{ SUPERCLASS ~ properties : mandatory}..................
+    # The following properties *MUST* be implemented by subclasses.
+
     @property
     def _help_epilog(self) -> str:
 
@@ -150,20 +183,20 @@ seed, initialize, and then simulate such a simulation in the current directory:
         return guimetadata
 
     # ..................{ SUPERCLASS ~ options               }..................
-    def _make_options_top(self) -> tuple:
+    def _make_options_top(self) -> SequenceTypes:
 
-        # Tuple of all default top-level options.
+        # Sequence of all default top-level options.
         options_top = super()._make_options_top()
 
-        # Return a tuple extending this tuple with subclass-specific options.
-        return options_top + (
+        # Return a list extending this sequence with subclass-specific options.
+        return list(options_top) + [
             CLIOptionArgStr(
                 long_name='--sim-conf-file',
                 synopsis='simulation configuration file to initially open',
                 var_name='sim_conf_filename',
                 default_value=None,
             ),
-        )
+        ]
 
 
     def _parse_options_top(self) -> None:
@@ -188,8 +221,8 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # Application GUI.
         #
         # For safety, this GUI is scoped to a local rather than instance or
-        # global variable, ensuring this GUI is destroyed before the root Qt
-        # application widget containing this GUI.
+        # global variable, ensuring this GUI is implicitly destroyed by Python
+        # before the root Qt application widget containing this GUI.
         app_gui = BetseeGUI(sim_conf_filename=self._sim_conf_filename)
 
         # Run this GUI's event loop and display this GUI, propagating the

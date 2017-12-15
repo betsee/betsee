@@ -1737,28 +1737,14 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QBetseeSimConfEnumComboBox" name="sim_conf_space_intra_lattice_type">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
-Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied), such that:
-&lt;/p&gt;&lt;ul&gt;&lt;li&gt;
-&lt;b&gt;Hexagonal&lt;/b&gt; situates cells along a hexagonal grid.
-&lt;/li&gt;&lt;li&gt;
-&lt;b&gt;Square&lt;/b&gt; situates cells along a square grid.
-&lt;/li&gt;&lt;/ul&gt;
-&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
+              <item row="5" column="0">
                <widget class="QLabel" name="label_20">
                 <property name="text">
                  <string>Lattice disorder:</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="5" column="1">
                <widget class="QWidget" name="widget_25" native="true">
                 <property name="toolTip">
                  <string>Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].</string>
@@ -1790,6 +1776,52 @@ Type of base cell lattice (i.e., uniform grid to which cells are situated before
                   </widget>
                  </item>
                 </layout>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QGroupBox" name="sim_conf_space_intra_lattice_type">
+                <property name="toolTip">
+                 <string>Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied).</string>
+                </property>
+                <property name="title">
+                 <string/>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_25">
+                 <item>
+                  <widget class="QRadioButton" name="sim_conf_space_intra_lattice_hexagonal">
+                   <property name="toolTip">
+                    <string>Situates cells along a hexagonal grid.</string>
+                   </property>
+                   <property name="text">
+                    <string>He&amp;xagonal</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="sim_conf_space_intra_lattice_square">
+                   <property name="toolTip">
+                    <string>Situates cells along a square grid.</string>
+                   </property>
+                   <property name="text">
+                    <string>S&amp;quare</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QBetseeSimConfEnumComboBox" name="_sim_conf_space_intra_lattice_type">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied), such that:
+&lt;/p&gt;&lt;ul&gt;&lt;li&gt;
+&lt;b&gt;Hexagonal&lt;/b&gt; situates cells along a hexagonal grid.
+&lt;/li&gt;&lt;li&gt;
+&lt;b&gt;Square&lt;/b&gt; situates cells along a square grid.
+&lt;/li&gt;&lt;/ul&gt;
+&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                </widget>
               </item>
              </layout>
