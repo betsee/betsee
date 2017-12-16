@@ -222,7 +222,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         from betsee.gui.widget.sim.config.stack.pager.guisimconfpagertime import (
             QBetseeSimConfTimeStackedWidgetPager)
         from betsee.gui.widget.sim.config.stack.pager.guisimconfpagertis import (
-            QBetseeSimConfTissueeStackedWidgetPager)
+            QBetseeSimConfTissueStackedWidgetPager)
 
         # Tuple of all stack widget page controllers defined in arbitrary order.
         self._pagers = (
@@ -230,7 +230,9 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             QBetseeSimConfPathStackedWidgetPager(main_window),
             QBetseeSimConfSpaceStackedWidgetPager(main_window),
             QBetseeSimConfTimeStackedWidgetPager(main_window),
-            QBetseeSimConfTissueeStackedWidgetPager(main_window),
+
+            #FIXME: Uncomment after worky.
+            # QBetseeSimConfTissueStackedWidgetPager(main_window),
         )
 
     # ..................{ SLOTS ~ public                     }..................

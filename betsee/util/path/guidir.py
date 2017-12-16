@@ -13,7 +13,7 @@ from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
 from betse.util.path import dirs, pathnames
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.util.app.guiapp import GUI_APP
+from betsee.util.app import guiappwindow
 
 # ....................{ SELECTORS                          }....................
 #FIXME: Generalize to prevent users from traversing up (but *NOT* down) the
@@ -82,7 +82,7 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> StrOrNoneTypes:
     # not canceled *OR* the empty string otherwise.
     child_dirname = QFileDialog.getExistingDirectory(
         # Parent widget of this dialog.
-        GUI_APP.betsee_main_window,
+        guiappwindow.get_main_window(),
 
         # Translated title of this dialog.
         QCoreApplication.translate('select_subdir', 'Select Subdirectory'),

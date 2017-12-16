@@ -5,7 +5,7 @@
 
 '''
 Submodule both instantiating and initializing the :class:`QApplication`
-singleton for this application with sane defaults on submodule importation.
+singleton for this application.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -20,70 +20,92 @@ singleton for this application with sane defaults on submodule importation.
 import logging
 from PySide2.QtCore import Qt, QCoreApplication
 from PySide2.QtGui import QGuiApplication
-from PySide2.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication, qApp
 from betsee import guimetadata
+from betsee.guiexceptions import BetseePySideException
 
-# ....................{ GLOBALS                            }....................
-#FIXME: This global appears to have been a profound, albeit ultimately trivial,
-#mistake. Maintaining yet another in-memory reference to the "qApp" singleton
-#appears to invite non-deterministic exceptions on window closure. It's also
-#completely unnecessary, as Qt already provides the "QApplication.qApp"
-#reference for exactly this purpose.
-#
-#Refactor the codebase as follows:
-#
-#* Define a new get_app() function in this submodule as follows:
-#
-#    def get_app() -> QApplication:
-#        return QApplication.qApp
-#
-#* Replace all references to "GUI_APP" with calls to guiapp.get_app(). Why a
-#  separate function? So that we can reuse the extensive (and extremely
-#  helpful) docstring defined below. Also, who knows? Having a separate getter
-#  function allows for all sorts of essential shenanigans in the future.
-#* Remove this global entirely.
+# ....................{ GETTERS                            }....................
+def get_app() -> QApplication:
+    '''
+    :class:`QApplication` singleton for this application if already instantiated
+    by a prior call to the :func:`init` function *or* raise an exception
+    otherwise (i.e., if that function has yet to be called).
 
-# This global is initialized by the _init() function called below.
-GUI_APP = None
-'''
-:class:`QApplication` singleton for this application, containing all Qt objects
-(e.g., widgets) to be displayed.
+    This singleton contains *all* Qt objects (e.g., widgets) to be displayed.
+    For convenience, this singleton also contains application-specific instance
+    variables whose names are prefixed by ``betsee_`` to avoid nomenclature
+    conflicts with Qt itself (e.g., ``betsee_main_window``, the main window
+    widget for this application). See the "Attributes" section for details.
 
-For convenience, this singleton provides application-specific instance
-variables whose names are prefixed by ``betsee_`` to avoid nomenclature
-conflicts with Qt itself (e.g., ``betsee_main_window``, the main window widget
-for this application). See the "Attributes" section for details.
+    Design
+    ----------
+    Contrary to expected nomenclature, note that the :class:`QApplication` class
+    confusingly subclasses the :class:`QGuiApplication` base class in a manner
+    optimized for widgets; thus, the former is *always* preferable to the
+    latter.
 
-Design
-----------
-For safety, this object is persisted as a module rather than local variable
-(e.g., of the :func:`_show_betse_exception` function). Since the order in which
-Python garbage collects local variables that have left scope is effectively
-random, persisting this object as a local variable would permit Python to
-garbage collect this application *before* this application's child widgets on
-program termination, resulting in non-human-readable Qt exceptions on some but
-not all terminations. (That would be bad.)
+    Caveats
+    ----------
+    Avoid directly accessing the low-level :attr:`PySide2.QtWidgets.qApp`
+    global, which this higher-level function wraps. Since this global is
+    typically ``None`` prior to the first call to the :func:`init` function,
+    directly accessing this global sufficiently early in runtime could raise
+    non-human-readable exceptions. By contrast, this function *always* raises
+    human-readable exceptions.
 
-Contrary to expected nomenclature, note that the :class:`QApplication` class
-confusingly subclasses the :class:`QGuiApplication` base class in a manner
-optimized for widgets; thus, the former is *always* preferable to the latter.
+    This function does *not* implicitly call the :func:`init` function if the
+    :class:`QApplication` singleton has yet to be instantiated. This is
+    intentional. Doing so would technically be trivial but invite subtle (and
+    hence non-debuggable) issues; in particular, the order in which the
+    :func:`init` and :func:`betse.lib.libs.reinit` methods are called is very
+     significant and must *not* be left to non-deterministic chance.
 
-Attributes
-----------
-betsee_main_window : QBetseeMainWindow
-    Main window widget for this application.
+    Attributes
+    ----------
+    betsee_main_window : QBetseeMainWindow
+        Main window widget for this application. For safety, consider accessing
+        this attribute via the :func:`get_main_window` function instead.
 
-See Also
-----------
-:data:`PySide2.QtWidgets.qApp`
-    Synonym of this attribute, providing the same underlying object.
-'''
+    Returns
+    ----------
+    QApplication
+        :class:`QApplication` singleton for this application.
+
+    Raises
+    ----------
+    BetseePySideException
+        If either:
+        * The :class:`QApplication` singleton has yet to be instantiated.
+        * The :func:`init` function has yet to be called.
+    '''
+
+    #FIXME: Insufficient. We should also ensure that the init() function has
+    #been called. To do so:
+    #
+    #* Define a new "_IS_INITTED" global in this submodule, defaulting to False.
+    #* Set this global to True in the init() function.
+    #* Validate this global to be True in this function.
+    #
+    #See the "betse.lib.libs" submodule for similar logic.
+
+    # If the "QApplication" singleton is uninstantiated. raise an exception.
+    if qApp is None:
+        raise BetseePySideException(
+            '"QApplication" singleton uninstantiated '
+            '(i.e., betsee.util.app.guiapp.init() function not called).')
+
+    # Else, this singleton has been instantiated. Return this singleton.
+    return qApp
 
 # ....................{ INITIALIZERS                       }....................
-def _init() -> None:
+def init() -> None:
     '''
-    Initialize the :class:`QApplication` singleton for this application.
+    Instantiate the :class:`QApplication` singleton for this application (i.e.,
+    the :attr:`PySide2.QApplication.qApp` instance).
     '''
+
+    # Log this initialization.
+    logging.debug('Instantiating Qt application singleton...')
 
     # Destroy an existing "QApplication" singleton if any.
     _deinit_qt_app()
@@ -160,7 +182,7 @@ def _init_qt() -> None:
     from betsee.util.io import guisettings
 
     # Initialize all application-wide core attributes (e.g., name, version).
-    _init_qt_core()
+    _init_qt_metadata()
 
     # Initialize all application-wide dots per inch (DPI) attributes.
     _init_qt_dpi()
@@ -169,7 +191,7 @@ def _init_qt() -> None:
     guisettings.init()
 
 
-def _init_qt_core() -> None:
+def _init_qt_metadata() -> None:
     '''
     Initialize all static attributes of the :class:`QCoreApplication` class
     signifying application-wide core properties (e.g., name, version).
@@ -250,9 +272,6 @@ def _init_qt_app() -> None:
     from betsee.util.filter.guifiltertooltip import (
         QBetseePlaintextTooltipEventFilter)
 
-    # Permit the following globals to be redefined.
-    global GUI_APP
-
     # Log this instantiation.
     logging.debug('Instantiating application singleton...')
 
@@ -274,15 +293,8 @@ def _init_qt_app() -> None:
     # encourages conflicts with future versions of Qt. In theory, Qt could
     # expand the subset of arguments parsed by this object to those already
     # parsed by the current CLI! That's bad.
-    GUI_APP = QApplication([])
-
-    # Nullify all application-specific instance variables of this singleton.
-    GUI_APP.betsee_main_window = None
+    gui_app = QApplication([])
 
     # Install an application-wide event filter globally addressing severe issues
     # in Qt's default plaintext tooltip behaviour.
-    GUI_APP.installEventFilter(QBetseePlaintextTooltipEventFilter(GUI_APP))
-
-# ....................{ MAIN                               }....................
-# Initialize this submodule.
-_init()
+    gui_app.installEventFilter(QBetseePlaintextTooltipEventFilter(gui_app))

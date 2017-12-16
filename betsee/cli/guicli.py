@@ -11,6 +11,12 @@ Concrete subclasses defining this application's command line interface (CLI).
 #"QApplication" singleton (e.g., by simply importing "guiapp"). This is
 #essential, as this singleton *MUST* be instantiated before the "Qt5Agg"
 #matplotlib backend has opportunity to do so.
+#FIXME: Actually, to permit the debugging statements emitted by this
+#initialization to be logged and displayed, this singleton should be overriding
+#the _init_app_libs() method and intentionally initializing the main
+#"QApplication" singleton *BEFORE* calling super()._init_app_libs(). This is
+#absolutely the sanest approach, as it makes explicit the need to perform the
+#prior before the latter.
 
 #FIXME: Display a splash screen in the BetseeCLI.__init__() method. Fortunately,
 #Qt 5 makes this absurdly simple via the stock "QSplashScreen" class -- which
@@ -103,6 +109,8 @@ from betse.util.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
 from betse.util.type.types import (
     type_check, ModuleType, SequenceTypes, StrOrNoneTypes)
+from betsee import guiignition, guimetadata
+from betsee.lib import guilibs
 
 # ....................{ SUBCLASS                           }....................
 class BetseeCLI(CLIABC):
@@ -143,15 +151,6 @@ class BetseeCLI(CLIABC):
 
         return False
 
-
-    @property
-    def _matplotlib_backend_name(self) -> StrOrNoneTypes:
-        '''
-        Name of a Qt-based matplotlib backend specific to this application.
-        '''
-
-        return 'Qt5Agg'
-
     # ..................{ SUPERCLASS ~ properties : mandatory}..................
     # The following properties *MUST* be implemented by subclasses.
 
@@ -172,15 +171,19 @@ seed, initialize, and then simulate such a simulation in the current directory:
     @property
     def _module_ignition(self) -> ModuleType:
 
-        from betsee import guiignition
         return guiignition
 
 
     @property
     def _module_metadata(self) -> ModuleType:
 
-        from betsee import guimetadata
         return guimetadata
+
+    # ..................{ SUPERCLASS ~ igniters              }..................
+    def _init_app_libs(self) -> None:
+
+        # Initialize all mandatory runtime dependencies.
+        guilibs.reinit()
 
     # ..................{ SUPERCLASS ~ options               }..................
     def _make_options_top(self) -> SequenceTypes:

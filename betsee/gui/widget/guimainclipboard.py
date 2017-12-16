@@ -10,7 +10,7 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject, Slot
 from PySide2.QtWidgets import QWidget
-from betsee.util.app.guiapp import GUI_APP
+from betsee.util.app import guiapp
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexceptions import BetseePySideClipboardException
@@ -104,6 +104,9 @@ class QBetseeMainClipboard(QObject):
             self._paste_clipboard_to_widget_focused_selection)
         # logs.log_debug('Wiring everything up...')
 
+        # Application singleton, localized to avoid retaining references..
+        gui_app = guiapp.get_app()
+
         # System clipboard.
         clipboard = guiclipboard.get_clipboard()
 
@@ -112,7 +115,7 @@ class QBetseeMainClipboard(QObject):
         # SDI metaphor, there exists a one-to-one correspondence between this
         # application and this object. (That is, this application always
         # contains exactly one object of this type.)
-        GUI_APP.focusChanged.connect(self._widget_focus_set)
+        gui_app.focusChanged.connect(self._widget_focus_set)
         clipboard.dataChanged.connect(self._clipboard_text_set)
 
         # Set the state of all widgets dependent upon this simulation
@@ -216,10 +219,10 @@ class QBetseeMainClipboard(QObject):
             self._action_paste.setEnabled(
                 is_widget_focused_clipboardable and
                 guiclipboard.is_clipboard_text())
-        # If an exception is raised, infinite recursion in the Qt event loop
-        # mest be explicitly avoided by permanently disconnecting this slot from
-        # its corresponding signal *BEFORE* this exception is propagated up the
-        # callstack. While slightly destructive, this is the least-worst option.
+        # If an exception is raised, avoid infinite recursion in the Qt event
+        # loop by permanently disconnecting this slot from its corresponding
+        # signal *BEFORE* this exception is propagated up the callstack. While
+        # slightly destructive, this is the least-worst option.
         #
         # Failing to do so provokes the following infinite recursion:
         #
@@ -236,12 +239,15 @@ class QBetseeMainClipboard(QObject):
         # * Prevent the PySide2 widget displayed by the default exception
         #   handler from obtaining the focus -- a fragile, platform-specific,
         #   and possibly unenforceable constraint in the best case.
-        # * Call the GUI_APP.blockSignals() method, preventing the "GUI_APP"
-        #   object from signalling *ANY* other slots -- which is even more
+        # * Call the qApp.blockSignals() method, preventing the "QApplication"
+        #   singleton from signalling *ANY* other slots -- which is even more
         #   heavy-handed and hence undesirable than the current approach.
         except:
+            # Application singleton, localized to avoid retaining references..
+            gui_app = guiapp.get_app()
+
             # Disconnect this signal from this slot... *PERMANENTLY.*
-            GUI_APP.focusChanged.disconnect(self._widget_focus_set)
+            gui_app.focusChanged.disconnect(self._widget_focus_set)
 
             # Propagate this exception up the callstack.
             raise

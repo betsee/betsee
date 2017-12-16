@@ -4,8 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
- for this application, containing all Qt objects
-(e.g., widgets) to be displayed.
+Submodule providing the startup splash progress visualizing the current progress
+of this application loading.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -21,7 +21,7 @@
 from PySide2.QtCore import Qt, QPixmap
 from PySide2.QtWidgets import QSplashScreen
 from betse.util.type.types import type_check
-from betsee.util.app.guiapp import GUI_APP
+from betsee.util.app import guiapp
 
 # ....................{ GLOBALS                            }....................
 # This global is initialized by the make_splash() function called elsewhere.
@@ -54,6 +54,9 @@ class QBetseeSplashScreen(QSplashScreen):
         # Initialize our superclass.
         super().__init__()
 
+        # Application singleton, localized to avoid retaining references.
+        gui_app = guiapp.get_app()
+
         #FIXME: Does this *REALLY* have to be rasterized and hence reduced to a
         #bitmap or can an SVG URI be encapsulated properly... somehow? The
         #answer currently appears to be "Nope!"
@@ -76,7 +79,7 @@ class QBetseeSplashScreen(QSplashScreen):
         # Manually handle all outstanding GUI events. Since the main event loop
         # has yet to be started (i.e., by calling GUI_APP._exec()), event
         # handling *MUST* be performed manually.
-        GUI_APP.processEvents()
+        gui_app.processEvents()
 
     # ..................{ SETTERS                            }..................
     @type_check
@@ -86,8 +89,11 @@ class QBetseeSplashScreen(QSplashScreen):
         message for this splash screen, replacing the prior such string if any.
         '''
 
+        # Application singleton, localized to avoid retaining references.
+        gui_app = guiapp.get_app()
+
         # Display this message.
         self.showMessage(info)
 
         # Manually handle all outstanding GUI events. See the __init__() method.
-        GUI_APP.processEvents()
+        gui_app.processEvents()

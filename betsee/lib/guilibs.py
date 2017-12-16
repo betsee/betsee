@@ -21,8 +21,9 @@ such dependencies.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betse.lib import libs as betse_libs
+from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee import guimetadeps
+from betsee import guimetadata, guimetadeps
 
 # ....................{ EXCEPTIONS                         }....................
 def die_unless_runtime_mandatory_all() -> None:
@@ -130,3 +131,31 @@ def import_runtime_optional(*requirement_names: str) -> object:
 
     return betse_libs.import_requirements_dict_keys(
         guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
+
+# ....................{ INITIALIZERS                       }....................
+def reinit() -> None:
+    '''
+    (Re-)initialize all mandatory runtime dependencies of this application.
+    '''
+
+    # Defer heavyweight imports.
+    from betsee.util.app import guiapp
+
+    # Log this initialization. Since initializing heavyweight third-party
+    # dependencies (especially matplotlib) consumes non-trivial time, this
+    # message is intentionally exposed to all users by default.
+    logs.log_info('Loading third-party %s dependencies...', guimetadata.NAME)
+
+    # Initialize PySide2 by instantiating the "QApplication" singleton *BEFORE*
+    # initializing BETSE dependencies. Why? The reason is subtle, but critical:
+    # initializing BETSE initializes matplotlib with the "Qt5Agg" backend, which
+    # instantiates the "QApplication" singleton if this singleton has *NOT*
+    # already been initialized. However, various application-wide settings
+    # (e.g., metadata, high-DPI scaling emulation) *MUST* be initialized before
+    # this singleton is instantiated. Permitting "Qt5Agg" to instantiate this
+    # singleton first prevents us from initializing these settings here. This
+    # singleton *MUST* thus be instantiated by us first.
+    guiapp.init()
+
+    # Initialize all mandatory runtime dependencies of BETSE.
+    betse_libs.reinit(matplotlib_backend_name='Qt5Agg')

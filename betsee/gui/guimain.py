@@ -114,7 +114,7 @@ Root-level classes defining this application's graphical user interface (GUI).
 #    # existance of this file. Hey, whatever works -- right?
 #    app_translator.load(QLocale.system().name(), "~/.betse/betsee/qm")
 #
-#    GUI_APP.installTranslator(app_translator)
+#    get_app().installTranslator(app_translator)
 #
 #There exists one last minefield: the QObject.tr() versus
 #QCoreApplication::translate() split. Basically:
@@ -191,12 +191,8 @@ Root-level classes defining this application's graphical user interface (GUI).
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.gui import guicache
+from betsee.util.app import guiapp, guiappwindow
 from betsee.util.io import guierr
-
-# Importing from this submodule has a substantial side effect: specifically, the
-# the "QApplication" singleton is instantiated and assigned to this module
-# global. All subsequent logic may now safely assume this singleton to exist.
-from betsee.util.app.guiapp import GUI_APP
 
 # ....................{ CLASSES                            }....................
 class BetseeGUI(object):
@@ -298,13 +294,16 @@ class BetseeGUI(object):
         # variable, this variable is exposed as a public attribute of the
         # singleton application widget rather than this less accessible object.
         # See the "guiapp" submodule for further details.
-        GUI_APP.betsee_main_window = QBetseeMainWindow(
+        main_window = QBetseeMainWindow(
             signaler=self._signaler,
             sim_conf_filename=self._sim_conf_filename,
         )
 
+        # Publicize this main window for use elsewhere in the codebase.
+        guiappwindow.set_main_window(main_window)
+
         # Application-wide settings slotter, which requires this window.
-        self._settings = QBetseeSettings(GUI_APP.betsee_main_window)
+        self._settings = QBetseeSettings(main_window)
 
         # Restore previously stored application-wide settings *AFTER*
         # initializing but *BEFORE* displaying this window.
@@ -317,8 +316,8 @@ class BetseeGUI(object):
         # event loop required to do so has yet to be run by the GUI_APP.exec_()
         # call. In this case, this method merely toggles this window's internal
         # state in preparation for that call. (Why, Qt. Why.)
-        GUI_APP.betsee_main_window.show()
-        # GUI_APP.betsee_main_window.showMaximized()
+        main_window.show()
+        # main_window.showMaximized()
 
 
     def _show_main_window(self) -> int:
@@ -334,5 +333,8 @@ class BetseeGUI(object):
         # Log this display.
         logs.log_info('Displaying PySide2 UI...')
 
+        # Application singleton, guaranteed to have been instantiated.
+        gui_app = guiapp.get_app()
+
         # Display this GUI.
-        return GUI_APP.exec_()
+        return gui_app.exec_()

@@ -9,7 +9,6 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtWidgets import QFileDialog
-
 # from betse.util.io.log import logs
 # from betse.util.path import dirs, pathnames
 from betse.util.type.text import strs
@@ -20,8 +19,7 @@ from betse.util.type.types import (
     # SequenceTypes,
     StrOrNoneTypes,
 )
-from betsee.util.app.guiapp import GUI_APP
-
+from betsee.util.app import guiappwindow
 
 # ....................{ SELECTORS                          }....................
 @type_check
@@ -132,7 +130,7 @@ def _call_file_dialog_func(
     # List of all arguments to be returned.
     file_dialog_args = [
         # Parent widget of this dialog.
-        GUI_APP.betsee_main_window,
+        guiappwindow.get_main_window(),
 
         # Translated title of this dialog.
         title,

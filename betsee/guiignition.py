@@ -17,7 +17,9 @@ High-level application initialization common to both the CLI and GUI.
 # ....................{ INITIALIZERS                       }....................
 def reinit() -> None:
     '''
-    (Re)-initialize the current application with sane defaults.
+    (Re-)initialize this application -- but *not* mandatory third-party
+    dependencies of this application, which requires external resources (e.g.,
+    command-line options, configuration files) to be parsed.
 
     Specifically, this function (in order):
 
@@ -39,6 +41,11 @@ def reinit() -> None:
     launchers. In the former case, BETSE detects and ignores attempts to
     re-initialize itself in the same application process. In the latter case, no
     re-initialization is expected, detected, or ignored.
+
+    See Also
+    ----------
+    :func:`betsee.lib.libs.reinit`
+        Function (re)-initializing all mandatory third-party dependencies.
     '''
 
     # Defer heavyweight and possibly circular imports.
@@ -46,10 +53,9 @@ def reinit() -> None:
     from betsee.lib import guilibs
 
     # Initialize all lower-level BETSE logic *BEFORE* any higher-level BETSEE
-    # logic assuming the former to "be sane." See the
-    # betse.guicli.BetseCLI._ignite_app() method for details on why the
-    # betse_ignition.reinit() rather than betse_ignition.init() function is
-    # called here.
+    # logic requiring the former. See the betse.guicli.BetseCLI._ignite_app()
+    # method for details on why the betse_ignition.reinit() rather than
+    # betse_ignition.init() function is called here.
     betse_ignition.reinit()
 
     # Validate mandatory dependencies. Avoid initializing these dependencies
