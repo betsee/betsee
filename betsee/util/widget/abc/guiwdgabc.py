@@ -16,95 +16,10 @@ all (or at least most) widget types.
 # import from this submodule, circularities are best avoided here.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from PySide2.QtWidgets import (
-    QButtonGroup,
-    QCheckBox,
-    QComboBox,
-    QDateEdit,
-    QDateTimeEdit,
-    QDial,
-    QDoubleSpinBox,
-    QKeySequenceEdit,
-    QLineEdit,
-    QListWidget,
-    QSlider,
-    QSpinBox,
-    QPlainTextEdit,
-    QTextEdit,
-    QTimeEdit,
-    QUndoStack,
-)
+from PySide2.QtWidgets import QUndoStack
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.util.type.guitypes import QWidgetOrNoneTypes
-
-# ....................{ GLOBALS                            }....................
-#FIXME: Map all possible editable widgets.
-#FIXME: Actually, just excise this. We no longer require such generality.
-
-FORM_WIDGET_TYPE_TO_SIGNALS_CHANGE = {
-    # All other modification signals exposed by "QComboBox" (e.g.,
-    # QComboBox.currentIndexChanged) are subsumed by the following
-    # general-purpose parent signal.
-    QComboBox: {'currentTextChanged',},
-
-    # Button widgets.
-    #
-    # Note that the "QRadioButton" widget is intentionally omitted. Such
-    # low-level widgets should *ONLY* ever be contained in a higher-level
-    # "QButtonGroup" parent widget. The low-level QRadioButton.toggled() signal
-    # is emitted for the pair of radio buttons in a group being enabled and
-    # disabled, thus generating two emissions for each toggling of a radio
-    # button. By compare, the higher-level QButtonGroup.buttonClicked() signal
-    # is emitted exactly once for each such toggling. Despite nomenclature
-    # suggesting this signal to apply *ONLY* to interactive clicks, this signal
-    # is emitted on interactive and programmatic clicks and keyboard shortcuts.
-    QCheckBox: {'toggled',}, # QCheckBox: {'stateChanged',},
-    QButtonGroup: {'buttonClicked',},
-
-    # Date and time widgets.
-    QDateEdit:     {'dateTimeChanged',},
-    QDateTimeEdit: {'dateTimeChanged',},
-    QTimeEdit:     {'dateTimeChanged',},
-
-    # Item widgets.
-    QListWidget: {'currentItemChanged',},
-
-    # Slider widgets.
-    QDial:   {'valueChanged',},
-    QSlider: {'valueChanged',},
-
-    # Spin widgets.
-    QDoubleSpinBox: {'valueChanged',},
-    QSpinBox:       {'valueChanged',},
-
-    # Textual widgets.
-    QLineEdit:      {'textChanged',},
-    QPlainTextEdit: {'textChanged',},
-    QTextEdit:      {'textChanged',},
-
-    # All other editable widgets.
-    QKeySequenceEdit: {'keySequenceChanged',},
-}
-'''
-Dictionary mapping from each editable widget subclass commonly added to form
-containers to the set of names of all signals emitted by each widget of this
-subclass when its contents (typically editable text or selectable item) changes.
-
-Signals emitted by widgets when their superficial appearance unrelated to their
-contents are intentionally omitted.
-
-Design
-----------
-For lookup efficiency, each widget subclass mapped by this dictionary is
-guaranteed to be concrete rather than abstract (e.g., :class:`QSlider` rather
-than :class:`QAbstractSlider`).
-
-Technically, each widget subclass currently emits exactly high-level signal on
-content changes. For generality, this dictionary nonetheless maps each widget
-subclass to a set of only the name of that signal rather than to that name
-directly.
-'''
 
 # ....................{ GETTERS                            }....................
 @type_check
@@ -145,7 +60,7 @@ class QBetseeWidgetMixin(object):
 
     Attributes (Public)
     ----------
-    object_name : str
+    obj_name : str
         Qt-specific name of this widget, identical to the string returned by the
         :meth:`objectName` method at widget initialization time. This string is
         stored as an instance variable only for readability.
@@ -187,17 +102,19 @@ class QBetseeWidgetMixin(object):
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
 
+        #FIXME: Rename to "obj_name".
+
         # Nullify all remaining instance variables for safety.
-        self.object_name = 'N/A'
+        self.obj_name = 'N/A'
 
     # ..................{ SETTERS                            }..................
-    def setObjectName(self, object_name: str) -> None:
+    def setObjectName(self, obj_name: str) -> None:
 
         # Defer to the superclass setter.
-        super().setObjectName(object_name)
+        super().setObjectName(obj_name)
 
         # Store this name as an instance variable for negligible efficiency.
-        self.object_name = self.objectName()
+        self.obj_name = self.objectName()
 
 
 class QBetseeEditWidgetMixin(QBetseeWidgetMixin):

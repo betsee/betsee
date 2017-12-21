@@ -228,7 +228,7 @@ class QBetseeSimConfDoubleSpinBox(
         # Set the precision of this widget's displayed value to this precision.
         # logs.log_debug(
         #     'Setting "%s" precision given %s to %d...',
-        #     self.object_name, widget_value, widget_value_precision)
+        #     self.obj_name, widget_value, widget_value_precision)
         self.setDecimals(widget_value_precision)
 
         # Return this value.

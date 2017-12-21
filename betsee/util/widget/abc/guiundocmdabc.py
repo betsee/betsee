@@ -72,7 +72,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
         # Log this undo.
         logs.log_debug(
             'Undoing %s for widget "%s"...',
-            self._synopsis, self._widget.object_name)
+            self._synopsis, self._widget.obj_name)
 
 
     def redo(self) -> None:
@@ -80,7 +80,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
         # Log this redo.
         logs.log_debug(
             'Redoing %s for widget "%s"...',
-            self._synopsis, self._widget.object_name)
+            self._synopsis, self._widget.obj_name)
 
     # ..................{ SUPERCLASS ~ optional              }..................
     # Optional superclass methods permitted to be redefined by each subclass.

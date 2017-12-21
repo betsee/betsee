@@ -103,7 +103,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
 
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
-            'Initializing editable widget "%s"...', self.object_name)
+            'Initializing editable widget "%s"...', self.obj_name)
 
         # If no parent simulation subconfiguration was passed, default to the
         # the top-level simulation configuration.
@@ -197,7 +197,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
                 'Widget "{0}" YAML alias type {1!r} != {2!r} '
                 '(i.e., expected a type compatible with {2!r} '
                 'but received an incompatible type {1!r}).'.format(
-                    self.object_name,
+                    self.obj_name,
                     self._sim_conf_alias_type,
                     self._sim_conf_alias_type_strict,)))
 
@@ -261,7 +261,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
             'Setting simulation configuration dirty bit from '
-            'editable widget "%s" to "%r"...', self.object_name, is_dirty)
+            'editable widget "%s" to "%r"...', self.obj_name, is_dirty)
 
         # Update the dirty state for this simulation configuration.
         self._sim_conf.set_dirty_signal.emit(is_dirty)

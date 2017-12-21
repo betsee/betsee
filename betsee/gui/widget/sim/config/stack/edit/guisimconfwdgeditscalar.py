@@ -13,7 +13,8 @@ from PySide2.QtCore import Signal, Slot  # QCoreApplication
 from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
-from betse.util.type.types import type_check  #, ClassOrNoneTypes
+from betse.util.type.types import (
+    type_check, ClassOrNoneTypes, EnumClassType)
 from betsee.guiexceptions import BetseePySideWidgetException
 from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
@@ -126,13 +127,14 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         Caveats
         ----------
         To avoid infinite recursion, the superclass rather than subclass
-        implementation of this setter method should typically be called.
-        For the :class:`QBetseeSimConfLineEdit` subclass, for example,
-        erroneously calling this subclass implementation would ensure that:
+        implementation of this setter method should typically be called
+        (e.g., ``super().setText()`` rather than ``self.setText()``). For the
+        :class:`QBetseeSimConfLineEdit` subclass, for example, erroneously
+        calling this subclass implementation would ensure that:
 
         #. On each call to the :meth:`setValue` method...
         #. Which pushes an undo command onto the undo stack...
-        #. Whose `QUndoCommand.redo` method is called by that stack...
+        #. Whose :meth:`QUndoCommand.redo` method is called by that stack...
         #. Which calls the :meth:`setValue` method...
         #. Which induces infinite recursion.
         '''
@@ -231,7 +233,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # Log this setting.
         logs.log_debug(
             'Setting widget "%s" alias value to %r...',
-            self.object_name, alias_value)
+            self.obj_name, alias_value)
 
         # Set this alias' current value to this coerced value.
         self._sim_conf_alias.set(alias_value)
@@ -322,12 +324,12 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
             if self.widget_value is None:
                 raise BetseePySideWidgetException(
                     'Editable scalar widget "{}" value "None" invalid.'.format(
-                        self.object_name))
+                        self.obj_name))
 
             # Log this setting.
             logs.log_debug(
                 'Setting widget "%s" display value to %r...',
-                self.object_name, self.widget_value)
+                self.obj_name, self.widget_value)
 
             # Cache this widget's value in preparation for the next change.
             self._widget_value_last = self.widget_value

@@ -81,7 +81,7 @@ class QBetseeWidgetMixinSimConf(QBetseeWidgetMixin):
 
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
-            'Initializing non-editable widget "%s"...', self.object_name)
+            'Initializing non-editable widget "%s"...', self.obj_name)
 
         # Classify all passed parameters. Since the main window rather than this
         # state object owns this widget, retaining a reference to this state

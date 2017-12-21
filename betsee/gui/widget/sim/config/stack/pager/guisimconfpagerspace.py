@@ -43,16 +43,16 @@ class QBetseeSimConfSpaceStackedWidgetPager(QBetseeControllerABC):
         #The former should typically *ONLY* be leveraged where required for a
         #large (typically dynamically constructed) list; the latter are
         #otherwise preferable for most general purposes.
-        # main_window.sim_conf_space_intra_lattice_type.init(
-        #     sim_conf=sim_conf,
-        #     sim_conf_alias=Parameters.cell_lattice_type,
-        #     enum_member_to_item_text=OrderedArgsDict(
-        #         CellLatticeType.HEXAGONAL, QCoreApplication.translate(
-        #             'QBetseeSimConfStackedWidget', 'Hexagonal'),
-        #         CellLatticeType.SQUARE, QCoreApplication.translate(
-        #             'QBetseeSimConfStackedWidget', 'Square'),
-        #     ),
-        # )
+        main_window.sim_conf_space_intra_lattice_type.init(
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.cell_lattice_type,
+            enum_member_to_item_text=OrderedArgsDict(
+                CellLatticeType.HEXAGONAL, QCoreApplication.translate(
+                    'QBetseeSimConfStackedWidget', 'Hexagonal'),
+                CellLatticeType.SQUARE, QCoreApplication.translate(
+                    'QBetseeSimConfStackedWidget', 'Square'),
+            ),
+        )
 
         # Initialize all extracellular widgets on this page.
         main_window.sim_conf_space_extra_grid_size.init(

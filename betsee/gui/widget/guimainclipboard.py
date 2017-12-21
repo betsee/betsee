@@ -268,7 +268,7 @@ class QBetseeMainClipboard(QObject):
         # Log this copy.
         logs.log_debug(
             'Copying widget "%s" selection to clipboard...',
-            self._widget_focused_if_any.object_name)
+            self._widget_focused_if_any.obj_name)
 
         # Copy this widget's current selection to the clipboard.
         self._widget_focused_if_any.copy_selection_to_clipboard()
@@ -290,7 +290,7 @@ class QBetseeMainClipboard(QObject):
         # Log this cut.
         logs.log_debug(
             'Cutting widget "%s" selection to clipboard...',
-            self._widget_focused_if_any.object_name)
+            self._widget_focused_if_any.obj_name)
 
         # Cut this widget's current selection to the clipboard.
         self._widget_focused_if_any.cut_selection_to_clipboard()
@@ -311,7 +311,7 @@ class QBetseeMainClipboard(QObject):
         # Log this paste.
         logs.log_debug(
             'Pasting clipboard over widget "%s" selection...',
-            self._widget_focused_if_any.object_name)
+            self._widget_focused_if_any.obj_name)
 
         # Paste the clipboard over this widget's current selection.
         self._widget_focused_if_any.paste_clipboard_to_selection()
