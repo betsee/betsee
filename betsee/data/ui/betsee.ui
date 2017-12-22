@@ -5338,7 +5338,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
   <customwidget>
    <class>QBetseeSimConfPushButtonSubDir</class>
    <extends>QPushButton</extends>
-   <header>betsee/gui/widget/sim/config/stack/guisimconfpushbtn.h</header>
+   <header>betsee/gui/widget/sim/config/stack/widget/guisimconfpushbtn.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfTreeWidget</class>
@@ -5354,27 +5354,27 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
   <customwidget>
    <class>QBetseeSimConfLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>betsee/gui/widget/sim/config/stack/edit/guisimconflineedit.h</header>
+   <header>betsee/gui/widget/sim/config/stack/widget/guisimconflineedit.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfDoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
-   <header>betsee/gui/widget/sim/config/stack/edit/guisimconfspinbox.h</header>
+   <header>betsee/gui/widget/sim/config/stack/widget/guisimconfspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfIntSpinBox</class>
    <extends>QSpinBox</extends>
-   <header>betsee/gui/widget/sim/config/stack/edit/guisimconfspinbox.h</header>
+   <header>betsee/gui/widget/sim/config/stack/widget/guisimconfspinbox.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfCheckBox</class>
    <extends>QCheckBox</extends>
-   <header>betsee/gui/widget/sim/config/stack/edit/guisimconfcheckbox.h</header>
+   <header>betsee/gui/widget/sim/config/stack/widget/guisimconfcheckbox.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfEnumComboBox</class>
    <extends>QComboBox</extends>
-   <header>betsee/gui/widget/sim/config/stack/edit/guisimconfcombobox.h</header>
+   <header>betsee/gui/widget/sim/config/stack/widget/guisimconfcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

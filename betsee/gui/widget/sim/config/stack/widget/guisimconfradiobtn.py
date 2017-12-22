@@ -12,14 +12,12 @@ from PySide2.QtCore import QCoreApplication, Qt, Signal
 from PySide2.QtWidgets import QButtonGroup, QRadioButton
 from betse.util.io.log import logs
 from betse.util.type import iterables
-from betse.util.type.mapping import maputil
+from betse.util.type.mapping import mappings
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check, ClassOrNoneTypes, MappingType
 from betsee.guiexceptions import BetseePySideRadioButtonException
-from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
+from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdgeditenum import (
     QBetseeSimConfEditEnumWidgetMixin)
-from betsee.util.widget.abc.guiclipboardabc import (
-    QBetseeClipboardScalarWidgetMixin)
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfEnumRadioButtonGroup(
@@ -88,7 +86,7 @@ class QBetseeSimConfEnumRadioButtonGroup(
         super().init(*args, **kwargs)
 
         # If this dictionary duplicates any radio buttons, raise an exception.
-        maputil.die_unless_values_unique(enum_member_to_radio_btn)
+        mappings.die_unless_values_unique(enum_member_to_radio_btn)
 
         # Classify this dictionary.
         self._enum_member_to_radio_btn = enum_member_to_radio_btn

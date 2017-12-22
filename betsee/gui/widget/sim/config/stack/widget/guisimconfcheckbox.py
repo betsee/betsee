@@ -11,7 +11,7 @@
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QCheckBox
 from betse.util.type.types import type_check, ClassOrNoneTypes
-from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
+from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 
 # ....................{ SUBCLASSES                         }....................

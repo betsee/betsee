@@ -12,7 +12,7 @@ from PySide2.QtCore import QCoreApplication, Signal  #, Slot
 from PySide2.QtWidgets import QComboBox
 # from betse.util.io.log import logs
 from betse.util.type import iterables
-from betse.util.type.mapping import maputil
+from betse.util.type.mapping import mappings
 from betse.util.type.types import type_check, EnumClassType
 from betsee.guiexceptions import BetseePySideComboBoxException
 from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdgeditenum import (

@@ -12,13 +12,13 @@ widget subclasses instantiated in pages of the top-level stack.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject  #, Signal, Slot
-from betse.util.io.log import logs
+# from betse.util.io.log import logs
 from betse.util.type import iterables
-from betse.util.type.mapping import maputil
+from betse.util.type.mapping import mappings
 from betse.util.type.types import (
     type_check, ClassOrNoneTypes, EnumClassType, MappingType)
 from betsee.guiexceptions import BetseePySideWidgetEnumException
-from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgeditscalar import (
+from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 
 # ....................{ MIXINS                             }....................
@@ -81,14 +81,9 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
         # Initialize our superclass with all remaining parameters.
         super().init(*args, **kwargs)
 
-        # If this dictionary duplicates any widget values and hence is *NOT*
-        # safely invertible, raise an exception.
-        maputil.die_unless_values_unique(enum_member_to_widget_value)
-
-        #FIXME: Should actually call the invert_dict_unique() function instead.
         # Classify both this dictionary and its inverse.
         self._enum_member_to_widget_value = enum_member_to_widget_value
-        self._widget_value_to_enum_member = iterables.invert_iterable_unique(
+        self._widget_value_to_enum_member = mappings.invert_map_unique(
             enum_member_to_widget_value)
         # logs.log_debug('enum_member_to_widget_value: {!r}'.format(
         #     self._enum_member_to_widget_value))

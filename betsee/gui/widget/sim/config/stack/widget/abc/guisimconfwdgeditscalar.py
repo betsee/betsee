@@ -13,10 +13,9 @@ from PySide2.QtCore import Signal, Slot  # QCoreApplication
 from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
-from betse.util.type.types import (
-    type_check, ClassOrNoneTypes, EnumClassType)
+from betse.util.type.types import type_check
 from betsee.guiexceptions import BetseePySideWidgetException
-from betsee.gui.widget.sim.config.stack.edit.guisimconfwdgedit import (
+from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
 from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
 

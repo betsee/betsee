@@ -2821,14 +2821,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.guisimconfpushbtn import QBetseeSimConfPushButtonSubDir
+from betsee.gui.widget.sim.config.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.widget.sim.config.stack.edit.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.stack.edit.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.widget.sim.config.stack.widget.guisimconfpushbtn import QBetseeSimConfPushButtonSubDir
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.widget.sim.config.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.widget.sim.config.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.widget.sim.config.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
