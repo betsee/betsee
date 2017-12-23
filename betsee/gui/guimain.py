@@ -276,7 +276,7 @@ class BetseeGUI(object):
         # *AFTER* this module is guaranteed to be importable.
         from betsee.gui.guisettings import QBetseeSettings
         from betsee.gui.guisignal import QBetseeSignaler
-        from betsee.gui.widget.guimainwindow import QBetseeMainWindow
+        from betsee.gui.window.guimainwindow import QBetseeMainWindow
 
         # Log this initialization.
         logs.log_info('Initiating PySide2 UI...')

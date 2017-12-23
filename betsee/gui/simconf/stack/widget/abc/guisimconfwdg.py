@@ -52,7 +52,7 @@ class QBetseeWidgetMixinSimConf(QBetseeWidgetMixin):
         # To avoid circularity from the "QBetseeSimConf" class importing the
         # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
         # importing instances of this class, this type is validated dynamically.
-        sim_conf: 'betsee.gui.widget.sim.config.guisimconf.QBetseeSimConf',
+        sim_conf: 'betsee.gui.simconf.guisimconf.QBetseeSimConf',
     ) -> None:
         '''
         Finalize the initialization of this widget.

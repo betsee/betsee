@@ -11,13 +11,16 @@ application.
 
 # ....................{ IMPORTS                            }....................
 from PySide2 import QtWidgets
-from PySide2.QtCore import QCoreApplication
+from PySide2.QtCore import QCoreApplication, QObject
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
+from betse.util.py import pyident
+from betse.util.py.pyident import IDENTIFIER_UNQUALIFIED_REGEX
 from betse.util.type import modules, types
+from betse.util.type.cls import classes
 from betse.util.type.text import regexes
-from betse.util.type.types import type_check, SequenceTypes
+from betse.util.type.types import type_check, MappingType, SequenceTypes
 from betsee import guimetadata
 from betsee.guiexceptions import BetseeCacheException
 from betsee.lib import guilibs
@@ -68,7 +71,7 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
         exception_message=QCoreApplication.translate(
             'get_ui_module_base_classes',
             'Module "{0}" not found (e.g., as'
-            'module "betsee.gui.widget.guimainwindow" imported before '
+            'module "betsee.gui.window.guimainwindow" imported before '
             'module "betsee.gui.guicache").'.format(ui_module_name)
         ))
 
@@ -106,7 +109,11 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
 
 # ....................{ CONVERTERS                         }....................
 @type_check
-def convert_ui_to_py_file_if_able(ui_filename: str, py_filename: str) -> None:
+def convert_ui_to_py_file_if_able(
+    ui_filename: str,
+    py_filename: str,
+    promote_obj_name_to_class: MappingType,
+) -> None:
     '''
     Convert the XML-formatted file with the passed ``.ui``-suffixed filename
     exported by the external Qt Designer GUI into the :mod:`PySide2`-based
@@ -174,6 +181,13 @@ def convert_ui_to_py_file_if_able(ui_filename: str, py_filename: str) -> None:
         Absolute or relative path of the input ``.ui``-suffixed file.
     py_filename : str
         Absolute or relative path of the output ``.py``-suffixed file.
+    promote_obj_name_to_class : MappingType
+        Dictionary mapping from the name of each instance variable of the main
+        window to manually reinstantiate to the application-specific widget
+        subclass to declare that variable to be an instance of. This dictionary
+        facilitates the manual "promotion" of widgets for which the Qt
+        (Creator|Designer) GUI currently provides no means of official
+        promotion, notably including :class:`QButtonGroup` widgets.
 
     Returns
     ----------
@@ -292,15 +306,65 @@ def convert_ui_to_py_file_if_able(ui_filename: str, py_filename: str) -> None:
 from PySide2.QtWidgets import {base_class}
 {var_name} = ({form_class}, {base_class})
 '''.format(
-    var_name=BASE_CLASSES_GLOBAL_NAME,
-    form_class=ui_form_class_name,
-    base_class=ui_base_class_name,))
+        var_name=BASE_CLASSES_GLOBAL_NAME,
+        form_class=ui_form_class_name,
+        base_class=ui_base_class_name,
+    ))
 
-    # Python code converted from this file to be subsequently evaluated.
-    ui_code_str = ui_code_str_buffer.getvalue()
+    # Munge (i.e., modify) the Python code comprising the contents of the file
+    # implementing this output module.
+    ui_code_str = _munge_ui_code(
+        # Original contents of this file.
+        ui_code_str=ui_code_str_buffer.getvalue(),
+        promote_obj_name_to_class=promote_obj_name_to_class,
+    )
+
+    # Write this Python code to this file, silently overwriting this file if
+    # this file already exists.
+    iofiles.write_str_to_filename(
+        text=ui_code_str,
+        output_filename=py_filename,
+        is_overwritable=True,
+    )
+
+
+@type_check
+def _munge_ui_code(
+    ui_code_str: str,
+    promote_obj_name_to_class: MappingType,
+) -> str:
+    '''
+    Munge (i.e., modify) the passed string of Python code comprising the
+    contents of the current ``.ui``-suffixed file to be subsequently written.
+
+    Specifically, this function:
+
+    * Globally replaces all lines of this code reducing vector SVG icons to
+      non-vector in-memory pixmaps with lines preserving these icons as is. See
+      this function's body for detailed commentary.
+    * For the name of each instance variable of the main window and
+      application-specific subclass to instantiate that variable to in the
+      passed dictonary, replaces the single line of this code instantiating
+      this variable to a non-promoted stock Qt widget class with a line instead
+      instantiating this variable to this application-specific widget subclass.
+
+    Parameters
+    ----------
+    ui_code_str : str
+        String of Python code comprising the original contents of this file.
+    promote_obj_name_to_class : MappingType
+        See the :func:`convert_ui_to_py_file_if_able` function for comments.
+
+    Returns
+    ----------
+    str
+        String of Python code comprising the modified contents of this file.
+    '''
 
     #FIXME: Consider filing an upstream PySide2 issue documenting this, ideally
     #with a minimal UI file as an example.
+    #FIXME: Actually, we've done that now. When this issue is resolved, remove
+    #this ad-hack kludge.
 
     # Globally replace all lines of this code reducing vector SVG icons to
     # non-vector in-memory pixmaps with lines preserving these icons as is. This
@@ -342,9 +406,55 @@ from PySide2.QtWidgets import {base_class}
         replacement=r'\1File(\2, QtCore.QSize()\3',
     )
 
-    # Write this Python code to the file implementing this output module.
-    iofiles.write_str_to_filename(
-        text=ui_code_str,
-        output_filename=py_filename,
-        is_overwritable=True,
-    )
+    # For the name of each instance variable of the main window and
+    # application-specific subclass to instantiate that variable to...
+    for promote_obj_name, promote_class in (
+        promote_obj_name_to_class.items()):
+        # If this name is *NOT* a valid Python identifier, raise an exception.
+        # This is essential to avoid edge-case issues in which this name
+        # erroneously contains regular expression syntax.
+        pyident.die_unless_var_name(promote_obj_name)
+
+        # If this subclass is *NOT* a Qt object subclass, raise an exception.
+        classes.die_unless_subclass(
+            subclass=promote_class, superclass=QObject)
+
+        # Unqualified name of this class.
+        promote_class_name = classes.get_name(promote_class)
+
+        # Fully-qualified name of the module defining this class.
+        promote_class_module_name = classes.get_module_name(promote_class)
+
+        # Append this code with a line importing this class.
+        ui_code_str += 'from {} import {}\n'.format(
+            promote_class_module_name, promote_class_name)
+
+        # Regular expression matching the single line of this code instantiating
+        # this variable to a non-promoted stock Qt widget class into the
+        # following two numeric groups:
+        #
+        # 1. The assignment statement prefix for this instantiation.
+        # 2. The parameters to be passed to this instantiation.
+        promote_regex = (
+            # Assignment statement.
+            r'^(\s*self\.{promote_obj_name}\s*=\s*)'
+            # Name of the non-promoted stock Qt widget class to be ignored.
+            r'QtWidgets\.{widget_class_name}'
+            # Parameters passed to this instantiation.
+            r'(\([^)]*\))$'
+        ).format(
+            promote_obj_name=promote_obj_name,
+            widget_class_name=IDENTIFIER_UNQUALIFIED_REGEX,
+        )
+
+        # Globally replace this line with a line instead instantiating this
+        # variable to this application-specific widget subclass, implicitly
+        # raising an exception if no such line exists.
+        ui_code_str = regexes.die_unless_replace_substrs_line(
+            text=ui_code_str,
+            regex=promote_regex,
+            replacement=r'\1{}\2'.format(promote_class_name),
+        )
+
+    # Return this code.
+    return ui_code_str

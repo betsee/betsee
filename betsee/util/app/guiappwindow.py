@@ -9,10 +9,18 @@ singleton for this application.
 '''
 
 # ....................{ IMPORTS                            }....................
+from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QMainWindow
+from betse.util.io.log import logs
+from betse.util.type.types import type_check
 from betsee.guiexceptions import BetseePySideWindowException
 from betsee.util.app import guiapp
-from betse.util.type.types import type_check
+
+# ....................{ GLOBALS                            }....................
+_MAIN_WINDOW = None
+'''
+Main window singleton widget for this application.
+'''
 
 # ....................{ GETTERS                            }....................
 def get_main_window() -> QMainWindow:
@@ -26,7 +34,7 @@ def get_main_window() -> QMainWindow:
     To avoid circular import dependencies, this getter intentionally resides in
     this submodule known *not* to be subject to these dependencies rather than
     in an arguably more germain submodule known to be subject to these
-    dependencies (e.g., :mod:`betsee.gui.widget.guimainwindow`).
+    dependencies (e.g., :mod:`betsee.gui.window.guimainwindow`).
 
     Returns
     ----------
@@ -37,25 +45,17 @@ def get_main_window() -> QMainWindow:
     ----------
     BetseePySideWindowException
         If this widget has yet to be instantiated (i.e., if the
-        :class:`QApplication` singleton fails to define the application-specific
-        ``betsee_main_window`` attribute).
+        :func:`set_main_window` function has yet to be called).
     '''
 
-    # Application singleton, localized to avoid retaining references.
-    gui_app = guiapp.get_app()
-
-    # Main window singleton widget for this application if already instantiated
-    # *OR* "None" otherwise.
-    main_window = getattr(gui_app, 'betsee_main_window', None)
-
     # If this widget is uninstantiated. raise an exception.
-    if main_window is None:
-        raise BetseePySideWindowException(
-            'Main window singleton widget uninstantiated (i.e., '
-            '"PySide2.QtWidgets.qApp.betsee_main_window" attribute None).')
+    if _MAIN_WINDOW is None:
+        raise BetseePySideWindowException(QCoreApplication.translate(
+            'guiappwindow',
+            'Main window singleton widget uninstantiated.'))
 
     # Else, this singleton has been instantiated. Return this singleton.
-    return main_window
+    return _MAIN_WINDOW
 
 # ....................{ SETTERS                            }....................
 @type_check
@@ -76,18 +76,33 @@ def set_main_window(main_window: QMainWindow) -> None:
         ``betsee_main_window`` attribute).
     '''
 
-    # Application singleton, localized to avoid retaining references.
-    gui_app = guiapp.get_app()
+    # Globals modified below.
+    global _MAIN_WINDOW
 
-    # Main window singleton widget for this application if already instantiated
-    # *OR* "None" otherwise.
-    main_window = getattr(gui_app, 'betsee_main_window', None)
+    # Log this attempt.
+    logs.log_debug('Preserving main window...')
 
     # If this singleton is already instantiated. raise an exception.
-    if main_window is not None:
-        raise BetseePySideWindowException(
-            'Main window singleton widget already instantiated (i.e., '
-            '"PySide2.QtWidgets.qApp.betsee_main_window" attribute non-None).')
+    if _MAIN_WINDOW is not None:
+        raise BetseePySideWindowException(QCoreApplication.translate(
+            'guiappwindow',
+            'Main window singleton widget already instantiated.'))
 
-    # Else, this singleton is uninstantiated. Set this singleton.
-    gui_app.betsee_main_window = main_window
+    # Set this global.
+    _MAIN_WINDOW = main_window
+
+# ....................{ UNSETTERS                          }....................
+@type_check
+def unset_main_window() -> None:
+    '''
+    Unset the main window singleton widget for this application.
+
+    This function is intended to be called *only* on application destruction as
+    a safety measure to avoid garbage collection issues.
+    '''
+
+    # Globals modified below.
+    global _MAIN_WINDOW
+
+    # Unset this global.
+    _MAIN_WINDOW = None

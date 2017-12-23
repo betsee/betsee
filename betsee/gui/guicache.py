@@ -20,8 +20,27 @@ from betse.util.py import pys
 from betse.util.type import modules
 from betse.util.type.types import type_check, IterableTypes
 from betsee import guipathtree
+from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
+    QBetseeSimConfEnumRadioButtonGroup)
 from betsee.lib import guilibs
 from betsee.util.io.xml import guiqrc, guiui
+
+# ....................{ GLOBALS                            }....................
+#FIXME: When upstream permits "QButtonGroup" widgets to be promoted via
+#Qt (Creator|Designer), remove this ad-hack kludge.
+_PROMOTE_OBJ_NAME_TO_CLASS = {
+    # Manually promoto "QButtonGroup" widgets to application-specific types.
+    'sim_conf_space_intra_lattice_type': QBetseeSimConfEnumRadioButtonGroup,
+}
+'''
+Dictionary mapping from the name of each instance variable of the main window to
+the application-specific widget subclass to declare that variable to be an
+instance of.
+
+This dictionary facilitates the manual "promotion" of widgets for which the
+Qt (Creator|Designer) GUI currently provides no means of official promotion,
+notably including :class:`QButtonGroup` widgets.
+'''
 
 # ....................{ CACHERS                            }....................
 def cache_py_files() -> None:
@@ -174,7 +193,10 @@ def _cache_py_ui_file() -> None:
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
     guiui.convert_ui_to_py_file_if_able(
-        ui_filename=data_ui_filename, py_filename=data_py_ui_filename)
+        ui_filename=data_ui_filename,
+        py_filename=data_py_ui_filename,
+        promote_obj_name_to_class=_PROMOTE_OBJ_NAME_TO_CLASS,
+    )
 
 # ....................{ TESTERS ~ private                  }....................
 @type_check

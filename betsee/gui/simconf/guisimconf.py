@@ -16,7 +16,7 @@ from betse.science.parameters import Parameters
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.guiexceptions import BetseeSimConfException
-from betsee.gui.widget.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guimessage
 from betsee.util.path import guifile
 
@@ -153,7 +153,7 @@ class QBetseeSimConf(QObject):
         '''
 
         # Avoid circular import dependencies.
-        from betsee.gui.widget.sim.config.guisimconfundo import (
+        from betsee.gui.simconf.guisimconfundo import (
             QBetseeUndoStackSimConf)
 
         # Undo stack for this simulation configuration.

@@ -65,7 +65,7 @@ from PySide2.QtWidgets import QSpinBox
 # from betse.util.io.log import logs
 from betse.util.type.numeric import floats
 from betse.util.type.types import type_check, ClassOrNoneTypes
-from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdgeditscalar import (
+from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
     QBetseeClipboardScalarWidgetMixin)

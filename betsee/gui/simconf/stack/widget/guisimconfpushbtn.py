@@ -12,7 +12,7 @@ from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QLineEdit, QPushButton
 from betse.util.path import pathnames
 from betse.util.type.types import type_check
-from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdg import (
+from betsee.gui.simconf.stack.widget.abc.guisimconfwdg import (
     QBetseeWidgetMixinSimConf)
 
 # ....................{ SUBCLASSES ~ subdir                }....................

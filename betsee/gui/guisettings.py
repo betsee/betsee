@@ -10,7 +10,7 @@ Low-level :mod:`QSettings`-based application-wide slottable settings classes.
 from PySide2.QtCore import QObject, Slot
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.gui.widget.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guisettings
 
 # ....................{ CLASSES                            }....................

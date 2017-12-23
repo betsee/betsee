@@ -15,7 +15,7 @@ from betse.util.type import iterables
 from betse.util.type.mapping import mappings
 from betse.util.type.types import type_check, EnumClassType
 from betsee.guiexceptions import BetseePySideComboBoxException
-from betsee.gui.widget.sim.config.stack.widget.abc.guisimconfwdgeditenum import (
+from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditenum import (
     QBetseeSimConfEditEnumWidgetMixin)
 from collections import OrderedDict
 

@@ -15,7 +15,7 @@ from betse.util.io.log import logs
 from betse.util.type.obj import objects
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
-from betsee.gui.widget.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
+from betsee.gui.window.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.guiexceptions import BetseePySideTreeWidgetException
 
 # ....................{ CLASSES                            }....................
@@ -70,7 +70,7 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
     # To avoid circular import dependencies, this parameter is validated to be
     # an instance of the "QMainWindow" superclass rather than the expected
-    # "QBetseeMainWindow" subclass of the "betsee.gui.widget.guimainwindow"
+    # "QBetseeMainWindow" subclass of the "betsee.gui.window.guimainwindow"
     # submodule. Why? Because the latter imports the cached "betsee_ui.py"
     # module which imports the current submodule. Since this application only
     # contains one main window, this current validation suffices.
@@ -213,15 +213,15 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         '''
 
         # Defer method-specific imports for maintainability.
-        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerion import (
+        from betsee.gui.simconf.stack.pager.guisimconfpagerion import (
             QBetseeSimConfIonStackedWidgetPager)
-        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerpath import (
+        from betsee.gui.simconf.stack.pager.guisimconfpagerpath import (
             QBetseeSimConfPathStackedWidgetPager)
-        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagerspace import (
+        from betsee.gui.simconf.stack.pager.guisimconfpagerspace import (
             QBetseeSimConfSpaceStackedWidgetPager)
-        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagertime import (
+        from betsee.gui.simconf.stack.pager.guisimconfpagertime import (
             QBetseeSimConfTimeStackedWidgetPager)
-        from betsee.gui.widget.sim.config.stack.pager.guisimconfpagertis import (
+        from betsee.gui.simconf.stack.pager.guisimconfpagertis import (
             QBetseeSimConfTissueStackedWidgetPager)
 
         # Tuple of all stack widget page controllers defined in arbitrary order.

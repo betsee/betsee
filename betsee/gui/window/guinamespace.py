@@ -21,7 +21,7 @@ dispersed throughout the codebase.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid circular import dependencies, avoid importing from *ANY*
 # application-specific submodules of this subpackage (i.e.,
-# "betsee.gui.widget"). Since those submodules must *ALWAYS* be able to safely
+# "betsee.gui.window"). Since those submodules must *ALWAYS* be able to safely
 # import from this submodule, circularities are best avoided here.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

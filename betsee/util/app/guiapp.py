@@ -60,11 +60,12 @@ def get_app() -> QApplication:
     :func:`init` and :func:`betse.lib.libs.reinit` methods are called is very
      significant and must *not* be left to non-deterministic chance.
 
-    Attributes
-    ----------
-    betsee_main_window : QBetseeMainWindow
-        Main window widget for this application. For safety, consider accessing
-        this attribute via the :func:`get_main_window` function instead.
+    Lastly, note that this object silently ignores attempts to add
+    application-specific instance variables to this object. While this
+    constraint could technically be circumvented by globally persisting the
+    :class:`QApplication` singleton created by the :func:`init` function, doing
+    so incurs subtle issues of its own (e.g., garbage collection, accidental
+    collision with standard Qt attributes).
 
     Returns
     ----------
@@ -90,9 +91,10 @@ def get_app() -> QApplication:
 
     # If the "QApplication" singleton is uninstantiated. raise an exception.
     if qApp is None:
-        raise BetseePySideException(
+        raise BetseePySideException(QCoreApplication.translate(
+            'guiapp',
             '"QApplication" singleton uninstantiated '
-            '(i.e., betsee.util.app.guiapp.init() function not called).')
+            '(i.e., betsee.util.app.guiapp.init() function not called).'))
 
     # Else, this singleton has been instantiated. Return this singleton.
     return qApp

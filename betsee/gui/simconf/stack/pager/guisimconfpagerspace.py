@@ -8,12 +8,11 @@
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication #, Signal, Slot
+# from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
 from betse.science.parameters import Parameters
 from betse.science.config.confenum import CellLatticeType
 # from betse.util.io.log import logs
-from betse.util.type.mapping.mapcls import OrderedArgsDict
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
 # ....................{ SUBCLASSES                         }....................
@@ -38,20 +37,15 @@ class QBetseeSimConfSpaceStackedWidgetPager(QBetseeControllerABC):
             sim_conf=sim_conf, sim_conf_alias=Parameters.cell_radius)
         main_window.sim_conf_space_intra_lattice_disorder.init(
             sim_conf=sim_conf, sim_conf_alias=Parameters.cell_lattice_disorder)
-
-        #FIXME: Refactor this from a QComboBox into a QRadioButtonGroup widget.
-        #The former should typically *ONLY* be leveraged where required for a
-        #large (typically dynamically constructed) list; the latter are
-        #otherwise preferable for most general purposes.
         main_window.sim_conf_space_intra_lattice_type.init(
             sim_conf=sim_conf,
             sim_conf_alias=Parameters.cell_lattice_type,
-            enum_member_to_item_text=OrderedArgsDict(
-                CellLatticeType.HEXAGONAL, QCoreApplication.translate(
-                    'QBetseeSimConfStackedWidget', 'Hexagonal'),
-                CellLatticeType.SQUARE, QCoreApplication.translate(
-                    'QBetseeSimConfStackedWidget', 'Square'),
-            ),
+            enum_member_to_widget_value={
+                CellLatticeType.HEX: (
+                    main_window.sim_conf_space_intra_lattice_hex),
+                CellLatticeType.SQUARE: (
+                    main_window.sim_conf_space_intra_lattice_square),
+            },
         )
 
         # Initialize all extracellular widgets on this page.

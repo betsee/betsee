@@ -56,7 +56,7 @@ submodule has locally created and cached that module for the current user.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid circular import dependencies, avoid importing from *ANY*
 # application-specific submodules of this subpackage (i.e.,
-# "betsee.gui.widget"). Since those submodules must *ALWAYS* be able to safely
+# "betsee.gui.window"). Since those submodules must *ALWAYS* be able to safely
 # import from this submodule, circularities are best avoided here.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -74,6 +74,7 @@ from betsee.gui.guisignal import QBetseeSignaler
 from betsee.util.io import guierr
 from betsee.util.io.log import guilogconf
 from betsee.util.io.xml import guiui
+from betsee.util.app import guiappwindow
 
 # ....................{ GLOBALS                            }....................
 MAIN_WINDOW_BASE_CLASSES = guiui.get_ui_module_base_classes(
@@ -279,8 +280,8 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         # Avoid circular import dependencies.
-        from betsee.gui.widget.guimainclipboard import QBetseeMainClipboard
-        from betsee.gui.widget.sim.config.guisimconf import QBetseeSimConf
+        from betsee.gui.window.guimainclipboard import QBetseeMainClipboard
+        from betsee.gui.simconf.guisimconf import QBetseeSimConf
 
         # Initialize the status bar with a sensible startup message.
         self._show_status('Welcome to {}'.format(guimetadata.NAME))
@@ -339,6 +340,16 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
         Event handler handling the passed close event signifying a user-driven
         request to close this main window and exit the current application.
+
+        See Also
+        ----------
+        :meth:`QObject.destroyed`
+            Slot whose signals are signalled immediately *before* that object
+            and all children objects of that parent object are destroyed.
+        :meth:`QGuiApplication::lastWindowClosed`
+            Slot whose signals are signalled immediately *before* the last main
+            window (i.e., this singleton) and all children objects of that
+            window are destroyed.
         '''
 
         # Log this closure.
@@ -356,8 +367,14 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
             # Store application-wide settings *BEFORE* closing this window.
             self.signaler.store_settings_signal.emit()
 
+            # Unset the global exposing this main window, minimizing subtle
+            # garbage collection issues during application destruction.
+            guiappwindow.unset_main_window()
+
             # Accept this request, thus finalizing the closure of this window.
-            event.accept()
+            # To ensure superclass handling is performed, call the superclass
+            # implementation rather than event.accept().
+            super().closeEvent(event)
         # Else, refuse this request, preventing this window from being closed.
         # Well, the window manager typically ignores us and closes the window
         # anyway... but, hey. If it's laptop battery life or us, we've gotta go.

@@ -793,9 +793,22 @@ class Ui_main_window(object):
         self.label_83.setObjectName("label_83")
         self.horizontalLayout_17.addWidget(self.label_83)
         self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.widget_17)
+        self.label_81 = QtWidgets.QLabel(self.groupBox_17)
+        self.label_81.setObjectName("label_81")
+        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_81)
+        self.sim_conf_space_intra_lattice_hex = QtWidgets.QRadioButton(self.groupBox_17)
+        self.sim_conf_space_intra_lattice_hex.setObjectName("sim_conf_space_intra_lattice_hex")
+        self.sim_conf_space_intra_lattice_type = QBetseeSimConfEnumRadioButtonGroup(main_window)
+        self.sim_conf_space_intra_lattice_type.setObjectName("sim_conf_space_intra_lattice_type")
+        self.sim_conf_space_intra_lattice_type.addButton(self.sim_conf_space_intra_lattice_hex)
+        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_hex)
+        self.sim_conf_space_intra_lattice_square = QtWidgets.QRadioButton(self.groupBox_17)
+        self.sim_conf_space_intra_lattice_square.setObjectName("sim_conf_space_intra_lattice_square")
+        self.sim_conf_space_intra_lattice_type.addButton(self.sim_conf_space_intra_lattice_square)
+        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_square)
         self.label_20 = QtWidgets.QLabel(self.groupBox_17)
         self.label_20.setObjectName("label_20")
-        self.formLayout_8.setWidget(8, QtWidgets.QFormLayout.LabelRole, self.label_20)
+        self.formLayout_8.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_20)
         self.widget_25 = QtWidgets.QWidget(self.groupBox_17)
         self.widget_25.setObjectName("widget_25")
         self.horizontalLayout_25 = QtWidgets.QHBoxLayout(self.widget_25)
@@ -813,29 +826,7 @@ class Ui_main_window(object):
         self.label_90.setFont(font)
         self.label_90.setObjectName("label_90")
         self.horizontalLayout_25.addWidget(self.label_90)
-        self.formLayout_8.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.widget_25)
-        self._sim_conf_space_intra_lattice_type = QtWidgets.QGroupBox(self.groupBox_17)
-        self._sim_conf_space_intra_lattice_type.setTitle("")
-        self._sim_conf_space_intra_lattice_type.setObjectName("_sim_conf_space_intra_lattice_type")
-        self.verticalLayout_25 = QtWidgets.QVBoxLayout(self._sim_conf_space_intra_lattice_type)
-        self.verticalLayout_25.setObjectName("verticalLayout_25")
-        self.formLayout_8.setWidget(4, QtWidgets.QFormLayout.FieldRole, self._sim_conf_space_intra_lattice_type)
-        self.sim_conf_space_intra_lattice_hex = QtWidgets.QRadioButton(self.groupBox_17)
-        self.sim_conf_space_intra_lattice_hex.setObjectName("sim_conf_space_intra_lattice_hex")
-        self.buttonGroup = QtWidgets.QButtonGroup(main_window)
-        self.buttonGroup.setObjectName("buttonGroup")
-        self.buttonGroup.addButton(self.sim_conf_space_intra_lattice_hex)
-        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_hex)
-        self.sim_conf_space_intra_lattice_square = QtWidgets.QRadioButton(self.groupBox_17)
-        self.sim_conf_space_intra_lattice_square.setObjectName("sim_conf_space_intra_lattice_square")
-        self.buttonGroup.addButton(self.sim_conf_space_intra_lattice_square)
-        self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_square)
-        self.label_81 = QtWidgets.QLabel(self.groupBox_17)
-        self.label_81.setObjectName("label_81")
-        self.formLayout_8.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_81)
-        self.sim_conf_space_intra_lattice_type = QBetseeSimConfEnumComboBox(self.groupBox_17)
-        self.sim_conf_space_intra_lattice_type.setObjectName("sim_conf_space_intra_lattice_type")
-        self.formLayout_8.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.sim_conf_space_intra_lattice_type)
+        self.formLayout_8.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.widget_25)
         self.verticalLayout_17.addWidget(self.groupBox_17)
         self.groupBox_16 = QtWidgets.QGroupBox(self.groupBox_53)
         self.groupBox_16.setObjectName("groupBox_16")
@@ -2540,24 +2531,15 @@ class Ui_main_window(object):
         self.label_18.setText(QtWidgets.QApplication.translate("main_window", "Cell radius:", None, -1))
         self.widget_17.setToolTip(QtWidgets.QApplication.translate("main_window", "Radius in meters [m] of each cell in this cluster. This should typically be within an order of magnitude of the recommended default of 5.0e-6.", None, -1))
         self.label_83.setText(QtWidgets.QApplication.translate("main_window", "meters", None, -1))
-        self.label_20.setText(QtWidgets.QApplication.translate("main_window", "Lattice disorder:", None, -1))
-        self.widget_25.setToolTip(QtWidgets.QApplication.translate("main_window", "Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].", None, -1))
-        self.label_90.setText(QtWidgets.QApplication.translate("main_window", "/ 1.00", None, -1))
-        self._sim_conf_space_intra_lattice_type.setToolTip(QtWidgets.QApplication.translate("main_window", "Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied).", None, -1))
+        self.label_81.setToolTip(QtWidgets.QApplication.translate("main_window", "Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied).", None, -1))
+        self.label_81.setText(QtWidgets.QApplication.translate("main_window", "Lattice type:", None, -1))
         self.sim_conf_space_intra_lattice_hex.setToolTip(QtWidgets.QApplication.translate("main_window", "Situate cells along a hexagonal grid.", None, -1))
         self.sim_conf_space_intra_lattice_hex.setText(QtWidgets.QApplication.translate("main_window", "He&xagonal", None, -1))
         self.sim_conf_space_intra_lattice_square.setToolTip(QtWidgets.QApplication.translate("main_window", "Situate cells along a square grid.", None, -1))
         self.sim_conf_space_intra_lattice_square.setText(QtWidgets.QApplication.translate("main_window", "S&quare", None, -1))
-        self.label_81.setToolTip(QtWidgets.QApplication.translate("main_window", "Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied).", None, -1))
-        self.label_81.setText(QtWidgets.QApplication.translate("main_window", "Lattice type:", None, -1))
-        self.sim_conf_space_intra_lattice_type.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
-"Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied), such that:\n"
-"</p><ul><li>\n"
-"<b>Hexagonal</b> situates cells along a hexagonal grid.\n"
-"</li><li>\n"
-"<b>Square</b> situates cells along a square grid.\n"
-"</li></ul>\n"
-"</body></html>", None, -1))
+        self.label_20.setText(QtWidgets.QApplication.translate("main_window", "Lattice disorder:", None, -1))
+        self.widget_25.setToolTip(QtWidgets.QApplication.translate("main_window", "Degree to which cell boundaries spatially deviate from the base cell lattice. If 0.0, cells rigidly conform to this lattice; else, cells randomly deviate from this lattice. Increasing this increases the entropy (i.e., randomness) of these deviations, producing an increasingly chaotic arrangement of cells. This should typically reside in the range [0.0, 0.8].", None, -1))
+        self.label_90.setText(QtWidgets.QApplication.translate("main_window", "/ 1.00", None, -1))
         self.groupBox_16.setToolTip(QtWidgets.QApplication.translate("main_window", "Space-related properties of this simulation\'s extracellular environment.", None, -1))
         self.groupBox_16.setTitle(QtWidgets.QApplication.translate("main_window", "Environment", None, -1))
         self.label_17.setText(QtWidgets.QApplication.translate("main_window", "World length:", None, -1))
@@ -2821,15 +2803,16 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.widget.sim.config.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.widget.sim.config.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.widget.sim.config.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.widget.sim.config.stack.widget.guisimconfpushbtn import QBetseeSimConfPushButtonSubDir
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconfpushbtn import QBetseeSimConfPushButtonSubDir
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.widget.sim.config.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.widget.sim.config.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.widget.sim.config.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
 __BETSEE_BASE_CLASSES = (Ui_main_window, QMainWindow)
+from betsee.gui.simconf.stack.widget.guisimconfradiobtn import QBetseeSimConfEnumRadioButtonGroup
