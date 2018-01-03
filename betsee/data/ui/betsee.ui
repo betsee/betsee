@@ -234,6 +234,18 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
          </item>
          <item>
           <property name="text">
+           <string>Paths</string>
+          </property>
+          <property name="toolTip">
+           <string>Pathnames of files and directories used by this simulation.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qrc/betsee.qrc">
+            <normaloff>:/icon/open_iconic/folder.svg</normaloff>:/icon/open_iconic/folder.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Dynamic Channels</string>
           </property>
           <property name="icon">
@@ -261,7 +273,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
          </item>
          <item>
           <property name="text">
-           <string>Networks</string>
+           <string>Network</string>
           </property>
           <property name="icon">
            <iconset>
@@ -318,18 +330,6 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
           <property name="icon">
            <iconset>
             <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Paths</string>
-          </property>
-          <property name="toolTip">
-           <string>Pathnames of files and directories used by this simulation.</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../qrc/betsee.qrc">
-            <normaloff>:/icon/open_iconic/folder.svg</normaloff>:/icon/open_iconic/folder.svg</iconset>
           </property>
          </item>
          <item>
@@ -444,7 +444,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="sim_conf_stack_page_Paths">
        <layout class="QGridLayout" name="gridLayout_2">
@@ -1730,7 +1730,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                 </layout>
                </widget>
               </item>
-              <item row="1" column="0">
+              <item row="2" column="0">
                <widget class="QLabel" name="label_81">
                 <property name="toolTip">
                  <string>Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied).</string>
@@ -1738,32 +1738,6 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                 <property name="text">
                  <string>Lattice type:</string>
                 </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QRadioButton" name="sim_conf_space_intra_lattice_hex">
-                <property name="toolTip">
-                 <string>Situate cells along a hexagonal grid.</string>
-                </property>
-                <property name="text">
-                 <string>He&amp;xagonal</string>
-                </property>
-                <attribute name="buttonGroup">
-                 <string notr="true">sim_conf_space_intra_lattice_type</string>
-                </attribute>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QRadioButton" name="sim_conf_space_intra_lattice_square">
-                <property name="toolTip">
-                 <string>Situate cells along a square grid.</string>
-                </property>
-                <property name="text">
-                 <string>S&amp;quare</string>
-                </property>
-                <attribute name="buttonGroup">
-                 <string notr="true">sim_conf_space_intra_lattice_type</string>
-                </attribute>
                </widget>
               </item>
               <item row="6" column="0">
@@ -1802,6 +1776,53 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                    <property name="text">
                     <string>/ 1.00</string>
                    </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QWidget" name="widget_3" native="true">
+                <property name="toolTip">
+                 <string>Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied).</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_25">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QRadioButton" name="sim_conf_space_intra_lattice_hex">
+                   <property name="toolTip">
+                    <string>Situate cells along a hexagonal grid.</string>
+                   </property>
+                   <property name="text">
+                    <string>He&amp;xagonal</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">sim_conf_space_intra_lattice_type</string>
+                   </attribute>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="sim_conf_space_intra_lattice_square">
+                   <property name="toolTip">
+                    <string>Situate cells along a square grid.</string>
+                   </property>
+                   <property name="text">
+                    <string>S&amp;quare</string>
+                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">sim_conf_space_intra_lattice_type</string>
+                   </attribute>
                   </widget>
                  </item>
                 </layout>
@@ -1954,7 +1975,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="sim_conf_stack_page_Tissue">
+      <widget class="QWidget" name="sim_conf_stack_page_Space_Tissue">
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
          <widget class="QGroupBox" name="groupBox_TissueProfiles">
@@ -1971,7 +1992,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
               <string>General-purpose properties of the default tissue profile.</string>
              </property>
              <property name="title">
-              <string>Properties</string>
+              <string>General</string>
              </property>
              <layout class="QFormLayout" name="formLayout_10">
               <item row="0" column="0">
@@ -1984,7 +2005,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
               <item row="0" column="1">
                <widget class="QBetseeSimConfLineEdit" name="sim_conf_tis_default_name">
                 <property name="toolTip">
-                 <string>Arbitrary string uniquely identifying the default tissue profile. This name must be unique amongst (i.e., not shared by) any tissue profile listed to the left.</string>
+                 <string>Arbitrary string uniquely identifying the default tissue profile. This name must be unique to this profile and hence not shared with any other tissue profile.</string>
                 </property>
                </widget>
               </item>
