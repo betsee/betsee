@@ -1978,7 +1978,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
       <widget class="QWidget" name="sim_conf_stack_page_Space_Tissue">
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
-         <widget class="QGroupBox" name="groupBox_TissueProfiles">
+         <widget class="QGroupBox" name="groupBox_Tissue">
           <property name="toolTip">
            <string>Default tissue profile for all unselected cells (i.e., cells not already selected by a tissue profile listed to the left).</string>
           </property>
@@ -2005,7 +2005,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
               <item row="0" column="1">
                <widget class="QBetseeSimConfLineEdit" name="sim_conf_tis_default_name">
                 <property name="toolTip">
-                 <string>Arbitrary string uniquely identifying the default tissue profile. This name must be unique to this profile and hence not shared with any other tissue profile.</string>
+                 <string>Arbitrary string uniquely identifying the default tissue profile. This name must be unique to this profile (i.e., not shared with any other tissue profile).</string>
                 </property>
                </widget>
               </item>
@@ -2132,7 +2132,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which sodium 
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_2">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_Na">
                    <property name="toolTip">
                     <string/>
                    </property>
@@ -2188,7 +2188,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which potassi
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_3">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_K">
                    <property name="toolTip">
                     <string/>
                    </property>
@@ -2244,7 +2244,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which chlorid
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_4">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_Cl">
                    <property name="toolTip">
                     <string/>
                    </property>
@@ -2300,7 +2300,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which calcium
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_5">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_Ca">
                    <property name="toolTip">
                     <string/>
                    </property>
@@ -2356,7 +2356,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which hydroge
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_6">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_H">
                    <property name="toolTip">
                     <string/>
                    </property>
@@ -2412,7 +2412,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which charge 
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_7">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_M">
                    <property name="toolTip">
                     <string/>
                    </property>
@@ -2468,7 +2468,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which protein
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_space_intra_cell_radius_8">
+                  <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_P">
                    <property name="toolTip">
                     <string/>
                    </property>
