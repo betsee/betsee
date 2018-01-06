@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                            )--------------------
-# Copyright 2014-2017 by Alexis Pietak & Cecil Curry
+# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -286,8 +286,8 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
         Parameters
         ----------
-        main_window: QBetseeMainWindow
-            Parent :class:`QMainWindow` widget to initialize this widget with.
+        main_window : QMainWindow
+            Main window singleton with which to initialize this widget.
         '''
 
         # Defer method-specific imports for maintainability.

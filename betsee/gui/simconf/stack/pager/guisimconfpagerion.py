@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                            )--------------------
-# Copyright 2014-2017 by Alexis Pietak & Cecil Curry
+# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -13,6 +13,7 @@ from PySide2.QtWidgets import QMainWindow
 from betse.science.parameters import Parameters
 from betse.science.config.confenum import IonProfileType
 # from betse.util.io.log import logs
+from betse.util.type.types import type_check
 from betse.util.type.mapping.mapcls import OrderedArgsDict
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
@@ -25,6 +26,7 @@ class QBetseeSimConfIonStackedWidgetPager(QBetseeControllerABC):
     '''
 
     # ..................{ INITIALIZERS                       }..................
+    @type_check
     def __init__(self, main_window: QMainWindow) -> None:
 
         # Initialize our superclass with all passed parameters.

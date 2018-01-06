@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                            )--------------------
-# Copyright 2014-2017 by Alexis Pietak & Cecil Curry
+# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -10,12 +10,15 @@
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
+from betse.lib.yaml.abc.yamlabc import YamlABC
 from betse.science.config.model.conftis import SimConfTissueDefault
 from betse.util.type.obj import objects
 # from betse.util.io.log import logs
+from betse.util.type.types import type_check
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
 # ....................{ SUBCLASSES                         }....................
+#FIXME: Generalize to non-default tissue profiles.
 class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
     '''
     :mod:`PySide2`-based stack widget page controller, connecting all editable
@@ -24,16 +27,11 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
     '''
 
     # ..................{ INITIALIZERS                       }..................
+    @type_check
     def __init__(self, main_window: QMainWindow) -> None:
 
         # Initialize our superclass with all passed parameters.
         super().__init__(main_window)
-
-        #FIXME: Consider shifting into BETSE itself -- perhaps in a new
-        #"betse.science.simulate.simion" submodule?
-
-        # Set of the abbreviated names of all available ions.
-        ION_NAMES = {'Na', 'K', 'Cl', 'Ca', 'H', 'M', 'P',}
 
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
@@ -48,6 +46,34 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
             sim_conf_alias=SimConfTissueDefault.name,
             sim_conf_alias_parent=tissue_default,
         )
+
+        # Initialize all ion-specific widgets on this page.
+        self._init_ion_widgets(
+            main_window=main_window, page_conf=tissue_default)
+
+    # ..................{ INITIALIZERS                       }..................
+    #FIXME: Can this be generalized to custom ion profiles as well?
+    def _init_ion_widgets(
+        self, main_window: QMainWindow, page_conf: YamlABC) -> None:
+        '''
+        Initialize all ion-specific widgets on this page.
+
+        Attributes
+        ----------
+        main_window : QMainWindow
+            Main window singleton.
+        page_conf : YamlABC
+            YAML-backed simulation subconfiguration specific to this page.
+        '''
+
+        #FIXME: Consider shifting into BETSE itself -- perhaps in a new
+        #"betse.science.simulate.simion" submodule?
+
+        # Set of the abbreviated names of all available ions.
+        ION_NAMES = {'Na', 'K', 'Cl', 'Ca', 'H', 'M', 'P',}
+
+        # Simulation configuration state object.
+        sim_conf = main_window.sim_conf
 
         # For the abbreviated name of each supported ion...
         for ion_name in ION_NAMES:
@@ -72,5 +98,5 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
             ion_widget.init(
                 sim_conf=sim_conf,
                 sim_conf_alias=ion_descriptor,
-                sim_conf_alias_parent=tissue_default,
+                sim_conf_alias_parent=page_conf,
             )

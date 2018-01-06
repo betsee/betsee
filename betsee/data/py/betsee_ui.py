@@ -2562,7 +2562,7 @@ class Ui_main_window(object):
         self.groupBox_22.setToolTip(QtWidgets.QApplication.translate("main_window", "General-purpose properties of the default tissue profile.", None, -1))
         self.groupBox_22.setTitle(QtWidgets.QApplication.translate("main_window", "General", None, -1))
         self.label_16.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
-        self.sim_conf_tis_default_name.setToolTip(QtWidgets.QApplication.translate("main_window", "Arbitrary string uniquely identifying the default tissue profile. This name must be unique to this profile and hence not shared with any other tissue profile.", None, -1))
+        self.sim_conf_tis_default_name.setToolTip(QtWidgets.QApplication.translate("main_window", "Arbitrary string uniquely identifying the default tissue profile. This name must be unique to this profile (i.e., not shared with any other tissue profile).", None, -1))
         self.groupBox_19.setToolTip(QtWidgets.QApplication.translate("main_window", "Exterior shape of the entire cell cluster.", None, -1))
         self.groupBox_19.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Cluster Shape", None, -1))
         self.label_91.setText(QtWidgets.QApplication.translate("main_window", "Image mask:", None, -1))
@@ -2810,14 +2810,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.simconf.stack.widget.guisimconfpushbtn import QBetseeSimConfPushButtonSubDir
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
