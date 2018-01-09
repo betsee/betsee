@@ -16,7 +16,18 @@ from betsee.gui.simconf.stack.widget.abc.guisimconfwdg import (
     QBetseeWidgetMixinSimConf)
 
 # ....................{ SUBCLASSES ~ subdir                }....................
-class QBetseeSimConfPushButtonSubDir(QBetseeWidgetMixinSimConf, QPushButton):
+#FIXME: Implement a corresponding "QBetseeSimConfImagePushButton" subclass
+#internally calling betsee.util.path.guifile.select_image_read().
+#
+#Since a great deal of functionality is likely to be shared in common between
+#these two subclasses, consider defining the following new ABC to be inherited
+#by both subclasses:
+#
+#class QBetseeSimConfPushButtonABC(QBetseeWidgetMixinSimConf, QPushButton):
+#    #FIXME: Insert sensible docstring and class body here.
+
+#FIXME: Rename to "QBetseeSimConfSubdirPushButton".
+class QBetseeSimConfSubdirPushButton(QBetseeWidgetMixinSimConf, QPushButton):
     '''
     :mod:`QPushButton`-based widget displaying a dialog on being clicked
     requesting the user select an existing subdirectory of an arbitrary parent
@@ -83,9 +94,16 @@ class QBetseeSimConfPushButtonSubDir(QBetseeWidgetMixinSimConf, QPushButton):
         # configuration to request the user select a subdirectory of.
         parent_dirname = self._sim_conf.dirname
 
+        # Relative pathname of the currently configured subdirectory of this
+        # parent directory to initially display in this dialog.
+        subdirname = self._line_edit.text()
+
+        # If this relative pathname is actually absolute, raise an exception.
+        pathnames.die_if_absolute(subdirname)
+
         # Absolute pathname of the currently configured subdirectory of this
         # parent directory to initially display in this dialog.
-        current_dirname = pathnames.join(parent_dirname, self._line_edit.text())
+        current_dirname = pathnames.join(parent_dirname, subdirname)
 
         # Relative pathname of an existing subdirectory of this parent if this
         # dialog was not canceled *OR* "None" otherwise.
@@ -94,5 +112,8 @@ class QBetseeSimConfPushButtonSubDir(QBetseeWidgetMixinSimConf, QPushButton):
 
         # If this dialog was *NOT* canceled...
         if subdirname is not None:
+            # If this relative pathname is absolute, raise an exception.
+            pathnames.die_if_absolute(subdirname)
+
             # Set the contents of our buddy widget to this pathname.
             self._line_edit.setText(subdirname)

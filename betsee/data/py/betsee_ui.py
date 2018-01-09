@@ -300,10 +300,11 @@ class Ui_main_window(object):
         font.setWeight(50)
         font.setBold(False)
         self.sim_conf_path_init_pick_dir_line.setFont(font)
+        self.sim_conf_path_init_pick_dir_line.setToolTip("")
         self.sim_conf_path_init_pick_dir_line.setText("")
         self.sim_conf_path_init_pick_dir_line.setObjectName("sim_conf_path_init_pick_dir_line")
         self.horizontalLayout_5.addWidget(self.sim_conf_path_init_pick_dir_line)
-        self.sim_conf_path_init_pick_dir_btn = QBetseeSimConfPushButtonSubDir(self.widget_5)
+        self.sim_conf_path_init_pick_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_5)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_init_pick_dir_btn.setFont(font)
@@ -346,10 +347,11 @@ class Ui_main_window(object):
         font.setWeight(50)
         font.setBold(False)
         self.sim_conf_path_init_exp_dir_line.setFont(font)
+        self.sim_conf_path_init_exp_dir_line.setToolTip("")
         self.sim_conf_path_init_exp_dir_line.setText("")
         self.sim_conf_path_init_exp_dir_line.setObjectName("sim_conf_path_init_exp_dir_line")
         self.horizontalLayout_6.addWidget(self.sim_conf_path_init_exp_dir_line)
-        self.sim_conf_path_init_exp_dir_btn = QBetseeSimConfPushButtonSubDir(self.widget_6)
+        self.sim_conf_path_init_exp_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_6)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_init_exp_dir_btn.setFont(font)
@@ -380,10 +382,11 @@ class Ui_main_window(object):
         font.setWeight(50)
         font.setBold(False)
         self.sim_conf_path_sim_pick_dir_line.setFont(font)
+        self.sim_conf_path_sim_pick_dir_line.setToolTip("")
         self.sim_conf_path_sim_pick_dir_line.setText("")
         self.sim_conf_path_sim_pick_dir_line.setObjectName("sim_conf_path_sim_pick_dir_line")
         self.horizontalLayout_7.addWidget(self.sim_conf_path_sim_pick_dir_line)
-        self.sim_conf_path_sim_pick_dir_btn = QBetseeSimConfPushButtonSubDir(self.widget_7)
+        self.sim_conf_path_sim_pick_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_7)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_sim_pick_dir_btn.setFont(font)
@@ -426,10 +429,11 @@ class Ui_main_window(object):
         font.setWeight(50)
         font.setBold(False)
         self.sim_conf_path_sim_exp_dir_line.setFont(font)
+        self.sim_conf_path_sim_exp_dir_line.setToolTip("")
         self.sim_conf_path_sim_exp_dir_line.setText("")
         self.sim_conf_path_sim_exp_dir_line.setObjectName("sim_conf_path_sim_exp_dir_line")
         self.horizontalLayout_8.addWidget(self.sim_conf_path_sim_exp_dir_line)
-        self.sim_conf_path_sim_exp_dir_btn = QBetseeSimConfPushButtonSubDir(self.widget_8)
+        self.sim_conf_path_sim_exp_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_8)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_sim_exp_dir_btn.setFont(font)
@@ -920,26 +924,27 @@ class Ui_main_window(object):
         self.horizontalLayout_26 = QtWidgets.QHBoxLayout(self.widget_26)
         self.horizontalLayout_26.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_26.setObjectName("horizontalLayout_26")
-        self.sim_conf_space_intra_clip_mask_line = QBetseeSimConfLineEdit(self.widget_26)
+        self.sim_conf_tis_default_image_line = QBetseeSimConfLineEdit(self.widget_26)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sim_conf_space_intra_clip_mask_line.sizePolicy().hasHeightForWidth())
-        self.sim_conf_space_intra_clip_mask_line.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.sim_conf_tis_default_image_line.sizePolicy().hasHeightForWidth())
+        self.sim_conf_tis_default_image_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setWeight(50)
         font.setBold(False)
-        self.sim_conf_space_intra_clip_mask_line.setFont(font)
-        self.sim_conf_space_intra_clip_mask_line.setText("")
-        self.sim_conf_space_intra_clip_mask_line.setObjectName("sim_conf_space_intra_clip_mask_line")
-        self.horizontalLayout_26.addWidget(self.sim_conf_space_intra_clip_mask_line)
-        self.sim_conf_space_intra_clip_mask_btn = QBetseeSimConfPushButtonSubDir(self.widget_26)
+        self.sim_conf_tis_default_image_line.setFont(font)
+        self.sim_conf_tis_default_image_line.setToolTip("")
+        self.sim_conf_tis_default_image_line.setText("")
+        self.sim_conf_tis_default_image_line.setObjectName("sim_conf_tis_default_image_line")
+        self.horizontalLayout_26.addWidget(self.sim_conf_tis_default_image_line)
+        self.sim_conf_tis_default_image_btn = QBetseeSimConfSubdirPushButton(self.widget_26)
         font = QtGui.QFont()
         font.setPointSize(10)
-        self.sim_conf_space_intra_clip_mask_btn.setFont(font)
-        self.sim_conf_space_intra_clip_mask_btn.setObjectName("sim_conf_space_intra_clip_mask_btn")
-        self.horizontalLayout_26.addWidget(self.sim_conf_space_intra_clip_mask_btn)
+        self.sim_conf_tis_default_image_btn.setFont(font)
+        self.sim_conf_tis_default_image_btn.setObjectName("sim_conf_tis_default_image_btn")
+        self.horizontalLayout_26.addWidget(self.sim_conf_tis_default_image_btn)
         self.formLayout_20.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.widget_26)
         self.verticalLayout_6.addWidget(self.groupBox_19)
         self.groupBox_21 = QtWidgets.QGroupBox(self.groupBox_Tissue)
@@ -2418,25 +2423,25 @@ class Ui_main_window(object):
         self.groupBox_11.setToolTip(QtWidgets.QApplication.translate("main_window", "Paths produced by this simulation\'s initialization phase.", None, -1))
         self.groupBox_11.setTitle(QtWidgets.QApplication.translate("main_window", "Initialization Phase", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("main_window", "Pickle dirname:", None, -1))
-        self.sim_conf_path_init_pick_dir_line.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing files pickled by the most recent seed and initialization runs of this simulation.", None, -1))
+        self.widget_5.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing files pickled by the most recent seed and initialization runs of this simulation.", None, -1))
         self.sim_conf_path_init_pick_dir_btn.setToolTip(QtWidgets.QApplication.translate("main_window", "Interactively browse the filesystem for this directory.", None, -1))
         self.sim_conf_path_init_pick_dir_btn.setText(QtWidgets.QApplication.translate("main_window", "Browse...", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("main_window", "Pickle basename:", None, -1))
         self.sim_conf_path_init_pick_file_line.setToolTip(QtWidgets.QApplication.translate("main_window", "Basename of the pickled file providing this simulation\'s most recent initialization run in this directory.", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("main_window", "Exports dirname:", None, -1))
-        self.sim_conf_path_init_exp_dir_line.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing results exported by the most recent seed and initialization runs of this simulation.", None, -1))
+        self.widget_6.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing results exported by the most recent seed and initialization runs of this simulation.", None, -1))
         self.sim_conf_path_init_exp_dir_btn.setToolTip(QtWidgets.QApplication.translate("main_window", "Interactively browse the filesystem for this directory.", None, -1))
         self.sim_conf_path_init_exp_dir_btn.setText(QtWidgets.QApplication.translate("main_window", "Browse...", None, -1))
         self.groupBox_12.setToolTip(QtWidgets.QApplication.translate("main_window", "Paths produced by this simulation\'s simulation phase.", None, -1))
         self.groupBox_12.setTitle(QtWidgets.QApplication.translate("main_window", "Simulation Phase", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("main_window", "Pickle dirname:", None, -1))
-        self.sim_conf_path_sim_pick_dir_line.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing files pickled by the most recent simulation run of this simulation.", None, -1))
+        self.widget_7.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing files pickled by the most recent simulation run of this simulation.", None, -1))
         self.sim_conf_path_sim_pick_dir_btn.setToolTip(QtWidgets.QApplication.translate("main_window", "Interactively browse the filesystem for this directory.", None, -1))
         self.sim_conf_path_sim_pick_dir_btn.setText(QtWidgets.QApplication.translate("main_window", "Browse...", None, -1))
         self.label_62.setText(QtWidgets.QApplication.translate("main_window", "Pickle basename:", None, -1))
         self.sim_conf_path_sim_pick_file_line.setToolTip(QtWidgets.QApplication.translate("main_window", "Basename of the pickled file providing this simulation\'s most recent simulation run in this directory.", None, -1))
         self.label_73.setText(QtWidgets.QApplication.translate("main_window", "Exports dirname:", None, -1))
-        self.sim_conf_path_sim_exp_dir_line.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing results exported by the most recent simulation run of this simulation.", None, -1))
+        self.widget_8.setToolTip(QtWidgets.QApplication.translate("main_window", "Relative pathname of the directory containing results exported by the most recent simulation run of this simulation.", None, -1))
         self.sim_conf_path_sim_exp_dir_btn.setToolTip(QtWidgets.QApplication.translate("main_window", "Interactively browse the filesystem for this directory.", None, -1))
         self.sim_conf_path_sim_exp_dir_btn.setText(QtWidgets.QApplication.translate("main_window", "Browse...", None, -1))
         self.groupBox_51.setTitle(QtWidgets.QApplication.translate("main_window", "Temporal Settings", None, -1))
@@ -2566,15 +2571,20 @@ class Ui_main_window(object):
         self.groupBox_19.setToolTip(QtWidgets.QApplication.translate("main_window", "Exterior shape of the entire cell cluster.", None, -1))
         self.groupBox_19.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Cluster Shape", None, -1))
         self.label_91.setText(QtWidgets.QApplication.translate("main_window", "Image mask:", None, -1))
-        self.sim_conf_space_intra_clip_mask_line.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
-"Absolute or relative filename of the image mask whose pure-black pixels (i.e., pixels whose red, green, and blue color components are all 0) define the exterior shape of the entire cell cluster. This image <i>must</i>\n"
+        self.widget_26.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
+"Absolute or relative filename of the image mask whose pure-black pixels (i.e., pixels whose red, green, and blue color components are all 0) define the exterior shape of the entire cell cluster. This image <i>must</i>:\n"
 "<ul>\n"
 "<li>Be square (i.e., have equal pixel dimensions).</li>\n"
-"<ul>Contain no alpha transparency layer.</li>\n"
+"<li>Contain no alpha transparency layer.</li>\n"
+"</ul>\n"
+"To avoid rescaling issues, all such images <i>should</i> also:\n"
+"<ul>\n"
+"<li>Be of the same filetype.</li>\n"
+"<li>Have the same dimensions.</li>\n"
 "</ul>\n"
 "</p></body></html>", None, -1))
-        self.sim_conf_space_intra_clip_mask_btn.setToolTip(QtWidgets.QApplication.translate("main_window", "Interactively browse the filesystem for this file.", None, -1))
-        self.sim_conf_space_intra_clip_mask_btn.setText(QtWidgets.QApplication.translate("main_window", "Browse...", None, -1))
+        self.sim_conf_tis_default_image_btn.setToolTip(QtWidgets.QApplication.translate("main_window", "Interactively browse the filesystem for this file.", None, -1))
+        self.sim_conf_tis_default_image_btn.setText(QtWidgets.QApplication.translate("main_window", "Browse...", None, -1))
         self.groupBox_21.setToolTip(QtWidgets.QApplication.translate("main_window", "Default membrane diffusion constants for all unselected cells (i.e., cells not already selected by a tissue profile listed to the left).", None, -1))
         self.groupBox_21.setTitle(QtWidgets.QApplication.translate("main_window", "Membrane Diffusion Constants", None, -1))
         self.label_54.setText(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
@@ -2810,14 +2820,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconfpushbtn import QBetseeSimConfPushButtonSubDir
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfpushbtn import QBetseeSimConfSubdirPushButton
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

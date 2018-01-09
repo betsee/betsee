@@ -337,7 +337,7 @@ class QBetseeSimConf(QObject):
 
         # Silently (over)write this file and all external resources required by
         # this file with those contained in this default simulation
-        # configuration. Since the guifile.save_file() function has already
+        # configuration. Since the guifile.select_file_save() function has already
         # interactively confirmed this overwrite when this file already exists,
         # doing so is safe to the extent that the user has accepted the pain.
         confio.write_default(
@@ -569,7 +569,7 @@ class QBetseeSimConf(QObject):
         this dialog was canceled).
         '''
 
-        return guifile.open_file(
+        return guifile.select_file_read(
             title=QCoreApplication.translate(
                 'QBetseeSimConf', 'Open Simulation Configuration'),
             label_to_filetypes={'YAML files': yamls.FILETYPES,},
@@ -585,7 +585,7 @@ class QBetseeSimConf(QObject):
         *or* ``None`` otherwise (i.e., if this dialog was canceled).
         '''
 
-        return guifile.save_file(
+        return guifile.select_file_save(
             title=QCoreApplication.translate(
                 'QBetseeSimConf', 'New Simulation Configuration'),
             label_to_filetypes={'YAML files': yamls.FILETYPES,},

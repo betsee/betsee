@@ -48,10 +48,11 @@ from betsee.util.app import guiappwindow
 @type_check
 def select_subdir(parent_dirname: str, current_dirname: str) -> StrOrNoneTypes:
     '''
-    Display a dialog requesting the user select an existing subdirectory of the
-    parent directory with the passed path, returning the relative pathname of
-    this subdirectory with respect to this parent directory if this dialog was
-    not canceled *or* ``None`` otherwise (i.e., if this dialog was canceled).
+    Display a dialog requesting the user to select an existing subdirectory of
+    the parent directory with the passed path, returning the relative pathname
+    of this subdirectory with respect to this parent directory if this dialog
+    was not interactively canceled *or* ``None`` otherwise (i.e., if this dialog
+    was interactively canceled).
 
     Parameters
     ----------

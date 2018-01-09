@@ -10,7 +10,7 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
-# from betse.util.path import dirs, pathnames
+from betse.lib.pil import pils
 from betse.util.type.text import strs
 from betse.util.type.types import (
     type_check,
@@ -21,19 +21,22 @@ from betse.util.type.types import (
 )
 from betsee.util.app import guiappwindow
 
-# ....................{ SELECTORS                          }....................
+# ....................{ SELECTORS ~ read                   }....................
 @type_check
-def open_file(*args, **kwargs) -> StrOrNoneTypes:
+def select_file_read(*args, **kwargs) -> StrOrNoneTypes:
     '''
-    Display a dialog requiring the user to select an existing file to be
+    Display a dialog requesting the user to select an existing file to be
     subsequently opened for reading (rather than overwriting), returning the
-    absolute path of this file if this dialog was not canceled *or* ``None``
-    otherwise (i.e., if this dialog was canceled).
+    absolute path of this file if this dialog was not interactively canceled
+    *or* ``None`` otherwise (i.e., if this dialog was interactively canceled).
 
     Parameters
     ----------
-    All paremeters are passed as is to the :func:`_make_file_dialog_args`
-    function.
+    All paremeters are passed as is to the :func:`_call_file_dialog_func`
+    function. Note that:
+
+    * The ``title`` parameter *must* be passed by the caller.
+    * The ``file_dialog_func`` parameter must *not* be passed by the caller.
 
     Returns
     ----------
@@ -48,28 +51,47 @@ def open_file(*args, **kwargs) -> StrOrNoneTypes:
 
 
 @type_check
-def save_file(*args, **kwargs) -> StrOrNoneTypes:
+def select_image_read(*args, **kwargs) -> StrOrNoneTypes:
     '''
-    Display a dialog requiring the user to select an arbitrary file (either
+    Display a dialog requesting the user to select an existing image file to be
+    subsequently opened for reading (rather than overwriting), returning the
+    absolute path of this file if this dialog was not interactively canceled
+    *or* ``None`` otherwise (i.e., if this dialog was interactively canceled).
+
+    For generality, this dialog recognizes all image filetypes recognized by the
+    third-party image processing framework leveraged by BETSE itself: Pillow.
+    BETSE defers to this framework for most low-level image I/O operations.
+    Deferring to the same framework guarantees parity with BETSE behaviour.
+
+    See Also
+    ----------
+    :func:`select_file_read`
+        Further details.
+    '''
+
+    return _call_file_dialog_func(
+        *args,
+        file_dialog_func=QFileDialog.getOpenFileName,
+        label_to_filetypes={'Image files': pils.get_filetypes(),}
+        **kwargs)
+
+# ....................{ SELECTORS ~ save                   }....................
+@type_check
+def select_file_save(*args, **kwargs) -> StrOrNoneTypes:
+    '''
+    Display a dialog requesting the user to select an arbitrary file (either
     existing or non-existing) to be subsequently opened for in-place saving and
     hence overwriting, returning the absolute path of this file if this dialog
-    was not canceled *or* ``None`` otherwise (i.e., if this dialog was
-    canceled).
+    was not interactively canceled *or* ``None`` otherwise (i.e., if this dialog
+    was interactively canceled).
 
     If this file already exists, this dialog additionally requires the user to
     accept the subsequent overwriting of this file.
 
-    Parameters
+    See Also
     ----------
-    All paremeters are passed as is to the :func:`_make_file_dialog_args`
-    function.
-
-    Returns
-    ----------
-    StrOrNoneTypes
-        Either:
-        * Absolute path of this file if the user did *not* cancel this dialog.
-        * ``None`` if the user cancelled this dialog.
+    :func:`select_file_read`
+        Further details.
     '''
 
     return _call_file_dialog_func(
@@ -96,7 +118,7 @@ def _call_file_dialog_func(
     ----------
     file_dialog_func : CallableTypes
         Static getter function of the :class:`QFileDialog` class to be called by
-        this function.
+        this function (e.g., :func:`QFileDialog.getOpenFileName`).
     title : str
         Human-readable title of this dialog.
     label_to_filetypes : optional[MappingType]
