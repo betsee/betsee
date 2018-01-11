@@ -10,7 +10,6 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
-from betse.lib.yaml import yamls
 from betse.science.config import confio
 from betse.science.parameters import Parameters
 from betse.util.io.log import logs
@@ -569,11 +568,9 @@ class QBetseeSimConf(QObject):
         this dialog was canceled).
         '''
 
-        return guifile.select_file_read(
+        return guifile.select_file_yaml_read(
             title=QCoreApplication.translate(
-                'QBetseeSimConf', 'Open Simulation Configuration'),
-            label_to_filetypes={'YAML files': yamls.FILETYPES,},
-        )
+                'QBetseeSimConf', 'Open Simulation Configuration'))
 
 
     def _show_dialog_sim_conf_save(self) -> str:
@@ -585,8 +582,6 @@ class QBetseeSimConf(QObject):
         *or* ``None`` otherwise (i.e., if this dialog was canceled).
         '''
 
-        return guifile.select_file_save(
+        return guifile.select_file_yaml_save(
             title=QCoreApplication.translate(
-                'QBetseeSimConf', 'New Simulation Configuration'),
-            label_to_filetypes={'YAML files': yamls.FILETYPES,},
-        )
+                'QBetseeSimConf', 'New Simulation Configuration'))

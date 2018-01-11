@@ -8,7 +8,7 @@
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import Slot
+from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QLineEdit, QPushButton
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.path import pathnames
@@ -20,7 +20,7 @@ from betsee.gui.simconf.stack.widget.abc.guisimconfwdg import (
 class QBetseeSimConfPushButtonABC(QBetseeWidgetMixinSimConf, QPushButton):
     '''
     Abstract base class of all :mod:`QPushButton`-based widget subclasses
-    enabling simulation configuration paths to be interactively selected.
+    interactively selecting simulation configuration paths.
 
     Subclasses of this superclass typically display a dialog on being
     interactively clicked, which:
@@ -127,19 +127,49 @@ class QBetseeSimConfPushButtonABC(QBetseeWidgetMixinSimConf, QPushButton):
 
         raise BetseMethodUnimplementedException()
 
-# ....................{ SUBCLASSES ~ subdir                }....................
-#FIXME: Implement a corresponding "QBetseeSimConfImagePushButton" subclass
-#internally calling betsee.util.path.guifile.select_image_read().
+# ....................{ SUBCLASSES                         }....................
+class QBetseeSimConfImagePushButton(QBetseeSimConfPushButtonABC):
+    '''
+    :mod:`QPushButton`-based widget subclass interactively selecting simulation
+    configuration images whose filetypes are supported by the third-party image
+    processing framework leveraged by BETSE itself: Pillow.
+
+    See Also
+    ----------
+    :func:`guifile.select_image_read`
+        Further details.
+    '''
+
+    # ..................{ SUPERCLASS                         }..................
+    @type_check
+    def _get_pathname(self, pathname: str) -> StrOrNoneTypes:
+
+        # Avoid circular import dependencies.
+        from betsee.util.path import guifile
+
+        # Return the absolute or relative filename of an existing selected image
+        # of the parent directory containing the current simulation
+        # configuration if this dialog was not canceled *OR* "None" otherwise.
+        return guifile.select_image_read(
+            init_pathname=pathname,
+            parent_dirname=self._sim_conf.dirname)
+
 
 class QBetseeSimConfSubdirPushButton(QBetseeSimConfPushButtonABC):
     '''
-    :mod:`QPushButton`-based widget subclass enabling simulation configuration
-    subdirectories of arbitrary parent directories to be interactively selected.
+    :mod:`QPushButton`-based widget subclass interactively selecting simulation
+    configuration subdirectories of arbitrary parent directories.
 
-    To permit simulation configurations to be trivially moved to different
-    directories, the textual "buddy" widget associated with this button displays
-    only the relative pathname of these subdirectories with respect to their
-    parent directories.
+    For relocatability (i.e., to permit end users to trivially move simulation
+    configurations to different directories), the textual "buddy" widget
+    associated with this button displays only the relative pathname of these
+    subdirectories with respect to their parent directories; their absolute
+    pathnames are _not_ displayed.
+
+    See Also
+    ----------
+    :func:`guidir.select_subdir`
+        Further details.
     '''
 
     # ..................{ SUPERCLASS                         }..................
@@ -149,30 +179,12 @@ class QBetseeSimConfSubdirPushButton(QBetseeSimConfPushButtonABC):
         # Avoid circular import dependencies.
         from betsee.util.path import guidir
 
-        # Relative pathname of the current subdirectory of this parent directory
-        # to initially display in this dialog, renamed for clarity.
-        subdirname = pathname
+        # If the pathname of this subdirectory is absolute, raise an exception.
+        pathnames.die_if_absolute(pathname)
 
-        # If this pathname is absolute, raise an exception.
-        pathnames.die_if_absolute(subdirname)
-
-        # Absolute pathname of the directory containing the current simulation
-        # configuration to request the user select a subdirectory of.
-        parent_dirname = self._sim_conf.dirname
-
-        # Absolute pathname of the currently configured subdirectory of this
-        # parent directory to initially display in this dialog.
-        current_dirname = pathnames.join(parent_dirname, subdirname)
-
-        # Relative pathname of an existing subdirectory of this parent if this
-        # dialog was not canceled *OR* "None" otherwise.
-        subdirname = guidir.select_subdir(
-            parent_dirname=parent_dirname, current_dirname=current_dirname)
-
-        # If this dialog was *NOT* canceled and this pathname is absolute, raise
-        # an exception.
-        if subdirname is not None:
-            pathnames.die_if_absolute(subdirname)
-
-        # Return this relative pathname.
-        return subdirname
+        # Return the relative pathname of an existing selected subdirectory of
+        # the parent directory containing the current simulation configuration
+        # if this dialog was not canceled *OR* "None" otherwise.
+        return guidir.select_subdir(
+            init_dirname=pathname,
+            parent_dirname=self._sim_conf.dirname)

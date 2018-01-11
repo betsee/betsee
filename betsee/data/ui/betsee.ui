@@ -2093,7 +2093,7 @@ To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseeSimConfSubdirPushButton" name="sim_conf_tis_default_image_btn">
+                  <widget class="QBetseeSimConfImagePushButton" name="sim_conf_tis_default_image_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -5389,6 +5389,11 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfSubdirPushButton</class>
+   <extends>QPushButton</extends>
+   <header>betsee/gui/simconf/stack/widget/guisimconfpushbtn.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeSimConfImagePushButton</class>
    <extends>QPushButton</extends>
    <header>betsee/gui/simconf/stack/widget/guisimconfpushbtn.h</header>
   </customwidget>

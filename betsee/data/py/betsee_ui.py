@@ -939,7 +939,7 @@ class Ui_main_window(object):
         self.sim_conf_tis_default_image_line.setText("")
         self.sim_conf_tis_default_image_line.setObjectName("sim_conf_tis_default_image_line")
         self.horizontalLayout_26.addWidget(self.sim_conf_tis_default_image_line)
-        self.sim_conf_tis_default_image_btn = QBetseeSimConfSubdirPushButton(self.widget_26)
+        self.sim_conf_tis_default_image_btn = QBetseeSimConfImagePushButton(self.widget_26)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_tis_default_image_btn.setFont(font)
@@ -2820,14 +2820,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfpushbtn import QBetseeSimConfSubdirPushButton, QBetseeSimConfImagePushButton
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconfpushbtn import QBetseeSimConfSubdirPushButton
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

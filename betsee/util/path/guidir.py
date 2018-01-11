@@ -46,38 +46,47 @@ from betsee.util.app import guiappwindow
 #    https://stackoverflow.com/a/12173504/2809027
 
 @type_check
-def select_subdir(parent_dirname: str, current_dirname: str) -> StrOrNoneTypes:
+def select_subdir(init_dirname: str, parent_dirname: str) -> StrOrNoneTypes:
     '''
     Display a dialog requesting the user to select an existing subdirectory of
     the parent directory with the passed path, returning the relative pathname
     of this subdirectory with respect to this parent directory if this dialog
-    was not interactively canceled *or* ``None`` otherwise (i.e., if this dialog
-    was interactively canceled).
+    was not cancelled *or* ``None`` otherwise (i.e., if this dialog was
+    cancelled).
 
     Parameters
     ----------
+    init_dirname : str
+        Absolute or relative pathname of the directory to initially display in
+        this dialog. If this pathname is relative, this pathname is interpreted
+        as relative to the ``parent_dirname`` parameter.
     parent_dirname : str
         Absolute pathname of the parent directory to select a subdirectory of.
-    current_dirname : str
-        Absolute pathname of the directory to initially display in this dialog.
 
     Returns
     ----------
     StrOrNoneTypes
         Either:
-        * Absolute path of this file if the user did *not* cancel this dialog.
-        * ``None`` if the user cancelled this dialog.
+        * If this dialog was confirmed, the absolute pathname of this
+          subdirectory.
+        * If this dialog was cancelled, ``None``.
     '''
 
-    # If either of these directories are relative, raise an exception.
-    pathnames.die_if_relative(parent_dirname, current_dirname)
+    # If this parent directory is relative, raise an exception.
+    pathnames.die_if_relative(parent_dirname)
 
-    # If this parent directory does not exist, raise an exception.
+    # If this parent directory does *NOT* exist, raise an exception.
     dirs.die_unless_dir(parent_dirname)
 
-    # Last directory component of the start directory that exists, ensuring this
-    # dialog opens to an existing directory.
-    current_existing_dirname = dirs.get_dir_component_last(current_dirname)
+    # If this initial directory is relative, expand this into an absolute
+    # pathname relative to this parent directory.
+    if pathnames.is_relative(init_dirname):
+        init_dirname = pathnames.join(parent_dirname, init_dirname)
+
+    # Absolute pathname of this initial directory reduced to the last (i.e.,
+    # most deeply nested) parent directory of this directory that exists,
+    # ensuring this dialog opens to an existing directory.
+    init_dirname = dirs.get_parent_dir_last(init_dirname)
 
     # Absolute path of the subdirectory selected by the user if this dialog was
     # not canceled *OR* the empty string otherwise.
@@ -89,7 +98,7 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> StrOrNoneTypes:
         QCoreApplication.translate('select_subdir', 'Select Subdirectory'),
 
         # Initial working directory of this dialog.
-        current_existing_dirname,
+        init_dirname,
 
         # Options with which to initialize this dialog. Specifically:
         #
@@ -104,16 +113,17 @@ def select_subdir(parent_dirname: str, current_dirname: str) -> StrOrNoneTypes:
     # If this dialog was canceled, silently noop.
     if not child_dirname:
         return None
+    # Else, this dialog was *NOT* canceled.
 
     # If this directory is *NOT* a subdirectory of this parent directory, raise
     # an exception.
     pathnames.die_unless_parent(
         parent_dirname=parent_dirname, child_pathname=child_dirname)
 
-    # Relative path of this subdirectory relative to this parent directory,
+    # Relative pathname of this subdirectory relative to this parent directory,
     # equivalent to stripping the latter from the former.
-    child_dirname_relative = pathnames.relativize(
+    child_dirname = pathnames.relativize(
         src_dirname=parent_dirname, trg_pathname=child_dirname)
 
-    # Return this relative path.
-    return child_dirname_relative
+    # Return this relative pathname.
+    return child_dirname

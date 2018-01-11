@@ -47,6 +47,17 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
             sim_conf_alias_parent=tissue_default,
         )
 
+        # Initialize all filename-specific widgets on this page.
+        main_window.sim_conf_tis_default_image_line.init(
+            sim_conf=sim_conf,
+            sim_conf_alias=SimConfTissueDefault.picker_image_filename,
+            sim_conf_alias_parent=tissue_default,
+        )
+        main_window.sim_conf_tis_default_image_btn.init(
+            sim_conf=sim_conf,
+            line_edit=main_window.sim_conf_tis_default_image_line,
+        )
+
         # Initialize all ion-specific widgets on this page.
         self._init_ion_widgets(
             main_window=main_window, page_conf=tissue_default)
