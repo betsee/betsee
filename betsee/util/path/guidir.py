@@ -46,7 +46,8 @@ from betsee.util.app import guiappwindow
 #    https://stackoverflow.com/a/12173504/2809027
 
 @type_check
-def select_subdir(init_dirname: str, parent_dirname: str) -> StrOrNoneTypes:
+def select_subdir(
+    init_pathname: str, parent_dirname: str, *args, **kwargs) -> StrOrNoneTypes:
     '''
     Display a dialog requesting the user to select an existing subdirectory of
     the parent directory with the passed path, returning the relative pathname
@@ -56,12 +57,15 @@ def select_subdir(init_dirname: str, parent_dirname: str) -> StrOrNoneTypes:
 
     Parameters
     ----------
-    init_dirname : str
-        Absolute or relative pathname of the directory to initially display in
-        this dialog. If this pathname is relative, this pathname is interpreted
-        as relative to the ``parent_dirname`` parameter.
+    init_pathname : str
+        Absolute or relative pathname of the subdirectory to initially display
+        in this dialog. If this pathname is relative, this pathname is
+        interpreted as relative to the ``parent_dirname`` parameter.
     parent_dirname : str
         Absolute pathname of the parent directory to select a subdirectory of.
+
+    All remaining paremeters are passed as is to the :func:`guipath.select_path`
+    function.
 
     Returns
     ----------
@@ -72,33 +76,18 @@ def select_subdir(init_dirname: str, parent_dirname: str) -> StrOrNoneTypes:
         * If this dialog was cancelled, ``None``.
     '''
 
-    # If this parent directory is relative, raise an exception.
-    pathnames.die_if_relative(parent_dirname)
+    # Avoid circular import dependencies.
+    from betsee.util.path import guipath
 
-    # If this parent directory does *NOT* exist, raise an exception.
-    dirs.die_unless_dir(parent_dirname)
+    # If no title was passed, default to a sensible title.
+    if 'dialog_title' not in kwargs:
+        kwargs['dialog_title'] = QCoreApplication.translate(
+            'select_subdir', 'Select Subdirectory')
 
-    # If this initial directory is relative, expand this into an absolute
-    # pathname relative to this parent directory.
-    if pathnames.is_relative(init_dirname):
-        init_dirname = pathnames.join(parent_dirname, init_dirname)
-
-    # Absolute pathname of this initial directory reduced to the last (i.e.,
-    # most deeply nested) parent directory of this directory that exists,
-    # ensuring this dialog opens to an existing directory.
-    init_dirname = dirs.get_parent_dir_last(init_dirname)
-
-    # Absolute path of the subdirectory selected by the user if this dialog was
-    # not canceled *OR* the empty string otherwise.
-    child_dirname = QFileDialog.getExistingDirectory(
-        # Parent widget of this dialog.
-        guiappwindow.get_main_window(),
-
-        # Translated title of this dialog.
-        QCoreApplication.translate('select_subdir', 'Select Subdirectory'),
-
-        # Initial working directory of this dialog.
-        init_dirname,
+    # Return the user-based result of displaying this path dialog.
+    return guipath.select_path(
+        *args,
+        dialog_callable=QFileDialog.getExistingDirectory,
 
         # Options with which to initialize this dialog. Specifically:
         #
@@ -107,23 +96,12 @@ def select_subdir(init_dirname: str, parent_dirname: str) -> StrOrNoneTypes:
         #   directory dialog. By default, this static function permits users to
         #   select any arbitrary file or directory *AND* prevents Qt from
         #   displaying a native dialog -- which, frankly, defeats the purpose.
-        QFileDialog.ShowDirsOnly,
-    )
+        dialog_options=QFileDialog.ShowDirsOnly,
 
-    # If this dialog was canceled, silently noop.
-    if not child_dirname:
-        return None
-    # Else, this dialog was *NOT* canceled.
+        # Passed pathnames unmodified.
+        init_pathname=init_pathname,
+        parent_dirname=parent_dirname,
 
-    # If this directory is *NOT* a subdirectory of this parent directory, raise
-    # an exception.
-    pathnames.die_unless_parent(
-        parent_dirname=parent_dirname, child_pathname=child_dirname)
-
-    # Relative pathname of this subdirectory relative to this parent directory,
-    # equivalent to stripping the latter from the former.
-    child_dirname = pathnames.relativize(
-        src_dirname=parent_dirname, trg_pathname=child_dirname)
-
-    # Return this relative pathname.
-    return child_dirname
+        # Require these subdirectories to reside in this parent directory.
+        is_subpaths=True,
+        **kwargs)

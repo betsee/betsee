@@ -186,5 +186,5 @@ class QBetseeSimConfSubdirPushButton(QBetseeSimConfPushButtonABC):
         # the parent directory containing the current simulation configuration
         # if this dialog was not canceled *OR* "None" otherwise.
         return guidir.select_subdir(
-            init_dirname=pathname,
+            init_pathname=pathname,
             parent_dirname=self._sim_conf.dirname)

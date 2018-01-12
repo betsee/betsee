@@ -569,7 +569,7 @@ class QBetseeSimConf(QObject):
         '''
 
         return guifile.select_file_yaml_read(
-            title=QCoreApplication.translate(
+            dialog_title=QCoreApplication.translate(
                 'QBetseeSimConf', 'Open Simulation Configuration'))
 
 
@@ -583,5 +583,5 @@ class QBetseeSimConf(QObject):
         '''
 
         return guifile.select_file_yaml_save(
-            title=QCoreApplication.translate(
+            dialog_title=QCoreApplication.translate(
                 'QBetseeSimConf', 'New Simulation Configuration'))
