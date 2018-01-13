@@ -19,6 +19,7 @@ all (or at least most) widget types.
 from PySide2.QtWidgets import QUndoStack
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
+from betsee.guiexceptions import BetseePySideEditWidgetException
 from betsee.util.type.guitypes import QWidgetOrNoneTypes
 
 # ....................{ GETTERS                            }....................
@@ -52,8 +53,6 @@ class QBetseeWidgetMixin(object):
     '''
     Abstract base class of most application-specific widget subclasses.
 
-    Design
-    ----------
     This class is suitable for use as a multiple-inheritance mixin. To preserve
     the expected method resolution order (MRO) semantics, this class should
     typically be subclassed *first* rather than *last* in subclasses.
@@ -64,6 +63,11 @@ class QBetseeWidgetMixin(object):
         Qt-specific name of this widget, identical to the string returned by the
         :meth:`objectName` method at widget initialization time. This string is
         stored as an instance variable only for readability.
+
+    Attributes (Private)
+    ----------
+    _is_init_finalized : bool
+        ``True`` only if this widget's :meth:`init` method has been called.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -105,7 +109,33 @@ class QBetseeWidgetMixin(object):
         #FIXME: Rename to "obj_name".
 
         # Nullify all remaining instance variables for safety.
+        self._is_init_finalized = False
         self.obj_name = 'N/A'
+
+
+    def init(self) -> None:
+        '''
+        Finalize the initialization of this widget.
+
+        This method is principally intended to simplify the implementation of
+        subclasses overriding this method with subclass-specific finalization.
+
+        Raises
+        ----------
+        BetseePySideEditWidgetException
+            If this method has already been called for this widget, preventing
+            widgets from being erroneously refinalized.
+        '''
+
+        # If this widget's initialization has already been finalized, raise an
+        # exception.
+        if self._is_init_finalized:
+            raise BetseePySideEditWidgetException(
+                'Editable widget "{}" already initialized.'.format(
+                    self.obj_name))
+
+        # Record this widget's initialization to now have been finalized.
+        self._is_init_finalized = True
 
     # ..................{ SETTERS                            }..................
     def setObjectName(self, obj_name: str) -> None:

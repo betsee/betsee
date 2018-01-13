@@ -8,7 +8,7 @@
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, Slot
+from PySide2.QtCore import Slot  # QCoreApplication
 from PySide2.QtWidgets import QLineEdit, QPushButton
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.path import pathnames

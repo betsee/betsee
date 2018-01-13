@@ -11,7 +11,9 @@
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QLineEdit
 #from betse.util.io.log import logs
-from betse.util.type.types import type_check  #, ClassOrNoneTypes
+from betse.util.type.types import type_check, NoneType
+from betsee.gui.simconf.stack.widget.guisimconfpushbtn import (
+    QBetseeSimConfPushButtonABC)
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
@@ -24,10 +26,47 @@ class QBetseeSimConfLineEdit(
     QLineEdit,
 ):
     '''
-    Simulation configuration-specific line edit widget, permitting single-line
-    strings backed by external simulation configuration files to be
-    interactively edited.
+    Simulation configuration-specific line edit widget, interactively editing
+    single-line strings backed by external simulation configuration files.
     '''
+
+    # ..................{ INITIALIZERS                       }..................
+    @type_check
+    def init(
+        self,
+        push_btn: (QBetseeSimConfPushButtonABC, NoneType) = None,
+        *args, **kwargs
+    ) -> None:
+        '''
+        Finalize the initialization of this widget, optionally associated with a
+        simulation configuration-specific push button "buddy" widget.
+
+        If non-``None``, this push button is typically situated to the right of
+        this line edit. If this line edit edits a pathname, this push button
+        typically displays the text "Browse..." and when clicked displays a path
+        dialog to interactively select this pathname.
+
+        Parameters
+        ----------
+        push_btn : (QBetseeSimConfPushButtonABC, NoneType)
+            Simulation configuration-specific push button "buddy" widget
+            associated with this widget. This push button is initialized by this
+            method in a manner informing this push button of this association;
+            hence, this push button must *not* be externally initialized.
+            Defaults to ``None``, in which case this widget is assumed to be
+            associated with no such push button.
+
+        All remaining parameters are passed as is to the superclass
+        :meth:`QBetseeSimConfEditScalarWidgetMixin.init` method.
+        '''
+
+        # Initialize our superclass with all remaining arguments.
+        super().init(*args, **kwargs)
+
+        # If this line edit is associated with a push button, inform the latter
+        # of this association.
+        if push_btn is not None:
+            push_btn.init(sim_conf=self._sim_conf, line_edit=self)
 
     # ..................{ SUPERCLASS ~ setter                }..................
     def setText(self, text_new: str) -> None:

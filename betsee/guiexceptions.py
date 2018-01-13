@@ -175,8 +175,7 @@ class BetseePySideWidgetException(BetseePySideException):
 
 class BetseePySideMenuException(BetseePySideWidgetException):
     '''
-    General-purpose exception applicable to
-    :class:`PySide2.QtWidgets.QMenu` widgets.
+    :class:`PySide2.QtWidgets.QMenu`-specific exception.
     '''
 
     @property
@@ -187,8 +186,7 @@ class BetseePySideMenuException(BetseePySideWidgetException):
 
 class BetseePySideMessageBoxException(BetseePySideWidgetException):
     '''
-    General-purpose exception applicable to
-    :class:`PySide2.QtWidgets.QMessageBox` widgets.
+    :class:`PySide2.QtWidgets.QMessageBox`-specific exception.
     '''
 
     @property
@@ -212,8 +210,7 @@ class BetseePySideSpinBoxException(BetseePySideWidgetException):
 
 class BetseePySideTreeWidgetException(BetseePySideWidgetException):
     '''
-    General-purpose exception applicable to
-    :class:`PySide2.QtWidgets.QTreeWidget` widgets.
+    :class:`PySide2.QtWidgets.QTreeWidget`-specific exception.
     '''
 
     @property
@@ -224,8 +221,7 @@ class BetseePySideTreeWidgetException(BetseePySideWidgetException):
 
 class BetseePySideWindowException(BetseePySideWidgetException):
     '''
-    General-purpose exception applicable to
-    :class:`PySide2.QtWidgets.QMainWindow` widgets.
+    :class:`PySide2.QtWidgets.QMainWindow`-specific exception.
     '''
 
     @property
@@ -248,8 +244,7 @@ class BetseePySideWidgetEnumException(BetseePySideWidgetException):
 
 class BetseePySideComboBoxException(BetseePySideWidgetEnumException):
     '''
-    General-purpose exception applicable to
-    :class:`PySide2.QtWidgets.QComboBox` widgets.
+    :class:`PySide2.QtWidgets.QComboBox`-specific exception.
     '''
 
     @property
@@ -260,11 +255,23 @@ class BetseePySideComboBoxException(BetseePySideWidgetEnumException):
 
 class BetseePySideRadioButtonException(BetseePySideWidgetEnumException):
     '''
-    General-purpose exception applicable to
-    :class:`PySide2.QtWidgets.QRadioButton` widgets.
+    :class:`PySide2.QtWidgets.QRadioButton`-specific exception.
     '''
 
     @property
     def _title_default(self) -> str:
         return QCoreApplication.translate(
             'BetseePySideRadioButtonException', 'Radio Button Error')
+
+# ....................{ EXCEPTIONS ~ psd : widget : betsee }....................
+class BetseePySideEditWidgetException(BetseePySideException):
+    '''
+    General-purpose exception applicable to application-specific editable
+    widgets (i.e., instances of the
+    :mod:`betsee.util.widget.abc.guiwdgabc.QBetseeWidgetMixin` superclass).
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideEditWidgetException', 'Editable Widget Error')

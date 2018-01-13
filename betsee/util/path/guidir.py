@@ -11,9 +11,7 @@
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
-from betse.util.path import dirs, pathnames
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.util.app import guiappwindow
 
 # ....................{ SELECTORS                          }....................
 #FIXME: Generalize to prevent users from traversing up (but *NOT* down) the

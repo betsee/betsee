@@ -101,6 +101,9 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
             Further details.
         '''
 
+        # Initialize our superclass.
+        super().init()
+
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
             'Initializing editable widget "%s"...', self.obj_name)
