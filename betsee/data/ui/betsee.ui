@@ -527,7 +527,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_init_pick_dir_line">
+                  <widget class="QBetseeSimConfPathnameSubdirLineEdit" name="sim_conf_path_init_pick_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -550,7 +550,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseeSimConfSubdirPushButton" name="sim_conf_path_init_pick_dir_btn">
+                  <widget class="QPushButton" name="sim_conf_path_init_pick_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -623,7 +623,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_init_exp_dir_line">
+                  <widget class="QBetseeSimConfPathnameSubdirLineEdit" name="sim_conf_path_init_exp_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -646,7 +646,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseeSimConfSubdirPushButton" name="sim_conf_path_init_exp_dir_btn">
+                  <widget class="QPushButton" name="sim_conf_path_init_exp_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -701,7 +701,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_sim_pick_dir_line">
+                  <widget class="QBetseeSimConfPathnameSubdirLineEdit" name="sim_conf_path_sim_pick_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -724,7 +724,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseeSimConfSubdirPushButton" name="sim_conf_path_sim_pick_dir_btn">
+                  <widget class="QPushButton" name="sim_conf_path_sim_pick_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -797,7 +797,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_path_sim_exp_dir_line">
+                  <widget class="QBetseeSimConfPathnameSubdirLineEdit" name="sim_conf_path_sim_exp_dir_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -820,7 +820,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseeSimConfSubdirPushButton" name="sim_conf_path_sim_exp_dir_btn">
+                  <widget class="QPushButton" name="sim_conf_path_sim_exp_dir_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -1995,7 +1995,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
            <string>Default tissue profile for all unselected cells (i.e., cells not already selected by a tissue profile listed to the left).</string>
           </property>
           <property name="title">
-           <string>Default Tissue</string>
+           <string>Default Tissue Profile</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
@@ -2070,7 +2070,7 @@ To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QBetseeSimConfLineEdit" name="sim_conf_tis_default_image_line">
+                  <widget class="QBetseeSimConfPathnameSubdirLineEdit" name="sim_conf_tis_default_image_line">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>1</horstretch>
@@ -2093,7 +2093,7 @@ To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
                   </widget>
                  </item>
                  <item>
-                  <widget class="QBetseeSimConfImagePushButton" name="sim_conf_tis_default_image_btn">
+                  <widget class="QPushButton" name="sim_conf_tis_default_image_btn">
                    <property name="font">
                     <font>
                      <pointsize>10</pointsize>
@@ -5388,14 +5388,9 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    <header>betsee/gui/simconf/stack/widget/guisimconfcombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeSimConfSubdirPushButton</class>
-   <extends>QPushButton</extends>
-   <header>betsee/gui/simconf/stack/widget/guisimconfpushbtn.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QBetseeSimConfImagePushButton</class>
-   <extends>QPushButton</extends>
-   <header>betsee/gui/simconf/stack/widget/guisimconfpushbtn.h</header>
+   <class>QBetseeSimConfPathnameSubdirLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>betsee/gui/simconf/stack/widget/guisimconflineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources>

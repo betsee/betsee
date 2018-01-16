@@ -182,7 +182,74 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # simulation configuration alias.
         self._set_widget_to_alias_value(filename)
 
-    # ..................{ CONVERTERS ~ alias to widget       }..................
+    # ..................{ CONVERTERS ~ alias -> widget       }..................
+    # Called on opening and closing simulation configurations.
+    @type_check
+    def _set_widget_to_alias_value(self, filename: str) -> None:
+        '''
+        Set this widget's displayed value to the current value of the
+        simulation configuration alias associated with this widget if a
+        simulation configuration is currently open *or* clear this displayed
+        value otherwise.
+
+        This method is currently only called by the :meth:`_set_filename` slot
+        on opening and closing a simulation configuration, thus initializing
+        this widget's value to that of this configuration.
+
+        Parameters
+        ----------
+        filename : str
+            Absolute path of the currently open YAML-formatted simulation
+            configuration file if any *or* the empty string otherwise (i.e., if
+            no such file is open).
+        '''
+
+        # If a simulation configuration is currently open...
+        if filename and self._is_open:
+            # Set this widget's displayed value from this alias' current value.
+            self.widget_value = self._get_widget_from_alias_value()
+
+            # If no such value is returned, (e.g., due to a subclass improperly
+            # overriding the _get_widget_from_alias_value() function), raise an
+            # exception. *NO* simulation configuration alias currently returns
+            # "None" as a valid value.
+            if self.widget_value is None:
+                raise BetseePySideWidgetException(
+                    'Editable scalar widget "{}" value "None" invalid.'.format(
+                        self.obj_name))
+
+            # Log this setting.
+            logs.log_debug(
+                'Setting widget "%s" display value to %r...',
+                self.obj_name, self.widget_value)
+
+            # Cache this widget's value in preparation for the next change.
+            self._widget_value_last = self.widget_value
+        # Else, no simulation configuration is currently open.
+        else:
+            # Clear this widget's displayed and cached values.
+            self._reset_widget_value()
+            self._widget_value_last = None
+
+
+    def _get_widget_from_alias_value(self) -> object:
+        '''
+        Value of the simulation configuration alias associated with this widget,
+        coerced into a type displayable by this widget.
+
+        This method is typically called *only* once per open simulation
+        configuration file on the first loading of that file.
+
+        See Also
+        ----------
+        :meth:`_get_alias_from_widget_value`
+            Further details.
+        '''
+
+        return self._sim_conf_alias.get()
+
+    # ..................{ CONVERTERS ~ widget -> alias       }..................
+    # Called on each user edit of this widget's value.
     @Slot()
     def _set_alias_to_widget_value_if_sim_conf_open(self) -> None:
         '''
@@ -293,67 +360,6 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         # Return this coerced value.
         return alias_value
-
-    # ..................{ CONVERTERS ~ widget to alias       }..................
-    @type_check
-    def _set_widget_to_alias_value(self, filename: str) -> None:
-        '''
-        Set this widget's displayed value to the current value of the
-        simulation configuration alias associated with this widget if a
-        simulation configuration is currently open *or* clear this displayed
-        value otherwise.
-
-        Parameters
-        ----------
-        filename : str
-            Absolute path of the currently open YAML-formatted simulation
-            configuration file if any *or* the empty string otherwise (i.e., if
-            no such file is open).
-        '''
-
-        # If a simulation configuration is currently open...
-        if filename and self._is_open:
-            # Set this widget's displayed value from this alias' current value.
-            self.widget_value = self._get_widget_from_alias_value()
-
-            # If no such value is returned, (e.g., due to a subclass overriding
-            # the _get_widget_from_alias_value() function poorly), raise an
-            # exception. *NO* simulation configuration alias currently returns
-            # None as a valid value.
-            if self.widget_value is None:
-                raise BetseePySideWidgetException(
-                    'Editable scalar widget "{}" value "None" invalid.'.format(
-                        self.obj_name))
-
-            # Log this setting.
-            logs.log_debug(
-                'Setting widget "%s" display value to %r...',
-                self.obj_name, self.widget_value)
-
-            # Cache this widget's value in preparation for the next change.
-            self._widget_value_last = self.widget_value
-        # Else, no simulation configuration is currently open.
-        else:
-            # Clear this widget's displayed and cached values.
-            self._reset_widget_value()
-            self._widget_value_last = None
-
-
-    def _get_widget_from_alias_value(self) -> object:
-        '''
-        Value of the simulation configuration alias associated with this widget,
-        coerced into a type displayable by this widget.
-
-        This method is typically called *only* once per open simulation
-        configuration file on the first loading of that file.
-
-        See Also
-        ----------
-        :meth:`_get_alias_from_widget_value`
-            Further details.
-        '''
-
-        return self._sim_conf_alias.get()
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):

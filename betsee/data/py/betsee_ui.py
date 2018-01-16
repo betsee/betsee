@@ -289,7 +289,7 @@ class Ui_main_window(object):
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.widget_5)
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.sim_conf_path_init_pick_dir_line = QBetseeSimConfLineEdit(self.widget_5)
+        self.sim_conf_path_init_pick_dir_line = QBetseeSimConfPathnameSubdirLineEdit(self.widget_5)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
@@ -304,7 +304,7 @@ class Ui_main_window(object):
         self.sim_conf_path_init_pick_dir_line.setText("")
         self.sim_conf_path_init_pick_dir_line.setObjectName("sim_conf_path_init_pick_dir_line")
         self.horizontalLayout_5.addWidget(self.sim_conf_path_init_pick_dir_line)
-        self.sim_conf_path_init_pick_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_5)
+        self.sim_conf_path_init_pick_dir_btn = QtWidgets.QPushButton(self.widget_5)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_init_pick_dir_btn.setFont(font)
@@ -336,7 +336,7 @@ class Ui_main_window(object):
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.widget_6)
         self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.sim_conf_path_init_exp_dir_line = QBetseeSimConfLineEdit(self.widget_6)
+        self.sim_conf_path_init_exp_dir_line = QBetseeSimConfPathnameSubdirLineEdit(self.widget_6)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
@@ -351,7 +351,7 @@ class Ui_main_window(object):
         self.sim_conf_path_init_exp_dir_line.setText("")
         self.sim_conf_path_init_exp_dir_line.setObjectName("sim_conf_path_init_exp_dir_line")
         self.horizontalLayout_6.addWidget(self.sim_conf_path_init_exp_dir_line)
-        self.sim_conf_path_init_exp_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_6)
+        self.sim_conf_path_init_exp_dir_btn = QtWidgets.QPushButton(self.widget_6)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_init_exp_dir_btn.setFont(font)
@@ -371,7 +371,7 @@ class Ui_main_window(object):
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout(self.widget_7)
         self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.sim_conf_path_sim_pick_dir_line = QBetseeSimConfLineEdit(self.widget_7)
+        self.sim_conf_path_sim_pick_dir_line = QBetseeSimConfPathnameSubdirLineEdit(self.widget_7)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
@@ -386,7 +386,7 @@ class Ui_main_window(object):
         self.sim_conf_path_sim_pick_dir_line.setText("")
         self.sim_conf_path_sim_pick_dir_line.setObjectName("sim_conf_path_sim_pick_dir_line")
         self.horizontalLayout_7.addWidget(self.sim_conf_path_sim_pick_dir_line)
-        self.sim_conf_path_sim_pick_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_7)
+        self.sim_conf_path_sim_pick_dir_btn = QtWidgets.QPushButton(self.widget_7)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_sim_pick_dir_btn.setFont(font)
@@ -418,7 +418,7 @@ class Ui_main_window(object):
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.widget_8)
         self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
-        self.sim_conf_path_sim_exp_dir_line = QBetseeSimConfLineEdit(self.widget_8)
+        self.sim_conf_path_sim_exp_dir_line = QBetseeSimConfPathnameSubdirLineEdit(self.widget_8)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
@@ -433,7 +433,7 @@ class Ui_main_window(object):
         self.sim_conf_path_sim_exp_dir_line.setText("")
         self.sim_conf_path_sim_exp_dir_line.setObjectName("sim_conf_path_sim_exp_dir_line")
         self.horizontalLayout_8.addWidget(self.sim_conf_path_sim_exp_dir_line)
-        self.sim_conf_path_sim_exp_dir_btn = QBetseeSimConfSubdirPushButton(self.widget_8)
+        self.sim_conf_path_sim_exp_dir_btn = QtWidgets.QPushButton(self.widget_8)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_path_sim_exp_dir_btn.setFont(font)
@@ -924,7 +924,7 @@ class Ui_main_window(object):
         self.horizontalLayout_26 = QtWidgets.QHBoxLayout(self.widget_26)
         self.horizontalLayout_26.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_26.setObjectName("horizontalLayout_26")
-        self.sim_conf_tis_default_image_line = QBetseeSimConfLineEdit(self.widget_26)
+        self.sim_conf_tis_default_image_line = QBetseeSimConfPathnameSubdirLineEdit(self.widget_26)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
@@ -939,7 +939,7 @@ class Ui_main_window(object):
         self.sim_conf_tis_default_image_line.setText("")
         self.sim_conf_tis_default_image_line.setObjectName("sim_conf_tis_default_image_line")
         self.horizontalLayout_26.addWidget(self.sim_conf_tis_default_image_line)
-        self.sim_conf_tis_default_image_btn = QBetseeSimConfImagePushButton(self.widget_26)
+        self.sim_conf_tis_default_image_btn = QtWidgets.QPushButton(self.widget_26)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.sim_conf_tis_default_image_btn.setFont(font)
@@ -2563,7 +2563,7 @@ class Ui_main_window(object):
         self.label_12.setText(QtWidgets.QApplication.translate("main_window", "Extracellular matrix:", None, -1))
         self.sim_conf_space_extra_is_ecm.setToolTip(QtWidgets.QApplication.translate("main_window", "Enable the extracellular matrix (ECM), simulating the environmental spaces surrounding each cell in the cluster? Disabling this substantially reduces simulation accuracy at a substantial reduction in space and time costs.", None, -1))
         self.groupBox_Tissue.setToolTip(QtWidgets.QApplication.translate("main_window", "Default tissue profile for all unselected cells (i.e., cells not already selected by a tissue profile listed to the left).", None, -1))
-        self.groupBox_Tissue.setTitle(QtWidgets.QApplication.translate("main_window", "Default Tissue", None, -1))
+        self.groupBox_Tissue.setTitle(QtWidgets.QApplication.translate("main_window", "Default Tissue Profile", None, -1))
         self.groupBox_22.setToolTip(QtWidgets.QApplication.translate("main_window", "General-purpose properties of the default tissue profile.", None, -1))
         self.groupBox_22.setTitle(QtWidgets.QApplication.translate("main_window", "General", None, -1))
         self.label_16.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
@@ -2820,14 +2820,13 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconfpushbtn import QBetseeSimConfSubdirPushButton, QBetseeSimConfImagePushButton
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
