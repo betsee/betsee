@@ -52,7 +52,8 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
             sim_conf=sim_conf,
             sim_conf_alias=SimConfTissueDefault.picker_image_filename,
             sim_conf_alias_parent=tissue_default,
-            push_btn=main_window.sim_conf_tis_default_image_btn,
+            push_btn   =main_window.sim_conf_tis_default_image_btn,
+            image_label=main_window.sim_conf_tis_default_image_label,
         )
 
         # Initialize all ion-specific widgets on this page.

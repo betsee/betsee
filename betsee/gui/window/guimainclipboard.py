@@ -17,7 +17,7 @@ from betsee.guiexceptions import BetseePySideClipboardException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guiclipboard
 from betsee.util.io.key import guifocus
-from betsee.util.type.guitypes import QWidgetOrNoneTypes
+from betsee.util.type.guitype import QWidgetOrNoneTypes
 
 # ....................{ CLASSES                            }....................
 class QBetseeMainClipboard(QObject):

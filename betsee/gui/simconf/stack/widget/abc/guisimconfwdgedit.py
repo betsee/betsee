@@ -206,7 +206,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
 
     # ..................{ PROPERTIES                         }..................
     @property
-    def _is_open(self) -> bool:
+    def _is_sim_open(self) -> bool:
         '''
         ``True`` only if a simulation configuration file is currently open.
         '''

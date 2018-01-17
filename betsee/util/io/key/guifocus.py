@@ -12,7 +12,7 @@ the current application widget) functionality.
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QApplication, QWidget
 from betsee.guiexceptions import BetseePySideFocusException
-from betsee.util.type.guitypes import QWidgetOrNoneTypes
+from betsee.util.type.guitype import QWidgetOrNoneTypes
 
 # ....................{ EXCEPTIONS                         }....................
 def die_unless_widget_focused() -> None:

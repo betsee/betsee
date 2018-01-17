@@ -10,11 +10,13 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton
-from betse.util.io.log import logs
 from betse.exceptions import BetseMethodUnimplementedException
+from betse.lib.pil import pils
+from betse.util.io.log import logs
 from betse.util.path import pathnames
 from betse.util.type.text import mls
 from betse.util.type.types import type_check, StrOrNoneTypes
+from betsee.util.path import guifiletype
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
@@ -227,101 +229,168 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
         # Classify all passed parameters.
         self._image_label = image_label
 
+        # Instruct this label to auto-wrap long lines, required to display
+        # non-fatal warnings subsequently added as this label's text in a
+        # DPI-independent manner.
+        self._image_label.setWordWrap(True)
+
     # ..................{ SUPERCLASS ~ getters               }..................
     # Called on opening and closing simulation configurations.
     def _get_widget_from_alias_value(self) -> object:
 
-        # Simulation configuration alias value associated with this widget.
-        alias_value = super()._get_widget_from_alias_value()
+        # Value of the alias associated with this widget, equivalent to the
+        # relative or absolute filename of expected image.
+        image_filename = super()._get_widget_from_alias_value()
 
         # Preview an image only if a simulation configuration is open.
-        self._image_label.setVisible(self._is_open)
+        self._image_label.setVisible(self._is_sim_open)
+
+        # If a simulation configuration is open, preview this image.
+        self._preview_image_if_sim_open(image_filename)
 
         # Return this value.
-        return alias_value
+        return image_filename
 
 
     # Called on each user edit of this widget's value.
     def _get_alias_from_widget_value(self) -> object:
 
         # This widget's currently displayed value, equivalent to the relative or
-        # absolute filename of this desired image.
+        # absolute filename of the expected image.
         image_filename = super()._get_alias_from_widget_value()
 
-        # Absolute filename of this desired image, localized into a separate
-        # variable to permit the original filename to be returned unmodified. If
-        # this filename is relative, convert this into an absolute filename
-        # relative to this simulation configuration's top-level directory.
-        image_filename_absolute = (
-            image_filename if pathnames.is_absolute(image_filename) else
-            pathnames.join(self._sim_conf.dirname, image_filename))
+        # If a simulation configuration is open, preview this image.
+        self._preview_image_if_sim_open(image_filename)
+
+        # Return this filename.
+        return image_filename
+
+    # ..................{ PREVIEWERS                         }..................
+    #FIXME: Sadly, labels fail to automatically scroll their pixmap contents. To
+    #do so, we'll need to generalize this class as follows:
+    #
+    #* Define a new "betsee.util.widget.stock.guiscrollarea" submodule.
+    #* In this submodule:
+    #  * Define a "QBetseeScrollImage" subclass of the "QScrollArea" class.
+    #  * In the QBetseeScrollImage.__init__() method:
+    #    * Instantiate and add a new "QLabel" widget to this scroll area.
+    #    * Presumably set other properties of both this scroll area and this
+    #      label facilitating image display. In particular, we'll want to:
+    #
+    #      #FIXME: This may or may *NOT* be necessary. Try without, first.
+    #      # Automatically resize this label to the size of this image.
+    #      self._image_label.setSizePolicy(
+    #          QSizePolicy.Ignored, QSizePolicy.Ignored);
+    #      self._image_label.setScaledContents(True)
+    #
+    #    * Shift the majority of the content in this private
+    #      _preview_image_if_sim_open() method into a public show_image() method
+    #      with a similar signature, but ideally generalized to accept either a
+    #      filename *OR* "None" (in which case the text "N/A" should be shown):
+    #
+    #      @type_check
+    #      def show_image(self, image_filename: StrOrNoneTypes) -> None:
+    #
+    #* Revise the init() method defined above to accept a "QBetseeScrollImage"
+    #  rather than "QLabel" parameter.
+    #* Replace the "QLabel" widget accompanying this line edit in Qt Creator
+    #  with a "QBetseeScrollImage" widget promoted from "QScrollArea".
+    #
+    #For a detailed example, see the following StackOverflow entry:
+    #https://stackoverflow.com/a/10988109/2809027
+    #FIXME: Test this method with common edge cases, including:
+    #
+    #* A filename of filetype unrecognized by Pillow.
+    #* A filename of filetype unrecognized by Qt.
+    #* A file of recognized filetype that isn't actually an image.
+    @type_check
+    def _preview_image_if_sim_open(self, image_filename: str) -> None:
+        '''
+        Display a preview of the image with the passed filename as the pixmap of
+        the label associated with this line edit if this image is previewable
+        *or* log and/or display a non-fatal warning otherwise.
+
+        If no simulation configuration is open, this method safely reduces to a
+        noop without erroneously handling this image.
+
+        Parameters
+        ----------
+        image_filename : str
+            Absolute or relative filename of the image to be previewed.
+        '''
+
+        # Remove any prior content (e.g., image, text) displayed by this label,
+        # regardless of whether subsequent logic displays any new such content.
+        self._image_label.clear()
+
+        # If no simulation configuration is open...
+        if not self._is_sim_open:
+            # Display a placeholder message.
+            self._image_label.setText(QCoreApplication.translate(
+                'QBetseeSimConfPathnameImageLineEdit', 'N/A'))
+
+            # That's all she wrote.
+            return
+        # Else, a simulation configuration is open.
 
         # Log this preview attempt.
         logs.log_debug(
             'Previewing image "%s"...', pathnames.get_basename(image_filename))
 
-        #FIXME: Only display this image if Qt supports display of images of this
-        #filetype. How can we query Qt for this metadata? Ah! Here we go:
-        #
-        #    >>> from PySide2.QtGui import QImageReader
-        #    >>> QImageReader.supportedImageFormats()
-        #    ... [PySide2.QtCore.QByteArray('bmp'),
-        #    ...  PySide2.QtCore.QByteArray('cur'),
-        #    ...  PySide2.QtCore.QByteArray('gif'),
-        #    ...  PySide2.QtCore.QByteArray('ico'),
-        #    ...  PySide2.QtCore.QByteArray('jpeg'),
-        #    ...  PySide2.QtCore.QByteArray('jpg'),
-        #    ...  PySide2.QtCore.QByteArray('pbm'),
-        #    ...  PySide2.QtCore.QByteArray('pgm'),
-        #    ...  PySide2.QtCore.QByteArray('png'),
-        #    ...  PySide2.QtCore.QByteArray('ppm'),
-        #    ...  PySide2.QtCore.QByteArray('svg'),
-        #    ...  PySide2.QtCore.QByteArray('svgz'),
-        #    ...  PySide2.QtCore.QByteArray('xbm'),
-        #    ...  PySide2.QtCore.QByteArray('xpm')]
-        #
-        #So, that's fairly annoying. We'll need to then convert this list of
-        #"QByteArray" items into a sequence (probably, tuple) of strings. *sigh*
-        #FIXME: After extensive research, it would appear that we need to
-        #manually decode each "QByteArray" instance into a Python string ala:
-        #
-        #    from PySide2.QtGui import QImageReader
-        #
-        #    @callable_cached
-        #    def get_image_filetypes() -> SequenceTypes:
-        #
-        #        image_filetypes = []
-        #        for image_filetype_byte_array in QImageReader.supportedImageFormats():
-        #            image_filetypes.append(
-        #                str(image_filetype_byte_array, encoding='ascii'))
-        #
-        #Since filetypes should *ALWAYS* be ASCII, this seems reasonable.
-        #Clearly, we'll want to shift the get_image_filetypes() function into an
-        #appropriate utility submodule.
+        # Filetype of this image if any *OR* "None" otherwise.
+        image_filetype = pathnames.get_filetype_undotted_or_none(image_filename)
 
-        # Attempt to...
-        try:
-            # Preview this image in the label associated with this line edit.
-            self._image_label.setPixmap(image_filename_absolute)
-        # If attempting to preview this image raises an exception...
-        except Exception as exception:
-            # Remove any prior content displayed by this label. While we
-            # technically only require any prior image to be cleared, Qt
-            # provides no means of removing only the pixmap from a label.
-            self._image_label.clear()
+        # If this image has a filetype...
+        if image_filetype is not None:
+            # Set of all image filetypes readable by Pillow.
+            image_filetypes_pil = pils.get_filetypes()
 
-            # Exception message, escaped to avoid interpretation as HTML.
-            exception_message = mls.escape_ml(exception)
+            # Set of all image filetypes readable by Qt.
+            image_filetypes_qt = guifiletype.get_image_read_filetypes()
 
-            # Display this exception message as a non-fatal warning replacing
-            # the prior content displayed by this label (if any).
-            self._image_label.setText(
-                QCoreApplication.translate(
+            # If this image is unreadable by Pillow, display a non-fatal warning
+            # as this label's text.
+            if image_filetype not in image_filetypes_pil:
+                self._image_label.setText(QCoreApplication.translate(
                     'QBetseeSimConfPathnameImageLineEdit',
-                    '<b>Warning:</b> {0}'.format(exception_message)))
+                    '<b>Warning:</b> image filetype "{0}" '
+                    'unrecognized by Pillow.'.format(image_filetype)))
+            # Else, this image is readable by Pillow.
+            #
+            # If this image is unreadable by Qt, log a non-fatal warning. Note
+            # that this warning is intentionally *NOT* displayed as this label's
+            # text. Since this image is readable by Pillow, this image is
+            # readable by BETSE (and is presumably valid). Since Qt reads
+            # substantially fewer image filetypes than Pillow, this condition is
+            # effectively ignorable from the perspective of the end user.
+            elif image_filetype not in image_filetypes_qt:
+                logs.log_warning(
+                    'Image filetype "%s" unrecognized by Qt.', image_filetype)
+            # Else, this image is readable by both Pillow *AND* Qt.
+            else:
+                # Absolute filename of this desired image, localized into a
+                # separate variable to permit the original filename to be
+                # returned unmodified. If this filename is relative, convert
+                # this into an absolute filename relative to this simulation
+                # configuration's top-level directory.
+                image_filename_absolute = (
+                    image_filename if pathnames.is_absolute(image_filename) else
+                    pathnames.join(self._sim_conf.dirname, image_filename))
 
-        # Return the original value of this filename.
-        return image_filename_absolute
+                # Attempt to preview this image in the label associated with
+                # this line edit.
+                try:
+                    self._image_label.setPixmap(image_filename_absolute)
+                # If doing so raises an exception...
+                except Exception as exception:
+                    # Exception message, escaped to avoid interpretation as HTML.
+                    exception_message = mls.escape_ml(exception)
+
+                    # Display this exception message as a non-fatal warning replacing
+                    # the prior content displayed by this label (if any).
+                    self._image_label.setText(QCoreApplication.translate(
+                        'QBetseeSimConfPathnameImageLineEdit',
+                        '<b>Warning:</b> {0}'.format(exception_message)))
 
     # ..................{ SUPERCLASS ~ selectors             }..................
     @type_check

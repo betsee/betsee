@@ -20,7 +20,7 @@ from PySide2.QtWidgets import QUndoStack
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexceptions import BetseePySideEditWidgetException
-from betsee.util.type.guitypes import QWidgetOrNoneTypes
+from betsee.util.type.guitype import QWidgetOrNoneTypes
 
 # ....................{ GETTERS                            }....................
 @type_check

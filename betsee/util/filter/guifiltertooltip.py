@@ -14,7 +14,6 @@ from PySide2.QtWidgets import QWidget
 # from betse.util.io.log import logs
 from betse.util.type.obj import objects
 from betse.util.type.text import mls
-from betsee.util.type import guistrs
 # from betse.util.type.types import type_check
 
 # ....................{ CLASSES                            }....................
@@ -71,6 +70,9 @@ class QBetseePlaintextTooltipEventFilter(QObject):
         Tooltip-specific event filter handling the passed Qt object and event.
         '''
 
+        # Avoid circular import dependencies.
+        from betsee.util.type.text import guistr
+
         # If this is a tooltip event...
         if event.type() == QEvent.ToolTipChange:
             # If the target Qt object containing this tooltip is *NOT* a widget,
@@ -90,7 +92,7 @@ class QBetseePlaintextTooltipEventFilter(QObject):
             # Qt.mightBeRichText(), a tester returning True if the passed string
             # appears to be rich text. Hence, we defer to a homegrown (albeit
             # presumably less reliable) solution.
-            if tooltip and not guistrs.is_rich(tooltip):
+            if tooltip and not guistr.is_rich(tooltip):
                 # Convert this plaintext into a rich text tooltip by (in order):
                 #
                 #* Escaping all HTML syntax in this tooltip.

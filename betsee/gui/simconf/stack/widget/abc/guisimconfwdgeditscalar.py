@@ -205,7 +205,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         '''
 
         # If a simulation configuration is currently open...
-        if filename and self._is_open:
+        if filename and self._is_sim_open:
             # Set this widget's displayed value from this alias' current value.
             self.widget_value = self._get_widget_from_alias_value()
 
@@ -288,7 +288,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
             # This widget's value remains unchanged.
             widget_value == self._widget_value_last or
             # No simulation configuration is currently open.
-            not self._is_open
+            not self._is_sim_open
         # Then reduce to a noop.
         ):
             return
