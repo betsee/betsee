@@ -55,7 +55,7 @@ class QBetseeWidgetMixin(object):
 
     This class is suitable for use as a multiple-inheritance mixin. To preserve
     the expected method resolution order (MRO) semantics, this class should
-    typically be subclassed *first* rather than *last* in subclasses.
+    typically be inherited *first* rather than *last* in subclasses.
 
     Attributes (Public)
     ----------

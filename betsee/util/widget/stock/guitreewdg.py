@@ -4,20 +4,21 @@
 # See "LICENSE" for further details.
 
 '''
-General-purpose :mod:`QTreeWidget` widget subclasses.
+General-purpose :mod:`QTreeWidget` subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import Signal, Slot
 from PySide2.QtWidgets import QHeaderView, QTreeWidget  #, QTreeWidgetItem
+from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeTreeWidget(QTreeWidget):
+class QBetseeTreeWidget(QBetseeWidgetMixin, QTreeWidget):
     '''
     :mod:`QTreeWidget`-based widget marginally improving upon the stock
     :mod:`QTreeWidget` functionality.
 
-    This application-specific widget augments the stock :class:`QTreeWidget`
+    This application-specific widget augments the :class:`QTreeWidget` class
     with additional support for:
 
     * **Horizontal scrollbars,** automatically displaying horizontal scrollbars
@@ -48,9 +49,10 @@ class QBetseeTreeWidget(QTreeWidget):
         # call). This unfortunate default overrides that request.
         header_view.setStretchLastSection(False)
 
-    # ..................{ SETTERS                            }..................
+    # ..................{ SUPERCLASS ~ setters               }..................
     def setColumnCount(self, column_count: int) -> None:
 
+        # Defer to the superclass implementation.
         super().setColumnCount(column_count)
 
         # If this tree now contains more than one column, permit the last such

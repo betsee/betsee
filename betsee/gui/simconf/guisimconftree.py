@@ -64,6 +64,9 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             against which to initialize this widget.
         '''
 
+        # Initialize our superclass.
+        super().init()
+
         # Log this initialization.
         logs.log_debug('Initializing top-level tree widget...')
 

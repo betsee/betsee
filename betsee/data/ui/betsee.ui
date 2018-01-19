@@ -99,6 +99,13 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
     font-size: 9pt;
 }
 
+/* Widgets at any depth of a third-level group box in a page.
+ */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox &gt;
+    QGroupBox QWidget {
+    font-size: 8pt;
+}
+
 /* ..................{ STACK ~ group                      }.....................
  * To ensure that group box selectors take precedence over selectors intended to
  * be applicable *ONLY* to the children of these selectors, the former are
@@ -119,6 +126,12 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox {
 QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
     font-weight: bold;
     font-size: 10pt;
+}
+
+/* Third-level group box in a page. */
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
+    font-weight: bold;
+    font-size: 9pt;
 }</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
@@ -2110,45 +2123,41 @@ To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
                 </layout>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QWidget" name="widget_4" native="true">
-                <layout class="QHBoxLayout" name="horizontalLayout">
-                 <item>
-                  <spacer name="horizontalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_51">
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                     <italic>true</italic>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Preview:</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="sim_conf_tis_default_image_label">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
+              <item row="2" column="1">
+               <widget class="QScrollArea" name="scrollArea">
+                <property name="toolTip">
+                 <string>In-place preview of this image mask, automatically rescaled to fit the available space.</string>
                 </property>
+                <property name="sizeAdjustPolicy">
+                 <enum>QAbstractScrollArea::AdjustToContents</enum>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>281</width>
+                   <height>97</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_27">
+                  <item>
+                   <widget class="QBetseeLabelImage" name="sim_conf_tis_default_image_label">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::StyledPanel</enum>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                </widget>
               </item>
              </layout>
@@ -5437,6 +5446,11 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    <class>QBetseeSimConfPathnameImageLineEdit</class>
    <extends>QLineEdit</extends>
    <header>betsee/gui/simconf/stack/widget/guisimconflineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeLabelImage</class>
+   <extends>QLabel</extends>
+   <header>betsee/util/widget/stock/guilabel.h</header>
   </customwidget>
  </customwidgets>
  <resources>
