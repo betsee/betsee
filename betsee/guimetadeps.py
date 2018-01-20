@@ -60,6 +60,9 @@ mandatory runtime dependency for this application to the suffix of a
 
 See Also
 ----------
+:func:`get_runtime_mandatory_sans_submodules`
+    Function returning a copy of this dictionary excluding all :mod:`PySide2`
+    submodules (e.g., :mod:`PySide2.QtGui`).
 :data:`betse.metadata.RUNTIME_MANDATORY`
     Further details on dictionary structure.
 :download:`/doc/rst/INSTALL.rst`
@@ -112,3 +115,66 @@ See Also
 :download:`/doc/rst/INSTALL.rst`
     Human-readable list of these dependencies.
 '''
+
+# ....................{ GETTERS                            }....................
+def get_runtime_mandatory_tuple() -> tuple:
+    '''
+    Tuple listing the :mod:`setuptools`-specific requirement string containing
+    the mandatory name and optional version and extras constraints of each
+    mandatory runtime dependency for this application, dynamically converted
+    from the :data:`metadata.RUNTIME_MANDATORY` dictionary.
+
+    Caveats
+    ----------
+    This dictionary notably excludes all submodules whose fully-qualified names
+    are prefixed by ``PySide2.`` (e.g., :mod:`PySide2.QtGui`). These submodules
+    signify optional :mod:`PySide2` components required by this application but
+    unavailable on PyPI. Including these submodules here would erroneously halt
+    setuptools-based installation for up to several minutes with output
+    resembling:
+
+        Searching for PySide2.QtSvg
+        Reading https://pypi.python.org/simple/PySide2.QtSvg/
+        Couldn't find index page for 'PySide2.QtSvg' (maybe misspelled?)
+        Scanning index of all packages (this may take a while)
+        Reading https://pypi.python.org/simple/
+    '''
+
+    # Avoid circular import dependencies.
+    from betsee.lib.setuptools import guisetuptool
+
+    # Dictionary of all mandatory runtime dependencies excluding submodules.
+    runtime_mandatory_sans_submodules = {
+        # Map this dependency's name to constraints.
+        dependency_name: dependency_constraints
+        # For the name and constraints of each mandatory runtime dependency...
+        for dependency_name, dependency_constraints in
+            RUNTIME_MANDATORY.items()
+
+        #FIXME: Uncomment the following line and remove the line that follows
+        #that *AFTER* "PySide2" and "pyside2-tools" become available on PyPI.
+        #Ideally, only "PySide2."-prefixed components should be ignored.
+
+        # If this is *NOT* a PySide2-specific submodule...
+        #if not dependency_name.startswith('PySide2.')
+        if not dependency_name.startswith(('PySide2', 'pyside2'))
+    }
+
+    # Return this dictionary converted into a tuple.
+    return guisetuptool.convert_requirements_dict_to_tuple(
+        runtime_mandatory_sans_submodules)
+
+
+def get_testing_mandatory_tuple() -> tuple:
+    '''
+    Tuple listing the :mod:`setuptools`-specific requirement string containing
+    the mandatory name and optional version and extras constraints of each
+    mandatory testing dependency for this application, dynamically converted
+    from the :data:`metadata.TESTING_MANDATORY` dictionary.
+    '''
+
+    # Avoid circular import dependencies.
+    from betsee.lib.setuptools import guisetuptool
+
+    # Return this dictionary converted into a tuple.
+    return guisetuptool.convert_requirements_dict_to_tuple(TESTING_MANDATORY)

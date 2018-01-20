@@ -114,6 +114,18 @@ class BetseeCacheException(BetseeException):
         return QCoreApplication.translate('BetseeCacheException', 'Cache Error')
 
 
+class BetseeLibException(BetseeException):
+    '''
+    General-purpose exception applicable to all optional and mandatory
+    third-party dependencies, including :mod:`PySide2`.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideException', 'Dependency Error')
+
+
 class BetseeSimConfException(BetseeException):
     '''
     General-purpose exception applicable to simulation configuration state
@@ -126,7 +138,7 @@ class BetseeSimConfException(BetseeException):
             'BetseeSimConfException', 'Simulation Configuration Error')
 
 # ....................{ EXCEPTIONS ~ psd                   }....................
-class BetseePySideException(BetseeException):
+class BetseePySideException(BetseeLibException):
     '''
     General-purpose exception applicable to :mod:`PySide2`, this application's
     principal third-party dependency.

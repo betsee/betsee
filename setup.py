@@ -37,25 +37,7 @@ from betsee_setup import betseebuild, betseeutil
 # ....................{ METADATA                           }....................
 # PyPI-specific metadata declared here rather than in the "betsee.metadata"
 # submodule, reducing space and time complexity during application startup. This
-# metadata is relevant only to setuptools and hence irrelevant to the main
-# codebase.
-
-_PYTHON_VERSION_MINOR_MAX = 7
-'''
-Maximum minor stable version of this major version of Python currently released
-(e.g., ``5`` if Python 3.5 is the most recent stable version of Python 3.x).
-'''
-
-
-_DESCRIPTION = None
-'''
-Human-readable multiline description of this application in reStructuredText
-(reST) format.
-
-To minimize synchronization woes, this description is identical to the contents
-of the :doc:`/README.rst` file. When submitting this application package to
-PyPI, this description is used verbatim as this package's front matter.
-'''
+# metadata is relevant only to setuptools. (The main codebase could care less.)
 
 # ....................{ METADATA ~ seo                     }....................
 _KEYWORDS = ['biology', 'multiphysics', 'science', 'simulator',]
@@ -69,7 +51,7 @@ engine optimization (SEO). In actuality, they do absolutely nothing.
 
 # To minimize desynchronization woes, all
 # "Programming Language :: Python :: "-prefixed strings are dynamically appended
-# to this list by the init() function below.
+# to this list by the get_classifiers() function called below.
 _CLASSIFIERS = [
     #FIXME: Replace with the following after the "1.0.0" release:
     #    'Development Status :: 5 - Production/Stable',
@@ -104,52 +86,10 @@ https://pypi.python.org/pypi?%3Aaction=list_classifiers
     Plaintext list of all trove classifier strings recognized by PyPI.
 '''
 
-# ....................{ INITIALIZERS                       }....................
-def init() -> None:
-    '''
-    Finalize the definition of all globals declared by this module.
-    '''
-
-    # Global variables assigned to below.
-    global _DESCRIPTION
-
-    # Major version of Python required by this application.
-    PYTHON_VERSION_MAJOR = guimetadata.PYTHON_VERSION_MIN_PARTS[0]
-
-    # Relative path of this application's front-facing documentation in
-    # reStructuredText format, required by PyPI.
-    DESCRIPTION_FILENAME = 'README.rst'
-
-    # For each minor version of Python 3.x supported by this application,
-    # formally classify this version as such.
-    for python_version_minor in range(
-        guimetadata.PYTHON_VERSION_MIN_PARTS[1], _PYTHON_VERSION_MINOR_MAX + 1):
-        _CLASSIFIERS.append(
-            'Programming Language :: Python :: {}.{}'.format(
-                PYTHON_VERSION_MAJOR, python_version_minor,))
-    # print('classifiers: {}'.format(_CLASSIFIERS))
-
-    # Description read from this description file.
-    try:
-        _DESCRIPTION = betseeutil.get_chars(DESCRIPTION_FILENAME)
-        # print('description: {}'.format(_DESCRIPTION))
-    # If this file is *NOT* readable, print a non-fatal warning and reduce this
-    # description to the empty string. While unfortunate, this description is
-    # *NOT* required for most operations and hence mostly ignorable.
-    except Exception as exception:
-        _DESCRIPTION = ''
-        betseeutil.output_warning(
-            'Description file "{}" not found or not readable:\n{}'.format(
-                DESCRIPTION_FILENAME, exception))
-
-
-# Finalize the definition of all globals declared by this module.
-init()
-
 # ....................{ OPTIONS                            }....................
 # Setuptools-specific options. Keywords not explicitly recognized by either
 # setuptools or distutils must be added to the above dictionary instead.
-setup_options = {
+_setup_options = {
     # ..................{ CORE                               }..................
     # Self-explanatory metadata.
     'name':             guimetadata.PACKAGE_NAME,
@@ -159,38 +99,19 @@ setup_options = {
     'maintainer':       guimetadata.AUTHORS,
     'maintainer_email': guimetadata.AUTHOR_EMAIL,
     'description':      guimetadata.SYNOPSIS,
-    'long_description': _DESCRIPTION,
+    'long_description': betseeutil.get_description(),
     'url':              guimetadata.URL_HOMEPAGE,
     'download_url':     guimetadata.URL_DOWNLOAD,
 
     # ..................{ PYPI                               }..................
     # PyPi-specific metadata.
-    'classifiers': _CLASSIFIERS,
+    'classifiers': betseeutil.sanitize_classifiers(_CLASSIFIERS),
     'keywords': _KEYWORDS,
     'license': guimetadata.LICENSE,
 
     # ..................{ DEPENDENCIES                       }..................
-    # Mandatory nuntime dependencies, ignoring all dependencies whose
-    # fully-qualified names are prefixed by "PySide2.". These dependencies
-    # signify optional PySide2 components required by this application but
-    # unavailable on PyPI. Including these dependencies erroneously halts
-    # setuptools-based installation for several minutes with output resembling:
-    #
-    #    Searching for PySide2.QtSvg
-    #    Reading https://pypi.python.org/simple/PySide2.QtSvg/
-    #    Couldn't find index page for 'PySide2.QtSvg' (maybe misspelled?)
-    #    Scanning index of all packages (this may take a while)
-    #    Reading https://pypi.python.org/simple/
-    'install_requires': {
-        dependency_name: dependency_constraints
-        for dependency_name, dependency_constraints in
-            guimetadeps.RUNTIME_MANDATORY.items()
-        #FIXME: Uncomment the following line and remove the line that follows
-        #that *AFTER* "PySide2" and "pyside2-tools" become available on PyPI.
-        #Ideally, only "PySide2."-prefixed components should be ignored.
-        # if not dependency_name.startswith('PySide2.')
-        if not dependency_name.startswith(('PySide2', 'pyside2'))
-    },
+    # Mandatory nuntime dependencies.
+    'install_requires': guimetadeps.get_runtime_mandatory_tuple(),
 
     #FIXME: Uncomment the following block *BEFORE* submitting the initial
     #version of this application to PyPI. For laziness, this block has been
@@ -210,11 +131,11 @@ setup_options = {
     #     # All optional runtime dependencies. Since the
     #     # "RUNTIME_OPTIONAL" global is a dictionary rather than a
     #     # sequence, a function converting this global into a tuple is called.
-    #     'all': libs.get_runtime_optional_tuple(),
+    #     'all': guimetadeps.get_runtime_optional_tuple(),
     # },
 
     # Mandatory testing dependencies.
-    'tests_require': guimetadeps.TESTING_MANDATORY,
+    'tests_require': guimetadeps.get_testing_mandatory_tuple(),
 
     # ..................{ PACKAGES                           }..................
     # List of all Python packages (i.e., directories containing zero or more
@@ -229,25 +150,23 @@ setup_options = {
     #   package, required only by a prior application installation.
     # * "freeze", providing PyInstaller-specific functionality required only for
     #   application freezing (i.e., conversion into an executable binary).
-    'packages': setuptools.find_packages(
-        exclude = [
-            guimetadata.PACKAGE_NAME + '_test',
-            guimetadata.PACKAGE_NAME + '_test.*',
-            guimetadata.PACKAGE_NAME + '_setup',
-            guimetadata.PACKAGE_NAME + '_setup.*',
-            'build',
-            'freeze',
-        ],
-    ),
+    'packages': setuptools.find_packages(exclude=(
+        guimetadata.PACKAGE_NAME + '_test',
+        guimetadata.PACKAGE_NAME + '_test.*',
+        guimetadata.PACKAGE_NAME + '_setup',
+        guimetadata.PACKAGE_NAME + '_setup.*',
+        'build',
+        'freeze',
+    )),
 
     # ..................{ PATHS                              }..................
     # Cross-platform script wrappers dynamically created at installation time.
     'entry_points': {
         # GUI-specific scripts.
-        'gui_scripts':  [
+        'gui_scripts':  (
             '{} = {}.__main__:main'.format(
                 guimetadata.SCRIPT_BASENAME, guimetadata.PACKAGE_NAME),
-        ],
+        ),
     },
 
     # Install all data files (i.e., non-Python files) embedded in the Python
@@ -297,7 +216,7 @@ customize these options (e.g., by defining custom commands).
 # print('extras: {}'.format(setup_options['extras_require']))
 
 
-setup_options_custom = {
+_setup_options_custom = {
     # While currently empty, it's likely we'll want this again... someday.
 }
 '''
@@ -313,7 +232,7 @@ instead.
 # ....................{ COMMANDS                           }....................
 # Define all application-specific setuptools commands.
 for setup_module in (betseebuild,):
-    setup_module.add_setup_commands(setup_options_custom, setup_options)
+    setup_module.add_setup_commands(_setup_options_custom, _setup_options)
 
 # ....................{ SETUP                              }....................
-setuptools.setup(**setup_options)
+setuptools.setup(**_setup_options)

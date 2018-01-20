@@ -80,7 +80,7 @@ def die_unless_runtime_optional(*requirement_names: str) -> None:
     betse_libs.die_unless_requirements_dict_keys(
         guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ TESTERS                            }....................
 @type_check
 def is_runtime_optional(*requirement_names: str) -> bool:
     '''

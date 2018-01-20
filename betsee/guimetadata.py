@@ -47,6 +47,13 @@ Human-readable minimum version of Python required by this application as a
 '''
 
 
+PYTHON_VERSION_MINOR_MAX = 7
+'''
+Maximum minor stable version of this major version of Python currently released
+(e.g., ``5`` if Python 3.5 is the most recent stable version of Python 3.x).
+'''
+
+
 def _convert_version_str_to_tuple(version_str: str) -> tuple:
     '''
     Convert the passed human-readable ``.``-delimited version string into a

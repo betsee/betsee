@@ -38,6 +38,7 @@ side effects, we adopt the former approach.
 
 # ....................{ IMPORTS                            }....................
 import importlib, os, platform, shutil, subprocess, sys, time
+from betsee import guimetadata
 from distutils.errors import (
     DistutilsExecError, DistutilsFileError, DistutilsModuleError)
 from os import path
@@ -109,10 +110,10 @@ def die_unless_pathable(command_basename: str, exception_message: str = None):
     if not is_pathable(command_basename):
         # If no message was passed, default this message.
         if not exception_message:
-             exception_message = (
-                 'Command "{}" not found in the current ${{PATH}} or '
-                 'found but not an executable file.'.format(
-                    command_basename))
+            exception_message = (
+                'Command "{}" not found in the current ${{PATH}} or '
+                'found but not an executable file.'.format(
+                   command_basename))
         assert isinstance(exception_message, str), (
             '"{}" not a string.'.format(exception_message))
 
@@ -269,9 +270,9 @@ def die_unless_module(module_name: str, exception_message: str = None):
     if not is_module(module_name):
         # If no message was passed, default this message.
         if not exception_message:
-             exception_message = (
-                 'Module "{}" not installed or not importable under '
-                 'the current Python interpreter.'.format(module_name))
+            exception_message = (
+                'Module "{}" not installed or not importable under '
+                'the current Python interpreter.'.format(module_name))
         assert isinstance(exception_message, str), (
             '"{}" not a string.'.format(exception_message))
 
@@ -432,22 +433,12 @@ def is_module(module_name: str) -> bool:
         except ImportError:
             return False
 
-# ....................{ GETTERS                            }....................
-def get_project_dirname():
-    '''
-    Get the absolute path of the directory containing the currently run
-    `setup.py` script.
-    '''
-    # While such path is also typically  available as the first entry of the
-    # "sys.path" list, you know what they say about assumptions.
-    return get_path_dirname(get_path_dirname(__file__))
-
 # ....................{ GETTERS ~ io                       }....................
 def get_command_output(*args) -> str:
     '''
-    Get all standard output and error captured by running the external shell
-    command signified by the passed list if this command succeeds or raise an
-    exception detailing this command's failure otherwise.
+    Standard output and error captured by running the external shell command
+    signified by the passed list if this command succeeds or raise an exception
+    detailing this command's failure otherwise.
 
     Parameters
     ----------
@@ -502,10 +493,61 @@ def get_chars(filename: str, encoding: str = 'utf-8') -> str:
     with open(filename, mode='rt', encoding=encoding) as text_file:
         return text_file.read()
 
+# ....................{ GETTERS ~ metadata                 }....................
+#FIXME: Reuse in the "betse_setup.betseutil" submodule as well.
+def get_description() -> str:
+    '''
+    Human-readable multiline description of this application in reStructuredText
+    (reST) format.
+
+    To minimize synchronization woes, this description is identical to the
+    contents of the :doc:`/README.rst` file. When submitting this application
+    package to PyPI, this description is re-used verbatim as this package's
+    front matter.
+
+    Caveats
+    ----------
+    This function is I/O intensive and hence should be called sparingly --
+    ideally, only once by this application's top-level ``setup.py`` script.
+    '''
+
+    # Relative path of this application's front-facing documentation in
+    # reStructuredText format, required by PyPI. This path resides outside this
+    # application's package tree and hence is inlined here rather than provided
+    # by the "betsee.guipathtree" submodule.
+    DESCRIPTION_FILENAME = 'README.rst'
+
+    # Description read from this description file.
+    try:
+        description = get_chars(DESCRIPTION_FILENAME)
+        # print('description: {}'.format(_DESCRIPTION))
+    # If this file is *NOT* readable, print a non-fatal warning and reduce this
+    # description to the empty string. While unfortunate, this description is
+    # *NOT* required for most operations and hence mostly ignorable.
+    except Exception as exception:
+        description = ''
+        output_warning(
+            'Description file "{}" not found or not readable:\n{}'.format(
+                DESCRIPTION_FILENAME, exception))
+
+    # Retcurn this description.
+    return description
+
 # ....................{ GETTERS ~ path                     }....................
+def get_project_dirname() -> str:
+    '''
+    Absolute path of the directory containing the currently run
+    ``setup.py`` script.
+    '''
+
+    # While such path is also typically  available as the first entry of the
+    # "sys.path" list, you know what they say about assumptions.
+    return get_path_dirname(get_path_dirname(__file__))
+
+
 def get_path_canonicalized(pathname: str) -> str:
     '''
-    Get the **canonical form** (i.e., unique absolute path) of the passed path.
+    **Canonical form** (i.e., unique absolute path) of the passed path.
 
     Specifically (in order):
 
@@ -516,6 +558,7 @@ def get_path_canonicalized(pathname: str) -> str:
       * Converting relative to absolute path components (e.g., converting `../`
         to the name of the parent directory of such component).
     '''
+
     assert isinstance(pathname, str), '"{}" not a string.'.format(pathname)
     assert len(pathname), 'Pathname empty.'
     return path.abspath(path.expanduser(pathname))
@@ -523,10 +566,11 @@ def get_path_canonicalized(pathname: str) -> str:
 
 def get_path_dirname(pathname: str) -> str:
     '''
-    Get the **dirname** (i.e., parent directory) of the passed path if such path
-    has a dirname or raise an exception otherwise.
+    **Dirname** (i.e., parent directory) of the passed path if this path has a
+    dirname *or* raise an exception otherwise.
     '''
-    # Get such dirname. Since the path.dirname() function returns the empty
+
+    # Return this dirname. Since the path.dirname() function returns the empty
     # string for paths containing no directory separators and hence having no
     # dirnames, assert such return value to be non-empty.
     dirname = path.dirname(pathname)
@@ -536,12 +580,12 @@ def get_path_dirname(pathname: str) -> str:
 # ....................{ GETTERS ~ path : filetype          }....................
 def get_path_filetype(pathname: str) -> str:
     '''
-    Get the **last filetype** (i.e., last `.`-prefixed substring of the
-    basename *not* including such `.`) of the passed path if this path has a
-    filetype _or_ `None` otherwise.
+    **Last filetype** (i.e., last ``.``-prefixed substring of the
+    basename *not* including such ``.``) of the passed path if this path has a
+    filetype *or* ``None`` otherwise.
 
-    If this path contains multiple filetypes (e.g., `odium.reigns.tar.gz`), this
-    function returns only the last filetype.
+    If this path contains multiple filetypes (e.g., ``odium.reigns.tar.gz``),
+    this function returns only the last filetype.
     '''
     assert isinstance(pathname, str), '"{}" not a string.'.format(pathname)
     assert len(pathname), 'Pathname empty.'
@@ -563,17 +607,48 @@ def get_path_sans_filetype(pathname: str) -> str:
     assert len(pathname), 'Pathname empty.'
     return path.splitext(pathname)[0]
 
-# ....................{ SANITIZERS                         }....................
+# ....................{ SANITIZERS ~ metadata              }....................
+#FIXME: Reuse in the "betse_setup.betseutil" submodule as well.
+def sanitize_classifiers(classifiers: list) -> list:
+    '''
+    List of all PyPI-specific trove classifier strings synopsizing this
+    application, manufactured by appending classifiers synopsizing this
+    application's support for Python major versions (e.g.,
+    ``Programming Language :: Python :: 3.6``, a classifier implying this
+    application to successfully run under Python 3.6) to the passed list.
+    '''
+    assert isinstance(classifiers, list), '"{}" not a list.'.format(classifiers)
+
+    # Major version of Python required by this application.
+    PYTHON_VERSION_MAJOR = guimetadata.PYTHON_VERSION_MIN_PARTS[0]
+
+    # List of classifiers to return, copied from the passed list for safety.
+    classifiers_sane = classifiers[:]
+
+    # For each minor version of Python 3.x supported by this application,
+    # formally classify this version as such.
+    for python_version_minor in range(
+        guimetadata.PYTHON_VERSION_MIN_PARTS[1],
+        guimetadata.PYTHON_VERSION_MINOR_MAX):
+        classifiers.append(
+            'Programming Language :: Python :: {}.{}'.format(
+                PYTHON_VERSION_MAJOR, python_version_minor,))
+    # print('classifiers: {}'.format(_CLASSIFIERS))
+
+    # Return this sanitized list of classifiers.
+    return classifiers_sane
+
+# ....................{ SANITIZERS ~ path                  }....................
 def sanitize_command_basename(command_basename: str) -> str:
     '''
-    Convert the passed platform-agnostic command basename (e.g., `pytest`) into
-    a platform-specific command basename (e.g., `pytest.exe`).
+    Convert the passed platform-agnostic command basename (e.g., ``pytest``)
+    into a platform-specific command basename (e.g., ``pytest.exe``).
 
-    If the passed basename contains a directory separator and hence is _not_ a
+    If the passed basename contains a directory separator and hence is *not* a
     basename, an exception is raised. Else, under:
 
-    * Windows, the passed basename is appended by `.exe`. To avoid confusion
-      with non-Windows executables in the current `${PATH}` when running under
+    * Windows, the passed basename is appended by ``.exe``. To avoid confusion
+      with non-Windows executables in the current ``${PATH}`` when running under
       Wine emulation, only Windows executables are accepted when running under
       Windows.
     * All other platforms, the passed basename is returned as is.
