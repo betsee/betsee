@@ -32,6 +32,19 @@ from betse.util.type.types import type_check
 #Maybe? If it's not that, it's probably the reverse. But the above is probably
 #simpler, so let's give that a go first.
 
+#FIXME: To ensure this scrolling oversight *NEVER* happens, consider:
+#
+#* Subclassing the "QBetseeWidgetMixin" superclass below.
+#* Overriding the init() method to:
+#  * Call the superclass implementation.
+#  * Iteratively search *UP* the widget hierarchy from the current "QLabel"
+#    until finding a parent that is a "QScrollArea".
+#  * If no such parent is detected, log a non-fatal warning informing the
+#    developer that labels *MUST* be manually contained in scroll areas.
+#* Improve the QBetseeSimConfPathnameImageLineEdit.init() method to:
+#  * Require that a "QBetseeLabelImage" be passed.
+#  * Call the label_image.init() method automatically.
+
 #FIXME: Submit this class once working as a novel solution to:
 #    https://stackoverflow.com/questions/8211982/qt-resizing-a-qlabel-containing-a-qpixmap-while-keeping-its-aspect-ratio
 
