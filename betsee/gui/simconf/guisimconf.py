@@ -14,7 +14,7 @@ from betse.science.config import confio
 from betse.science.parameters import Parameters
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.guiexceptions import BetseeSimConfException
+from betsee.guiexception import BetseeSimConfException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guimessage
 from betsee.util.path import guifile

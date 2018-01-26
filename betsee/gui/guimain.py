@@ -298,6 +298,7 @@ class BetseeGUI(object):
             signaler=self._signaler,
             sim_conf_filename=self._sim_conf_filename,
         )
+        # logs.log_debug('Main window parent: %r', main_window.parentWidget())
 
         # Publicize this main window for use elsewhere in the codebase.
         guiappwindow.set_main_window(main_window)

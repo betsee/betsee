@@ -15,7 +15,7 @@ from betse.lib.yaml.yamlalias import YamlAliasABC
 from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
 from betse.util.type.types import type_check, ClassOrNoneTypes
-from betsee.guiexceptions import BetseePySideWidgetException
+from betsee.guiexception import BetseePySideWidgetException
 from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
 
 # ....................{ MIXINS                             }....................

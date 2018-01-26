@@ -4,8 +4,7 @@
 # See "LICENSE" for further details.
 
 '''
-High-level :mod:`PySide2`-specific widget facilities universally applicable to
-all (or at least most) widget types.
+Abstract base classes of most application-specific widget subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -19,31 +18,7 @@ all (or at least most) widget types.
 from PySide2.QtWidgets import QUndoStack
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.guiexceptions import BetseePySideEditWidgetException
-from betsee.util.type.guitype import QWidgetOrNoneTypes
-
-# ....................{ GETTERS                            }....................
-@type_check
-def get_label(widget: QWidgetOrNoneTypes) -> str:
-    '''
-    Human-readable label synopsizing the passed widget if any.
-
-    Parameters
-    ----------
-    widget : QWidgetOrNoneTypes
-        Either:
-        * :class`QWidget` instance to be synopsized.
-        * ``None``, in which case the absence of such a widget is synopsized.
-
-    Returns
-    ----------
-    str
-        Human-readable label synopsizing this widget if any.
-    '''
-
-    return (
-        'widget "{}"'.format(widget.objectName()) if widget is not None else
-        'no widget')
+from betsee.guiexception import BetseePySideEditWidgetException
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
@@ -66,7 +41,7 @@ class QBetseeWidgetMixin(object):
 
     Attributes (Private)
     ----------
-    _is_init_finalized : bool
+    _is_initted : bool
         ``True`` only if this widget's :meth:`init` method has been called.
     '''
 
@@ -109,7 +84,7 @@ class QBetseeWidgetMixin(object):
         #FIXME: Rename to "obj_name".
 
         # Nullify all remaining instance variables for safety.
-        self._is_init_finalized = False
+        self._is_initted = False
         self.obj_name = 'N/A'
 
 
@@ -129,13 +104,42 @@ class QBetseeWidgetMixin(object):
 
         # If this widget's initialization has already been finalized, raise an
         # exception.
-        if self._is_init_finalized:
+        if self._is_initted:
             raise BetseePySideEditWidgetException(
                 'Editable widget "{}" already initialized.'.format(
                     self.obj_name))
 
         # Record this widget's initialization to now have been finalized.
-        self._is_init_finalized = True
+        self._is_initted = True
+
+
+    def init_if_needed(self, *args, **kwargs) -> None:
+        '''
+        Finalize the initialization of this widget if needed (i.e., if this
+        widget's initialization has *not* already been finalized by a call to
+        the :meth:`init` method).
+
+        This method safely wraps the :meth:`init` method, effectively squelching
+        the exception raised by that method when this widget's initialization
+        has already been finalized.
+
+        Parameters
+        ----------
+        All parameters are passed as is to the :meth:`init` method if called.
+        '''
+
+        # If this widget's initialization has *NOT* been finalized, do so.
+        if self._is_initted:
+            self.init(*args, **kwargs)
+
+    # ..................{ PROPERTIES ~ read-only             }..................
+    @property
+    def is_initted(self) -> bool:
+        '''
+        ``True`` only if this widget's :meth:`init` method has been called.
+        '''
+
+        return self._is_initted
 
     # ..................{ SETTERS                            }..................
     def setObjectName(self, obj_name: str) -> None:

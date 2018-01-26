@@ -22,7 +22,7 @@ from betse.util.type.cls import classes
 from betse.util.type.text import regexes
 from betse.util.type.types import type_check, MappingType, SequenceTypes
 from betsee import guimetadata
-from betsee.guiexceptions import BetseeCacheException
+from betsee.guiexception import BetseeCacheException
 from betsee.lib import guilibs
 from io import StringIO
 

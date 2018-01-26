@@ -22,7 +22,7 @@ from PySide2.QtCore import Qt, QCoreApplication
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtWidgets import QApplication, qApp
 from betsee import guimetadata
-from betsee.guiexceptions import BetseePySideException
+from betsee.guiexception import BetseePySideException
 
 # ....................{ GETTERS                            }....................
 def get_app() -> QApplication:

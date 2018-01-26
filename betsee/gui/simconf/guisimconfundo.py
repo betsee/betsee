@@ -40,7 +40,7 @@ from PySide2.QtGui import QIcon, QKeySequence
 from PySide2.QtWidgets import QUndoCommand, QUndoStack
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.guiexceptions import BetseePySideMenuException
+from betsee.guiexception import BetseePySideMenuException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simconf.guisimconf import QBetseeSimConf
 

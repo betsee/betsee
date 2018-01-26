@@ -32,7 +32,7 @@ decorator.
 # installed at some later time in the installation.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from betsee.guiexceptions import BetseeLibException
+from betsee.guiexception import BetseeLibException
 from collections.abc import Mapping
 
 # ....................{ CONVERTERS ~ dict-to-tuple         }....................

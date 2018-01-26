@@ -13,7 +13,7 @@ from PySide2.QtWidgets import QWidget
 from betsee.util.app import guiapp
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.guiexceptions import BetseePySideClipboardException
+from betsee.guiexception import BetseePySideClipboardException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guiclipboard
 from betsee.util.io.key import guifocus

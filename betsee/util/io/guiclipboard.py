@@ -12,7 +12,7 @@ which arbitrary strings may be copied and cut to and pasted from) functionality.
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtGui import QClipboard, QGuiApplication
 from betse.util.type.call.memoizers import callable_cached
-from betsee.guiexceptions import BetseePySideClipboardException
+from betsee.guiexception import BetseePySideClipboardException
 
 # ....................{ EXCEPTIONS                         }....................
 def die_unless_clipboard_text() -> None:

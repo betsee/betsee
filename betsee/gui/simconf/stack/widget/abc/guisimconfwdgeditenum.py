@@ -16,7 +16,7 @@ from PySide2.QtCore import QCoreApplication, QObject  #, Signal, Slot
 from betse.util.type.mapping import mappings
 from betse.util.type.types import (
     type_check, ClassOrNoneTypes, EnumClassType, MappingType)
-from betsee.guiexceptions import BetseePySideWidgetEnumException
+from betsee.guiexception import BetseePySideWidgetEnumException
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 

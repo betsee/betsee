@@ -18,7 +18,7 @@ See Also
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QMessageBox
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.guiexceptions import BetseePySideMessageBoxException
+from betsee.guiexception import BetseePySideMessageBoxException
 
 # ....................{ SHOWERS ~ severity                 }....................
 def show_query(*args, **kwargs) -> int:

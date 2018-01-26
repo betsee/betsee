@@ -11,7 +11,7 @@ the current application widget) functionality.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QApplication, QWidget
-from betsee.guiexceptions import BetseePySideFocusException
+from betsee.guiexception import BetseePySideFocusException
 from betsee.util.type.guitype import QWidgetOrNoneTypes
 
 # ....................{ EXCEPTIONS                         }....................

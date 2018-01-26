@@ -10,10 +10,11 @@ General-purpose :mod:`QLabel` subclasses.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QSize  # Qt, QCoreApplication, Signal, Slot
 from PySide2.QtGui import QPixmap
-from PySide2.QtWidgets import QFrame, QLabel, QSizePolicy
+from PySide2.QtWidgets import QFrame, QLabel, QScrollArea, QSizePolicy
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-# from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
+from betsee.util.widget import guiwdg
+from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
 
 # ....................{ SUBCLASSES                         }....................
 #FIXME: This label is still highly broken, in that it appears to require
@@ -32,24 +33,10 @@ from betse.util.type.types import type_check
 #Maybe? If it's not that, it's probably the reverse. But the above is probably
 #simpler, so let's give that a go first.
 
-#FIXME: To ensure this scrolling oversight *NEVER* happens, consider:
-#
-#* Subclassing the "QBetseeWidgetMixin" superclass below.
-#* Overriding the init() method to:
-#  * Call the superclass implementation.
-#  * Iteratively search *UP* the widget hierarchy from the current "QLabel"
-#    until finding a parent that is a "QScrollArea".
-#  * If no such parent is detected, log a non-fatal warning informing the
-#    developer that labels *MUST* be manually contained in scroll areas.
-#* Improve the QBetseeSimConfPathnameImageLineEdit.init() method to:
-#  * Require that a "QBetseeLabelImage" be passed.
-#  * Call the label_image.init() method automatically.
-
 #FIXME: Submit this class once working as a novel solution to:
 #    https://stackoverflow.com/questions/8211982/qt-resizing-a-qlabel-containing-a-qpixmap-while-keeping-its-aspect-ratio
 
-# class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
-class QBetseeLabelImage(QLabel):
+class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
     '''
     :mod:`QLabel`-based widget preserving the aspect ratio of the optional
     **pixmap** (i.e., in-memory image) added to this widget.
@@ -62,13 +49,28 @@ class QBetseeLabelImage(QLabel):
 
     * The width of this widget is always preserved as is.
     * The height of this widget is dynamically set to be the width of this
-      width multiplied by the aspect ratio of the contained pixmap if any, thus
+      widget multiplied by the aspect ratio of the contained pixmap if any, thus
       constraining the aspect ratio of this widget to be the same.
 
     This widget supports all image filetypes supported by standard Qt widgets.
     Specifically, all images whose filetypes are in the system-specific set
     returned by the :func:`betse.util.path.guifiletype.get_image_read_filetypes`
     function are explicitly supported.
+
+    Caveats
+    ----------
+    This widget *must* be contained in a :class:`QScrollArea` widget.
+    Equivalently, some transitive parent widget of this widget *must* be a
+    :class:`QScrollArea` widget. If this is *not* the case when this widget's
+    initialization is finalized (i.e., when the :meth:`init` method is called),
+    an exception is raised.
+
+    Why? Because size hints for widgets residing outside of :class:`QScrollArea`
+    widgets are typically silently ignored. This widget declares a size hint
+    preserving the aspect ratio of its pixmap. If this size hint is silently
+    ignored, this pixmap's aspect ratio will typically be silently violated.
+    Since this widget type exists *only* to preserve this aspect ratio, this
+    constitutes a fatal error.
 
     Attributes
     ----------
@@ -138,6 +140,27 @@ class QBetseeLabelImage(QLabel):
         # Set this label's size policy to this policy.
         self.setSizePolicy(size_policy)
 
+
+    def init(self) -> None:
+        '''
+        Finalize the initialization of this widget.
+
+        Raises
+        ----------
+        BetseePySideWidgetException
+            If this widget is *not* contained in a :class:`QScrollArea` widget.
+            See the class docstring for commentary.
+        '''
+
+        # Finalize the initialization of our superclass.
+        super().init()
+
+        # If this widget is *NOT* in a scroll area, raise an exception.
+        guiwdg.die_unless_widget_parent_satisfies(
+            widget=self,
+            predicate=lambda widget_parent: isinstance(
+                widget_parent, QScrollArea))
+
     # ..................{ SUPERCLASS ~ getters               }..................
     def heightForWidth(self, label_width_new: int) -> int:
         '''
@@ -177,7 +200,6 @@ class QBetseeLabelImage(QLabel):
 
 
     #FIXME: Docstring us up.
-    #FIXME: Is this actually necessary? Try commenting us out, please.
     def sizeHint(self) -> QSize:
 
         label_width = self.width()

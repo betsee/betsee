@@ -37,10 +37,10 @@ class _BetseNotFoundException(Exception):
     Design
     ----------
     This subclass intentionally complies with the public API of the
-    :class:`betsee.guiexceptions.BetseeException` superclass to enable duck
+    :class:`betsee.guiexception.BetseeException` superclass to enable duck
     typing between the two classes (e.g., by the
     :func:`betsee.util.io.ioerr.show_exception` function). As the
-    :mod:`betsee.guiexceptions` submodule necessarily imports from and hence
+    :mod:`betsee.guiexception` submodule necessarily imports from and hence
     assumes the importability of the mandatory third-party :mod:`PySide2`
     package whose importability has *not* yet been validated at this early time
     in the application lifecycle, this submodule *cannot* safely import from

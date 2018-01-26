@@ -23,7 +23,7 @@ from PySide2.QtWidgets import QButtonGroup, QRadioButton
 from betse.util.type import iterables
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
-from betsee.guiexceptions import BetseePySideRadioButtonException
+from betsee.guiexception import BetseePySideRadioButtonException
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditenum import (
     QBetseeSimConfEditEnumWidgetMixin)
 

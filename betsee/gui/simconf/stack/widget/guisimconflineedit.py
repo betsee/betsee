@@ -10,18 +10,19 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtGui import QPixmap
-from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton
+from PySide2.QtWidgets import QLineEdit, QPushButton
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.lib.pil import pils
 from betse.util.io.log import logs
-from betse.util.path import pathnames
+from betse.util.path import pathnames, paths
 from betse.util.type.text import mls
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.util.path import guifiletype
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
+from betsee.util.path import guifiletype
 from betsee.util.widget.abc.guiclipboardabc import (
     QBetseeClipboardScalarWidgetMixin)
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
 
 # ....................{ SUBCLASSES                         }....................
 class QBetseeSimConfLineEdit(
@@ -205,7 +206,7 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
 
 
     @type_check
-    def init(self, image_label: QLabel, *args, **kwargs) -> None:
+    def init(self, image_label: QBetseeLabelImage, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this line edit, associated with all
         passed **sibling buddy widgets** (i.e., widgets spatially adjacent to
@@ -214,11 +215,15 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
 
         Parameters
         ----------
-        image_label : QLabel
+        image_label : QBetseeLabelImage
             Label "buddy" associated with this line edit. To preview the image
             whose filename is the text displayed by this line edit, this label's
             pixmap is read from this filename. By convention, this label is
-            typically situated below this line edit.
+            typically situated below this line edit. To preserve this image's
+            aspect ratio, this widget is required to be an instance of the
+            application-specific :class:`QBetseeLabelImage` class rather than
+            application-agnostic :class:`QLabel` class, which does *not*
+            preserve this image's aspect ratio.
 
         All remaining parameters are passed as is to the superclass
         :meth:`QBetseeSimConfPathnameLineEditABC.init` method.
@@ -229,6 +234,9 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
 
         # Classify all passed parameters.
         self._image_label = image_label
+
+        # Finalize the initialization of this widget if needed.
+        self._image_label.init_if_needed()
 
         # Instruct this label to auto-wrap long lines, required to display
         # non-fatal warnings subsequently added as this label's text in a
@@ -349,16 +357,58 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
             return
         # Else, a simulation configuration is open.
 
+        #FIXME: Refactor all of the following logic as follows:
+        #
+        #* Define a new QBetseeLabelImage.load_image() method. This high-level
+        #  method wraps the low-level QLabel.setPixmap() method with all of the
+        #  following logic and should have the following signature:
+        #
+        #    @type_check
+        #    def load_image(self, filename: str) -> None:
+        #
+        #* Shift all of the following logic into this load_image() method.
+        #* For convenience, define a new QBetseeLabelImage.warn() method as well
+        #  with signature resembling:
+        #
+        #    @type_check
+        #    def warn(self, warning: str) -> None:
+        #
+        #  This method should:
+        #  * Log this warning.
+        #  * Clear this label's existing content.
+        #  * Set this label's text to this warning.
+        #  * Calls "self.adjustSize()".
+        #
+        #  Naturally, however, it remains the caller's responsibility to
+        #  translate this warning.
+
         # Basename of this image's filename.
         image_basename = pathnames.get_basename(image_filename)
-
-        # Log this preview attempt.
-        logs.log_debug('Previewing image "%s"...', image_basename)
 
         # Filetype of this image if any *OR* "None" otherwise.
         image_filetype = pathnames.get_filetype_undotted_or_none(image_filename)
 
-        # If this image has a filetype...
+        # Log this preview attempt.
+        logs.log_debug('Previewing image "%s"...', image_basename)
+
+        # If this image does *NOT* exist or does but is unreadable by the
+        # current user...
+        if not paths.is_readable(image_filename):
+            # Log a non-fatal warning.
+            logs.log_warning(
+                'Image "%s" not found or unreadable.', image_filename)
+
+            # Display a non-fatal warning as this label's text.
+            self._image_label.setText(QCoreApplication.translate(
+                'QBetseeSimConfPathnameImageLineEdit',
+                '<b>Warning:</b> image "{0}" not found or unreadable.'.format(
+                    image_filename)))
+
+            #FIXME: Do this for every warning as well, obviously.
+            self._image_label.adjustSize()
+        # Else, this image exists and is readable by the current user.
+        #
+        # if this image has a filetype...
         if image_filetype is not None:
             # Set of all image filetypes readable by Pillow.
             image_filetypes_pil = pils.get_filetypes()

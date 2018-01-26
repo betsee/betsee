@@ -13,7 +13,7 @@ from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QMainWindow
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.guiexceptions import BetseePySideWindowException
+from betsee.guiexception import BetseePySideWindowException
 from betsee.util.app import guiapp
 
 # ....................{ GLOBALS                            }....................

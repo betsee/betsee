@@ -16,7 +16,7 @@ from betse.util.type.obj import objects
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.window.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
-# from betsee.guiexceptions import BetseePySideTreeWidgetException
+# from betsee.guiexception import BetseePySideTreeWidgetException
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimConfStackedWidget(QStackedWidget):

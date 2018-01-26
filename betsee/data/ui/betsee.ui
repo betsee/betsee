@@ -2032,7 +2032,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                <string>General-purpose properties of the default tissue profile.</string>
               </property>
               <property name="title">
-               <string>General</string>
+               <string>Tissue Properties</string>
               </property>
               <layout class="QFormLayout" name="formLayout_10">
                <item row="0" column="0">

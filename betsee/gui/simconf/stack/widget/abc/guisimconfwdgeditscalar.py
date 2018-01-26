@@ -14,7 +14,7 @@ from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.guiexceptions import BetseePySideWidgetException
+from betsee.guiexception import BetseePySideWidgetException
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
 from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
