@@ -334,13 +334,23 @@ class QBetseeSimConf(QObject):
         # Close the currently open simulation configuration if any.
         self._close_sim()
 
-        # Silently (over)write this file and all external resources required by
-        # this file with those contained in this default simulation
-        # configuration. Since the guifile.select_file_save() function has already
-        # interactively confirmed this overwrite when this file already exists,
-        # doing so is safe to the extent that the user has accepted the pain.
+        # Write the default simulation configuration to this file.
         confio.write_default(
-            conf_filename=conf_filename, is_overwritable=True)
+            conf_filename=conf_filename,
+
+            # Silently (over)write this file if this file already exists. Since
+            # the guifile.select_file_save() function has already interactively
+            # confirmed this overwrite in this case, doing so is safe to the
+            # extent that the user has already accepted the consequences.
+            is_conf_overwritable=True,
+
+            # Preserve all external resources required by
+            # this file with those contained in this default simulation
+            # configuration. Since the guifile.select_file_save() function has
+            # already interactively confirmed this overwrite when this file already
+            # exists, doing so is safe to the extent that the user has accepted the
+            # painful consequences.
+        )
 
         # Deserialize this low-level file into a high-level configuration.
         self.load(conf_filename)

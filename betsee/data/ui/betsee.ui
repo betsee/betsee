@@ -2387,62 +2387,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item row="4" column="0">
-                <widget class="QLabel" name="label_58">
-                 <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
-Hydrogen (&lt;i&gt;H&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;):
-&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="QWidget" name="widget_31" native="true">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
-Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which hydrogen cations (&lt;i&gt;H&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
-&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_31">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_default_mem_H">
-                    <property name="toolTip">
-                     <string/>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLabel" name="label_96">
-                    <property name="font">
-                     <font>
-                      <pointsize>10</pointsize>
-                     </font>
-                    </property>
-                    <property name="toolTip">
-                     <string/>
-                    </property>
-                    <property name="text">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
-m&lt;sup&gt;2&lt;/sup&gt;/s
-&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item row="5" column="0">
                 <widget class="QLabel" name="label_59">
                  <property name="text">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
@@ -2451,7 +2395,7 @@ Charge balance (&lt;i&gt;M&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="4" column="1">
                 <widget class="QWidget" name="widget_32" native="true">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
@@ -2498,7 +2442,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                  </layout>
                 </widget>
                </item>
-               <item row="6" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="label_60">
                  <property name="text">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
@@ -2507,7 +2451,7 @@ Protein (&lt;i&gt;P&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="5" column="1">
                 <widget class="QWidget" name="widget_33" native="true">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
@@ -4215,7 +4159,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
         </rect>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="phase_tabsPage1_2">
         <attribute name="title">
@@ -4397,9 +4341,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <font>
              <pointsize>5</pointsize>
             </font>
-           </property>
-           <property name="value">
-            <number>0</number>
            </property>
            <property name="textVisible">
             <bool>false</bool>
@@ -5134,9 +5075,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    <addaction name="action_copy"/>
    <addaction name="action_paste"/>
    <addaction name="separator"/>
-   <addaction name="action_start_phase_seed"/>
-   <addaction name="action_start_phase_sim"/>
-   <addaction name="action_stop_phase"/>
   </widget>
   <widget class="QStatusBar" name="status_bar">
    <property name="sizePolicy">
@@ -5244,48 +5182,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::ApplicationSpecificRole</enum>
-   </property>
-  </action>
-  <action name="action_start_phase_seed">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Run Seed</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::ApplicationSpecificRole</enum>
-   </property>
-  </action>
-  <action name="action_start_phase_sim">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Run Sim</string>
-   </property>
-   <property name="menuRole">
-    <enum>QAction::ApplicationSpecificRole</enum>
-   </property>
-  </action>
-  <action name="action_stop_phase">
-   <property name="icon">
-    <iconset>
-     <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Stop Phase</string>
    </property>
    <property name="menuRole">
     <enum>QAction::ApplicationSpecificRole</enum>

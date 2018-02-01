@@ -1056,29 +1056,9 @@ class Ui_main_window(object):
         self.label_95.setObjectName("label_95")
         self.horizontalLayout_30.addWidget(self.label_95)
         self.formLayout_9.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.widget_30)
-        self.label_58 = QtWidgets.QLabel(self.groupBox_24)
-        self.label_58.setObjectName("label_58")
-        self.formLayout_9.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_58)
-        self.widget_31 = QtWidgets.QWidget(self.groupBox_24)
-        self.widget_31.setObjectName("widget_31")
-        self.horizontalLayout_31 = QtWidgets.QHBoxLayout(self.widget_31)
-        self.horizontalLayout_31.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_31.setObjectName("horizontalLayout_31")
-        self.sim_conf_tis_default_mem_H = QBetseeSimConfDoubleSpinBox(self.widget_31)
-        self.sim_conf_tis_default_mem_H.setToolTip("")
-        self.sim_conf_tis_default_mem_H.setObjectName("sim_conf_tis_default_mem_H")
-        self.horizontalLayout_31.addWidget(self.sim_conf_tis_default_mem_H)
-        self.label_96 = QtWidgets.QLabel(self.widget_31)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.label_96.setFont(font)
-        self.label_96.setToolTip("")
-        self.label_96.setObjectName("label_96")
-        self.horizontalLayout_31.addWidget(self.label_96)
-        self.formLayout_9.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.widget_31)
         self.label_59 = QtWidgets.QLabel(self.groupBox_24)
         self.label_59.setObjectName("label_59")
-        self.formLayout_9.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_59)
+        self.formLayout_9.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_59)
         self.widget_32 = QtWidgets.QWidget(self.groupBox_24)
         self.widget_32.setObjectName("widget_32")
         self.horizontalLayout_32 = QtWidgets.QHBoxLayout(self.widget_32)
@@ -1095,10 +1075,10 @@ class Ui_main_window(object):
         self.label_97.setToolTip("")
         self.label_97.setObjectName("label_97")
         self.horizontalLayout_32.addWidget(self.label_97)
-        self.formLayout_9.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.widget_32)
+        self.formLayout_9.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.widget_32)
         self.label_60 = QtWidgets.QLabel(self.groupBox_24)
         self.label_60.setObjectName("label_60")
-        self.formLayout_9.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_60)
+        self.formLayout_9.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_60)
         self.widget_33 = QtWidgets.QWidget(self.groupBox_24)
         self.widget_33.setObjectName("widget_33")
         self.horizontalLayout_33 = QtWidgets.QHBoxLayout(self.widget_33)
@@ -1115,7 +1095,7 @@ class Ui_main_window(object):
         self.label_98.setToolTip("")
         self.label_98.setObjectName("label_98")
         self.horizontalLayout_33.addWidget(self.label_98)
-        self.formLayout_9.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.widget_33)
+        self.formLayout_9.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.widget_33)
         self.verticalLayout_6.addWidget(self.groupBox_24)
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_6.addItem(spacerItem3)
@@ -1989,7 +1969,6 @@ class Ui_main_window(object):
         font = QtGui.QFont()
         font.setPointSize(5)
         self.progressBar_init.setFont(font)
-        self.progressBar_init.setProperty("value", 0)
         self.progressBar_init.setTextVisible(False)
         self.progressBar_init.setObjectName("progressBar_init")
         self.verticalLayout_2.addWidget(self.progressBar_init)
@@ -2326,20 +2305,6 @@ class Ui_main_window(object):
         self.action_make_sim.setIcon(icon23)
         self.action_make_sim.setMenuRole(QtWidgets.QAction.ApplicationSpecificRole)
         self.action_make_sim.setObjectName("action_make_sim")
-        self.action_start_phase_seed = QtWidgets.QAction(main_window)
-        self.action_start_phase_seed.setEnabled(False)
-        self.action_start_phase_seed.setIcon(icon)
-        self.action_start_phase_seed.setMenuRole(QtWidgets.QAction.ApplicationSpecificRole)
-        self.action_start_phase_seed.setObjectName("action_start_phase_seed")
-        self.action_start_phase_sim = QtWidgets.QAction(main_window)
-        self.action_start_phase_sim.setEnabled(False)
-        self.action_start_phase_sim.setIcon(icon18)
-        self.action_start_phase_sim.setMenuRole(QtWidgets.QAction.ApplicationSpecificRole)
-        self.action_start_phase_sim.setObjectName("action_start_phase_sim")
-        self.action_stop_phase = QtWidgets.QAction(main_window)
-        self.action_stop_phase.setIcon(icon19)
-        self.action_stop_phase.setMenuRole(QtWidgets.QAction.ApplicationSpecificRole)
-        self.action_stop_phase.setObjectName("action_stop_phase")
         self.action_about_betse = QtWidgets.QAction(main_window)
         self.action_about_betse.setObjectName("action_about_betse")
         self.action_save_sim_as = QtWidgets.QAction(main_window)
@@ -2404,13 +2369,10 @@ class Ui_main_window(object):
         self.toolbar.addAction(self.action_copy)
         self.toolbar.addAction(self.action_paste)
         self.toolbar.addSeparator()
-        self.toolbar.addAction(self.action_start_phase_seed)
-        self.toolbar.addAction(self.action_start_phase_sim)
-        self.toolbar.addAction(self.action_stop_phase)
 
         self.retranslateUi(main_window)
         self.sim_conf_stack.setCurrentIndex(4)
-        self.sim_phase_tabs.setCurrentIndex(0)
+        self.sim_phase_tabs.setCurrentIndex(1)
         self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
 
@@ -2649,15 +2611,6 @@ class Ui_main_window(object):
         self.label_95.setText(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
 "m<sup>2</sup>/s\n"
 "</p></body></html>", None, -1))
-        self.label_58.setText(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
-"Hydrogen (<i>H<sup>+</sup></i>):\n"
-"</p></body></html>", None, -1))
-        self.widget_31.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
-"Rate in meters squared per second [m<sup>2</sup>/s] at which hydrogen cations (<i>H<sup>+</sup></i>) diffuse across the membranes of unselected cells.\n"
-"</p></body></html>", None, -1))
-        self.label_96.setText(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
-"m<sup>2</sup>/s\n"
-"</p></body></html>", None, -1))
         self.label_59.setText(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
 "Charge balance (<i>M<sup>-</sup></i>):\n"
 "</p></body></html>", None, -1))
@@ -2823,9 +2776,6 @@ class Ui_main_window(object):
         self.action_make_sim.setText(QtWidgets.QApplication.translate("main_window", "&New Simulation...", None, -1))
         self.action_make_sim.setToolTip(QtWidgets.QApplication.translate("main_window", "Create a new simulation configuration file with default settings.", None, -1))
         self.action_make_sim.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+N", None, -1))
-        self.action_start_phase_seed.setText(QtWidgets.QApplication.translate("main_window", "Run Seed", None, -1))
-        self.action_start_phase_sim.setText(QtWidgets.QApplication.translate("main_window", "Run Sim", None, -1))
-        self.action_stop_phase.setText(QtWidgets.QApplication.translate("main_window", "Stop Phase", None, -1))
         self.action_about_betse.setText(QtWidgets.QApplication.translate("main_window", "About &BETSE...", None, -1))
         self.action_about_betse.setToolTip(QtWidgets.QApplication.translate("main_window", "Display a textual synopsis of the underlying engine.", None, -1))
         self.action_save_sim_as.setText(QtWidgets.QApplication.translate("main_window", "Save Simulation &As...", None, -1))
@@ -2846,14 +2796,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
-from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

@@ -79,7 +79,7 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
         #"betse.science.simulate.simion" submodule?
 
         # Set of the abbreviated names of all available ions.
-        ION_NAMES = {'Na', 'K', 'Cl', 'Ca', 'H', 'M', 'P',}
+        ION_NAMES = {'Na', 'K', 'Cl', 'Ca', 'M', 'P',}
 
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
