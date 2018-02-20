@@ -8,33 +8,34 @@ General-purpose :mod:`QLabel` subclasses.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QSize  # Qt, QCoreApplication, Signal, Slot
+from PySide2.QtCore import Qt, QCoreApplication, QSize  #, Signal, Slot
 from PySide2.QtGui import QPixmap
 from PySide2.QtWidgets import QFrame, QLabel, QScrollArea, QSizePolicy
+from betse.lib.pil import pils
 from betse.util.io.log import logs
+from betse.util.path import pathnames, paths
+from betse.util.type.cls import classes
+from betse.util.type.text import mls
 from betse.util.type.types import type_check
+from betsee.util.path import guifiletype
 from betsee.util.widget import guiwdg
 from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
 
 # ....................{ SUBCLASSES                         }....................
-#FIXME: This label is still highly broken, in that it appears to require
-#containment within a parent "QScrollArea". Failing to embed this label in such
-#a parent forcefully cuts off the bottom of this label. That said, I believe
-#I've finally discovered why: stack page widgets do *NOT* appear to support
-#vertical scrolling by default. I... I don't even. We obviously need to enable
-#vertical scrolling by default in *ALL* page widgets, so that's our first order
-#of business on the next day of irksome toil, trouble, cauldron, and bubble.
-#FIXME: Doing so appears thankfully easy. We'll need to:
-#
-#* Define a new "QScrollArea" widget for each page.
-#* Shift all existing widgets in this page into this "QScrollArea" widget.
-#* Embed this "QScrollArea" widget inside the existing "QGroupBox" widget.
-#
-#Maybe? If it's not that, it's probably the reverse. But the above is probably
-#simpler, so let's give that a go first.
-
 #FIXME: Submit this class once working as a novel solution to:
 #    https://stackoverflow.com/questions/8211982/qt-resizing-a-qlabel-containing-a-qpixmap-while-keeping-its-aspect-ratio
+#
+#In particular, note that the principal deficiency of the top-rated answer is
+#its use of:
+#
+#    # This...
+#    pixmap_size_new = self.size()
+#
+#    # ...rather than this.
+#    pixmap_size_new = self.sizeHint()
+#
+#The former instructs Qt to gradually increase the size of this label to this
+#preferred size over a lengthy (and hence unacceptable) period of ten seconds!
 
 class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
     '''
@@ -61,9 +62,9 @@ class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
     ----------
     This widget *must* be contained in a :class:`QScrollArea` widget.
     Equivalently, some transitive parent widget of this widget *must* be a
-    :class:`QScrollArea` widget. If this is *not* the case when this widget's
-    initialization is finalized (i.e., when the :meth:`init` method is called),
-    an exception is raised.
+    :class:`QScrollArea` widget. If this is *not* the case when the :meth:`init`
+    method finalizing this widget's initialization is called, that method
+    explicitly raises an exception.
 
     Why? Because size hints for widgets residing outside of :class:`QScrollArea`
     widgets are typically silently ignored. This widget declares a size hint
@@ -72,29 +73,49 @@ class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
     Since this widget type exists *only* to preserve this aspect ratio, this
     constitutes a fatal error.
 
+    Recursion
+    ----------
+    There exists circumstantial online evidence that this widget can
+    *effectively* induces infinite recursion in edge cases. Specifically, `it
+    has been asserted elsewhere <recursion claim_>`__ that:
+
+    * :meth:`QBetseeLabelImage.resizeEvent` calls
+      :meth:`QBetseeLabelImage.setPixmap`.
+    * :meth:`QBetseeLabelImage.setPixmap` calls
+      :meth:`QLabel.setPixmap`.
+    * :meth:`QLabel.setPixmap` calls :meth:`QLabel.updateLabel`.
+    * :meth:`QLabel.updateLabel` calls :meth:`QLabel.updateGeometry`.
+    * :meth:`QLabel.updateGeometry` may conditionally call :meth:`QLabel.resize`
+      in edge cases.
+    * :meth:`QLabel.resize` queues a new resize event for this label.
+    * The Qt event loop processes this event by calling
+      :meth:`QLabel.resizeEvent`, completing the recursive cycle.
+
+    Technically speaking, no recursive cycle exists. Due to indirection
+    introduced by event handling, the :meth:`QLabel.resize` and
+    :meth:`QLabel.resizeEvent` methods are called in different branches of the
+    call stack. Ergo, the above call chain should noticeably degrade application
+    performance *without* fatally exhausting the stack. Sadly, since these
+    methods are called sequentially rather than recursively, detecting and
+    guarding against this edge case is infeasible. (It could be worse.)
+
+    Practically speaking, we were unable to replicate this worst-case issue.
+    Since we cannot replicate it, we cannot resolve it. We have elected instead
+    to do nothing, accepting that this may become a demonstrable issue later.
+
+    .. _recursion claim:
+        https://stackoverflow.com/a/41403419/2809027
+
     Attributes
     ----------
-    _is_in_resizeEvent : bool
-        ``True`` only if the current thread of execution is in the conditional
-        branch of the :meth:`resizeEvent` event handler preserving the aspect
-        ratio of this widget's pixmap. This boolean guards against infinite
-        recursion in this handler induced by unwanted reentrancy. Specifically:
-        * :meth:`QLabel.resizeEvent` effectively "calls"
-          :meth:`QBetseeLabelImage.resizeEvent` by inheritance.
-        * :meth:`QBetseeLabelImage.resizeEvent` calls
-          :meth:`QBetseeLabelImage.setPixmap`.
-        * :meth:`QBetseeLabelImage.setPixmap` calls
-          :meth:`QLabel.setPixmap`.
-        * :meth:`QLabel.setPixmap` calls :meth:`QLabel.updateGeometry`.
-        * :meth:`QLabel.updateGeometry` calls :meth:`QLabel.resizeEvent` in
-          edge cases, completing the recursive cycle.
     _pixmap : (QPixmap, NoneType)
         Pixmap added to this widget by an external call to the :meth:`setPixmap`
         method if that method has been called *or* ``None`` otherwise.
-    _pixmap_height : IntOrNoneTypes
-        Height in pixels of this pixmap if non-``None`` *or* ``None`` otherwise.
-    _pixmap_width : IntOrNoneTypes
-        Width in pixels of this pixmap if non-``None`` *or* ``None`` otherwise.
+
+    See Also
+    ----------
+    https://stackoverflow.com/a/22618496/2809027
+        StackOverflow answer inspiring this implementation.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -104,41 +125,16 @@ class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
         super().__init__(*args, **kwargs)
 
         # Nullify all instance variables for safety.
-        self._is_in_resizeEvent = False
         self._pixmap = None
-        self._pixmap_height = None
-        self._pixmap_width = None
 
-        #FIXME: This is... awful. Document why the "_is_in_resizeEvent" boolean
-        #fails to suffice here.
-        self._pixmap_size_new = None
-
-        #FIXME: Document us up.
-        #FIXME: Do we require both this and minimumSizeHint()?
-        self.setMinimumSize(1, 1)
-
-        #FIXME: Document us up.
+        # Lightly border this label's pixmap for aesthetics.
         self.setFrameShape(QFrame.StyledPanel)
 
-        #FIXME: Document us up.
-        # self.setScaledContents(True)
+        # Prevent Qt from auto-rescaling either this label's pixmap or text, as
+        # Qt does so in a manner *NOT* preserving the aspect ratio of the
+        # former. Although this boolean is already disabled by default, enforce
+        # this constraint for safety by explicitly disabling this boolean.
         self.setScaledContents(False)
-
-        # Non-default size policy permitting:
-        #
-        # * This label's width (but *NOT* height) to be arbitrarily resized by
-        #   this label's parent layout or widget. Note that despite the use of
-        #   an expanding policy for this label's height, this label's height
-        #   remains a deterministic function of its width and hence is *NOT*
-        #   arbitrarily resized in the same manner.
-        # * This label's height to be constrained to be a function of its width.
-        size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        # size_policy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        # size_policy = QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        size_policy.setHeightForWidth(True)
-
-        # Set this label's size policy to this policy.
-        self.setSizePolicy(size_policy)
 
 
     def init(self) -> None:
@@ -161,7 +157,36 @@ class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
             predicate=lambda widget_parent: isinstance(
                 widget_parent, QScrollArea))
 
+    # ..................{ PROPERTIES                         }..................
+    @property
+    def _is_pixmap(self) -> bool:
+        '''
+        ``True`` only if this label has a pixmap that is *not* the null pixmap.
+        '''
+
+        return self._pixmap is not None and not self._pixmap.isNull()
+
     # ..................{ SUPERCLASS ~ getters               }..................
+    def sizeHint(self) -> QSize:
+        '''
+        Preferred size for this label, defined in a manner preserving both this
+        label's existing width *and* this label's pixmap's aspect ratio.
+
+        If this property is *not* overridden in this manner, the
+        :meth:`setPixmap` method rescaling this pixmap and hence this label
+        gradually increase the size of this label to this preferred size over a
+        lengthy (and hence unacceptable) period of nearly ten seconds. Hence,
+        overriding this is non-optional.
+        '''
+
+        # Current width of this label.
+        label_width = self.width()
+
+        # Return this label's preferred size in a manner preserving both this
+        # label's existing width *AND* this label's pixmap's aspect ratio.
+        return QSize(label_width, self.heightForWidth(label_width))
+
+
     def heightForWidth(self, label_width_new: int) -> int:
         '''
         Preferred height for this widget given the passed width if this widget's
@@ -187,77 +212,66 @@ class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
               height unmodified.
         '''
 
-        # If this label either has no pixmap *OR* has the null pixmap, return
-        # this label's current height unmodified.
-        if self._pixmap is None or self._pixmap.isNull():
-            return self.height()
-        # Else, this label has a non-null pixmap. In this case, return a height
-        # preserving the aspect ratio of this pixmap with respect to this width,
-        # trivially rounded from a float to integer.
-        else:
+        # If this label has a non-null pixmap, return a height preserving the
+        # aspect ratio of this pixmap with respect to this width, trivially
+        # rounded from a float to integer.
+        if self._is_pixmap:
             return round(
-                (self._pixmap_height * label_width_new) / self._pixmap_width)
-
-
-    #FIXME: Docstring us up.
-    def sizeHint(self) -> QSize:
-
-        label_width = self.width()
-        return QSize(label_width, self.heightForWidth(label_width))
-
-
-    def minimumSizeHint(self) -> QSize:
-        '''
-        Recommended minimum size for this widget.
-
-        :class:`QLayout` will never resize this widget to a size smaller than
-        this minimum size hint unless the :meth:`minimumSize` property is
-        explicitly set on this widget *or* the size policy for this widget is
-        set to :attr:`QSizePolicy.Ignore`. If the :meth:`minimumSize` property
-        is explicitly set, this minimum size hint will be ignored.
-
-        Ideally, the :meth:`minimumSize` property would be explicitly set in the
-        :meth:`__init__` method for this widget to the desired minimum (e.g.,
-        ``self.setMinimumSize(1, 1)``). Unfortunately, the default
-        :meth:`minimumSizeHint` implementation for this widget unconditionally
-        resets the size policy to the default size policy. To preserve a
-        non-default size policy, this property *must* be reimplemented.
-        '''
-
-        return QSize(1, 1)
+                (self._pixmap.height() * label_width_new) /
+                 self._pixmap.width())
+        # Else, this label either has no pixmap *OR* has the null pixmap. In
+        # either case, return this label's current height as is.
+        else:
+            return self.height()
 
     # ..................{ SUPERCLASS ~ setters               }..................
-    #FIXME: Document us up.
     @type_check
     def setPixmap(self, pixmap: QPixmap) -> None:
+        '''
+        Set this label's pixmap to the passed pixmap, internally rescaled to
+        this label's current size.
 
-        # Classify the passed pixmap and this pixmap's dimensions, as an
-        # extremely minar efficiency gain.
+        Under ideal circumstances, this label's current size is identical to
+        this label's **preferred size** (i.e., the size returned by the
+        :meth:`sizeHint` method). Since the latter is overridden by this
+        widget to preserve the aspect ratio of this pixmap, this pixmap's new:
+
+        * Width will be the current width of this label.
+        * Height will be a function of this width preserving the aspect ratio of
+          this pixmap.
+
+        For aesthetics, this pixmap is rescaled with smooth bilinear filtering
+        rather than with the default non-smooth transition.
+
+        Parameters
+        ----------
+        pixmap : QPixmap
+            Pixmap to be set as this label's pixmap
+        '''
+
+        # Classify this pixmap and dimensions thereof for usability.
         self._pixmap = pixmap
-        self._pixmap_height = pixmap.height()
-        self._pixmap_width  = pixmap.width()
 
-        # Current size of this label, possibly *NOT* respecting size hints.
-        label_size_old = self.size()
+        # Current size of this pixmap for logging purposes.
+        pixmap_size_old = pixmap.size()
 
-        # Current size of this pixmap.
-        pixmap_size_old = self._pixmap.size()
-
-        # Desired size of this pixmap, equivalent to the preferred size of this
-        # label. This size is guaranteed to preserve the aspect ratio of this
-        # pixmap. Specifically, this size's:
+        # Size to resize pixmap to, equal to the preferred size of this label.
+        # This size preserves the aspect ratio of this pixmap such that its:
         #
         # * Width is the current width of this label.
         # * Height is a function of this width preserving the aspect ratio of
         #   this pixmap.
         #
         # Ideally, the size() method returning the current size of this label
-        # rather than the sizeHint() method returning only a hint would be
-        # called. Unfortunately, although all possible size-specific hint
-        # methods have been overriden to return sizes preserving the aspect
-        # ratio of this pixmap, the size returned by the size() method still
-        # insists on ignoring these hints in edge cases. *sigh*
-        #label_size = self.size()
+        # rather than the sizeHint() method returning only a preferred size
+        # would be called. This widget has overriden all available size-specific
+        # hint methods to return sizes preserving the aspect ratio of this
+        # pixmap, but the size returned by the size() method still insists on
+        # ignoring these hints in common edge cases.
+        #
+        # In particular, supplanting sizeHint() by size() here instructs Qt to
+        # gradually increase the size of this label to this preferred size over
+        # a lengthy (and hence unacceptable) period of nearly ten seconds.
         pixmap_size_new = self.sizeHint()
 
         # Log this rescaling.
@@ -269,70 +283,21 @@ class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
             pixmap_size_new.height())
 
         # Pixmap rescaled from the passed pixmap.
-        pixmap_rescaled = self._pixmap.scaled(
+        pixmap_rescaled = pixmap.scaled(
             pixmap_size_new,  # * pixmap.devicePixelRatioF(),
 
             # Preserve the passed pixmap's existing aspect ratio. While the
             # passed size *SHOULD* already ensure this, we go the distance.
-            # Qt.KeepAspectRatio,
+            Qt.KeepAspectRatio,
 
             # Rescale this pixmap with smooth bilinear filtering. By default,
             # pixmaps are rescaled abruptly rather than with this transition.
-            # Qt.SmoothTransformation,
+            Qt.SmoothTransformation,
         )
         # scaled.setDevicePixelRatio(devicePixelRatioF())
 
         # Set this label's pixmap to this rescaled pixmap.
         super().setPixmap(pixmap_rescaled)
-
-        # If the conditional branch in the resizeEvent() handler that calls this
-        # method is *NOT* already being handled...
-        # if not self._is_in_resizeEvent:
-        # if self._is_in_resizeEvent <= 1:
-        # if label_size_old != pixmap_size_new:
-
-        # Log this resizing.
-        logs.log_debug(
-            'Rescaling label from %dx%d to %dx%d...',
-            label_size_old.width(),
-            label_size_old.height(),
-            pixmap_size_new.width(),
-            pixmap_size_new.height())
-
-        #FIXME: Rename this boolean to something saner -- say,
-        #"_is_setPixmap_callable". Then globally invert the state of this
-        #boolean (e.g., from "False" to "True" and vice versa) to comply with
-        #this saner nomenclature.
-
-        # Prevent this branch from being erroneously reentered if the
-        # call to setPixmap() induces a recursive call to this handler.
-        # self._is_in_resizeEvent = True
-        # self._is_in_resizeEvent += 1
-
-        #FIXME: While significantly better, this still results in this method
-        #being called twice in rapid succession.
-
-        # If the conditional branch in the resizeEvent() handler that calls this
-        # method is *NOT* already being handled...
-        if self._pixmap_size_new != pixmap_size_new:
-            self._pixmap_size_new = pixmap_size_new
-
-            # Resize this label to this rescaled pixmap's size.
-            self.resize(pixmap_size_new)
-
-        # # Attempt to...
-        # try:
-        #     # Prevent this branch from being erroneously reentered if the
-        #     # call to setPixmap() induces a recursive call to this handler.
-        #     self._is_in_resizeEvent = True
-        #     # self._is_in_resizeEvent += 1
-        #
-        #     # Resize this label to this rescaled pixmap's size.
-        #     self.resize(pixmap_size_new)
-        # # Regardless of whether doing so raises an exception, permit this
-        # # branch to be entered on the next handling of this resize event.
-        # finally:
-        #     self._is_in_resizeEvent = False
 
     # ..................{ SUPERCLASS ~ events                }..................
     def resizeEvent(self, *args, **kwargs) -> None:
@@ -340,112 +305,147 @@ class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
         # Defer to our superclass implementation.
         super().resizeEvent(*args, **kwargs)
 
-        #FIXME: Compact this conditional.
-        # If...
-        if (
-            # This label has a pixmap.
-            self._pixmap is not None and
-            # This pixmap is *NOT* the null pixmap.
-            not self._pixmap.isNull()
-        ):
+        # If this label has a pixmap that is *NOT* the null pixmap...
+        if self._is_pixmap:
             logs.log_debug('Rescaling pixmap after resizing label...')
-
             # Rescale this pixmap to the desired size of this widget.
             self.setPixmap(self._pixmap)
 
-    #     try:
-    #         # Defer to our superclass implementation.
-    #         super().resizeEvent(*args, **kwargs)
-    #
-    # def resize(self, *args, **kwargs) -> None:
-    #
-    #     # Defer to our superclass implementation.
-    #     super().resize(*args, **kwargs)
+    # ..................{ LOADERS                            }..................
+    @type_check
+    def load_image(self, filename: str) -> None:
+        '''
+        Load the image with the passed filename as this label's pixmap in a
+        sensible manner preserving the aspect ratio of this image.
 
-        # # If...
-        # if (
-        #     # This label has a pixmap.
-        #     self._pixmap is not None and
-        #     # This pixmap is *NOT* the null pixmap.
-        #     not self._pixmap.isNull() and
-        #     # This branch has *NOT* already been entered for this resize event,
-        #     # preventing infinite recursion. See the class docstring.
-        #     not self._is_in_resizeEvent
-        #     # self._is_in_resizeEvent <= 1
-        # ):
-        #     # Attempt to...
-        #     try:
-        #         logs.log_debug('Rescaling pixmap after resizing label...')
-        #
-        #         # Prevent this branch from being erroneously reentered if the
-        #         # call to setPixmap() induces a recursive call to this handler.
-        #         self._is_in_resizeEvent = True
-        #         # self._is_in_resizeEvent += 1
-        #
-        #         # Rescale this pixmap to the desired size of this widget.
-        #         self.setPixmap(self._pixmap)
-        #     # Regardless of whether doing so raises an exception, permit this
-        #     # branch to be entered on the next handling of this resize event.
-        #     finally:
-        #         self._is_in_resizeEvent = False
-        #         # self._is_in_resizeEvent -= 1
+        For safety, this method preferentially displays otherwise fatal errors
+        resulting from this loading process as non-fatal warnings set as this
+        label's text. Since this widget is typically *only* leveraged as an
+        image previewer, the failure to preview arbitrary user-defined images of
+        dubious origin, quality, and contents and possibly unsupported filetype
+        should *not* halt the entire application. Ergo, it doesn't.
 
-        # try:
-        #     # Defer to our superclass implementation.
-        #     super().resize(*args, **kwargs)
-        #
-        #     # If...
-        #     if (
-        #         # This label has a pixmap.
-        #         self._pixmap is not None and
-        #         # This pixmap is *NOT* the null pixmap.
-        #         not self._pixmap.isNull() and
-        #         # This branch has *NOT* already been entered for this resize event,
-        #         # preventing infinite recursion. See the class docstring.
-        #         not self._is_in_resizeEvent
-        #         # self._is_in_resizeEvent <= 1
-        #     ):
-        #         # Log possible recursion.
-        #         logs.log_debug('Rescaling pixmap after resizing label...')
-        #
-        #         # Rescale this pixmap to the desired size of this widget.
-        #         self.setPixmap(self._pixmap)
-        # # Regardless of whether doing so raises an exception, permit this
-        # # branch to be entered on the next handling of this resize event.
-        # finally:
-        #     # Log possible recursion.
-        #     logs.log_debug('Reenabling label pixmap rescaling...')
-        #     self._is_in_resizeEvent = False
+        Parameters
+        ----------
+        filename : str
+            Absolute or relative filename of the image to be loaded.
+        '''
 
-            # # Attempt to...
-            # try:
-            #     logs.log_debug('Rescaling pixmap after resizing label...')
-            #
-            #     # Prevent this branch from being erroneously reentered if the
-            #     # call to setPixmap() induces a recursive call to this handler.
-            #     self._is_in_resizeEvent = True
-            #     # self._is_in_resizeEvent += 1
-            #
-            #     # Rescale this pixmap to the desired size of this widget.
-            #     self.setPixmap(self._pixmap)
-            # # Regardless of whether doing so raises an exception, permit this
-            # # branch to be entered on the next handling of this resize event.
-            # finally:
-            #     self._is_in_resizeEvent = False
-            #     # self._is_in_resizeEvent -= 1
+        # Basename of this image's filename.
+        basename = pathnames.get_basename(filename)
 
-    # ..................{ RESCALERS                          }..................
-    # #FIXME: Document us up.
-    # @type_check
-    # def _rescale_pixmap(self, pixmap: QPixmap) -> QPixmap:
-    #
-    #     # Pixmap rescaled to the desired width and height of this
-    #     pixmap_rescaled = pixmap.scaled(
-    #         self.size(),  # * pixmap.devicePixelRatioF(),
-    #         Qt.KeepAspectRatio,
-    #         Qt.SmoothTransformation
-    #     )
-    #     # scaled.setDevicePixelRatio(devicePixelRatioF())
-    #
-    #     # Return this rescaled pixmap.
-    #     return pixmap_rescaled
+        # Filetype of this image if any *OR* "None" otherwise.
+        filetype = pathnames.get_filetype_undotted_or_none(filename)
+
+        # Log this preview attempt.
+        logs.log_debug('Previewing image "%s"...', basename)
+
+        # Attempt to...
+        try:
+            # If this image does *NOT* exist or does but is unreadable by the
+            # current user, show a non-fatal warning and return.
+            if not paths.is_readable(filename):
+                self._warn(QCoreApplication.translate('QBetseeLabelImage',
+                    'Image "{0}" not found or unreadable.'.format(filename)))
+                return
+            # Else, this image exists and is readable by the current user.
+
+            # If this image has no filetype, show a warning and return.
+            if filetype is None:
+                self._warn(QCoreApplication.translate('QBetseeLabelImage',
+                    'Image "{0}" has no filetype.'.format(filename)))
+                return
+            # Else, this image has a filetype.
+
+            # Set of all image filetypes readable by Pillow.
+            filetypes_pil = pils.get_filetypes()
+
+            # Set of all image filetypes readable by Qt.
+            filetypes_qt = guifiletype.get_image_read_filetypes()
+
+            # If this image is unreadable by Pillow, show a warning and return.
+            if filetype not in filetypes_pil:
+                self._warn(QCoreApplication.translate('QBetseeLabelImage',
+                    'Image filetype "{0}" unrecognized by Pillow.'.format(
+                        filetype)))
+                return
+            # Else, this image is readable by Pillow and hence BETSE and is thus
+            # presumably valid.
+
+            # If this image is unreadable by Qt, show a warning and return.
+            # Since Qt reads fewer image filetypes than Pillow, this condition
+            # is effectively ignorable from the perspective of the end user.
+            if filetype not in filetypes_qt:
+                self._warn(QCoreApplication.translate('QBetseeLabelImage',
+                    'Image filetype "{0}" not previewable.'.format(
+                        filetype)))
+                return
+            # Else, this image is readable by both Pillow *AND* Qt.
+
+            # In-memory pixmap trivially loaded from this on-disk image.
+            pixmap = QPixmap(filename)
+
+            # Set this label's pixmap as this pixmap.
+            self.setPixmap(pixmap)
+
+            # Resize this label to this message.
+            # self.adjustSize()
+        # If doing so raises an exception...
+        except Exception as exception:
+            # Exception type.
+            exception_type = classes.get_class_name(exception)
+
+            # Exception message.
+            exception_message = str(exception)
+
+            # Display this exception message as a non-fatal warning.
+            self._warn(QCoreApplication.translate(
+                'QBetseeLabelImage',
+                'Image "{0}" preview failed with "{1}": {2}'.format(
+                    basename,
+                    exception_type,
+                    exception_message)))
+
+    # ..................{ WARNERS                            }..................
+    @type_check
+    def _warn(self, warning: str) -> None:
+        '''
+        Set the passed human-readable message as this label's text, log this
+        message as a warning, and remove this label's existing pixmap if any.
+
+        For clarity, this message is embedded in rich text (i.e., HTML) visually
+        accentuating this message in a manner indicative of warnings -- notably,
+        with boldened red text.
+
+        Caveats
+        ----------
+        **This message is logged as is and hence assumed to be plaintext.** All
+        HTML syntax (e.g., ``&amp;``, ``<table>``) embedded in this message is
+        escaped for safety, preventing this message from being erroneously
+        misinterpreted as rich text.
+
+        Parameters
+        ----------
+        warning : str
+            Human-readable warning message to be displayed as this label's text.
+        '''
+
+        # Log this warning.
+        logs.log_warning(warning)
+
+        # Remove this label's existing pixmap if any.
+        self.clear()
+
+        # Warning message with all embedded HTML syntax (e.g., "&amp;", "<b>")
+        # escaped for safety.
+        warning_escaped = mls.escape_ml(warning)
+
+        # Set this label's text to rich text embedding this message in a
+        # visually distinctive manner indicative of a warning.
+        self._image_label.setText(QCoreApplication.translate(
+            'QBetseeLabelImage',
+            '<span style="color: #aa0000;"><b>Warning:</b> {0}</span>'.format(
+                warning_escaped)))
+
+        # Resize this label to this message.
+        self.adjustSize()

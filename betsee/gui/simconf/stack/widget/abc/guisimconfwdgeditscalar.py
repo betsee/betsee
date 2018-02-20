@@ -349,7 +349,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # configuration alias...
         if not isinstance(alias_value, alias_type):
             #FIXME: Non-ideal, obviously. Sadly, no better ideas come to mind.
-            # If this type is an tuple of such types (e.g., "NumericTypes")
+            # If this type is an tuple of such types (e.g., "NumericSimpleTypes")
             # rather than a single type, arbitrarily coerce this value into the
             # type selected by the first item of this tuple.
             if alias_type is tuple:
