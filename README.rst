@@ -141,9 +141,17 @@ BETSEE is open-source software `released <LICENSE>`__ under the permissive `BSD
 * All `Entypo+ icons`_ `distributed with BETSEE <BETSEE Entypo+ icons_>`__,
   `kindly released <Entypo+ license_>`__ under the permissive `CC BY-SA 4.0
   license`_ by `Daniel Bruce`_.
+* All `Noun Project icons`_ `distributed with BETSEE <BETSEE Noun Project
+  icons_>`__, `kindly released <Noun Project license_>`__ under the permissive
+  `CC BY 3.0 license`_ by various authors, including:
+  * `Maxim Kulikov`_.
 * All `Open Iconic icons`_ `distributed with BETSEE <BETSEE Open Iconic
   icons_>`__, `kindly released <Open Iconic license_>`__ under the permissive
   `MIT license`_.
+
+Lastly, the logo prominently displayed on this `project page <project_>`__ is a
+flat `Noun Project`_ icon entitled `"Cow," <Cows collection_>`__ `kindly
+released <Noun Project license_>`__ by `Maxim Kulikov`_.
 
 Reference
 =========
@@ -279,12 +287,22 @@ biologically misaligned, and simply unusable.
 .. # ------------------( LINKS ~ software : icon            )------------------
 .. _BETSEE Entypo+ icons:
    betsee/data/qrc/icon/entypo+
+.. _BETSEE Noun Project icons:
+   betsee/data/qrc/icon/nounproject
 .. _BETSEE Open Iconic icons:
    betsee/data/qrc/icon/open_iconic
+.. _Cows collection:
+   https://thenounproject.com/maxim221/collection/cows
 .. _Daniel Bruce:
    http://www.danielbruce.se
 .. _Entypo+ icons:
    http://entypo.com
+.. _Maxim Kulikov:
+   https://thenounproject.com/maxim221
+.. _Noun Project:
+   https://thenounproject.com
+.. _Noun Project license:
+   https://thenounproject.com/legal
 .. _Open Iconic icons:
    https://github.com/iconic/open-iconic
 

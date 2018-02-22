@@ -10,25 +10,83 @@
     <height>1154</height>
    </rect>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../qrc/betsee.qrc">
+    <normaloff>:/icon/nounproject/maxim_kulikov/cow_flower_square.png</normaloff>:/icon/nounproject/maxim_kulikov/cow_flower_square.png</iconset>
+  </property>
   <property name="styleSheet">
    <string notr="true">/* ------------------( SYNOPSIS                           )---------------------
 Root stylesheet for this application, attached to the main window widget from
 Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
 
----------------------( CAVEATS                            )---------------------
-Promoted widget types (e.g., &quot;QBetseeSimConfStackedWidget&quot;) should be avoided in
-favour of stock widget types (e.g., &quot;QStackedWidget&quot;). Due to outstanding issues
-in Qt (Creator|Designer), styles selected via promoted widget types are
-displayed at runtime but *NOT* from within Qt (Creator|Designer) -- defeating
-the WYSIWYG intention of using Qt (Creator|Designer) in the first place.
-
 ---------------------( SEE ALSO                           )---------------------
 * https://doc.qt.io/qt-5/stylesheet-syntax.html
   Reference documentation for Qt 5 stylesheets.
+* http://doc.qt.io/qt-5/stylesheet-syntax.html#conflict-resolution
+  &quot;Conflict Resolution&quot; subsection of the prior documentation, arguably the most
+  significant and least understood such subsection.
+* http://doc.qt.io/qt-5/stylesheet-reference.html#list-of-sub-controls
+  Reference documentation for Qt 5 stylesheet pseudo-states and subcontrols.
 */
 
-/* ..................{ TREE                               }.....................
- * Styles applicable to the top-level tree widget and items thereof.
+/* FIXME: Report the QSS bugs listed below to the Qt issue tracker, please.
+ */
+
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * CAUTION: *ORDER IS SIGNIFICANT.* The following styles are intentionally
+ * listed in order of increasing depth. While conflict resolution in QSS is
+ * highly non-trivial and exceeds the scope of this stylesheet to reasonably
+ * document, subsequently listed styles mostly take precedence over previously
+ * listed styles. (Mostly. All else being equal. Which it never is.)
+ *
+ * Additionally, note that QSS suffers numerous subtle breaking bugs under even
+ * recent stable releases of Qt. These include:
+ *
+ * * Promoted widget types (e.g., &quot;QBetseeSimConfStackedWidget&quot;) should be
+ *   avoided in favour of stock widget types (e.g., &quot;QStackedWidget&quot;). Due to
+ *   outstanding issues in Qt (Creator|Designer), styles selected via promoted
+ *   widget types are displayed at runtime but *NOT* from within Qt
+ *   (Creator|Designer) -- defeating the WYSIWYG intention of using Qt
+ *   (Creator|Designer) in the first place.  
+ * * &quot;QScrollArea&quot; and &quot;QTabWidget&quot; children should be selected with the &quot; &quot;
+ *   descendent selector rather than the &quot;&gt;&quot; child selector (e.g.,
+ *   &quot;QScrollArea QGrouBox&quot; rather than &quot;QScrollArea &gt; QGrouBox&quot;). While the
+ *   latter is less ambiguous and hence preferable in the general case, QSS
+ *   ignores *ALL* selectors of the form &quot;QScrollArea &gt;&quot;. Why? Just because.
+ *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+
+/* ..................{ GENERAL                            }.....................
+/* Group box title but *NOT* child widgets of a group box.
+ *
+ * To properly account for nesting depth, depth-specific font sizes are styled
+ * by explicitly selecting group box titles at all possible nesting depths
+ * employed by this application below. Needless to say, QSS is less than ideal.
+ */
+QGroupBox {
+    font-weight: bold;
+}
+
+
+/* Tree and list view headers (i.e., columns. Ideally, the following font
+ * properties would be applied to only the headers of the top-level tree widget
+ * rather than of all tree and list views. Sadly, Qt currently ignores all
+ * attempts to do so via the descendant selector: e.g.,
+ *
+ *     # This is ignored.
+ *     QTreeWidget#sim_conf_tree QHeaderView { font-weight: bold }
+ *
+ * Why? We have no idea. Technically, this should work, as real-world use cases
+ * online contain similar logic. We suspect a Qt 5.6-specific issue hopefully
+ * resolved in subsequent versions.
+ */
+QHeaderView {
+    font-weight: bold;
+    font-size: 11pt;
+}
+
+/* ..................{ SIM CONF ~ tree                    }.....................
+ * Styles applicable to the simulation configuration-specific tree widget.
  */
 
 /* Top-level tree widget. */
@@ -53,84 +111,124 @@ QTreeWidget#sim_conf_tree {
     qproperty-indentation: 26;
 }
 
-/* Tree and list view headers (i.e., columns. Ideally, the following font
- * properties would be applied to only the headers of the top-level tree widget
- * rather than of all tree and list views. Sadly, Qt currently ignores all
- * attempts to do so via the descendant selector: e.g.,
- *
- *     # This is ignored.
- *     QTreeWidget#sim_conf_tree QHeaderView { font-weight: bold }
- *
- * Why? We have no idea. Technically, this should work, as real-world use cases
- * online contain similar logic. We suspect a Qt 5.6-specific issue hopefully
- * resolved in subsequent versions.
- */
-QHeaderView {
-    font-weight: bold;
-    font-size: 11pt;
-}
-
-/* ..................{ STACK                              }.....................
- * Styles applicable to the top-level stack widget and pages thereof.
+/* ..................{ SIM CONF ~ stack|tab               }.....................
+ * Styles applicable to both the simulation configuration-specific stacked and
+ * tab widgets.
  */
 
-/* Page. */
+
+/* Stacked page. */
 QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox {
-    font-weight: bold;
     font-size: 13pt;
 }
 
-/* ..................{ STACK ~ group : widget             }.....................
+
+/* Currently selected tab.
+ *
+ * Due to outstanding QSS issues, note that font properties (e.g., size, weight)
+ * cannot be reliably set via the &quot;::tab&quot; subcontrol selected here but *MUST*
+ * instead be set on the &quot;QTabWidget &gt; QTabBar&quot; itself. Attempting to set this
+ * font size via that subcontrol prevents Qt from resizing tabs to accomodate
+ * this larger size, resulting in &quot;cut off&quot; and hence illegible tab titles.
+ *
+ * This is an outstanding issue in the Qt issue tracker at:
+ *     https://bugreports.qt.io/browse/QTBUG-8209
+ */
+QTabWidget#sim_cmd_tabs &gt; QTabBar {
+    font-size: 11pt;
+
+    /* Ideally, *ONLY* the currently selected tab would be emboldened. Sadly,
+     * the &quot;:selected&quot; pseudo-class only applies to the &quot;::tab&quot; subcontrol
+     * (e.g., &quot;QTabWidget#sim_cmd_tabs &gt; QTabBar::tab:selected&quot;). However, the
+     * latter and hence the former is unusable for the reasons discussed above.
+     */
+    font-weight: bold;
+}
+
+/* ..................{ SIM CONF ~ stack|tab : group : wdg }.....................
+ * Note that pages of both stacked and tab widgets *MUST* be selected via the
+ * dynamic &quot;is_page&quot; property manually enabled for these pages. For unknown
+ * reasons (presumably reducing to subtle bugs in Qt's CSS selector handling),
+ * tab widget pages are selectable by the less useful &quot; &quot; descendant selector
+ * but *NOT* by the more useful &quot;&gt;&quot; child selector; ergo, such pages are
+ * unambiguously selectable only by dynamic properties. While stacked widget
+ * pages are technically selectable by either selector, doing so is complicated
+ * by the observation that &quot;QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox&quot;
+ * actually selects such a page rather than a group box within such a page;
+ * ergo, such pages are best selected by dynamic properties as well. For
+ * orthogonality, these pages are all selectable by the following selector:
+ *
+ *     QWidget[is_page=&quot;true&quot;]
+ *
+ * Note also that, if QSS supported the CSS4-specific :matches() pseudo-class:
+ *
+ *     # Multiline selectors resembling the following...
+ *     QStackedWidget#sim_conf &gt; QWidget &gt; QGroupBox,
+ *     QTabWidget#sim_cmd &gt; QWidget &gt; QGroupBox {
+ *
+ *     # ...would be reducible to one-liner selectors resembling the following.
+ *     :matches(QStackedWidget#sim_conf, QTabWidget#sim_cmd) &gt; QWidget &gt; QGroupBox {
+ *
+ * Sadly, QSS currently only supports CSS2, which provides no comparable means
+ * of grouping the &quot;, &quot; or operator to have higher precedence than the &quot;&gt;&quot;
+ * descendent selector.
+ */
+
 /* Widgets either:
  *
- * * Direct children of a page rather than a top-level group box. Thanks to
- *   conflict resolution, the specificity of the prior selector selecting
- *   top-level group boxes in a page takes precedence over this selector.
- * * At any depth of a top-level group box in a page.
+ * * Direct children of a stacked page *OR* tabbed tab.
+ * * At any depth of a top-level group box in a stacked page *OR* tabbed tab.
  */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QWidget,
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox QWidget {
+QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QWidget,
+QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QWidget,
+QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox QWidget,
+QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox QWidget {
     font-size: 10pt;
 }
 
-/* Widgets at any depth of a second-level group box in a page.
+/* Widgets at any depth of a second-level group box in a stacked page *OR*
+ * tabbed tab.
  */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget {
+QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox QWidget,
+QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox QWidget {
     font-size: 9pt;
 }
 
-/* Widgets at any depth of a third-level group box in a page.
+
+/* Widgets at any depth of a third-level group box in a stacked page *OR*
+ * tabbed tab.
  */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox &gt;
-    QGroupBox QWidget {
+QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget,
+QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget {
     font-size: 8pt;
 }
 
-/* ..................{ STACK ~ group                      }.....................
+/* ..................{ SIM CONF ~ stack|tab : group       }.....................
  * To ensure that group box selectors take precedence over selectors intended to
  * be applicable *ONLY* to the children of these selectors, the former are
- * intentionally specified after rather than before the latter. Technically, Qt
- * documentation explicitly insists that selectors of greater class specificity
+ * intentionally specified after rather than before the latter. Sadly, Qt
+ * documentation explicitly admits that selectors of greater class specificity
  * (e.g., &quot;QGroupBox&quot;) take precedence over those of lesser class specificity
- * (e.g., &quot;QWidget&quot;). Unfortunately, that does *NOT* appear to be the case.
+ * (e.g., &quot;QWidget&quot;). Ergo, we do this the hard way. (It's always the hard way.)
  */
 
-/* Top-level group box in a page. */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox {
-    font-weight: bold;
+/* Top-level group box in a stacked page *OR* tabbed tab. */
+QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox,
+QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox {
     font-size: 11pt;
 }
 
 
-/* Second-level group box in a page. */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
-    font-weight: bold;
+/* Second-level group box in a stacked page *OR* tabbed tab. */
+QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox,
+QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox {
     font-size: 10pt;
 }
 
-/* Third-level group box in a page. */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
-    font-weight: bold;
+
+/* Third-level group box in a stacked page *OR* tabbed tab. */
+QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox,
+QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
     font-size: 9pt;
 }</string>
   </property>
@@ -440,7 +538,7 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
       </layout>
      </widget>
     </item>
-    <item row="0" column="1" colspan="2">
+    <item row="0" column="1">
      <widget class="QScrollArea" name="sim_conf_stack_area">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -459,8 +557,8 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>511</width>
-         <height>828</height>
+         <width>483</width>
+         <height>808</height>
         </rect>
        </property>
        <property name="font">
@@ -483,6 +581,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
            </property>
            <property name="title">
             <string>Path Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_19">
             <item>
@@ -895,6 +996,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
            </property>
            <property name="title">
             <string>Temporal Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_22">
             <item>
@@ -1327,6 +1431,9 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox &gt; QGroupBox &gt; QG
            <property name="title">
             <string>Ions</string>
            </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
            <layout class="QVBoxLayout" name="verticalLayout_24">
             <item>
              <widget class="QGroupBox" name="groupBox_20">
@@ -1713,6 +1820,9 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
            <property name="title">
             <string>Spatial Settings</string>
            </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
            <layout class="QVBoxLayout" name="verticalLayout_17">
             <item>
              <widget class="QGroupBox" name="groupBox_17">
@@ -2024,6 +2134,9 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
            </property>
            <property name="title">
             <string>Default Tissue Profile</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
@@ -4135,219 +4248,47 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
       </widget>
      </widget>
     </item>
-    <item row="0" column="3">
-     <widget class="QScrollArea" name="sim_phase_tabs_area">
+    <item row="0" column="2">
+     <widget class="QTabWidget" name="sim_cmd_tabs">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>6</horstretch>
         <verstretch>1</verstretch>
        </sizepolicy>
       </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+      <property name="elideMode">
+       <enum>Qt::ElideRight</enum>
       </property>
-      <property name="widgetResizable">
-       <bool>true</bool>
+      <property name="tabBarAutoHide">
+       <bool>false</bool>
       </property>
-      <widget class="QTabWidget" name="sim_phase_tabs">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>766</width>
-         <height>828</height>
-        </rect>
+      <widget class="QScrollArea" name="sim_cmd_tab_run_area">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
        </property>
-       <property name="currentIndex">
-        <number>1</number>
+       <property name="widgetResizable">
+        <bool>true</bool>
        </property>
-       <widget class="QWidget" name="phase_tabsPage1_2">
-        <attribute name="title">
-         <string>Cell Cluster</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QWidget" name="mplWindow_seed" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>1</horstretch>
-             <verstretch>5</verstretch>
-            </sizepolicy>
-           </property>
-           <layout class="QVBoxLayout" name="mplVLayout_seed"/>
-          </widget>
-         </item>
-         <item>
-          <widget class="QProgressBar" name="progressBar_seed">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>1</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>5</pointsize>
-            </font>
-           </property>
-           <property name="value">
-            <number>0</number>
-           </property>
-           <property name="textVisible">
-            <bool>false</bool>
-           </property>
-           <property name="invertedAppearance">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QFrame" name="frameControls">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>1</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_6">
-            <item row="2" column="3">
-             <widget class="QGroupBox" name="groupBox_seedPlots">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>2</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="title">
-               <string>Plotting:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_5">
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_23">
-                 <property name="text">
-                  <string>colormap</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="lineEdit_seedColormap"/>
-               </item>
-               <item row="0" column="1">
-                <widget class="QComboBox" name="comboBox_seedPlots">
-                 <property name="currentIndex">
-                  <number>-1</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QRadioButton" name="rb_lockSeed">
-              <property name="text">
-               <string>Loc&amp;k Seed</string>
-              </property>
-              <property name="icon">
-               <iconset>
-                <normaloff>://icon/open_iconic/lock_fill.svg</normaloff>://icon/open_iconic/lock_fill.svg</iconset>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QWidget" name="widget_seedControls" native="true">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <item>
-                <widget class="QPushButton" name="pushButton_startSeed">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                   <horstretch>1</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Start Seed </string>
-                 </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_stopSeed">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                   <horstretch>1</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Stop Seed</string>
-                 </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="phase_tabsPage2_2">
-        <attribute name="title">
-         <string>Initialization</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QWidget" name="mplWindow_init" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>1</horstretch>
-             <verstretch>5</verstretch>
-            </sizepolicy>
-           </property>
-           <layout class="QVBoxLayout" name="mplVLayout_init"/>
-          </widget>
-         </item>
-         <item>
-          <widget class="QProgressBar" name="progressBar_init">
-           <property name="font">
-            <font>
-             <pointsize>5</pointsize>
-            </font>
-           </property>
-           <property name="textVisible">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
+       <attribute name="title">
+        <string>Simulator</string>
+       </attribute>
+       <attribute name="toolTip">
+        <string>Interactive simulator controlling each phase (e.g., seed, initialization) of this simulation with a standard media player interface – including playback controls, progress bars, and animated video.</string>
+       </attribute>
+       <widget class="QWidget" name="sim_cmd_tab_run">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>954</width>
+          <height>782</height>
+         </rect>
+        </property>
+        <property name="is_page" stdset="0">
+         <bool>true</bool>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_30">
+         <item row="1" column="0">
           <widget class="QFrame" name="frame">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -4390,7 +4331,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
+                 <normaloff>://icon/open_iconic/play.svg</normaloff>://icon/open_iconic/play.svg</iconset>
                </property>
               </widget>
               <widget class="QPushButton" name="pushButton_stopInit">
@@ -4407,7 +4348,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                </property>
                <property name="icon">
                 <iconset>
-                 <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
+                 <normaloff>://icon/open_iconic/x.svg</normaloff>://icon/open_iconic/x.svg</iconset>
                </property>
               </widget>
              </widget>
@@ -4426,68 +4367,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               <property name="title">
                <string/>
               </property>
-              <widget class="QComboBox" name="comboBox_initPlots">
-               <property name="geometry">
-                <rect>
-                 <x>60</x>
-                 <y>0</y>
-                 <width>171</width>
-                 <height>29</height>
-                </rect>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_31">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>0</y>
-                 <width>78</width>
-                 <height>19</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>View:</string>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_37">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>40</y>
-                 <width>91</width>
-                 <height>19</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Colormap:</string>
-               </property>
-              </widget>
-              <widget class="QLineEdit" name="lineEdit_initColormap">
-               <property name="geometry">
-                <rect>
-                 <x>90</x>
-                 <y>40</y>
-                 <width>141</width>
-                 <height>29</height>
-                </rect>
-               </property>
-              </widget>
-              <widget class="QRadioButton" name="radioButton_initAutoscale">
-               <property name="geometry">
-                <rect>
-                 <x>260</x>
-                 <y>0</y>
-                 <width>131</width>
-                 <height>24</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Autoscale</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
               <widget class="QFrame" name="frame_initScaleMinMax">
                <property name="enabled">
                 <bool>false</bool>
@@ -4500,74 +4379,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                  <height>51</height>
                 </rect>
                </property>
-               <widget class="QLineEdit" name="lineEdit_initPlot_min">
-                <property name="geometry">
-                 <rect>
-                  <x>50</x>
-                  <y>8</y>
-                  <width>61</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEdit_initPlot_max">
-                <property name="geometry">
-                 <rect>
-                  <x>50</x>
-                  <y>30</y>
-                  <width>61</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_38">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>10</y>
-                  <width>31</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>min</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_39">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>30</y>
-                  <width>41</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>max</string>
-                </property>
-               </widget>
               </widget>
               <widget class="QFrame" name="frame_initAnimControls">
                <property name="enabled">
@@ -4603,262 +4414,30 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
            </layout>
           </widget>
          </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="phase_tabsPage3_2">
-        <attribute name="title">
-         <string>Simulation</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QWidget" name="mplWindow_sim" native="true">
-           <layout class="QVBoxLayout" name="mplVLayout_sim"/>
-          </widget>
-         </item>
-         <item>
-          <widget class="QProgressBar" name="progressBar_sim">
-           <property name="font">
-            <font>
-             <pointsize>5</pointsize>
-            </font>
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_19">
+           <property name="toolTip">
+            <string>Progress bar depicting the completion state of the most recently run simulation phase if any.</string>
            </property>
-           <property name="value">
-            <number>0</number>
+           <property name="title">
+            <string>Phase Progress</string>
            </property>
-           <property name="textVisible">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QFrame" name="frame_2">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>1</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_8">
-            <item row="0" column="0">
-             <widget class="QGroupBox" name="groupBox_simControls">
-              <property name="enabled">
-               <bool>false</bool>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QProgressBar" name="sim_cmd_run_bar">
+              <property name="toolTip">
+               <string>Current number of steps (e.g., time in seconds) completed for the most recently run simulation phase if any.</string>
               </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>1</horstretch>
-                <verstretch>1</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="title">
-               <string/>
-              </property>
-              <widget class="QPushButton" name="pushButton_startSim">
-               <property name="geometry">
-                <rect>
-                 <x>30</x>
-                 <y>10</y>
-                 <width>112</width>
-                 <height>29</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Start Sim</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>://icon/open_iconic/play_alt.svg</normaloff>://icon/open_iconic/play_alt.svg</iconset>
-               </property>
-              </widget>
-              <widget class="QPushButton" name="pushButton_stopSim">
-               <property name="geometry">
-                <rect>
-                 <x>30</x>
-                 <y>50</y>
-                 <width>112</width>
-                 <height>29</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Stop Sim</string>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>://icon/open_iconic/x_alt.svg</normaloff>://icon/open_iconic/x_alt.svg</iconset>
-               </property>
-              </widget>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QGroupBox" name="groupBox_simPlotControls">
-              <property name="enabled">
-               <bool>false</bool>
+            <item>
+             <widget class="QLabel" name="sim_cmd_run_time_total">
+              <property name="toolTip">
+               <string>Total number of steps (e.g., time in seconds) needed to complete the most recently run simulation phase if any.</string>
               </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>3</horstretch>
-                <verstretch>1</verstretch>
-               </sizepolicy>
+              <property name="text">
+               <string>total time</string>
               </property>
-              <property name="title">
-               <string/>
-              </property>
-              <widget class="QComboBox" name="comboBox_simPlots">
-               <property name="geometry">
-                <rect>
-                 <x>60</x>
-                 <y>0</y>
-                 <width>171</width>
-                 <height>29</height>
-                </rect>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_30">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>0</y>
-                 <width>78</width>
-                 <height>19</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>View:</string>
-               </property>
-              </widget>
-              <widget class="QLabel" name="label_34">
-               <property name="geometry">
-                <rect>
-                 <x>0</x>
-                 <y>40</y>
-                 <width>91</width>
-                 <height>19</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Colormap:</string>
-               </property>
-              </widget>
-              <widget class="QLineEdit" name="lineEdit_simColormap">
-               <property name="geometry">
-                <rect>
-                 <x>90</x>
-                 <y>40</y>
-                 <width>141</width>
-                 <height>29</height>
-                </rect>
-               </property>
-              </widget>
-              <widget class="QRadioButton" name="radioButton_simAutoscale">
-               <property name="geometry">
-                <rect>
-                 <x>260</x>
-                 <y>0</y>
-                 <width>131</width>
-                 <height>24</height>
-                </rect>
-               </property>
-               <property name="text">
-                <string>Autoscale</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-              <widget class="QFrame" name="frame_simScaleMinMax">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="geometry">
-                <rect>
-                 <x>260</x>
-                 <y>30</y>
-                 <width>120</width>
-                 <height>51</height>
-                </rect>
-               </property>
-               <widget class="QLineEdit" name="lineEdit_simPlot_min">
-                <property name="geometry">
-                 <rect>
-                  <x>50</x>
-                  <y>0</y>
-                  <width>61</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-               </widget>
-               <widget class="QLineEdit" name="lineEdit_simPlot_max">
-                <property name="geometry">
-                 <rect>
-                  <x>50</x>
-                  <y>20</y>
-                  <width>61</width>
-                  <height>21</height>
-                 </rect>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_35">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>0</y>
-                  <width>31</width>
-                  <height>19</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>min</string>
-                </property>
-               </widget>
-               <widget class="QLabel" name="label_36">
-                <property name="geometry">
-                 <rect>
-                  <x>10</x>
-                  <y>20</y>
-                  <width>41</width>
-                  <height>16</height>
-                 </rect>
-                </property>
-                <property name="text">
-                 <string>max</string>
-                </property>
-               </widget>
-              </widget>
-              <widget class="QFrame" name="frame_simAnimControls">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="geometry">
-                <rect>
-                 <x>410</x>
-                 <y>10</y>
-                 <width>103</width>
-                 <height>82</height>
-                </rect>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_8">
-                <item>
-                 <widget class="QPushButton" name="pushButton_simAnimPlay">
-                  <property name="text">
-                   <string>Play</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="pushButton_simAnimStop">
-                  <property name="text">
-                   <string>Stop</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
              </widget>
             </item>
            </layout>
@@ -4866,74 +4445,10 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="phase_tabsPage4_2">
-        <attribute name="title">
-         <string>Network</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QWidget" name="mplWindow_net" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>1</horstretch>
-             <verstretch>5</verstretch>
-            </sizepolicy>
-           </property>
-           <layout class="QVBoxLayout" name="mplVLayout_net"/>
-          </widget>
-         </item>
-         <item>
-          <widget class="QFrame" name="frameControls_4">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>1</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <widget class="QPushButton" name="pushButton_plotNetwork">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>20</y>
-              <width>131</width>
-              <height>29</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Plot Network</string>
-            </property>
-           </widget>
-           <widget class="QWidget" name="widget" native="true">
-            <property name="geometry">
-             <rect>
-              <x>180</x>
-              <y>10</y>
-              <width>371</width>
-              <height>80</height>
-             </rect>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="pushButton_runOptimizer">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>60</y>
-              <width>131</width>
-              <height>29</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Run Optimizer</string>
-            </property>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </widget>
       </widget>
      </widget>
     </item>
-    <item row="1" column="0" colspan="4">
+    <item row="1" column="0" colspan="3">
      <widget class="QFrame" name="log_frame">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

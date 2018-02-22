@@ -7,6 +7,41 @@
 :mod:`PySide2`-based object encapsulating simulation configuration state.
 '''
 
+#FIXME: Either this or a subordinate "QObject" should routinely detect
+#simulation configuration desynchronization (i.e., external changes to the
+#on-disk YAML file underlying the currently open simulation configuration if
+#any) and interactively query the current user to eith:r
+#
+#* Discard all in-GUI changes to this configuration and reload this
+#  configuration from disk.
+#* Preserve all in-GUI changes to this configuration by ignoring these external
+#  changes, thus overwriting these changes on the next save.
+#
+#To do so, we'll need to track the current mtime of this file with a
+#"QFileSystemWatcher" instance as follows:
+#
+#* Define a new resync_file() slot of this class accepting a single "str"
+#  argument: the absolute filename of the watched file that was modified. In
+#  this case, that will be the top-level YAML file. Naturally, this slot will
+#  perform the bulk of the logic pertaining to resynchronization. Note that
+#  we'll need to explicitly test whether this file still exists or not in this
+#  slot, as it may have been moved away or removed entirely.
+#* In the __init__() and/or init() methods of this class:
+#  * Create a new "_path_watcher" variable of type "QFileSystemWatcher".
+#  * Connect the fileChanged() signal of this variable.
+#* In the set_filename() slot:
+#  * When a new simulation configuration is opened (i.e., "filename" is
+#    non-empty), call the "self._path_watcher.addPath(filename)" method.
+#  * When an open simulation configuration is closed (i.e., "filename" is
+#    empty), call the "self._path_watcher.removePath(filename)" method.
+#
+#Note also that files can be moved and removed from disk. If the
+#on-disk YAML file underlying the currently open simulation configuration no
+#longer exists at any point (e.g., due to being externally removed), what is the
+#sanest response? Should we simply ignore this case? Doing so will simply
+#silently rewrite this file to disk on the next save, which seems reasonably
+#sane. In other words, the noop-based lazy approach may be the correct approach.
+
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
@@ -65,8 +100,8 @@ class QBetseeSimConf(QObject):
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree` widget.
     _sim_conf_tree_frame : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.
-    _sim_phase_tabs : QTabWidget
-        Alias of the :attr:`QBetseeMainWindow.sim_phase_tabs` widget.
+    _sim_cmd_tabs : QTabWidget
+        Alias of the :attr:`QBetseeMainWindow.sim_cmd_tabs` widget.
     _status_bar : QStatusBar
         Alias of the :attr:`QBetseeMainWindow.status_bar` widget.
     '''
@@ -128,7 +163,7 @@ class QBetseeSimConf(QObject):
         self._sim_conf_stack      = main_window.sim_conf_stack
         self._sim_conf_tree       = main_window.sim_conf_tree
         self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
-        self._sim_phase_tabs      = main_window.sim_phase_tabs
+        self._sim_cmd_tabs      = main_window.sim_cmd_tabs
         self._status_bar          = main_window.status_bar
 
         # Initialize all widgets pertaining to the state of this simulation
@@ -307,7 +342,7 @@ class QBetseeSimConf(QObject):
         # Show or hide widgets requiring an open simulation configuration.
         self._sim_conf_stack     .setEnabled(self.p.is_loaded)
         self._sim_conf_tree_frame.setEnabled(self.p.is_loaded)
-        self._sim_phase_tabs     .setEnabled(self.p.is_loaded)
+        self._sim_cmd_tabs     .setEnabled(self.p.is_loaded)
 
         # If no simulation configuration is open, clear the undo stack.
         if not self.p.is_loaded:

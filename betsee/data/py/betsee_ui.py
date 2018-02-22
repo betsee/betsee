@@ -4,24 +4,81 @@ class Ui_main_window(object):
     def setupUi(self, main_window):
         main_window.setObjectName("main_window")
         main_window.resize(1572, 1154)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icon/nounproject/maxim_kulikov/cow_flower_square.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        main_window.setWindowIcon(icon)
         main_window.setStyleSheet("/* ------------------( SYNOPSIS                           )---------------------\n"
 "Root stylesheet for this application, attached to the main window widget from\n"
 "Qt [Creator|Designer] to preserve the WYSIWYG metaphor.\n"
 "\n"
-"---------------------( CAVEATS                            )---------------------\n"
-"Promoted widget types (e.g., \"QBetseeSimConfStackedWidget\") should be avoided in\n"
-"favour of stock widget types (e.g., \"QStackedWidget\"). Due to outstanding issues\n"
-"in Qt (Creator|Designer), styles selected via promoted widget types are\n"
-"displayed at runtime but *NOT* from within Qt (Creator|Designer) -- defeating\n"
-"the WYSIWYG intention of using Qt (Creator|Designer) in the first place.\n"
-"\n"
 "---------------------( SEE ALSO                           )---------------------\n"
 "* https://doc.qt.io/qt-5/stylesheet-syntax.html\n"
 "  Reference documentation for Qt 5 stylesheets.\n"
+"* http://doc.qt.io/qt-5/stylesheet-syntax.html#conflict-resolution\n"
+"  \"Conflict Resolution\" subsection of the prior documentation, arguably the most\n"
+"  significant and least understood such subsection.\n"
+"* http://doc.qt.io/qt-5/stylesheet-reference.html#list-of-sub-controls\n"
+"  Reference documentation for Qt 5 stylesheet pseudo-states and subcontrols.\n"
 "*/\n"
 "\n"
-"/* ..................{ TREE                               }.....................\n"
-" * Styles applicable to the top-level tree widget and items thereof.\n"
+"/* FIXME: Report the QSS bugs listed below to the Qt issue tracker, please.\n"
+" */\n"
+"\n"
+"/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+" * CAUTION: *ORDER IS SIGNIFICANT.* The following styles are intentionally\n"
+" * listed in order of increasing depth. While conflict resolution in QSS is\n"
+" * highly non-trivial and exceeds the scope of this stylesheet to reasonably\n"
+" * document, subsequently listed styles mostly take precedence over previously\n"
+" * listed styles. (Mostly. All else being equal. Which it never is.)\n"
+" *\n"
+" * Additionally, note that QSS suffers numerous subtle breaking bugs under even\n"
+" * recent stable releases of Qt. These include:\n"
+" *\n"
+" * * Promoted widget types (e.g., \"QBetseeSimConfStackedWidget\") should be\n"
+" *   avoided in favour of stock widget types (e.g., \"QStackedWidget\"). Due to\n"
+" *   outstanding issues in Qt (Creator|Designer), styles selected via promoted\n"
+" *   widget types are displayed at runtime but *NOT* from within Qt\n"
+" *   (Creator|Designer) -- defeating the WYSIWYG intention of using Qt\n"
+" *   (Creator|Designer) in the first place.  \n"
+" * * \"QScrollArea\" and \"QTabWidget\" children should be selected with the \" \"\n"
+" *   descendent selector rather than the \">\" child selector (e.g.,\n"
+" *   \"QScrollArea QGrouBox\" rather than \"QScrollArea > QGrouBox\"). While the\n"
+" *   latter is less ambiguous and hence preferable in the general case, QSS\n"
+" *   ignores *ALL* selectors of the form \"QScrollArea >\". Why? Just because.\n"
+" *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+" */\n"
+"\n"
+"/* ..................{ GENERAL                            }.....................\n"
+"/* Group box title but *NOT* child widgets of a group box.\n"
+" *\n"
+" * To properly account for nesting depth, depth-specific font sizes are styled\n"
+" * by explicitly selecting group box titles at all possible nesting depths\n"
+" * employed by this application below. Needless to say, QSS is less than ideal.\n"
+" */\n"
+"QGroupBox {\n"
+"    font-weight: bold;\n"
+"}\n"
+"\n"
+"\n"
+"/* Tree and list view headers (i.e., columns. Ideally, the following font\n"
+" * properties would be applied to only the headers of the top-level tree widget\n"
+" * rather than of all tree and list views. Sadly, Qt currently ignores all\n"
+" * attempts to do so via the descendant selector: e.g.,\n"
+" *\n"
+" *     # This is ignored.\n"
+" *     QTreeWidget#sim_conf_tree QHeaderView { font-weight: bold }\n"
+" *\n"
+" * Why? We have no idea. Technically, this should work, as real-world use cases\n"
+" * online contain similar logic. We suspect a Qt 5.6-specific issue hopefully\n"
+" * resolved in subsequent versions.\n"
+" */\n"
+"QHeaderView {\n"
+"    font-weight: bold;\n"
+"    font-size: 11pt;\n"
+"}\n"
+"\n"
+"/* ..................{ SIM CONF ~ tree                    }.....................\n"
+" * Styles applicable to the simulation configuration-specific tree widget.\n"
 " */\n"
 "\n"
 "/* Top-level tree widget. */\n"
@@ -46,84 +103,124 @@ class Ui_main_window(object):
 "    qproperty-indentation: 26;\n"
 "}\n"
 "\n"
-"/* Tree and list view headers (i.e., columns. Ideally, the following font\n"
-" * properties would be applied to only the headers of the top-level tree widget\n"
-" * rather than of all tree and list views. Sadly, Qt currently ignores all\n"
-" * attempts to do so via the descendant selector: e.g.,\n"
-" *\n"
-" *     # This is ignored.\n"
-" *     QTreeWidget#sim_conf_tree QHeaderView { font-weight: bold }\n"
-" *\n"
-" * Why? We have no idea. Technically, this should work, as real-world use cases\n"
-" * online contain similar logic. We suspect a Qt 5.6-specific issue hopefully\n"
-" * resolved in subsequent versions.\n"
-" */\n"
-"QHeaderView {\n"
-"    font-weight: bold;\n"
-"    font-size: 11pt;\n"
-"}\n"
-"\n"
-"/* ..................{ STACK                              }.....................\n"
-" * Styles applicable to the top-level stack widget and pages thereof.\n"
+"/* ..................{ SIM CONF ~ stack|tab               }.....................\n"
+" * Styles applicable to both the simulation configuration-specific stacked and\n"
+" * tab widgets.\n"
 " */\n"
 "\n"
-"/* Page. */\n"
+"\n"
+"/* Stacked page. */\n"
 "QStackedWidget#sim_conf_stack > QWidget > QGroupBox {\n"
-"    font-weight: bold;\n"
 "    font-size: 13pt;\n"
 "}\n"
 "\n"
-"/* ..................{ STACK ~ group : widget             }.....................\n"
+"\n"
+"/* Currently selected tab.\n"
+" *\n"
+" * Due to outstanding QSS issues, note that font properties (e.g., size, weight)\n"
+" * cannot be reliably set via the \"::tab\" subcontrol selected here but *MUST*\n"
+" * instead be set on the \"QTabWidget > QTabBar\" itself. Attempting to set this\n"
+" * font size via that subcontrol prevents Qt from resizing tabs to accomodate\n"
+" * this larger size, resulting in \"cut off\" and hence illegible tab titles.\n"
+" *\n"
+" * This is an outstanding issue in the Qt issue tracker at:\n"
+" *     https://bugreports.qt.io/browse/QTBUG-8209\n"
+" */\n"
+"QTabWidget#sim_cmd_tabs > QTabBar {\n"
+"    font-size: 11pt;\n"
+"\n"
+"    /* Ideally, *ONLY* the currently selected tab would be emboldened. Sadly,\n"
+"     * the \":selected\" pseudo-class only applies to the \"::tab\" subcontrol\n"
+"     * (e.g., \"QTabWidget#sim_cmd_tabs > QTabBar::tab:selected\"). However, the\n"
+"     * latter and hence the former is unusable for the reasons discussed above.\n"
+"     */\n"
+"    font-weight: bold;\n"
+"}\n"
+"\n"
+"/* ..................{ SIM CONF ~ stack|tab : group : wdg }.....................\n"
+" * Note that pages of both stacked and tab widgets *MUST* be selected via the\n"
+" * dynamic \"is_page\" property manually enabled for these pages. For unknown\n"
+" * reasons (presumably reducing to subtle bugs in Qt\'s CSS selector handling),\n"
+" * tab widget pages are selectable by the less useful \" \" descendant selector\n"
+" * but *NOT* by the more useful \">\" child selector; ergo, such pages are\n"
+" * unambiguously selectable only by dynamic properties. While stacked widget\n"
+" * pages are technically selectable by either selector, doing so is complicated\n"
+" * by the observation that \"QStackedWidget#sim_conf_stack > QWidget > QGroupBox\"\n"
+" * actually selects such a page rather than a group box within such a page;\n"
+" * ergo, such pages are best selected by dynamic properties as well. For\n"
+" * orthogonality, these pages are all selectable by the following selector:\n"
+" *\n"
+" *     QWidget[is_page=\"true\"]\n"
+" *\n"
+" * Note also that, if QSS supported the CSS4-specific :matches() pseudo-class:\n"
+" *\n"
+" *     # Multiline selectors resembling the following...\n"
+" *     QStackedWidget#sim_conf > QWidget > QGroupBox,\n"
+" *     QTabWidget#sim_cmd > QWidget > QGroupBox {\n"
+" *\n"
+" *     # ...would be reducible to one-liner selectors resembling the following.\n"
+" *     :matches(QStackedWidget#sim_conf, QTabWidget#sim_cmd) > QWidget > QGroupBox {\n"
+" *\n"
+" * Sadly, QSS currently only supports CSS2, which provides no comparable means\n"
+" * of grouping the \", \" or operator to have higher precedence than the \">\"\n"
+" * descendent selector.\n"
+" */\n"
+"\n"
 "/* Widgets either:\n"
 " *\n"
-" * * Direct children of a page rather than a top-level group box. Thanks to\n"
-" *   conflict resolution, the specificity of the prior selector selecting\n"
-" *   top-level group boxes in a page takes precedence over this selector.\n"
-" * * At any depth of a top-level group box in a page.\n"
+" * * Direct children of a stacked page *OR* tabbed tab.\n"
+" * * At any depth of a top-level group box in a stacked page *OR* tabbed tab.\n"
 " */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QWidget,\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox QWidget {\n"
+"QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QWidget,\n"
+"QTabWidget#sim_cmd_tabs       QWidget[is_page=\"true\"] > QWidget,\n"
+"QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox QWidget,\n"
+"QTabWidget#sim_cmd_tabs       QWidget[is_page=\"true\"] > QGroupBox QWidget {\n"
 "    font-size: 10pt;\n"
 "}\n"
 "\n"
-"/* Widgets at any depth of a second-level group box in a page.\n"
+"/* Widgets at any depth of a second-level group box in a stacked page *OR*\n"
+" * tabbed tab.\n"
 " */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox > QGroupBox QWidget {\n"
+"QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox QWidget,\n"
+"QTabWidget#sim_cmd_tabs       QWidget[is_page=\"true\"] > QGroupBox > QGroupBox QWidget {\n"
 "    font-size: 9pt;\n"
 "}\n"
 "\n"
-"/* Widgets at any depth of a third-level group box in a page.\n"
+"\n"
+"/* Widgets at any depth of a third-level group box in a stacked page *OR*\n"
+" * tabbed tab.\n"
 " */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox > QGroupBox >\n"
-"    QGroupBox QWidget {\n"
+"QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox QWidget,\n"
+"QTabWidget#sim_cmd_tabs       QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox QWidget {\n"
 "    font-size: 8pt;\n"
 "}\n"
 "\n"
-"/* ..................{ STACK ~ group                      }.....................\n"
+"/* ..................{ SIM CONF ~ stack|tab : group       }.....................\n"
 " * To ensure that group box selectors take precedence over selectors intended to\n"
 " * be applicable *ONLY* to the children of these selectors, the former are\n"
-" * intentionally specified after rather than before the latter. Technically, Qt\n"
-" * documentation explicitly insists that selectors of greater class specificity\n"
+" * intentionally specified after rather than before the latter. Sadly, Qt\n"
+" * documentation explicitly admits that selectors of greater class specificity\n"
 " * (e.g., \"QGroupBox\") take precedence over those of lesser class specificity\n"
-" * (e.g., \"QWidget\"). Unfortunately, that does *NOT* appear to be the case.\n"
+" * (e.g., \"QWidget\"). Ergo, we do this the hard way. (It\'s always the hard way.)\n"
 " */\n"
 "\n"
-"/* Top-level group box in a page. */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox {\n"
-"    font-weight: bold;\n"
+"/* Top-level group box in a stacked page *OR* tabbed tab. */\n"
+"QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox,\n"
+"QTabWidget#sim_cmd_tabs       QWidget[is_page=\"true\"] > QGroupBox {\n"
 "    font-size: 11pt;\n"
 "}\n"
 "\n"
 "\n"
-"/* Second-level group box in a page. */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox > QGroupBox {\n"
-"    font-weight: bold;\n"
+"/* Second-level group box in a stacked page *OR* tabbed tab. */\n"
+"QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox,\n"
+"QTabWidget#sim_cmd_tabs       QWidget[is_page=\"true\"] > QGroupBox > QGroupBox {\n"
 "    font-size: 10pt;\n"
 "}\n"
 "\n"
-"/* Third-level group box in a page. */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox > QGroupBox > QGroupBox > QGroupBox {\n"
-"    font-weight: bold;\n"
+"\n"
+"/* Third-level group box in a stacked page *OR* tabbed tab. */\n"
+"QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox,\n"
+"QTabWidget#sim_cmd_tabs       QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox {\n"
 "    font-size: 9pt;\n"
 "}")
         main_window.setUnifiedTitleAndToolBarOnMac(True)
@@ -161,78 +258,78 @@ class Ui_main_window(object):
         self.sim_conf_tree.setItemsExpandable(True)
         self.sim_conf_tree.setObjectName("sim_conf_tree")
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
-        icon = QtGui.QIcon()
-        icon.addFile("://icon/betsee/chemical.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item_0.setIcon(0, icon)
-        item_1 = QtWidgets.QTreeWidgetItem(item_0)
         icon1 = QtGui.QIcon()
-        icon1.addFile("://icon/open_iconic/aperture.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item_1.setIcon(0, icon1)
-        item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
+        icon1.addFile("://icon/betsee/chemical.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        item_0.setIcon(0, icon1)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
         icon2 = QtGui.QIcon()
-        icon2.addFile("://icon/open_iconic/clock.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item_0.setIcon(0, icon2)
+        icon2.addFile("://icon/open_iconic/aperture.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        item_1.setIcon(0, icon2)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon3 = QtGui.QIcon()
-        icon3.addFile("://icon/entypo+/sports-club.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addFile("://icon/open_iconic/clock.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon3)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon4 = QtGui.QIcon()
-        icon4.addFile(":/icon/open_iconic/folder.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon4.addFile("://icon/entypo+/sports-club.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon4)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon5 = QtGui.QIcon()
-        icon5.addFile("://icon/open_iconic/bolt.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon5.addFile(":/icon/open_iconic/folder.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon5)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon6 = QtGui.QIcon()
-        icon6.addFile("://icon/open_iconic/eyedropper.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon6.addFile("://icon/open_iconic/bolt.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon6)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon7 = QtGui.QIcon()
-        icon7.addFile("://icon/open_iconic/share.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon7.addFile("://icon/open_iconic/eyedropper.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon7)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon8 = QtGui.QIcon()
-        icon8.addFile("://icon/betsee/dna.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon8.addFile("://icon/open_iconic/share.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon8)
-        item_1 = QtWidgets.QTreeWidgetItem(item_0)
-        item_1 = QtWidgets.QTreeWidgetItem(item_0)
-        item_1 = QtWidgets.QTreeWidgetItem(item_0)
-        item_1 = QtWidgets.QTreeWidgetItem(item_0)
-        item_1 = QtWidgets.QTreeWidgetItem(item_0)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon9 = QtGui.QIcon()
-        icon9.addFile("://icon/betsee/planet.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon9.addFile("://icon/betsee/dna.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon9)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon10 = QtGui.QIcon()
-        icon10.addFile("://icon/open_iconic/wrench.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon10.addFile("://icon/betsee/planet.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon10)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon11 = QtGui.QIcon()
-        icon11.addFile("://icon/betsee/advanced.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon11.addFile("://icon/open_iconic/wrench.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon11)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon12 = QtGui.QIcon()
-        icon12.addFile("://icon/open_iconic/bars.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon12.addFile("://icon/betsee/advanced.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon12)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon13 = QtGui.QIcon()
-        icon13.addFile("://icon/open_iconic/list.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon13.addFile("://icon/open_iconic/bars.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon13)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon14 = QtGui.QIcon()
-        icon14.addFile("://icon/betsee/lineplot.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon14.addFile("://icon/open_iconic/list.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon14)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon15 = QtGui.QIcon()
-        icon15.addFile("://icon/open_iconic/image.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon15.addFile("://icon/betsee/lineplot.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon15)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon16 = QtGui.QIcon()
-        icon16.addFile("://icon/open_iconic/movie.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon16.addFile("://icon/open_iconic/image.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon16)
+        item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
+        icon17 = QtGui.QIcon()
+        icon17.addFile("://icon/open_iconic/movie.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        item_0.setIcon(0, icon17)
         self.verticalLayout_21.addWidget(self.sim_conf_tree)
         self.frame_3 = QtWidgets.QFrame(self.sim_conf_tree_frame)
         self.frame_3.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -263,7 +360,7 @@ class Ui_main_window(object):
         self.sim_conf_stack_area.setWidgetResizable(True)
         self.sim_conf_stack_area.setObjectName("sim_conf_stack_area")
         self.sim_conf_stack = QBetseeSimConfStackedWidget()
-        self.sim_conf_stack.setGeometry(QtCore.QRect(0, 0, 511, 828))
+        self.sim_conf_stack.setGeometry(QtCore.QRect(0, 0, 483, 808))
         font = QtGui.QFont()
         font.setPointSize(13)
         self.sim_conf_stack.setFont(font)
@@ -275,6 +372,7 @@ class Ui_main_window(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.groupBox_50 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Paths)
         self.groupBox_50.setToolTip("")
+        self.groupBox_50.setProperty("is_page", True)
         self.groupBox_50.setObjectName("groupBox_50")
         self.verticalLayout_19 = QtWidgets.QVBoxLayout(self.groupBox_50)
         self.verticalLayout_19.setObjectName("verticalLayout_19")
@@ -469,6 +567,7 @@ class Ui_main_window(object):
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.groupBox_51 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Time)
         self.groupBox_51.setToolTip("")
+        self.groupBox_51.setProperty("is_page", True)
         self.groupBox_51.setObjectName("groupBox_51")
         self.verticalLayout_22 = QtWidgets.QVBoxLayout(self.groupBox_51)
         self.verticalLayout_22.setObjectName("verticalLayout_22")
@@ -654,6 +753,7 @@ class Ui_main_window(object):
         self.gridLayout_21.setObjectName("gridLayout_21")
         self.groupBox_52 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Ions)
         self.groupBox_52.setToolTip("")
+        self.groupBox_52.setProperty("is_page", True)
         self.groupBox_52.setObjectName("groupBox_52")
         self.verticalLayout_24 = QtWidgets.QVBoxLayout(self.groupBox_52)
         self.verticalLayout_24.setObjectName("verticalLayout_24")
@@ -789,6 +889,7 @@ class Ui_main_window(object):
         self.gridLayout_50.setObjectName("gridLayout_50")
         self.groupBox_53 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Space)
         self.groupBox_53.setToolTip("")
+        self.groupBox_53.setProperty("is_page", True)
         self.groupBox_53.setObjectName("groupBox_53")
         self.verticalLayout_17 = QtWidgets.QVBoxLayout(self.groupBox_53)
         self.verticalLayout_17.setObjectName("verticalLayout_17")
@@ -916,6 +1017,7 @@ class Ui_main_window(object):
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.sim_conf_stack_page_Space_Tissue)
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.groupBox_23 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Space_Tissue)
+        self.groupBox_23.setProperty("is_page", True)
         self.groupBox_23.setObjectName("groupBox_23")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.groupBox_23)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
@@ -1837,142 +1939,27 @@ class Ui_main_window(object):
         self.gridLayout_17.addWidget(self.groupBox_10, 1, 0, 1, 1)
         self.sim_conf_stack.addWidget(self.sim_conf_stack_page_NetworkModulator)
         self.sim_conf_stack_area.setWidget(self.sim_conf_stack)
-        self.gridLayout.addWidget(self.sim_conf_stack_area, 0, 1, 1, 2)
-        self.sim_phase_tabs_area = QtWidgets.QScrollArea(self.centralWidget)
+        self.gridLayout.addWidget(self.sim_conf_stack_area, 0, 1, 1, 1)
+        self.sim_cmd_tabs = QtWidgets.QTabWidget(self.centralWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(6)
         sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.sim_phase_tabs_area.sizePolicy().hasHeightForWidth())
-        self.sim_phase_tabs_area.setSizePolicy(sizePolicy)
-        self.sim_phase_tabs_area.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.sim_phase_tabs_area.setWidgetResizable(True)
-        self.sim_phase_tabs_area.setObjectName("sim_phase_tabs_area")
-        self.sim_phase_tabs = QtWidgets.QTabWidget()
-        self.sim_phase_tabs.setGeometry(QtCore.QRect(0, 0, 766, 828))
-        self.sim_phase_tabs.setObjectName("sim_phase_tabs")
-        self.phase_tabsPage1_2 = QtWidgets.QWidget()
-        self.phase_tabsPage1_2.setObjectName("phase_tabsPage1_2")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.phase_tabsPage1_2)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.mplWindow_seed = QtWidgets.QWidget(self.phase_tabsPage1_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(5)
-        sizePolicy.setHeightForWidth(self.mplWindow_seed.sizePolicy().hasHeightForWidth())
-        self.mplWindow_seed.setSizePolicy(sizePolicy)
-        self.mplWindow_seed.setObjectName("mplWindow_seed")
-        self.mplVLayout_seed = QtWidgets.QVBoxLayout(self.mplWindow_seed)
-        self.mplVLayout_seed.setContentsMargins(0, 0, 0, 0)
-        self.mplVLayout_seed.setObjectName("mplVLayout_seed")
-        self.verticalLayout.addWidget(self.mplWindow_seed)
-        self.progressBar_seed = QtWidgets.QProgressBar(self.phase_tabsPage1_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.progressBar_seed.sizePolicy().hasHeightForWidth())
-        self.progressBar_seed.setSizePolicy(sizePolicy)
-        font = QtGui.QFont()
-        font.setPointSize(5)
-        self.progressBar_seed.setFont(font)
-        self.progressBar_seed.setProperty("value", 0)
-        self.progressBar_seed.setTextVisible(False)
-        self.progressBar_seed.setInvertedAppearance(False)
-        self.progressBar_seed.setObjectName("progressBar_seed")
-        self.verticalLayout.addWidget(self.progressBar_seed)
-        self.frameControls = QtWidgets.QFrame(self.phase_tabsPage1_2)
-        self.frameControls.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.frameControls.sizePolicy().hasHeightForWidth())
-        self.frameControls.setSizePolicy(sizePolicy)
-        self.frameControls.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frameControls.setObjectName("frameControls")
-        self.gridLayout_6 = QtWidgets.QGridLayout(self.frameControls)
-        self.gridLayout_6.setObjectName("gridLayout_6")
-        self.groupBox_seedPlots = QtWidgets.QGroupBox(self.frameControls)
-        self.groupBox_seedPlots.setEnabled(False)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(2)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.groupBox_seedPlots.sizePolicy().hasHeightForWidth())
-        self.groupBox_seedPlots.setSizePolicy(sizePolicy)
-        self.groupBox_seedPlots.setAlignment(QtCore.Qt.AlignCenter)
-        self.groupBox_seedPlots.setObjectName("groupBox_seedPlots")
-        self.gridLayout_5 = QtWidgets.QGridLayout(self.groupBox_seedPlots)
-        self.gridLayout_5.setObjectName("gridLayout_5")
-        self.label_23 = QtWidgets.QLabel(self.groupBox_seedPlots)
-        self.label_23.setObjectName("label_23")
-        self.gridLayout_5.addWidget(self.label_23, 3, 0, 1, 1)
-        self.lineEdit_seedColormap = QtWidgets.QLineEdit(self.groupBox_seedPlots)
-        self.lineEdit_seedColormap.setObjectName("lineEdit_seedColormap")
-        self.gridLayout_5.addWidget(self.lineEdit_seedColormap, 3, 1, 1, 1)
-        self.comboBox_seedPlots = QtWidgets.QComboBox(self.groupBox_seedPlots)
-        self.comboBox_seedPlots.setObjectName("comboBox_seedPlots")
-        self.gridLayout_5.addWidget(self.comboBox_seedPlots, 0, 1, 1, 1)
-        self.gridLayout_6.addWidget(self.groupBox_seedPlots, 2, 3, 1, 1)
-        self.rb_lockSeed = QtWidgets.QRadioButton(self.frameControls)
-        icon17 = QtGui.QIcon()
-        icon17.addFile("://icon/open_iconic/lock_fill.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.rb_lockSeed.setIcon(icon17)
-        self.rb_lockSeed.setChecked(False)
-        self.rb_lockSeed.setObjectName("rb_lockSeed")
-        self.gridLayout_6.addWidget(self.rb_lockSeed, 2, 0, 1, 1)
-        self.widget_seedControls = QtWidgets.QWidget(self.frameControls)
-        self.widget_seedControls.setEnabled(False)
-        self.widget_seedControls.setObjectName("widget_seedControls")
-        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.widget_seedControls)
-        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.pushButton_startSeed = QtWidgets.QPushButton(self.widget_seedControls)
-        self.pushButton_startSeed.setEnabled(False)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_startSeed.sizePolicy().hasHeightForWidth())
-        self.pushButton_startSeed.setSizePolicy(sizePolicy)
-        icon18 = QtGui.QIcon()
-        icon18.addFile("://icon/open_iconic/play_alt.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pushButton_startSeed.setIcon(icon18)
-        self.pushButton_startSeed.setObjectName("pushButton_startSeed")
-        self.verticalLayout_5.addWidget(self.pushButton_startSeed)
-        self.pushButton_stopSeed = QtWidgets.QPushButton(self.widget_seedControls)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_stopSeed.sizePolicy().hasHeightForWidth())
-        self.pushButton_stopSeed.setSizePolicy(sizePolicy)
-        icon19 = QtGui.QIcon()
-        icon19.addFile("://icon/open_iconic/x_alt.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pushButton_stopSeed.setIcon(icon19)
-        self.pushButton_stopSeed.setObjectName("pushButton_stopSeed")
-        self.verticalLayout_5.addWidget(self.pushButton_stopSeed)
-        self.gridLayout_6.addWidget(self.widget_seedControls, 2, 1, 1, 1)
-        self.verticalLayout.addWidget(self.frameControls)
-        self.sim_phase_tabs.addTab(self.phase_tabsPage1_2, "")
-        self.phase_tabsPage2_2 = QtWidgets.QWidget()
-        self.phase_tabsPage2_2.setObjectName("phase_tabsPage2_2")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.phase_tabsPage2_2)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.mplWindow_init = QtWidgets.QWidget(self.phase_tabsPage2_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(5)
-        sizePolicy.setHeightForWidth(self.mplWindow_init.sizePolicy().hasHeightForWidth())
-        self.mplWindow_init.setSizePolicy(sizePolicy)
-        self.mplWindow_init.setObjectName("mplWindow_init")
-        self.mplVLayout_init = QtWidgets.QVBoxLayout(self.mplWindow_init)
-        self.mplVLayout_init.setContentsMargins(0, 0, 0, 0)
-        self.mplVLayout_init.setObjectName("mplVLayout_init")
-        self.verticalLayout_2.addWidget(self.mplWindow_init)
-        self.progressBar_init = QtWidgets.QProgressBar(self.phase_tabsPage2_2)
-        font = QtGui.QFont()
-        font.setPointSize(5)
-        self.progressBar_init.setFont(font)
-        self.progressBar_init.setTextVisible(False)
-        self.progressBar_init.setObjectName("progressBar_init")
-        self.verticalLayout_2.addWidget(self.progressBar_init)
-        self.frame1 = QtWidgets.QFrame(self.phase_tabsPage2_2)
+        sizePolicy.setHeightForWidth(self.sim_cmd_tabs.sizePolicy().hasHeightForWidth())
+        self.sim_cmd_tabs.setSizePolicy(sizePolicy)
+        self.sim_cmd_tabs.setElideMode(QtCore.Qt.ElideRight)
+        self.sim_cmd_tabs.setTabBarAutoHide(False)
+        self.sim_cmd_tabs.setObjectName("sim_cmd_tabs")
+        self.sim_cmd_tab_run_area = QtWidgets.QScrollArea()
+        self.sim_cmd_tab_run_area.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.sim_cmd_tab_run_area.setWidgetResizable(True)
+        self.sim_cmd_tab_run_area.setObjectName("sim_cmd_tab_run_area")
+        self.sim_cmd_tab_run = QtWidgets.QWidget()
+        self.sim_cmd_tab_run.setGeometry(QtCore.QRect(0, 0, 954, 782))
+        self.sim_cmd_tab_run.setProperty("is_page", True)
+        self.sim_cmd_tab_run.setObjectName("sim_cmd_tab_run")
+        self.gridLayout_30 = QtWidgets.QGridLayout(self.sim_cmd_tab_run)
+        self.gridLayout_30.setObjectName("gridLayout_30")
+        self.frame1 = QtWidgets.QFrame(self.sim_cmd_tab_run)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(1)
@@ -1994,10 +1981,14 @@ class Ui_main_window(object):
         self.groupBox_initControls.setObjectName("groupBox_initControls")
         self.pushButton_startInit = QtWidgets.QPushButton(self.groupBox_initControls)
         self.pushButton_startInit.setGeometry(QtCore.QRect(30, 10, 112, 29))
+        icon18 = QtGui.QIcon()
+        icon18.addFile("://icon/open_iconic/play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton_startInit.setIcon(icon18)
         self.pushButton_startInit.setObjectName("pushButton_startInit")
         self.pushButton_stopInit = QtWidgets.QPushButton(self.groupBox_initControls)
         self.pushButton_stopInit.setGeometry(QtCore.QRect(30, 50, 112, 29))
+        icon19 = QtGui.QIcon()
+        icon19.addFile("://icon/open_iconic/x.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.pushButton_stopInit.setIcon(icon19)
         self.pushButton_stopInit.setObjectName("pushButton_stopInit")
         self.gridLayout_7.addWidget(self.groupBox_initControls, 0, 0, 1, 1)
@@ -2010,54 +2001,10 @@ class Ui_main_window(object):
         self.groupBox_initPlotControls.setSizePolicy(sizePolicy)
         self.groupBox_initPlotControls.setTitle("")
         self.groupBox_initPlotControls.setObjectName("groupBox_initPlotControls")
-        self.comboBox_initPlots = QtWidgets.QComboBox(self.groupBox_initPlotControls)
-        self.comboBox_initPlots.setGeometry(QtCore.QRect(60, 0, 171, 29))
-        self.comboBox_initPlots.setObjectName("comboBox_initPlots")
-        self.label_31 = QtWidgets.QLabel(self.groupBox_initPlotControls)
-        self.label_31.setGeometry(QtCore.QRect(0, 0, 78, 19))
-        self.label_31.setObjectName("label_31")
-        self.label_37 = QtWidgets.QLabel(self.groupBox_initPlotControls)
-        self.label_37.setGeometry(QtCore.QRect(0, 40, 91, 19))
-        self.label_37.setObjectName("label_37")
-        self.lineEdit_initColormap = QtWidgets.QLineEdit(self.groupBox_initPlotControls)
-        self.lineEdit_initColormap.setGeometry(QtCore.QRect(90, 40, 141, 29))
-        self.lineEdit_initColormap.setObjectName("lineEdit_initColormap")
-        self.radioButton_initAutoscale = QtWidgets.QRadioButton(self.groupBox_initPlotControls)
-        self.radioButton_initAutoscale.setGeometry(QtCore.QRect(260, 0, 131, 24))
-        self.radioButton_initAutoscale.setChecked(True)
-        self.radioButton_initAutoscale.setObjectName("radioButton_initAutoscale")
         self.frame_initScaleMinMax = QtWidgets.QFrame(self.groupBox_initPlotControls)
         self.frame_initScaleMinMax.setEnabled(False)
         self.frame_initScaleMinMax.setGeometry(QtCore.QRect(260, 20, 120, 51))
         self.frame_initScaleMinMax.setObjectName("frame_initScaleMinMax")
-        self.lineEdit_initPlot_min = QtWidgets.QLineEdit(self.frame_initScaleMinMax)
-        self.lineEdit_initPlot_min.setGeometry(QtCore.QRect(50, 8, 61, 21))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.lineEdit_initPlot_min.sizePolicy().hasHeightForWidth())
-        self.lineEdit_initPlot_min.setSizePolicy(sizePolicy)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.lineEdit_initPlot_min.setFont(font)
-        self.lineEdit_initPlot_min.setObjectName("lineEdit_initPlot_min")
-        self.lineEdit_initPlot_max = QtWidgets.QLineEdit(self.frame_initScaleMinMax)
-        self.lineEdit_initPlot_max.setGeometry(QtCore.QRect(50, 30, 61, 21))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.lineEdit_initPlot_max.sizePolicy().hasHeightForWidth())
-        self.lineEdit_initPlot_max.setSizePolicy(sizePolicy)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.lineEdit_initPlot_max.setFont(font)
-        self.lineEdit_initPlot_max.setObjectName("lineEdit_initPlot_max")
-        self.label_38 = QtWidgets.QLabel(self.frame_initScaleMinMax)
-        self.label_38.setGeometry(QtCore.QRect(10, 10, 31, 19))
-        self.label_38.setObjectName("label_38")
-        self.label_39 = QtWidgets.QLabel(self.frame_initScaleMinMax)
-        self.label_39.setGeometry(QtCore.QRect(10, 30, 41, 19))
-        self.label_39.setObjectName("label_39")
         self.frame_initAnimControls = QtWidgets.QFrame(self.groupBox_initPlotControls)
         self.frame_initAnimControls.setEnabled(False)
         self.frame_initAnimControls.setGeometry(QtCore.QRect(410, 10, 103, 82))
@@ -2071,146 +2018,21 @@ class Ui_main_window(object):
         self.pushButton_initAnimStop.setObjectName("pushButton_initAnimStop")
         self.verticalLayout_9.addWidget(self.pushButton_initAnimStop)
         self.gridLayout_7.addWidget(self.groupBox_initPlotControls, 0, 1, 1, 1)
-        self.verticalLayout_2.addWidget(self.frame1)
-        self.sim_phase_tabs.addTab(self.phase_tabsPage2_2, "")
-        self.phase_tabsPage3_2 = QtWidgets.QWidget()
-        self.phase_tabsPage3_2.setObjectName("phase_tabsPage3_2")
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.phase_tabsPage3_2)
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.mplWindow_sim = QtWidgets.QWidget(self.phase_tabsPage3_2)
-        self.mplWindow_sim.setObjectName("mplWindow_sim")
-        self.mplVLayout_sim = QtWidgets.QVBoxLayout(self.mplWindow_sim)
-        self.mplVLayout_sim.setContentsMargins(0, 0, 0, 0)
-        self.mplVLayout_sim.setObjectName("mplVLayout_sim")
-        self.verticalLayout_3.addWidget(self.mplWindow_sim)
-        self.progressBar_sim = QtWidgets.QProgressBar(self.phase_tabsPage3_2)
-        font = QtGui.QFont()
-        font.setPointSize(5)
-        self.progressBar_sim.setFont(font)
-        self.progressBar_sim.setProperty("value", 0)
-        self.progressBar_sim.setTextVisible(False)
-        self.progressBar_sim.setObjectName("progressBar_sim")
-        self.verticalLayout_3.addWidget(self.progressBar_sim)
-        self.frame_2 = QtWidgets.QFrame(self.phase_tabsPage3_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
-        self.frame_2.setSizePolicy(sizePolicy)
-        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_2.setObjectName("frame_2")
-        self.gridLayout_8 = QtWidgets.QGridLayout(self.frame_2)
-        self.gridLayout_8.setObjectName("gridLayout_8")
-        self.groupBox_simControls = QtWidgets.QGroupBox(self.frame_2)
-        self.groupBox_simControls.setEnabled(False)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.groupBox_simControls.sizePolicy().hasHeightForWidth())
-        self.groupBox_simControls.setSizePolicy(sizePolicy)
-        self.groupBox_simControls.setTitle("")
-        self.groupBox_simControls.setObjectName("groupBox_simControls")
-        self.pushButton_startSim = QtWidgets.QPushButton(self.groupBox_simControls)
-        self.pushButton_startSim.setGeometry(QtCore.QRect(30, 10, 112, 29))
-        self.pushButton_startSim.setIcon(icon18)
-        self.pushButton_startSim.setObjectName("pushButton_startSim")
-        self.pushButton_stopSim = QtWidgets.QPushButton(self.groupBox_simControls)
-        self.pushButton_stopSim.setGeometry(QtCore.QRect(30, 50, 112, 29))
-        self.pushButton_stopSim.setIcon(icon19)
-        self.pushButton_stopSim.setObjectName("pushButton_stopSim")
-        self.gridLayout_8.addWidget(self.groupBox_simControls, 0, 0, 1, 1)
-        self.groupBox_simPlotControls = QtWidgets.QGroupBox(self.frame_2)
-        self.groupBox_simPlotControls.setEnabled(False)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(3)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.groupBox_simPlotControls.sizePolicy().hasHeightForWidth())
-        self.groupBox_simPlotControls.setSizePolicy(sizePolicy)
-        self.groupBox_simPlotControls.setTitle("")
-        self.groupBox_simPlotControls.setObjectName("groupBox_simPlotControls")
-        self.comboBox_simPlots = QtWidgets.QComboBox(self.groupBox_simPlotControls)
-        self.comboBox_simPlots.setGeometry(QtCore.QRect(60, 0, 171, 29))
-        self.comboBox_simPlots.setObjectName("comboBox_simPlots")
-        self.label_30 = QtWidgets.QLabel(self.groupBox_simPlotControls)
-        self.label_30.setGeometry(QtCore.QRect(0, 0, 78, 19))
-        self.label_30.setObjectName("label_30")
-        self.label_34 = QtWidgets.QLabel(self.groupBox_simPlotControls)
-        self.label_34.setGeometry(QtCore.QRect(0, 40, 91, 19))
-        self.label_34.setObjectName("label_34")
-        self.lineEdit_simColormap = QtWidgets.QLineEdit(self.groupBox_simPlotControls)
-        self.lineEdit_simColormap.setGeometry(QtCore.QRect(90, 40, 141, 29))
-        self.lineEdit_simColormap.setObjectName("lineEdit_simColormap")
-        self.radioButton_simAutoscale = QtWidgets.QRadioButton(self.groupBox_simPlotControls)
-        self.radioButton_simAutoscale.setGeometry(QtCore.QRect(260, 0, 131, 24))
-        self.radioButton_simAutoscale.setChecked(True)
-        self.radioButton_simAutoscale.setObjectName("radioButton_simAutoscale")
-        self.frame_simScaleMinMax = QtWidgets.QFrame(self.groupBox_simPlotControls)
-        self.frame_simScaleMinMax.setEnabled(False)
-        self.frame_simScaleMinMax.setGeometry(QtCore.QRect(260, 30, 120, 51))
-        self.frame_simScaleMinMax.setObjectName("frame_simScaleMinMax")
-        self.lineEdit_simPlot_min = QtWidgets.QLineEdit(self.frame_simScaleMinMax)
-        self.lineEdit_simPlot_min.setGeometry(QtCore.QRect(50, 0, 61, 21))
-        self.lineEdit_simPlot_min.setObjectName("lineEdit_simPlot_min")
-        self.lineEdit_simPlot_max = QtWidgets.QLineEdit(self.frame_simScaleMinMax)
-        self.lineEdit_simPlot_max.setGeometry(QtCore.QRect(50, 20, 61, 21))
-        self.lineEdit_simPlot_max.setObjectName("lineEdit_simPlot_max")
-        self.label_35 = QtWidgets.QLabel(self.frame_simScaleMinMax)
-        self.label_35.setGeometry(QtCore.QRect(10, 0, 31, 19))
-        self.label_35.setObjectName("label_35")
-        self.label_36 = QtWidgets.QLabel(self.frame_simScaleMinMax)
-        self.label_36.setGeometry(QtCore.QRect(10, 20, 41, 16))
-        self.label_36.setObjectName("label_36")
-        self.frame_simAnimControls = QtWidgets.QFrame(self.groupBox_simPlotControls)
-        self.frame_simAnimControls.setEnabled(False)
-        self.frame_simAnimControls.setGeometry(QtCore.QRect(410, 10, 103, 82))
-        self.frame_simAnimControls.setObjectName("frame_simAnimControls")
-        self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.frame_simAnimControls)
-        self.verticalLayout_8.setObjectName("verticalLayout_8")
-        self.pushButton_simAnimPlay = QtWidgets.QPushButton(self.frame_simAnimControls)
-        self.pushButton_simAnimPlay.setObjectName("pushButton_simAnimPlay")
-        self.verticalLayout_8.addWidget(self.pushButton_simAnimPlay)
-        self.pushButton_simAnimStop = QtWidgets.QPushButton(self.frame_simAnimControls)
-        self.pushButton_simAnimStop.setObjectName("pushButton_simAnimStop")
-        self.verticalLayout_8.addWidget(self.pushButton_simAnimStop)
-        self.gridLayout_8.addWidget(self.groupBox_simPlotControls, 0, 1, 1, 1)
-        self.verticalLayout_3.addWidget(self.frame_2)
-        self.sim_phase_tabs.addTab(self.phase_tabsPage3_2, "")
-        self.phase_tabsPage4_2 = QtWidgets.QWidget()
-        self.phase_tabsPage4_2.setObjectName("phase_tabsPage4_2")
-        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.phase_tabsPage4_2)
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.mplWindow_net = QtWidgets.QWidget(self.phase_tabsPage4_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(5)
-        sizePolicy.setHeightForWidth(self.mplWindow_net.sizePolicy().hasHeightForWidth())
-        self.mplWindow_net.setSizePolicy(sizePolicy)
-        self.mplWindow_net.setObjectName("mplWindow_net")
-        self.mplVLayout_net = QtWidgets.QVBoxLayout(self.mplWindow_net)
-        self.mplVLayout_net.setContentsMargins(0, 0, 0, 0)
-        self.mplVLayout_net.setObjectName("mplVLayout_net")
-        self.verticalLayout_4.addWidget(self.mplWindow_net)
-        self.frameControls_4 = QtWidgets.QFrame(self.phase_tabsPage4_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.frameControls_4.sizePolicy().hasHeightForWidth())
-        self.frameControls_4.setSizePolicy(sizePolicy)
-        self.frameControls_4.setObjectName("frameControls_4")
-        self.pushButton_plotNetwork = QtWidgets.QPushButton(self.frameControls_4)
-        self.pushButton_plotNetwork.setGeometry(QtCore.QRect(10, 20, 131, 29))
-        self.pushButton_plotNetwork.setObjectName("pushButton_plotNetwork")
-        self.widget = QtWidgets.QWidget(self.frameControls_4)
-        self.widget.setGeometry(QtCore.QRect(180, 10, 371, 80))
-        self.widget.setObjectName("widget")
-        self.pushButton_runOptimizer = QtWidgets.QPushButton(self.frameControls_4)
-        self.pushButton_runOptimizer.setGeometry(QtCore.QRect(10, 60, 131, 29))
-        self.pushButton_runOptimizer.setObjectName("pushButton_runOptimizer")
-        self.verticalLayout_4.addWidget(self.frameControls_4)
-        self.sim_phase_tabs.addTab(self.phase_tabsPage4_2, "")
-        self.sim_phase_tabs_area.setWidget(self.sim_phase_tabs)
-        self.gridLayout.addWidget(self.sim_phase_tabs_area, 0, 3, 1, 1)
+        self.gridLayout_30.addWidget(self.frame1, 1, 0, 1, 1)
+        self.groupBox_19 = QtWidgets.QGroupBox(self.sim_cmd_tab_run)
+        self.groupBox_19.setObjectName("groupBox_19")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.groupBox_19)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.sim_cmd_run_bar = QtWidgets.QProgressBar(self.groupBox_19)
+        self.sim_cmd_run_bar.setObjectName("sim_cmd_run_bar")
+        self.horizontalLayout.addWidget(self.sim_cmd_run_bar)
+        self.sim_cmd_run_time_total = QtWidgets.QLabel(self.groupBox_19)
+        self.sim_cmd_run_time_total.setObjectName("sim_cmd_run_time_total")
+        self.horizontalLayout.addWidget(self.sim_cmd_run_time_total)
+        self.gridLayout_30.addWidget(self.groupBox_19, 0, 0, 1, 1)
+        self.sim_cmd_tab_run_area.setWidget(self.sim_cmd_tab_run)
+        self.sim_cmd_tabs.addTab(self.sim_cmd_tab_run_area, "")
+        self.gridLayout.addWidget(self.sim_cmd_tabs, 0, 2, 1, 1)
         self.log_frame = QtWidgets.QFrame(self.centralWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
@@ -2239,7 +2061,7 @@ class Ui_main_window(object):
         self.log_box.setBackgroundVisible(False)
         self.log_box.setObjectName("log_box")
         self.verticalLayout_201.addWidget(self.log_box)
-        self.gridLayout.addWidget(self.log_frame, 1, 0, 1, 4)
+        self.gridLayout.addWidget(self.log_frame, 1, 0, 1, 3)
         main_window.setCentralWidget(self.centralWidget)
         self.menu_bar = QtWidgets.QMenuBar(main_window)
         self.menu_bar.setGeometry(QtCore.QRect(0, 0, 1572, 27))
@@ -2372,8 +2194,6 @@ class Ui_main_window(object):
 
         self.retranslateUi(main_window)
         self.sim_conf_stack.setCurrentIndex(4)
-        self.sim_phase_tabs.setCurrentIndex(1)
-        self.comboBox_seedPlots.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(main_window)
 
     def retranslateUi(self, main_window):
@@ -2726,35 +2546,17 @@ class Ui_main_window(object):
         self.label_69.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
         self.groupBox_10.setTitle(QtWidgets.QApplication.translate("main_window", "Modulator", None, -1))
         self.label_68.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
-        self.groupBox_seedPlots.setTitle(QtWidgets.QApplication.translate("main_window", "Plotting:", None, -1))
-        self.label_23.setText(QtWidgets.QApplication.translate("main_window", "colormap", None, -1))
-        self.rb_lockSeed.setText(QtWidgets.QApplication.translate("main_window", "Loc&k Seed", None, -1))
-        self.pushButton_startSeed.setText(QtWidgets.QApplication.translate("main_window", "Start Seed ", None, -1))
-        self.pushButton_stopSeed.setText(QtWidgets.QApplication.translate("main_window", "Stop Seed", None, -1))
-        self.sim_phase_tabs.setTabText(self.sim_phase_tabs.indexOf(self.phase_tabsPage1_2), QtWidgets.QApplication.translate("main_window", "Cell Cluster", None, -1))
         self.pushButton_startInit.setText(QtWidgets.QApplication.translate("main_window", "Start Init", None, -1))
         self.pushButton_stopInit.setText(QtWidgets.QApplication.translate("main_window", "Stop Init", None, -1))
-        self.label_31.setText(QtWidgets.QApplication.translate("main_window", "View:", None, -1))
-        self.label_37.setText(QtWidgets.QApplication.translate("main_window", "Colormap:", None, -1))
-        self.radioButton_initAutoscale.setText(QtWidgets.QApplication.translate("main_window", "Autoscale", None, -1))
-        self.label_38.setText(QtWidgets.QApplication.translate("main_window", "min", None, -1))
-        self.label_39.setText(QtWidgets.QApplication.translate("main_window", "max", None, -1))
         self.pushButton_initAnimPlay.setText(QtWidgets.QApplication.translate("main_window", "Play", None, -1))
         self.pushButton_initAnimStop.setText(QtWidgets.QApplication.translate("main_window", "Stop", None, -1))
-        self.sim_phase_tabs.setTabText(self.sim_phase_tabs.indexOf(self.phase_tabsPage2_2), QtWidgets.QApplication.translate("main_window", "Initialization", None, -1))
-        self.pushButton_startSim.setText(QtWidgets.QApplication.translate("main_window", "Start Sim", None, -1))
-        self.pushButton_stopSim.setText(QtWidgets.QApplication.translate("main_window", "Stop Sim", None, -1))
-        self.label_30.setText(QtWidgets.QApplication.translate("main_window", "View:", None, -1))
-        self.label_34.setText(QtWidgets.QApplication.translate("main_window", "Colormap:", None, -1))
-        self.radioButton_simAutoscale.setText(QtWidgets.QApplication.translate("main_window", "Autoscale", None, -1))
-        self.label_35.setText(QtWidgets.QApplication.translate("main_window", "min", None, -1))
-        self.label_36.setText(QtWidgets.QApplication.translate("main_window", "max", None, -1))
-        self.pushButton_simAnimPlay.setText(QtWidgets.QApplication.translate("main_window", "Play", None, -1))
-        self.pushButton_simAnimStop.setText(QtWidgets.QApplication.translate("main_window", "Stop", None, -1))
-        self.sim_phase_tabs.setTabText(self.sim_phase_tabs.indexOf(self.phase_tabsPage3_2), QtWidgets.QApplication.translate("main_window", "Simulation", None, -1))
-        self.pushButton_plotNetwork.setText(QtWidgets.QApplication.translate("main_window", "Plot Network", None, -1))
-        self.pushButton_runOptimizer.setText(QtWidgets.QApplication.translate("main_window", "Run Optimizer", None, -1))
-        self.sim_phase_tabs.setTabText(self.sim_phase_tabs.indexOf(self.phase_tabsPage4_2), QtWidgets.QApplication.translate("main_window", "Network", None, -1))
+        self.groupBox_19.setToolTip(QtWidgets.QApplication.translate("main_window", "Progress bar depicting the completion state of the most recently run simulation phase if any.", None, -1))
+        self.groupBox_19.setTitle(QtWidgets.QApplication.translate("main_window", "Phase Progress", None, -1))
+        self.sim_cmd_run_bar.setToolTip(QtWidgets.QApplication.translate("main_window", "Current number of steps (e.g., time in seconds) completed for the most recently run simulation phase if any.", None, -1))
+        self.sim_cmd_run_time_total.setToolTip(QtWidgets.QApplication.translate("main_window", "Total number of steps (e.g., time in seconds) needed to complete the most recently run simulation phase if any.", None, -1))
+        self.sim_cmd_run_time_total.setText(QtWidgets.QApplication.translate("main_window", "total time", None, -1))
+        self.sim_cmd_tabs.setTabText(self.sim_cmd_tabs.indexOf(self.sim_cmd_tab_run_area), QtWidgets.QApplication.translate("main_window", "Simulator", None, -1))
+        self.sim_cmd_tabs.setTabToolTip(self.sim_cmd_tabs.indexOf(self.sim_cmd_tab_run_area), QtWidgets.QApplication.translate("main_window", "Interactive simulator controlling each phase (e.g., seed, initialization) of this simulation with a standard media player interface – including playback controls, progress bars, and animated video.", None, -1))
         self.log_label.setText(QtWidgets.QApplication.translate("main_window", "Log Messages", None, -1))
         self.menu_file.setTitle(QtWidgets.QApplication.translate("main_window", "&File", None, -1))
         self.menu_help.setTitle(QtWidgets.QApplication.translate("main_window", "&Help", None, -1))
@@ -2796,14 +2598,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
 from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
+from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
