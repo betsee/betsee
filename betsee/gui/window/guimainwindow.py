@@ -16,10 +16,6 @@ submodule is safely importable only *after* the :mod:`betsee.gui.guicache`
 submodule has locally created and cached that module for the current user.
 '''
 
-#FIXME: An application icon should be set. Of course, we first need to create an
-#application icon - ideally in SVG format. For exhaustive details on portability
-#issues, see the well-written "Setting the Application Icon" article.
-
 #FIXME: Consider permitting multiple simulations to be simultaneously open. The
 #conventional means of doing so is the so-called Single Documentation Interface
 #(SDI) approach, in which opening a new document opens a new distinct
@@ -34,7 +30,11 @@ submodule has locally created and cached that module for the current user.
 #browser-based multiplicity -- and so do we. Ergo, classical window-style
 #SDI- and MDI-based multiplicity are right out. That said, it shouldn't be
 #terribly arduous to add a new top-level "QTabWidget" permitting multiple
-#concurrently open simulations to be switched between.
+#concurrently open simulations to be switched between. (Yeah, right.)
+
+#FIXME: The status bar of the main window should be dynamically modified
+#whenever *ANY* action (e.g., simulation opening or closure) is successfully
+#completed. See to it, please.
 
 #FIXME: The title of the main window should probably be dynamically modified on
 #opening and closing a simulation configuration file to reflect both the
@@ -114,6 +114,8 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     ----------
     signaler : QBetseeSignaler
         :class:`PySide2`-based collection of various application-wide signals.
+    sim_cmd : QBetseeSimCmd
+        Object encapsulating high-level simulation subcommand state.
     sim_conf : QBetseeSimConf
         Object encapsulating high-level simulation configuration state.
 
@@ -161,6 +163,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         self._sim_conf_filename = sim_conf_filename
 
         # Nullify all remaining instance variables for safety.
+        self.sim_cmd = None
         self.sim_conf = None
         self._clipboard = None
 
@@ -281,6 +284,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Avoid circular import dependencies.
         from betsee.gui.window.guimainclipboard import QBetseeMainClipboard
+        from betsee.gui.simcmd.guisimcmd import QBetseeSimCmd
         from betsee.gui.simconf.guisimconf import QBetseeSimConf
 
         # Initialize the status bar with a sensible startup message.
@@ -290,9 +294,9 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # instantiated in arbitrary order.
         self._clipboard = QBetseeMainClipboard(main_window=self)
 
-        # Object encapsulating high-level simulation configuration state,
-        # instantiated *BEFORE* initializing widgets assuming this state to
-        # exist.
+        # Objects encapsulating high-level simulation state, instantiated
+        # *BEFORE* initializing widgets assuming this state to exist.
+        self.sim_cmd  = QBetseeSimCmd (main_window=self)
         self.sim_conf = QBetseeSimConf(main_window=self)
 
         # Initialize both the simulation configuration stack widget *BEFORE*

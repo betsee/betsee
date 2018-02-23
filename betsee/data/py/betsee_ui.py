@@ -1959,6 +1959,15 @@ class Ui_main_window(object):
         self.sim_cmd_tab_run.setObjectName("sim_cmd_tab_run")
         self.gridLayout_30 = QtWidgets.QGridLayout(self.sim_cmd_tab_run)
         self.gridLayout_30.setObjectName("gridLayout_30")
+        self.groupBox_19 = QtWidgets.QGroupBox(self.sim_cmd_tab_run)
+        self.groupBox_19.setObjectName("groupBox_19")
+        self.gridLayout_5 = QtWidgets.QGridLayout(self.groupBox_19)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.sim_cmd_run_bar = QtWidgets.QProgressBar(self.groupBox_19)
+        self.sim_cmd_run_bar.setAlignment(QtCore.Qt.AlignCenter)
+        self.sim_cmd_run_bar.setObjectName("sim_cmd_run_bar")
+        self.gridLayout_5.addWidget(self.sim_cmd_run_bar, 0, 0, 1, 1)
+        self.gridLayout_30.addWidget(self.groupBox_19, 0, 0, 1, 1)
         self.frame1 = QtWidgets.QFrame(self.sim_cmd_tab_run)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
@@ -2019,17 +2028,6 @@ class Ui_main_window(object):
         self.verticalLayout_9.addWidget(self.pushButton_initAnimStop)
         self.gridLayout_7.addWidget(self.groupBox_initPlotControls, 0, 1, 1, 1)
         self.gridLayout_30.addWidget(self.frame1, 1, 0, 1, 1)
-        self.groupBox_19 = QtWidgets.QGroupBox(self.sim_cmd_tab_run)
-        self.groupBox_19.setObjectName("groupBox_19")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.groupBox_19)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.sim_cmd_run_bar = QtWidgets.QProgressBar(self.groupBox_19)
-        self.sim_cmd_run_bar.setObjectName("sim_cmd_run_bar")
-        self.horizontalLayout.addWidget(self.sim_cmd_run_bar)
-        self.sim_cmd_run_time_total = QtWidgets.QLabel(self.groupBox_19)
-        self.sim_cmd_run_time_total.setObjectName("sim_cmd_run_time_total")
-        self.horizontalLayout.addWidget(self.sim_cmd_run_time_total)
-        self.gridLayout_30.addWidget(self.groupBox_19, 0, 0, 1, 1)
         self.sim_cmd_tab_run_area.setWidget(self.sim_cmd_tab_run)
         self.sim_cmd_tabs.addTab(self.sim_cmd_tab_run_area, "")
         self.gridLayout.addWidget(self.sim_cmd_tabs, 0, 2, 1, 1)
@@ -2546,15 +2544,13 @@ class Ui_main_window(object):
         self.label_69.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
         self.groupBox_10.setTitle(QtWidgets.QApplication.translate("main_window", "Modulator", None, -1))
         self.label_68.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
+        self.groupBox_19.setToolTip(QtWidgets.QApplication.translate("main_window", "Display and control the state of the currently queued simulation phase (if any).", None, -1))
+        self.groupBox_19.setTitle(QtWidgets.QApplication.translate("main_window", "Phase State", None, -1))
+        self.sim_cmd_run_bar.setToolTip(QtWidgets.QApplication.translate("main_window", "Current number of steps (e.g., time in seconds) completed for the most recently run simulation phase if any.", None, -1))
         self.pushButton_startInit.setText(QtWidgets.QApplication.translate("main_window", "Start Init", None, -1))
         self.pushButton_stopInit.setText(QtWidgets.QApplication.translate("main_window", "Stop Init", None, -1))
         self.pushButton_initAnimPlay.setText(QtWidgets.QApplication.translate("main_window", "Play", None, -1))
         self.pushButton_initAnimStop.setText(QtWidgets.QApplication.translate("main_window", "Stop", None, -1))
-        self.groupBox_19.setToolTip(QtWidgets.QApplication.translate("main_window", "Progress bar depicting the completion state of the most recently run simulation phase if any.", None, -1))
-        self.groupBox_19.setTitle(QtWidgets.QApplication.translate("main_window", "Phase Progress", None, -1))
-        self.sim_cmd_run_bar.setToolTip(QtWidgets.QApplication.translate("main_window", "Current number of steps (e.g., time in seconds) completed for the most recently run simulation phase if any.", None, -1))
-        self.sim_cmd_run_time_total.setToolTip(QtWidgets.QApplication.translate("main_window", "Total number of steps (e.g., time in seconds) needed to complete the most recently run simulation phase if any.", None, -1))
-        self.sim_cmd_run_time_total.setText(QtWidgets.QApplication.translate("main_window", "total time", None, -1))
         self.sim_cmd_tabs.setTabText(self.sim_cmd_tabs.indexOf(self.sim_cmd_tab_run_area), QtWidgets.QApplication.translate("main_window", "Simulator", None, -1))
         self.sim_cmd_tabs.setTabToolTip(self.sim_cmd_tabs.indexOf(self.sim_cmd_tab_run_area), QtWidgets.QApplication.translate("main_window", "Interactive simulator controlling each phase (e.g., seed, initialization) of this simulation with a standard media player interface – including playback controls, progress bars, and animated video.", None, -1))
         self.log_label.setText(QtWidgets.QApplication.translate("main_window", "Log Messages", None, -1))
@@ -2598,14 +2594,14 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
 
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

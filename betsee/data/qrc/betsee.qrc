@@ -10,6 +10,7 @@
         <file>icon/betsee/planet.svg</file>
         <file>icon/entypo+/clipboard.svg</file>
         <file>icon/entypo+/copy.svg</file>
+        <file>icon/entypo+/level-down.svg</file>
         <file>icon/entypo+/scissors.svg</file>
         <file>icon/entypo+/sports-club.svg</file>
         <file>icon/nounproject/maxim_kulikov/cow_flower_square.png</file>
@@ -26,7 +27,8 @@
         <file>icon/open_iconic/folder.svg</file>
         <file>icon/open_iconic/image.svg</file>
         <file>icon/open_iconic/list.svg</file>
-        <file>icon/open_iconic/lock_fill.svg</file>
+        <file>icon/open_iconic/lock-locked.svg</file>
+        <file>icon/open_iconic/lock-unlocked.svg</file>
         <file>icon/open_iconic/media-play.svg</file>
         <file>icon/open_iconic/media-pause.svg</file>
         <file>icon/open_iconic/media-stop.svg</file>

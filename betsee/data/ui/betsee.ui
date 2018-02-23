@@ -4288,6 +4288,28 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout_30">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_19">
+           <property name="toolTip">
+            <string>Display and control the state of the currently queued simulation phase (if any).</string>
+           </property>
+           <property name="title">
+            <string>Phase State</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+             <widget class="QProgressBar" name="sim_cmd_run_bar">
+              <property name="toolTip">
+               <string>Current number of steps (e.g., time in seconds) completed for the most recently run simulation phase if any.</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="QFrame" name="frame">
            <property name="sizePolicy">
@@ -4409,35 +4431,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </item>
                </layout>
               </widget>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QGroupBox" name="groupBox_19">
-           <property name="toolTip">
-            <string>Progress bar depicting the completion state of the most recently run simulation phase if any.</string>
-           </property>
-           <property name="title">
-            <string>Phase Progress</string>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QProgressBar" name="sim_cmd_run_bar">
-              <property name="toolTip">
-               <string>Current number of steps (e.g., time in seconds) completed for the most recently run simulation phase if any.</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="sim_cmd_run_time_total">
-              <property name="toolTip">
-               <string>Total number of steps (e.g., time in seconds) needed to complete the most recently run simulation phase if any.</string>
-              </property>
-              <property name="text">
-               <string>total time</string>
-              </property>
              </widget>
             </item>
            </layout>
