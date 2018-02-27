@@ -275,12 +275,6 @@ QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
            <verstretch>1</verstretch>
           </sizepolicy>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>225</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="rootIsDecorated">
           <bool>true</bool>
          </property>
@@ -491,7 +485,7 @@ QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="frame_3">
+        <widget class="QFrame" name="sim_conf_tree_toolbar_frame">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
@@ -528,6 +522,9 @@ QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
               <height>16</height>
              </size>
             </property>
+            <property name="floatable">
+             <bool>false</bool>
+            </property>
             <addaction name="action_sim_conf_tree_item_append"/>
             <addaction name="action_sim_conf_tree_item_remove"/>
            </widget>
@@ -557,8 +554,8 @@ QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>483</width>
-         <height>808</height>
+         <width>498</width>
+         <height>828</height>
         </rect>
        </property>
        <property name="font">
@@ -4252,7 +4249,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
      <widget class="QTabWidget" name="sim_cmd_tabs">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>6</horstretch>
+        <horstretch>3</horstretch>
         <verstretch>1</verstretch>
        </sizepolicy>
       </property>
@@ -4280,7 +4277,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>954</width>
+          <width>744</width>
           <height>782</height>
          </rect>
         </property>
@@ -4289,22 +4286,73 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
         </property>
         <layout class="QGridLayout" name="gridLayout_30">
          <item row="0" column="0">
-          <widget class="QGroupBox" name="groupBox_19">
+          <widget class="QGroupBox" name="sim_cmd_run_state">
            <property name="toolTip">
-            <string>Display and control the state of the currently queued simulation phase (if any).</string>
+            <string>Display and control the state of the currently queued simulation phase.</string>
            </property>
            <property name="title">
             <string>Phase State</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0">
-             <widget class="QProgressBar" name="sim_cmd_run_bar">
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QProgressBar" name="sim_cmd_run_state_bar">
               <property name="toolTip">
-               <string>Current number of steps (e.g., time in seconds) completed for the most recently run simulation phase if any.</string>
+               <string>Percentage completed of the action being applied to the currently queued simulation phase.</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
               </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="sim_cmd_run_state_status">
+              <property name="toolTip">
+               <string>High-level synopsis of the action being applied to the currently queued simulation phase.</string>
+              </property>
+              <property name="text">
+               <string>phase status</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="sim_cmd_run_state_substatus_group" native="true">
+              <property name="toolTip">
+               <string>Low-level details of the action being applied to the currently queued simulation phase.</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QLabel" name="sim_cmd_run_state_substatus_icon">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="../qrc/betsee.qrc">:/icon/entypo+/level-down.svg</pixmap>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="sim_cmd_run_state_substatus">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <italic>true</italic>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>phase substatus</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
