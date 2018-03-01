@@ -57,6 +57,9 @@ Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
  */
 
 /* ..................{ GENERAL                            }.....................
+ * Styles generally applicable to all widgets of a particular type.
+ */
+
 /* Group box title but *NOT* child widgets of a group box.
  *
  * To properly account for nesting depth, depth-specific font sizes are styled
@@ -83,6 +86,18 @@ QGroupBox {
 QHeaderView {
     font-weight: bold;
     font-size: 11pt;
+}
+
+/* ..................{ GENERAL ~ property                 }.....................
+ * Styles generally applicable to all widgets of a particular type with an
+ * arbitrary property set to a particular value.
+ */
+
+/* Check box with *NO* corresponding text.
+ */
+QCheckBox[text=&quot;&quot;] {
+    font-size: 0pt;
+    spacing: 0px;
 }
 
 /* ..................{ SIM CONF ~ tree                    }.....................
@@ -510,11 +525,11 @@ QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
           </property>
           <item>
            <widget class="QToolBar" name="sim_conf_tree_toolbar">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
             </property>
             <property name="floatable">
              <bool>false</bool>
@@ -524,6 +539,68 @@ QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="3">
+     <widget class="QFrame" name="log_frame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_20">
+       <item>
+        <widget class="QLabel" name="log_label">
+         <property name="text">
+          <string>Log Messages</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QBetseePlainTextEdit" name="log_box">
+         <property name="styleSheet">
+          <string notr="true">font: 7pt &quot;Monospace&quot;;</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
+         <property name="documentTitle">
+          <string/>
+         </property>
+         <property name="undoRedoEnabled">
+          <bool>false</bool>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QPlainTextEdit::NoWrap</enum>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="plainText">
+          <string notr="true"/>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+         </property>
+         <property name="backgroundVisible">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
       </layout>
@@ -4279,128 +4356,13 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          <bool>true</bool>
         </property>
         <layout class="QGridLayout" name="gridLayout_30">
-         <item row="0" column="0">
-          <widget class="QGroupBox" name="sim_cmd_run_state">
-           <property name="toolTip">
-            <string>Display and control the state of the currently queued simulation phase.</string>
-           </property>
-           <property name="title">
-            <string>Phase State</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QProgressBar" name="sim_cmd_run_state_progress">
-              <property name="toolTip">
-               <string>Percentage completed of the action being applied to the currently queued simulation phase.</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="sim_cmd_run_state_status">
-              <property name="toolTip">
-               <string>High-level synopsis of the action being applied to the currently queued simulation phase.</string>
-              </property>
-              <property name="text">
-               <string>phase status</string>
-              </property>
-              <property name="wordWrap">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QWidget" name="sim_cmd_run_state_substatus_group" native="true">
-              <property name="toolTip">
-               <string>Low-level details of the action being applied to the currently queued simulation phase.</string>
-              </property>
-              <layout class="QHBoxLayout" name="horizontalLayout">
-               <item>
-                <widget class="QLabel" name="sim_cmd_run_state_substatus_icon">
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="../qrc/betsee.qrc">:/icon/entypo+/level-down.svg</pixmap>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="sim_cmd_run_state_substatus">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>10</pointsize>
-                   <italic>true</italic>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>phase substatuses</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QFrame" name="sim_cmd_run_state_toolbar_frame">
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Sunken</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_3">
-               <property name="spacing">
-                <number>0</number>
-               </property>
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QToolBar" name="sim_cmd_run_state_toolbar ">
-                 <property name="toolTip">
-                  <string>Control the state of the currently queued simulation phase.</string>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>32</width>
-                   <height>32</height>
-                  </size>
-                 </property>
-                 <addaction name="action_sim_cmd_toggle"/>
-                 <addaction name="action_sim_cmd_halt"/>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="1" column="0">
+         <item row="3" column="0">
           <widget class="QGroupBox" name="groupBox_19">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Queue (i.e., ordered list) of all simulation phases to be iteratively modelled and/or exported when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked, complete with a terse synopsis of the current state of these phases.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string/>
            </property>
            <property name="title">
-            <string>Phase Queue</string>
+            <string>Phase Queue (Broken)</string>
            </property>
            <property name="flat">
             <bool>true</bool>
@@ -4422,15 +4384,27 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              <number>0</number>
             </property>
             <item>
-             <widget class="QTableWidget" name="sim_cmd_run_queue">
-              <property name="autoFillBackground">
-               <bool>true</bool>
-              </property>
+             <widget class="QTableWidget" name="sim_cmd_run_queue_broken">
               <property name="frameShape">
                <enum>QFrame::NoFrame</enum>
               </property>
               <property name="sizeAdjustPolicy">
                <enum>QAbstractScrollArea::AdjustToContents</enum>
+              </property>
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <property name="tabKeyNavigation">
+               <bool>false</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::NoSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
+              <property name="showGrid">
+               <bool>false</bool>
               </property>
               <attribute name="horizontalHeaderCascadingSectionResizes">
                <bool>true</bool>
@@ -4535,7 +4509,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
            </layout>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="4" column="0">
           <spacer name="verticalSpacer_4">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -4548,71 +4522,475 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
            </property>
           </spacer>
          </item>
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="sim_cmd_run_state">
+           <property name="toolTip">
+            <string>Display and control the state of the currently queued simulation phase.</string>
+           </property>
+           <property name="title">
+            <string>Phase State</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QProgressBar" name="sim_cmd_run_state_progress">
+              <property name="toolTip">
+               <string>Percentage completed of the action being applied to the currently queued simulation phase.</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="sim_cmd_run_state_status">
+              <property name="toolTip">
+               <string>High-level synopsis of the action being applied to the currently queued simulation phase.</string>
+              </property>
+              <property name="text">
+               <string>phase status</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="sim_cmd_run_state_substatus_group" native="true">
+              <property name="toolTip">
+               <string>Low-level details of the action being applied to the currently queued simulation phase.</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QLabel" name="sim_cmd_run_state_substatus_icon">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="../qrc/betsee.qrc">:/icon/entypo+/level-down.svg</pixmap>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="sim_cmd_run_state_substatus">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <italic>true</italic>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>phase substatus</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="sim_cmd_run_state_toolbar_frame">
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QToolBar" name="sim_cmd_run_state_toolbar ">
+                 <property name="toolTip">
+                  <string>Control the state of the currently queued simulation phase.</string>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>32</width>
+                   <height>32</height>
+                  </size>
+                 </property>
+                 <addaction name="action_sim_cmd_toggle"/>
+                 <addaction name="action_sim_cmd_halt"/>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QGroupBox" name="sim_cmd_run_queue_group">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Queue (i.e., ordered list) of all simulation phases to be iteratively modelled and/or exported when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked, complete with a terse synopsis of the current state of these phases.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+</string>
+           </property>
+           <property name="title">
+            <string>Phase Queue</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <spacer name="verticalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="Line" name="line">
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="lineWidth">
+               <number>0</number>
+              </property>
+              <property name="midLineWidth">
+               <number>1</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QFrame" name="sim_cmd_run_queue_head_row">
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <property name="leftMargin">
+                <number>8</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>8</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_23">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to queue each simulation phase to be exported when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked.&lt;/p&gt;&lt;p&gt;Exporting a phase saves all publication-quality results (e.g., plots, animations, comma-separated value (CSV) files) enabled for that phase.&lt;/p&gt;&lt;p&gt;Exporting a phase requires that phase be modelled first.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Export?</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QLabel" name="label_30">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>2</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Terse synopsis of the current state of each simulation phase.</string>
+                 </property>
+                 <property name="text">
+                  <string>Status</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="sim_cmd_run_queue_head_model">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Whether or not to queue each simulation phase to be modelled when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked.&lt;/p&gt;&lt;p&gt;Modelling a phase generates all simulation data needed both by the next phase &lt;span style=&quot; font-style:italic;&quot;&gt;and&lt;/span&gt; by all exports exportable from that phase. For example, modelling the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase generates all simulation data needed both by the &lt;span style=&quot; text-decoration: underline;&quot;&gt;initialization&lt;/span&gt; phase &lt;span style=&quot; font-style:italic;&quot;&gt;and&lt;/span&gt; by all exports exportable from the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase.&lt;/p&gt;&lt;p&gt;Modelling this simulation in full requires modelling the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt;, &lt;span style=&quot; text-decoration: underline;&quot;&gt;initialization&lt;/span&gt;, &lt;span style=&quot; font-style:italic;&quot;&gt;and &lt;/span&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;simulation&lt;/span&gt; phases.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="text">
+                  <string>Model?</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="sim_cmd_run_queue_head_phase">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Simulation phase to be queued for subsequent modelling and/or exporting when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="text">
+                  <string>Phase</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="sim_cmd_run_queue_seed_row">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate a new cell cluster from a pseudo-random Voronoi lattice. This is the &lt;span style=&quot; font-weight:600;&quot;&gt;first&lt;/span&gt; of &lt;span style=&quot; font-weight:600;&quot;&gt;three&lt;/span&gt; phases needed to model this simulation.&lt;/p&gt;&lt;p&gt;Once modelled, consider locking this phase against accidental deletion by toggling the &lt;img src=&quot;:/icon/open_iconic/lock-locked.svg&quot;/&gt; button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_6">
+               <property name="leftMargin">
+                <number>8</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>8</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>0</number>
+               </property>
+               <item row="0" column="3">
+                <widget class="QWidget" name="sim_cmd_run_queue_seed_model_cell" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_2">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                 </layout>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="sim_cmd_run_queue_seed">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <weight>50</weight>
+                   <bold>false</bold>
+                   <underline>true</underline>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string/>
+                 </property>
+                 <property name="text">
+                  <string>Seed</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="5">
+                <widget class="QLabel" name="label_31">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>2</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                   <italic>true</italic>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Terse synopsis of the current state of the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Unqueued</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QToolButton" name="sim_cmd_run_queue_seed_model_lock">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lock (i.e., prevent) &lt;span style=&quot; font-style:italic;&quot;&gt;or&lt;/span&gt; unlock (i.e., permit) the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase from being requeued for modelling. When locked, this phase may still be requeued for exporting.&lt;/p&gt;&lt;p&gt;This safety measure prevents accidental deletion of the cell cluster generated by this phase &lt;span style=&quot; font-style:italic;&quot;&gt;and&lt;/span&gt; of subsequent results requiring this cell cluster.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../qrc/betsee.qrc">
+                   <normaloff>:/icon/open_iconic/lock-unlocked.svg</normaloff>
+                   <normalon>:/icon/open_iconic/lock-locked.svg</normalon>:/icon/open_iconic/lock-unlocked.svg</iconset>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="autoRaise">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="4">
+                <widget class="QCheckBox" name="checkBox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <horstretch>1</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Queue the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase to be exported when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked.&lt;/p&gt;&lt;p&gt;Exporting this phase saves all publication-quality results (e.g., plots, animations, comma-separated value (CSV) files) specific to this phase.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QCheckBox" name="sim_cmd_run_queue_seed_model">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Queue the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase to be modelled when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked.&lt;/p&gt;&lt;p&gt;Modelling this phase generates a new cell cluster from a pseudo-random Voronoi lattice. This is the &lt;span style=&quot; font-weight:600;&quot;&gt;first&lt;/span&gt; of &lt;span style=&quot; font-weight:600;&quot;&gt;three&lt;/span&gt; phases needed to model this simulation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
         </layout>
        </widget>
       </widget>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="3">
-     <widget class="QFrame" name="log_frame">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>1</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_20">
-       <item>
-        <widget class="QLabel" name="log_label">
-         <property name="text">
-          <string>Log Messages</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QBetseePlainTextEdit" name="log_box">
-         <property name="styleSheet">
-          <string notr="true">font: 7pt &quot;Monospace&quot;;</string>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Sunken</enum>
-         </property>
-         <property name="lineWidth">
-          <number>2</number>
-         </property>
-         <property name="documentTitle">
-          <string/>
-         </property>
-         <property name="undoRedoEnabled">
-          <bool>false</bool>
-         </property>
-         <property name="lineWrapMode">
-          <enum>QPlainTextEdit::NoWrap</enum>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="plainText">
-          <string notr="true"/>
-         </property>
-         <property name="textInteractionFlags">
-          <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-         </property>
-         <property name="backgroundVisible">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
     </item>
    </layout>
