@@ -1,12 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file>icon/betsee/advanced.svg</file>
-        <file>icon/betsee/advanced.svg</file>
         <file>icon/betsee/chemical.svg</file>
         <file>icon/betsee/dna.svg</file>
         <file>icon/betsee/document_open.svg</file>
         <file>icon/betsee/lineplot.svg</file>
-        <file>icon/betsee/planet.svg</file>
         <file>icon/betsee/planet.svg</file>
         <file>icon/entypo+/clipboard.svg</file>
         <file>icon/entypo+/copy.svg</file>
