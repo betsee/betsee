@@ -2284,15 +2284,6 @@ class Ui_main_window(object):
         self.sim_cmd_run_queue_seed_index.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
         self.sim_cmd_run_queue_seed_index.setObjectName("sim_cmd_run_queue_seed_index")
         self.gridLayout_5.addWidget(self.sim_cmd_run_queue_seed_index, 4, 0, 1, 1)
-        self.sim_cmd_run_queue_seed_export = QtWidgets.QCheckBox(self.sim_cmd_run_queue_group)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sim_cmd_run_queue_seed_export.sizePolicy().hasHeightForWidth())
-        self.sim_cmd_run_queue_seed_export.setSizePolicy(sizePolicy)
-        self.sim_cmd_run_queue_seed_export.setText("")
-        self.sim_cmd_run_queue_seed_export.setObjectName("sim_cmd_run_queue_seed_export")
-        self.gridLayout_5.addWidget(self.sim_cmd_run_queue_seed_export, 4, 6, 1, 1)
         self.sim_cmd_run_queue_head_phase = QtWidgets.QLabel(self.sim_cmd_run_queue_group)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
@@ -2375,6 +2366,34 @@ class Ui_main_window(object):
         self.sim_cmd_run_queue_head_status.setFont(font)
         self.sim_cmd_run_queue_head_status.setObjectName("sim_cmd_run_queue_head_status")
         self.gridLayout_5.addWidget(self.sim_cmd_run_queue_head_status, 1, 8, 2, 1)
+        self.sim_cmd_run_queue_seed_export = QtWidgets.QWidget(self.sim_cmd_run_queue_group)
+        self.sim_cmd_run_queue_seed_export.setObjectName("sim_cmd_run_queue_seed_export")
+        self.horizontalLayout_35 = QtWidgets.QHBoxLayout(self.sim_cmd_run_queue_seed_export)
+        self.horizontalLayout_35.setSpacing(0)
+        self.horizontalLayout_35.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_35.setObjectName("horizontalLayout_35")
+        self.line_2 = QtWidgets.QFrame(self.sim_cmd_run_queue_seed_export)
+        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_2.setObjectName("line_2")
+        self.horizontalLayout_35.addWidget(self.line_2)
+        self.label_23 = QtWidgets.QLabel(self.sim_cmd_run_queue_seed_export)
+        self.label_23.setObjectName("label_23")
+        self.horizontalLayout_35.addWidget(self.label_23)
+        self.line = QtWidgets.QFrame(self.sim_cmd_run_queue_seed_export)
+        self.line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setObjectName("line")
+        self.horizontalLayout_35.addWidget(self.line)
+        self.gridLayout_5.addWidget(self.sim_cmd_run_queue_seed_export, 4, 6, 1, 1)
+        self.line_3 = QtWidgets.QFrame(self.sim_cmd_run_queue_group)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.line_3.setLineWidth(0)
+        self.line_3.setMidLineWidth(1)
+        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setObjectName("line_3")
+        self.gridLayout_5.addWidget(self.line_3, 8, 0, 1, 9)
         self.gridLayout_30.addWidget(self.sim_cmd_run_queue_group, 2, 0, 1, 1)
         self.sim_cmd_tab_run_area.setWidget(self.sim_cmd_tab_run)
         self.sim_cmd_tabs.addTab(self.sim_cmd_tab_run_area, "")
@@ -2912,7 +2931,6 @@ class Ui_main_window(object):
         self.sim_cmd_run_queue_sim.setText(QtWidgets.QApplication.translate("main_window", "Simulation", None, -1))
         self.sim_cmd_run_queue_seed_index.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>The <span style=\" text-decoration: underline;\">seed</span> phase is the <span style=\" font-weight:600;\">first</span> of <span style=\" font-weight:600;\">three</span> phases needed to fully model this simulation.</p></body></html>", None, -1))
         self.sim_cmd_run_queue_seed_index.setText(QtWidgets.QApplication.translate("main_window", "1.", None, -1))
-        self.sim_cmd_run_queue_seed_export.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Queue the <span style=\" text-decoration: underline;\">seed</span> phase to be exported when the <img src=\":/icon/open_iconic/media-play.svg\"/> button is clicked.</p><p>Exporting this phase saves all publication-quality results (e.g., plots, animations, comma-separated value files) enabled for this phase.</p></body></html>", None, -1))
         self.sim_cmd_run_queue_head_phase.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Simulation phase to be queued for subsequent modelling and/or exporting when the <img src=\":/icon/open_iconic/media-play.svg\"/> button is clicked.</p></body></html>", None, -1))
         self.sim_cmd_run_queue_head_phase.setText(QtWidgets.QApplication.translate("main_window", "Phase", None, -1))
         self.sim_cmd_run_queue_sim_status.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Synopsis of the current state of the <span style=\" text-decoration: underline;\">simulation</span> phase.</p></body></html>", None, -1))
@@ -2923,6 +2941,8 @@ class Ui_main_window(object):
         self.sim_cmd_run_queue_seed_status.setText(QtWidgets.QApplication.translate("main_window", "Unqueued", None, -1))
         self.sim_cmd_run_queue_head_status.setToolTip(QtWidgets.QApplication.translate("main_window", "Synopsis of the current state of each simulation phase.", None, -1))
         self.sim_cmd_run_queue_head_status.setText(QtWidgets.QApplication.translate("main_window", "Status", None, -1))
+        self.sim_cmd_run_queue_seed_export.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>The <span style=\" text-decoration: underline;\">seed</span> phase has <span style=\" font-style:italic;\">no</span> exports and hence cannot be queued to be exported.</p><p>This differs from the <span style=\" text-decoration: underline;\">initialization</span> and <span style=\" text-decoration: underline;\">simulation</span> phases, which <span style=\" font-style:italic;\">do</span> have exports and hence can be queued to be exported.</p></body></html>", None, -1))
+        self.label_23.setText(QtWidgets.QApplication.translate("main_window", "N/A", None, -1))
         self.sim_cmd_tabs.setTabText(self.sim_cmd_tabs.indexOf(self.sim_cmd_tab_run_area), QtWidgets.QApplication.translate("main_window", "Simulator", None, -1))
         self.sim_cmd_tabs.setTabToolTip(self.sim_cmd_tabs.indexOf(self.sim_cmd_tab_run_area), QtWidgets.QApplication.translate("main_window", "Interactive simulator controlling each phase (e.g., seed, initialization) of this simulation with a standard media player interface – including playback controls, progress bars, and animated video.", None, -1))
         self.menu_file.setTitle(QtWidgets.QApplication.translate("main_window", "&File", None, -1))
@@ -2970,13 +2990,13 @@ class Ui_main_window(object):
         self.action_sim_cmd_halt.setToolTip(QtWidgets.QApplication.translate("main_window", "Prematurely stop the currently running simulation phase.", None, -1))
 
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

@@ -4,7 +4,9 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based object encapsulating simulation configuration state.
+High-level **simulation configurator** (i.e., :mod:`PySide2`-based object
+both displaying *and* modifying external YAML-formatted simulation configuration
+files) functionality.
 '''
 
 #FIXME: Either this or a subordinate "QObject" should routinely detect
@@ -53,14 +55,17 @@ from betsee.guiexception import BetseeSimConfException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guimessage
 from betsee.util.path import guifile
+from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimConf(QObject):
+class QBetseeSimConf(QBetseeControllerABC):
     '''
-    :mod:`PySide2`-based object encapsulating all high-level simulation
-    configuration state.
+    High-level **simulation configurator** (i.e., :mod:`PySide2`-based object
+    both displaying *and* modifying external YAML-formatted simulation
+    configuration files).
 
-    This state includes:
+    This configurator maintains all state required to manage these files,
+    including:
 
     * Whether or not a simulation configuration is currently open.
     * Whether or not an open simulation configuration has unsaved changes.
@@ -108,9 +113,39 @@ class QBetseeSimConf(QObject):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, main_window: QBetseeMainWindow, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''
-        Initialize this object, owned by the passed main window widget.
+        Initialize this configurator.
+        '''
+
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
+
+        # High-level simulation configuration, defaulting to the unload state.
+        self.p = Parameters()
+
+        # Nullify all stateful instance variables for safety. While the signals
+        # subsequently emitted by this method also do so, ensure sanity if these
+        # variables are tested in the interim.
+        self._is_dirty = False
+        self._action_make_sim     = None
+        self._action_open_sim     = None
+        self._action_close_sim    = None
+        self._action_save_sim     = None
+        self._action_save_sim_as  = None
+        self._sim_conf_stack      = None
+        self._sim_conf_tree       = None
+        self._sim_conf_tree_frame = None
+        self._sim_cmd_tabs        = None
+        self._status_bar          = None
+        self.undo_stack = None
+
+
+    @type_check
+    def init(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Finalize this configurator's initialization, owned by the passed main
+        window widget.
 
         This method connects all relevant signals and slots of *all* widgets
         (including the main window, top-level widgets of that window, and leaf
@@ -136,35 +171,10 @@ class QBetseeSimConf(QObject):
         '''
 
         # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
+        super().init(main_window)
 
         # Log this initialization.
         logs.log_debug('Sanitizing simulation configuration state...')
-
-        # High-level simulation configuration, defaulting to the unload state.
-        self.p = Parameters()
-
-        # Nullify all stateful instance variables for safety. While the signals
-        # subsequently emitted by this method also do so, ensure sanity if these
-        # variables are tested in the interim.
-        self.undo_stack = None
-        self._is_dirty = False
-
-        # Classify all instance variables of this main window subsequently
-        # required by this object. Since this main window owns this object,
-        # since weak references are unsafe in a multi-threaded GUI context, and
-        # since circular references are bad, this object intentionally does
-        # *NOT* retain a reference to this main window.
-        self._action_make_sim     = main_window.action_make_sim
-        self._action_open_sim     = main_window.action_open_sim
-        self._action_close_sim    = main_window.action_close_sim
-        self._action_save_sim     = main_window.action_save_sim
-        self._action_save_sim_as  = main_window.action_save_sim_as
-        self._sim_conf_stack      = main_window.sim_conf_stack
-        self._sim_conf_tree       = main_window.sim_conf_tree
-        self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
-        self._sim_cmd_tabs      = main_window.sim_cmd_tabs
-        self._status_bar          = main_window.status_bar
 
         # Initialize all widgets pertaining to the state of this simulation
         # configuration *BEFORE* connecting all relevant signals and slots
@@ -190,6 +200,22 @@ class QBetseeSimConf(QObject):
         from betsee.gui.simconf.guisimconfundo import (
             QBetseeUndoStackSimConf)
 
+        # Classify all instance variables of this main window subsequently
+        # required by this object. Since this main window owns this object,
+        # since weak references are unsafe in a multi-threaded GUI context, and
+        # since circular references are bad, this object intentionally does
+        # *NOT* retain a reference to this main window.
+        self._action_make_sim     = main_window.action_make_sim
+        self._action_open_sim     = main_window.action_open_sim
+        self._action_close_sim    = main_window.action_close_sim
+        self._action_save_sim     = main_window.action_save_sim
+        self._action_save_sim_as  = main_window.action_save_sim_as
+        self._sim_conf_stack      = main_window.sim_conf_stack
+        self._sim_conf_tree       = main_window.sim_conf_tree
+        self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
+        self._sim_cmd_tabs        = main_window.sim_cmd_tabs
+        self._status_bar          = main_window.status_bar
+
         # Undo stack for this simulation configuration.
         self.undo_stack = QBetseeUndoStackSimConf(
             main_window=main_window, sim_config=self)
@@ -211,8 +237,17 @@ class QBetseeSimConf(QObject):
         self._action_save_sim.triggered.connect(self._save_sim)
         self._action_save_sim_as.triggered.connect(self._save_sim_as)
 
-        # Connect this object's signals to all corresponding slots.
+        # Connect this object's signals to all corresponding slots of *ALL*
+        # objects across the codebase (including this object).
+        #
+        # Ideally, those objects would themselves (e.g., in their own init()
+        # methods) connect these signals to these slots. In practice, subsequent
+        # logic emits these signals and hence requires that these connections be
+        # deterministically established *BEFORE* these signals are emitted.
         self.set_filename_signal.connect(main_window.set_sim_conf_filename)
+
+        #FIXME: Uncomment this *AFTER* defining the slot connected to here.
+        # self.set_filename_signal.connect(main_window.sim_cmd.set_sim_conf_filename)
         self.set_filename_signal.connect(self.set_filename)
         self.set_dirty_signal.connect(main_window.set_sim_conf_dirty)
         self.set_dirty_signal.connect(self.set_dirty)

@@ -19,7 +19,7 @@ from betse.util.type.text import mls
 from betse.util.type.types import type_check
 from betsee.util.path import guifiletype
 from betsee.util.widget import guiwdg
-from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
+from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                         }....................
 #FIXME: Submit this class once working as a novel solution to:
@@ -37,7 +37,7 @@ from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
 #The former instructs Qt to gradually increase the size of this label to this
 #preferred size over a lengthy (and hence unacceptable) period of ten seconds!
 
-class QBetseeLabelImage(QBetseeWidgetMixin, QLabel):
+class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
     '''
     :mod:`QLabel`-based widget preserving the aspect ratio of the optional
     **pixmap** (i.e., in-memory image) added to this widget.

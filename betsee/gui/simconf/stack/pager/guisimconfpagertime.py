@@ -26,10 +26,10 @@ class QBetseeSimConfTimeStackedWidgetPager(QBetseeControllerABC):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, main_window: QMainWindow) -> None:
+    def init(self, main_window: QMainWindow) -> None:
 
         # Initialize our superclass with all passed parameters.
-        super().__init__(main_window)
+        super().init(main_window)
 
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf

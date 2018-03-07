@@ -10,10 +10,10 @@ General-purpose :mod:`QTreeWidget` subclasses.
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import Signal, Slot
 from PySide2.QtWidgets import QHeaderView, QTreeWidget  #, QTreeWidgetItem
-from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
+from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                         }....................
-class QBetseeTreeWidget(QBetseeWidgetMixin, QTreeWidget):
+class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
     '''
     :mod:`QTreeWidget`-based widget marginally improving upon the stock
     :mod:`QTreeWidget` functionality.

@@ -4,8 +4,9 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based object encapsulating simulation phase and subcommand (e.g.,
-``betse sim``, ``betse plot init``) state.
+High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
+*and* controlling the execution of simulation-specific subcommands)
+functionality.
 '''
 
 #FIXME: Note in a more appropriate docstring somewhere that the text overlaid
@@ -26,137 +27,29 @@
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
+from betse.science.export.expenum import SimExportType
 from betse.science.phase.phasecls import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type.enums import make_enum
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 # from betsee.guiexception import BetseeSimConfException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
-
-# ....................{ ENUMS                              }....................
-SimCmdState = make_enum(
-    class_name='SimCmdState',
-    member_names=(
-        'UNQUEUED',
-        'QUEUED',
-        'MODELLING',
-        'EXPORTING',
-        'PAUSED',
-        'HALTED',
-        'DONE',
-    ))
-'''
-Enumeration of all supported types of **simulator state** (i.e., mutually
-exclusive combination of one or more booleans uniquely capturing the condition
-of the currently queued simulation subcommand if any, analogous to a state in a
-finite state automata).
-
-Attributes
-----------
-UNQUEUED : enum
-    Unqueued state, implying no subcommands to be queued.
-QUEUED : enum
-    Queued state, implying one or more subcommands to be queued but *not* yet
-    run and hence neither paused, halted, nor done.
-MODELLING : enum
-    Modelling state, implying one or more queued subcommands specific to
-    modelling (e.g., seed, initialization) to be currently running and hence
-    neither paused, halted, nor done.
-EXPORTING : enum
-    Exporting state, implying one or more queued subcommands specific to
-    exporting (e.g., seed exports, initialization exports) to be currently
-    running and hence neither paused, halted, nor done.
-PAUSED : enum
-    Paused state, implying one or more queued subcommands to have been run but
-    paused before completion.
-HALTED : enum
-    Halted state, implying one or more queued subcommands to have been run but
-    halted before completion.
-DONE : enum
-    Completion state, implying all queued subcommands to have been run to
-    completion.
-'''
-
-# ....................{ GLOBALS ~ dict                     }....................
-_SIM_CMD_STATE_TO_STATUS = {
-    SimCmdState.UNQUEUED: QCoreApplication.translate(
-        'guisimcmd', 'Waiting for phase(s) to be queued...'),
-    SimCmdState.QUEUED: QCoreApplication.translate(
-        'guisimcmd', 'Waiting for queued phase(s) to be modelled...'),
-    SimCmdState.MODELLING: QCoreApplication.translate(
-        'guisimcmd',
-        'Modelling <b>{phase_type}</b> '
-        'step {step_curr} '
-          '<i>of</i> {step_total}:'),
-    SimCmdState.EXPORTING: QCoreApplication.translate(
-        'guisimcmd',
-        'Exporting <b>{phase_type}</b> '
-        '{export_type} <pre>"{export_name}"</pre> '
-        'step {step_curr} '
-          '<i>of</i> {step_total}:'),
-    SimCmdState.PAUSED: QCoreApplication.translate(
-        'guisimcmd', 'Paused {cmd_prior}'),
-    SimCmdState.HALTED: QCoreApplication.translate(
-        'guisimcmd', 'Stopped {cmd_prior}'),
-    SimCmdState.DONE: QCoreApplication.translate(
-        'guisimcmd', 'Finished {cmd_prior}'),
-}
-'''
-Dictionary mapping from each type of simulator state to a human-readable,
-translated, unformatted string templating a high-level synopsis of the action
-being performed in that state.
-
-Most such strings contain *no* format specifiers and are thus displayable as is.
-Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
-and are thus displayable *only* after interpolating the corresponding values.
-'''
-
-
-_MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS = {
-    # Note that low-level details for the "SimPhaseKind.SEED" phase are specific
-    # to the current action being performed and hence defined in the lower-level
-    # BETSE codebase rather than here.
-
-    SimPhaseKind.INIT: QCoreApplication.translate(
-        'guisimcmd', 'Initializing {time_curr} <i>of</i> {time_total}...'),
-    SimPhaseKind.SIM: QCoreApplication.translate(
-        'guisimcmd', 'Simulating {time_curr} <i>of</i> {time_total}...'),
-}
-'''
-Dictionary mapping from the initialization and simulation phases to a
-human-readable, translated, unformatted string templating the low-level details
-of the action being performed when modelling that phase.
-'''
-
-
-#FIXME: Create the "SimExportKind" enumeration with the members referenced
-#below, presumably in a new "betse.science.export.expenum" submodule.
-
-# _EXPORTING_KIND_TO_STATUS_DETAILS = {
-#     SimExportKind.CSV: QCoreApplication.translate(
-#         'guisimcmd',
-#         'Exporting comma-separated value (CSV) file '
-#         '<pre>"{filename}"</pre>...'),
-#     SimExportKind.PLOT: QCoreApplication.translate(
-#         'guisimcmd', 'Exporting image <pre>"{filename}"</pre>...'),
-#     SimExportKind.ANIM: QCoreApplication.translate(
-#         'guisimcmd',
-#         'Exporting animation <pre>"{filename}"</pre> frame '
-#         '{time_curr} <i>of</i> {time_total}...'),
-# }
-# '''
-# Dictionary mapping from the initialization and simulation phases to a
-# human-readable, translated, unformatted string templating the low-level details
-# of the action being performed when modelling that phase.
-# '''
+from betsee.gui.simcmd.guisimcmdstate import (
+    SimCmdState,
+    SIM_CMD_STATE_TO_STATUS,
+    MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
+    EXPORTING_TYPE_TO_STATUS_DETAILS,
+)
+from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimCmd(QObject):
+class QBetseeSimCmd(QBetseeControllerABC):
     '''
-    :mod:`PySide2`-based object encapsulating all high-level simulation
-    phase and subcommand (e.g., ``betse sim``, ``betse plot init``) state.
+    High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
+    *and* controlling the execution of simulation-specific subcommands).
 
-    This state includes:
+    This simulator maintains all state required to interactively manage these
+    subcommands (e.g., ``betse sim``, ``betse plot init``), including:
 
     * A queue of all simulation subcommands to be interactively run.
     * Whether or not a simulation subcommand is currently being run.
@@ -169,6 +62,9 @@ class QBetseeSimCmd(QObject):
 
     Attributes (Public)
     ----------
+    _state : SimCmdState
+        Condition of the currently queued simulation subcommand if any,
+        analogous to a state in a finite state automata.
 
     Attributes (Private: Non-widgets)
     ----------
@@ -179,9 +75,32 @@ class QBetseeSimCmd(QObject):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, main_window: QBetseeMainWindow, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''
-        Initialize this object, owned by the passed main window widget.
+        Initialize this simulator.
+        '''
+
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
+
+        # Nullify all stateful instance variables for safety. While the signals
+        # subsequently emitted by this method also do so, ensure sanity if these
+        # variables are tested in the interim.
+        self._state = SimCmdState.UNQUEUED
+
+        # Classify all instance variables of this main window subsequently
+        # required by this object. Since this main window owns this object,
+        # since weak references are unsafe in a multi-threaded GUI context, and
+        # since circular references are bad, this object intentionally does
+        # *NOT* retain a reference to this main window.
+        # self._action_make_sim     = main_window.action_make_sim
+
+
+    @type_check
+    def init(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Finalize this simulator's initialization, owned by the passed main
+        window widget.
 
         This method connects all relevant signals and slots of *all* widgets
         (including the main window, top-level widgets of that window, and leaf
@@ -200,22 +119,10 @@ class QBetseeSimCmd(QObject):
         '''
 
         # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
+        super().init(main_window)
 
         # Log this initialization.
         logs.log_debug('Sanitizing simulation subcommand state...')
-
-        # Nullify all stateful instance variables for safety. While the signals
-        # subsequently emitted by this method also do so, ensure sanity if these
-        # variables are tested in the interim.
-        # self._is_dirty = False
-
-        # Classify all instance variables of this main window subsequently
-        # required by this object. Since this main window owns this object,
-        # since weak references are unsafe in a multi-threaded GUI context, and
-        # since circular references are bad, this object intentionally does
-        # *NOT* retain a reference to this main window.
-        # self._action_make_sim     = main_window.action_make_sim
 
         # Initialize all widgets concerning simulation subcommand state the
         # *BEFORE* connecting all relevant signals and slots typically expecting

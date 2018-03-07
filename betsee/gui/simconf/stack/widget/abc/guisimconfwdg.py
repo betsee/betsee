@@ -11,13 +11,13 @@ instantiated in pages of the top-level stack.
 # ....................{ IMPORTS                            }....................
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.guiwdgabc import QBetseeWidgetMixin
+from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetMixinSimConf(QBetseeWidgetMixin):
+class QBetseeWidgetMixinSimConf(QBetseeObjectMixin):
     '''
     Abstract base class of all **non-editable simulation configuration widget**
     (i.e., widget *not* interactively editing simulation configuration values

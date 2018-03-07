@@ -28,10 +28,10 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, main_window: QMainWindow) -> None:
+    def init(self, main_window: QMainWindow) -> None:
 
         # Initialize our superclass with all passed parameters.
-        super().__init__(main_window)
+        super().init(main_window)
 
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
@@ -57,12 +57,12 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(QBetseeControllerABC):
         )
 
         # Initialize all ion-specific widgets on this page.
-        self._init_ion_widgets(
+        self._init_widgets_ion(
             main_window=main_window, page_conf=tissue_default)
 
-    # ..................{ INITIALIZERS                       }..................
+
     #FIXME: Can this be generalized to custom ion profiles as well?
-    def _init_ion_widgets(
+    def _init_widgets_ion(
         self, main_window: QMainWindow, page_conf: YamlABC) -> None:
         '''
         Initialize all ion-specific widgets on this page.

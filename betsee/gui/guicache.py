@@ -223,7 +223,7 @@ def _is_output_path_outdated(
 
     # Log this inspection.
     logs.log_info(
-        'Inspecting PySide2 module "%s" for changes...',
+        'Synchronizing cached submodule "%s"...',
         pathnames.get_basename(output_filename))
 
     # Return true only if either...

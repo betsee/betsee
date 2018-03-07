@@ -4,7 +4,7 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based object encapsulating application clipboard state.
+High-level application clipboard functionality.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -18,12 +18,13 @@ from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guiclipboard
 from betsee.util.io.key import guifocus
 from betsee.util.type.guitype import QWidgetOrNoneTypes
+from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
 # ....................{ CLASSES                            }....................
-class QBetseeMainClipboard(QObject):
+class QBetseeMainClipboard(QBetseeControllerABC):
     '''
-    :mod:`PySide2`-based object encapsulating all high-level application
-    clipboard state.
+    High-level **clipboarder** (i.e., :mod:`PySide2`-based object encapsulating
+    all application clipboard state).
 
     This state includes:
 
@@ -58,9 +59,25 @@ class QBetseeMainClipboard(QObject):
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
-    def __init__(self, main_window: QBetseeMainWindow, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''
-        Initialize this object, owned by the passed main window widget.
+        Initialize this clipboarder.
+        '''
+
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
+
+        # Nullify all instance variables for safety.
+        self._action_copy  = None
+        self._action_cut   = None
+        self._action_paste = None
+        self._widget_focused_if_any = None
+
+
+    @type_check
+    def init(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Initialize this clipboarder, owned by the passed main window widget.
 
         This method connects all relevant signals and slots of *all* widgets
         (including the main window, top-level widgets of that window, and leaf
@@ -79,13 +96,10 @@ class QBetseeMainClipboard(QObject):
         '''
 
         # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
+        super().init(main_window)
 
         # Log this initialization.
         logs.log_debug('Sanitizing system clipboard state...')
-
-        # Nullify all instance variables for safety.
-        self._widget_focused_if_any = None
 
         # Classify actions subsequently required by this object. Since this main
         # window owns this object, since weak references are unsafe in a

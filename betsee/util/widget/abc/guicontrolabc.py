@@ -11,9 +11,10 @@ Abstract base classes of all :mod:`PySide2`-based controller subclasses.
 from PySide2.QtCore import QObject
 from PySide2.QtWidgets import QMainWindow
 from betse.util.type.types import type_check
+from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ SUPERCLASSES                       }....................
-class QBetseeControllerABC(QObject):
+class QBetseeControllerABC(QBetseeObjectMixin, QObject):
     '''
     Abstract base class of all :mod:`PySide2`-based controller subclasses in the
     standard model-view-controller (MVC) understanding of that term.
@@ -33,7 +34,7 @@ class QBetseeControllerABC(QObject):
     # module which imports the current submodule. Since this application only
     # contains one main window, this current validation suffices.
     @type_check
-    def __init__(self, main_window: QMainWindow) -> None:
+    def init(self, main_window: QMainWindow) -> None:
         '''
         Initialize this controller against the passed parent main window.
 
@@ -49,5 +50,5 @@ class QBetseeControllerABC(QObject):
             against which to initialize this widget.
         '''
 
-        # Initialize our superclass with all passed parameters.
-        super().__init__(main_window)
+        # Initialize our superclass.
+        super().init()

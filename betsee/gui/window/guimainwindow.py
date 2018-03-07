@@ -290,18 +290,20 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Initialize the status bar with a sensible startup message.
         self._show_status('Welcome to {}'.format(guimetadata.NAME))
 
-        # Object encapsulating high-level application clipboard state,
-        # instantiated in arbitrary order.
-        self._clipboard = QBetseeMainClipboard(main_window=self)
+        # Object wrapping high-level state, instantiated in arbitrary order.
+        self._clipboard = QBetseeMainClipboard()
+        self.sim_cmd  = QBetseeSimCmd()
+        self.sim_conf = QBetseeSimConf()
 
-        # Objects encapsulating high-level simulation state, instantiated
-        # *BEFORE* initializing widgets assuming this state to exist.
-        self.sim_cmd  = QBetseeSimCmd (main_window=self)
-        self.sim_conf = QBetseeSimConf(main_window=self)
+        # Initialize these objects (in arbitrary order) *BEFORE* initializing
+        # widgets assuming these objects to have been initialized.
+        self._clipboard.init(main_window=self)
+        self.sim_cmd.init(main_window=self)
+        self.sim_conf.init(main_window=self)
 
-        # Initialize both the simulation configuration stack widget *BEFORE*
-        # initializing the mildly higher-level sibling tree widget, which
-        # assumes the former to have been initialized.
+        # Initialize the simulation configuration stack widget *BEFORE* its
+        # higher-level sibling tree widget, which assumes the former to have
+        # been initialized.
         self.sim_conf_stack.init(main_window=self)
 
         # Initialize the simulation configuration tree widget.
@@ -333,6 +335,19 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # there being no demonstrable use case for focusing these buttons.
         for toolbar_button in self.toolbar.findChildren(QToolButton):
             toolbar_button.setFocusPolicy(Qt.NoFocus)
+
+        #FIXME: For maintainability, refactor this as follows:
+        #
+        #* Remove the "self.set_filename_signal.emit('')" call from the
+        #  "guisimconf" submodule.
+        #* Define a new QBetseeSimConf.unload() method, called below. This
+        #  method should internally perform the equivalent of:
+        #    self.set_filename_signal.emit('')
+        #* Expand the following if conditional to resemble:
+        #    if self._sim_conf_filename is not None:
+        #        self.sim_conf.load(self._sim_conf_filename)
+        #    else:
+        #        self.sim_conf.unload()
 
         # If opening an initial simulation configuration file, do so as this
         # method's last logic (i.e., *AFTER* all finalization performed above).

@@ -16,17 +16,23 @@ Abstract base classes of most application-specific widget subclasses.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from PySide2.QtWidgets import QUndoStack
-# from betse.util.io.log import logs
+from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideEditWidgetException
+
+# ....................{ GLOBALS                            }....................
+_OBJ_NAME_DEFAULT = 'N/A'
+'''
+Default Qt object name for all :class:`QBetseeObjectMixin` instances.
+'''
 
 # ....................{ MIXINS                             }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeWidgetMixin(object):
+class QBetseeObjectMixin(object):
     '''
-    Abstract base class of most application-specific widget subclasses.
+    Abstract base class of most application-specific Qt object subclasses.
 
     This class is suitable for use as a multiple-inheritance mixin. To preserve
     the expected method resolution order (MRO) semantics, this class should
@@ -35,25 +41,25 @@ class QBetseeWidgetMixin(object):
     Attributes (Public)
     ----------
     obj_name : str
-        Qt-specific name of this widget, identical to the string returned by the
+        Qt-specific name of this object, identical to the string returned by the
         :meth:`objectName` method at widget initialization time. This string is
         stored as an instance variable only for readability.
 
     Attributes (Private)
     ----------
     _is_initted : bool
-        ``True`` only if this widget's :meth:`init` method has been called.
+        ``True`` only if this object's :meth:`init` method has been called.
     '''
 
     # ..................{ INITIALIZERS                       }..................
     def __init__(self, *args, **kwargs) -> None:
         '''
-        Initialize this application-specific widget.
+        Initialize this application-specific Qt object.
 
         Parameters
         ----------
         All parameters are passed as is to the superclass this mixin is mixed
-        into (e.g., :class:`QWidget` or a subclass thereof).
+        into (e.g., :class:`QObject` or a subclass thereof).
 
         Caveats
         ----------
@@ -85,12 +91,12 @@ class QBetseeWidgetMixin(object):
 
         # Nullify all remaining instance variables for safety.
         self._is_initted = False
-        self.obj_name = 'N/A'
+        self.obj_name = _OBJ_NAME_DEFAULT
 
 
     def init(self) -> None:
         '''
-        Finalize the initialization of this widget.
+        Finalize the initialization of this Qt object.
 
         This method is principally intended to simplify the implementation of
         subclasses overriding this method with subclass-specific finalization.
@@ -98,29 +104,33 @@ class QBetseeWidgetMixin(object):
         Raises
         ----------
         BetseePySideEditWidgetException
-            If this method has already been called for this widget, preventing
-            widgets from being erroneously refinalized.
+            If this method has already been called for this object, preventing
+            objects from being erroneously refinalized.
         '''
 
-        # If this widget's initialization has already been finalized, raise an
+        # If this object has a meaningful name, log this initialization; else,
+        # the subclass is expected to log this initialization.
+        if self.obj_name != _OBJ_NAME_DEFAULT:
+            logs.log_debug('Initializing object "%s"...', self.obj_name)
+
+        # If this object's initialization has already been finalized, raise an
         # exception.
         if self._is_initted:
             raise BetseePySideEditWidgetException(
-                'Editable widget "{}" already initialized.'.format(
-                    self.obj_name))
+                'Object "{}" already initialized.'.format(self.obj_name))
 
-        # Record this widget's initialization to now have been finalized.
+        # Record this object's initialization to now have been finalized.
         self._is_initted = True
 
 
     def init_if_needed(self, *args, **kwargs) -> None:
         '''
-        Finalize the initialization of this widget if needed (i.e., if this
-        widget's initialization has *not* already been finalized by a call to
+        Finalize the initialization of this object if needed (i.e., if this
+        object's initialization has *not* already been finalized by a call to
         the :meth:`init` method).
 
         This method safely wraps the :meth:`init` method, effectively squelching
-        the exception raised by that method when this widget's initialization
+        the exception raised by that method when this object's initialization
         has already been finalized.
 
         Parameters
@@ -128,7 +138,7 @@ class QBetseeWidgetMixin(object):
         All parameters are passed as is to the :meth:`init` method if called.
         '''
 
-        # If this widget's initialization has *NOT* been finalized, do so.
+        # If this object's initialization has *NOT* been finalized, do so.
         if self._is_initted:
             self.init(*args, **kwargs)
 
@@ -136,7 +146,7 @@ class QBetseeWidgetMixin(object):
     @property
     def is_initted(self) -> bool:
         '''
-        ``True`` only if this widget's :meth:`init` method has been called.
+        ``True`` only if this object's :meth:`init` method has been called.
         '''
 
         return self._is_initted
@@ -151,7 +161,7 @@ class QBetseeWidgetMixin(object):
         self.obj_name = self.objectName()
 
 
-class QBetseeEditWidgetMixin(QBetseeWidgetMixin):
+class QBetseeEditWidgetMixin(QBetseeObjectMixin):
     '''
     Abstract base class of most application-specific **editable widget** (i.e.,
     widget interactively editing one or more values in an undoable manner)
