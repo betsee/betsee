@@ -114,10 +114,10 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     ----------
     signaler : QBetseeSignaler
         :class:`PySide2`-based collection of various application-wide signals.
-    sim_cmd : QBetseeSimCmd
-        Object encapsulating high-level simulation subcommand state.
     sim_conf : QBetseeSimConf
         Object encapsulating high-level simulation configuration state.
+    sim_tab : QBetseeSimulatorTabWidget
+        Object encapsulating high-level simulator state.
 
     Attributes (Private)
     ----------
@@ -163,7 +163,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         self._sim_conf_filename = sim_conf_filename
 
         # Nullify all remaining instance variables for safety.
-        self.sim_cmd = None
         self.sim_conf = None
         self._clipboard = None
 
@@ -284,7 +283,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Avoid circular import dependencies.
         from betsee.gui.window.guimainclipboard import QBetseeMainClipboard
-        from betsee.gui.simcmd.guisimcmd import QBetseeSimCmd
         from betsee.gui.simconf.guisimconf import QBetseeSimConf
 
         # Initialize the status bar with a sensible startup message.
@@ -292,14 +290,13 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # Object wrapping high-level state, instantiated in arbitrary order.
         self._clipboard = QBetseeMainClipboard()
-        self.sim_cmd  = QBetseeSimCmd()
         self.sim_conf = QBetseeSimConf()
 
         # Initialize these objects (in arbitrary order) *BEFORE* initializing
         # widgets assuming these objects to have been initialized.
         self._clipboard.init(main_window=self)
-        self.sim_cmd.init(main_window=self)
         self.sim_conf.init(main_window=self)
+        self.sim_tab.init(main_window=self)
 
         # Initialize the simulation configuration stack widget *BEFORE* its
         # higher-level sibling tree widget, which assumes the former to have

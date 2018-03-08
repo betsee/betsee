@@ -16,8 +16,8 @@ from betse.util.type.enums import make_enum
 # from betse.util.type.types import type_check  #, StrOrNoneTypes
 
 # ....................{ ENUMS                              }....................
-SimCmdState = make_enum(
-    class_name='SimCmdState',
+SimulatorState = make_enum(
+    class_name='SimulatorState',
     member_names=(
         'UNQUEUED',
         'QUEUED',
@@ -59,50 +59,124 @@ DONE : enum
     completion.
 '''
 
-# ....................{ GLOBALS ~ status                   }....................
-SIM_CMD_STATE_TO_STATUS = {
-    SimCmdState.UNQUEUED: QCoreApplication.translate(
-        'guisimcmd', 'Waiting for phase(s) to be queued...'),
-    SimCmdState.QUEUED: QCoreApplication.translate(
-        'guisimcmd', 'Waiting for queued phase(s) to be modelled...'),
-    SimCmdState.MODELLING: QCoreApplication.translate(
-        'guisimcmd',
+# ....................{ GLOBALS ~ set                      }....................
+SIMULATOR_STATES_FLUID = {
+    SimulatorState.UNQUEUED,
+    SimulatorState.QUEUED,
+    SimulatorState.HALTED,
+    SimulatorState.DONE,
+}
+'''
+Set of all **fluid simulator states** (i.e., states the simulator may freely
+transition from to any other state).
+
+Specifically, the states:
+
+* Contained in this set are all low priority and hence may be flexibly replaced
+  at simulator runtime with any other state.
+* Excluded by this set are all high priority and hence *must* be preserved as is
+  until completed -- possibly by manual user intervention (e.g., toggling the
+  start and pause buttons).
+
+Caveats
+----------
+Technically, the claims implied by this set are *not* actually all the case.
+For example, the simulator may transition from the:
+
+* :attr:`SimulatorState.UNQUEUED` state to *only* the
+  :attr:`SimulatorState.QUEUED` state.
+* :attr:`SimulatorState.QUEUED` state to *only* the
+  :attr:`SimulatorState.UNQUEUED`,
+  :attr:`SimulatorState.MODELLING`, and
+  :attr:`SimulatorState.EXPORTING` states.
+
+Pragmatically, preserving these distinctions would incur more cost than
+pretending these states may be freely transitioned from. We prefer the latter.
+'''
+
+
+SIMULATOR_STATES_FIXED = {
+    SimulatorState.MODELLING,
+    SimulatorState.EXPORTING,
+    SimulatorState.PAUSED,
+}
+'''
+Set of all **fixed simulator states** (i.e., states the simulator may *not*
+freely transition from to any other state).
+
+See Also
+----------
+:data:`SIMULATOR_STATES_FIXED`
+    Negation of this set.
+'''
+
+# ....................{ GLOBALS ~ dict : status            }....................
+SIMULATOR_STATE_TO_STATUS_TERSE = {
+    SimulatorState.UNQUEUED: QCoreApplication.translate(
+        'guisimrunstate', 'Unqueued'),
+    SimulatorState.QUEUED: QCoreApplication.translate(
+        'guisimrunstate', 'Queued'),
+    SimulatorState.MODELLING: QCoreApplication.translate(
+        'guisimrunstate', 'Modelling'),
+    SimulatorState.EXPORTING: QCoreApplication.translate(
+        'guisimrunstate', 'Exporting'),
+    SimulatorState.PAUSED: QCoreApplication.translate(
+        'guisimrunstate', 'Paused'),
+    SimulatorState.HALTED: QCoreApplication.translate(
+        'guisimrunstate', 'Stopped'),
+    SimulatorState.DONE: QCoreApplication.translate(
+        'guisimrunstate', 'Finished'),
+}
+'''
+Dictionary mapping from each type of simulator state to a human-readable,
+translated, unformatted string templating a high-level, terse (i.e., single
+word) synopsis of the action being performed in that state.
+'''
+
+
+SIMULATOR_STATE_TO_STATUS_VERBOSE = {
+    SimulatorState.UNQUEUED: QCoreApplication.translate(
+        'guisimrunstate', 'Waiting for phase(s) to be queued...'),
+    SimulatorState.QUEUED: QCoreApplication.translate(
+        'guisimrunstate', 'Waiting for queued phase(s) to be modelled...'),
+    SimulatorState.MODELLING: QCoreApplication.translate(
+        'guisimrunstate',
         'Modelling <b>{phase_type}</b> '
         'step {step_curr} '
           '<i>of</i> {step_total}:'),
-    SimCmdState.EXPORTING: QCoreApplication.translate(
-        'guisimcmd',
+    SimulatorState.EXPORTING: QCoreApplication.translate(
+        'guisimrunstate',
         'Exporting <b>{phase_type}</b> '
         '{export_type} <pre>"{export_name}"</pre> '
         'step {step_curr} '
           '<i>of</i> {step_total}:'),
-    SimCmdState.PAUSED: QCoreApplication.translate(
-        'guisimcmd', 'Paused {cmd_prior}'),
-    SimCmdState.HALTED: QCoreApplication.translate(
-        'guisimcmd', 'Stopped {cmd_prior}'),
-    SimCmdState.DONE: QCoreApplication.translate(
-        'guisimcmd', 'Finished {cmd_prior}'),
+    SimulatorState.PAUSED: QCoreApplication.translate(
+        'guisimrunstate', 'Paused {cmd_prior}'),
+    SimulatorState.HALTED: QCoreApplication.translate(
+        'guisimrunstate', 'Stopped {cmd_prior}'),
+    SimulatorState.DONE: QCoreApplication.translate(
+        'guisimrunstate', 'Finished {cmd_prior}'),
 }
 '''
 Dictionary mapping from each type of simulator state to a human-readable,
-translated, unformatted string templating a high-level synopsis of the action
-being performed in that state.
+translated, unformatted string templating a high-level, verbose (i.e., single
+sentence) synopsis of the action being performed in that state.
 
 Most such strings contain *no* format specifiers and are thus displayable as is.
 Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
 and are thus displayable *only* after interpolating the corresponding values.
 '''
 
-# ....................{ GLOBALS ~ status : details         }....................
+# ....................{ GLOBALS ~ dict : status : details  }....................
 MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS = {
     # Note that low-level details for the "SimPhaseKind.SEED" phase are specific
     # to the current action being performed and hence defined in the lower-level
     # BETSE codebase rather than here.
 
     SimPhaseKind.INIT: QCoreApplication.translate(
-        'guisimcmd', 'Initializing {time_curr} <i>of</i> {time_total}...'),
+        'guisimrunstate', 'Initializing {time_curr} <i>of</i> {time_total}...'),
     SimPhaseKind.SIM: QCoreApplication.translate(
-        'guisimcmd', 'Simulating {time_curr} <i>of</i> {time_total}...'),
+        'guisimrunstate', 'Simulating {time_curr} <i>of</i> {time_total}...'),
 }
 '''
 Dictionary mapping from the initialization and simulation phases to a
@@ -113,13 +187,13 @@ of the action being performed when modelling that phase.
 
 EXPORTING_TYPE_TO_STATUS_DETAILS = {
     SimExportType.CSV: QCoreApplication.translate(
-        'guisimcmd',
+        'guisimrunstate',
         'Exporting comma-separated value (CSV) file '
         '<pre>"{filename}"</pre>...'),
     SimExportType.PLOT: QCoreApplication.translate(
-        'guisimcmd', 'Exporting image <pre>"{filename}"</pre>...'),
+        'guisimrunstate', 'Exporting image <pre>"{filename}"</pre>...'),
     SimExportType.ANIM: QCoreApplication.translate(
-        'guisimcmd',
+        'guisimrunstate',
         'Exporting animation <pre>"{filename}"</pre> frame '
         '{time_curr} <i>of</i> {time_total}...'),
 }

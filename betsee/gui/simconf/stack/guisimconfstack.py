@@ -4,8 +4,10 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based stack widget exposing all low-level settings associated
-with each high-level feature of a simulation configuration.
+High-level **stacked simulation configuration** (i.e., partitioning of the
+simulation configuration into multiple pages, each displaying and editing all
+settings associated with a single simulation feature  of the current such
+configuration) facilities.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -16,13 +18,14 @@ from betse.util.type.obj import objects
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.window.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
-# from betsee.guiexception import BetseePySideTreeWidgetException
+from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimConfStackedWidget(QStackedWidget):
+class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     '''
-    :mod:`PySide2`-based stack widget exposing all low-level settings associated
-    with each high-level feature of the current simulation configuration.
+    :mod:`PySide2`-based stack widget containing multiple pages, each displaying
+    and editing all settings associated with a single simulation feature (e.g.,
+    ions, plots, tissue) of the current simulation configuration.
 
     This application-specific widget augments the stock :class:`QStackedWidget`
     with support for handling simulation configurations, including:
@@ -76,10 +79,43 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Initialize all instance variables for safety.
+        # Nullify all instance variables for safety.
         self._pagers = None
         self._sim_conf = None
         self._tree_item_to_stack_page = None
+
+        # Instantiate all pages of this stack widget.
+        self._init_pagers()
+
+
+    @type_check
+    def _init_pagers(self) -> None:
+        '''
+        Instantiate each **page controller** (i.e., high-level
+        :mod:`PySide2`-based object encapsulating the internal state of a page
+        of this stack widget).
+        '''
+
+        # Defer method-specific imports for maintainability.
+        from betsee.gui.simconf.stack.pager.guisimconfpagerion import (
+            QBetseeSimConfIonStackedWidgetPager)
+        from betsee.gui.simconf.stack.pager.guisimconfpagerpath import (
+            QBetseeSimConfPathStackedWidgetPager)
+        from betsee.gui.simconf.stack.pager.guisimconfpagerspace import (
+            QBetseeSimConfSpaceStackedWidgetPager)
+        from betsee.gui.simconf.stack.pager.guisimconfpagertime import (
+            QBetseeSimConfTimeStackedWidgetPager)
+        from betsee.gui.simconf.stack.pager.guisimconfpagertis import (
+            QBetseeSimConfTissueDefaultStackedWidgetPager)
+
+        # Tuple of all stack widget page controllers defined in arbitrary order.
+        self._pagers = (
+            QBetseeSimConfIonStackedWidgetPager(),
+            QBetseeSimConfPathStackedWidgetPager(),
+            QBetseeSimConfSpaceStackedWidgetPager(),
+            QBetseeSimConfTimeStackedWidgetPager(),
+            QBetseeSimConfTissueDefaultStackedWidgetPager(),
+        )
 
 
     # To avoid circular import dependencies, this parameter is validated to be
@@ -109,6 +145,9 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
             against which to initialize this widget.
         '''
 
+        # Initialize our superclass with all passed parameters.
+        super().init()
+
         # Log this initialization.
         logs.log_debug('Initializing top-level stacked widget...')
 
@@ -120,8 +159,9 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
         # Integrate this stack widget with this window's top-level tree widget.
         self._init_tree_to_stack(main_window)
 
-        # Initialize all pages of this stack widget.
-        self._init_pagers(main_window)
+        # Initialize each page of this stack widget.
+        for pager in self._pagers:
+            pager.init(main_window)
 
     # ..................{ INITIALIZERS ~ tree                }..................
     @type_check
@@ -274,41 +314,6 @@ class QBetseeSimConfStackedWidget(QStackedWidget):
 
             # Substring prefixing the names of *ALL* stack page widgets.
             stack_page_name_prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX,
-        )
-
-    # ..................{ INITIALIZERS ~ pagers              }..................
-    @type_check
-    def _init_pagers(self, main_window: QMainWindow) -> None:
-        '''
-        Initialize all pages of this stack widget, typically by instantiating
-        each page-specific controller encapsulating that page's state.
-        Python from erroneously garbage collecting these objects.
-
-        Parameters
-        ----------
-        main_window : QMainWindow
-            Main window singleton with which to initialize this widget.
-        '''
-
-        # Defer method-specific imports for maintainability.
-        from betsee.gui.simconf.stack.pager.guisimconfpagerion import (
-            QBetseeSimConfIonStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagerpath import (
-            QBetseeSimConfPathStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagerspace import (
-            QBetseeSimConfSpaceStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagertime import (
-            QBetseeSimConfTimeStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagertis import (
-            QBetseeSimConfTissueDefaultStackedWidgetPager)
-
-        # Tuple of all stack widget page controllers defined in arbitrary order.
-        self._pagers = (
-            QBetseeSimConfIonStackedWidgetPager(main_window),
-            QBetseeSimConfPathStackedWidgetPager(main_window),
-            QBetseeSimConfSpaceStackedWidgetPager(main_window),
-            QBetseeSimConfTimeStackedWidgetPager(main_window),
-            QBetseeSimConfTissueDefaultStackedWidgetPager(main_window),
         )
 
     # ..................{ SLOTS ~ public                     }..................

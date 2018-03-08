@@ -100,8 +100,9 @@ QCheckBox[text=&quot;&quot;] {
     spacing: 0px;
 }
 
-/* ..................{ SIM CONF ~ tree                    }.....................
- * Styles applicable to the simulation configuration-specific tree widget.
+/* ..................{ WIDGET ~ name                      }.....................
+ * Styles applicable to specific widgets identified by their globally unique
+ * object names.
  */
 
 /* Top-level tree widget. */
@@ -126,7 +127,7 @@ QTreeWidget#sim_conf_tree {
     qproperty-indentation: 26;
 }
 
-/* ..................{ SIM CONF ~ stack|tab               }.....................
+/* ..................{ SIM ~ stack|tab                    }.....................
  * Styles applicable to both the simulation configuration-specific stacked and
  * tab widgets.
  */
@@ -149,18 +150,18 @@ QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox {
  * This is an outstanding issue in the Qt issue tracker at:
  *     https://bugreports.qt.io/browse/QTBUG-8209
  */
-QTabWidget#sim_cmd_tabs &gt; QTabBar {
+QTabWidget#sim_tab &gt; QTabBar {
     font-size: 11pt;
 
     /* Ideally, *ONLY* the currently selected tab would be emboldened. Sadly,
      * the &quot;:selected&quot; pseudo-class only applies to the &quot;::tab&quot; subcontrol
-     * (e.g., &quot;QTabWidget#sim_cmd_tabs &gt; QTabBar::tab:selected&quot;). However, the
+     * (e.g., &quot;QTabWidget#sim_tab &gt; QTabBar::tab:selected&quot;). However, the
      * latter and hence the former is unusable for the reasons discussed above.
      */
     font-weight: bold;
 }
 
-/* ..................{ SIM CONF ~ stack|tab : group : wdg }.....................
+/* ..................{ SIM ~ stack|tab : group : widget   }.....................
  * Note that pages of both stacked and tab widgets *MUST* be selected via the
  * dynamic &quot;is_page&quot; property manually enabled for these pages. For unknown
  * reasons (presumably reducing to subtle bugs in Qt's CSS selector handling),
@@ -191,34 +192,38 @@ QTabWidget#sim_cmd_tabs &gt; QTabBar {
 
 /* Widgets either:
  *
- * * Direct children of a stacked page *OR* tabbed tab.
- * * At any depth of a top-level group box in a stacked page *OR* tabbed tab.
+ * * Direct children of a stacked page or tabbed tab.
+ * * At any depth of a top-level group box in a stacked page or tabbed tab.
  */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QWidget,
-QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QWidget,
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QWidget,
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox QWidget,
-QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox QWidget {
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox QWidget {
     font-size: 10pt;
 }
 
-/* Widgets at any depth of a second-level group box in a stacked page *OR*
- * tabbed tab.
+
+/* Widgets at any depth of either a:
+ *
+ * * Second-level group in a stacked page or tabbed tab.
+ * * Container widget enabling the &quot;is_group&quot; dynamic property (effectively
+ *   acting as a second-level group) in a first-level group in a tabbed tab.
  */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox QWidget,
-QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox QWidget {
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox QWidget,
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QWidget[is_group=&quot;true&quot;] QWidget {
     font-size: 9pt;
 }
 
 
-/* Widgets at any depth of a third-level group box in a stacked page *OR*
- * tabbed tab.
+/* Widgets at any depth of a third group in a stacked page or tabbed tab.
  */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget,
-QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget {
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget {
     font-size: 8pt;
 }
 
-/* ..................{ SIM CONF ~ stack|tab : group       }.....................
+/* ..................{ SIM ~ stack|tab : group            }.....................
  * To ensure that group box selectors take precedence over selectors intended to
  * be applicable *ONLY* to the children of these selectors, the former are
  * intentionally specified after rather than before the latter. Sadly, Qt
@@ -227,23 +232,23 @@ QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
  * (e.g., &quot;QWidget&quot;). Ergo, we do this the hard way. (It's always the hard way.)
  */
 
-/* Top-level group box in a stacked page *OR* tabbed tab. */
+/* Top-level group box in a stacked page or tabbed tab. */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox,
-QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox {
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox {
     font-size: 11pt;
 }
 
 
-/* Second-level group box in a stacked page *OR* tabbed tab. */
+/* Second-level group box in a stacked page or tabbed tab. */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox,
-QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox {
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox {
     font-size: 10pt;
 }
 
 
-/* Third-level group box in a stacked page *OR* tabbed tab. */
+/* Third-level group box in a stacked page or tabbed tab. */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox,
-QTabWidget#sim_cmd_tabs       QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
+QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
     font-size: 9pt;
 }</string>
   </property>
@@ -4317,7 +4322,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
      </widget>
     </item>
     <item row="0" column="2">
-     <widget class="QTabWidget" name="sim_cmd_tabs">
+     <widget class="QBetseeSimulatorTabWidget" name="sim_tab">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>3</horstretch>
@@ -4357,7 +4362,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
         </property>
         <layout class="QGridLayout" name="gridLayout_30">
          <item row="0" column="0">
-          <widget class="QGroupBox" name="sim_cmd_run_state">
+          <widget class="QGroupBox" name="sim_run_state">
            <property name="toolTip">
             <string>Display and control the state of the currently queued simulation phase.</string>
            </property>
@@ -4366,7 +4371,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QProgressBar" name="sim_cmd_run_state_progress">
+             <widget class="QProgressBar" name="sim_run_state_progress">
               <property name="toolTip">
                <string>Percentage completed of the action being applied to the currently queued simulation phase.</string>
               </property>
@@ -4376,7 +4381,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="sim_cmd_run_state_status">
+             <widget class="QLabel" name="sim_run_state_status">
               <property name="toolTip">
                <string>High-level synopsis of the action being applied to the currently queued simulation phase.</string>
               </property>
@@ -4389,13 +4394,31 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item>
-             <widget class="QWidget" name="sim_cmd_run_state_substatus_group" native="true">
+             <widget class="QWidget" name="sim_run_state_substatus_group" native="true">
               <property name="toolTip">
                <string>Low-level details of the action being applied to the currently queued simulation phase.</string>
               </property>
+              <property name="is_group" stdset="0">
+               <bool>true</bool>
+              </property>
               <layout class="QHBoxLayout" name="horizontalLayout">
+               <property name="spacing">
+                <number>8</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
                <item>
-                <widget class="QLabel" name="sim_cmd_run_state_substatus_icon">
+                <widget class="QLabel" name="sim_run_state_substatus_icon">
                  <property name="text">
                   <string/>
                  </property>
@@ -4405,7 +4428,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="sim_cmd_run_state_substatus">
+                <widget class="QLabel" name="sim_run_state_substatus">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -4414,7 +4437,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>10</pointsize>
+                   <pointsize>9</pointsize>
                    <italic>true</italic>
                   </font>
                  </property>
@@ -4427,7 +4450,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="sim_cmd_run_state_toolbar_frame">
+             <widget class="QFrame" name="sim_run_state_toolbar_frame">
               <property name="frameShape">
                <enum>QFrame::StyledPanel</enum>
               </property>
@@ -4451,7 +4474,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 <number>0</number>
                </property>
                <item>
-                <widget class="QToolBar" name="sim_cmd_run_state_toolbar ">
+                <widget class="QToolBar" name="sim_run_state_toolbar ">
                  <property name="toolTip">
                   <string>Control the state of the currently queued simulation phase.</string>
                  </property>
@@ -4461,8 +4484,8 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                    <height>32</height>
                   </size>
                  </property>
-                 <addaction name="action_sim_cmd_toggle"/>
-                 <addaction name="action_sim_cmd_halt"/>
+                 <addaction name="action_sim_run_toggle"/>
+                 <addaction name="action_sim_run_halt"/>
                 </widget>
                </item>
               </layout>
@@ -4485,7 +4508,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
           </spacer>
          </item>
          <item row="2" column="0">
-          <widget class="QGroupBox" name="sim_cmd_run_queue_group">
+          <widget class="QGroupBox" name="sim_run_queue_group">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Queue (i.e., ordered list) of all simulation phases to be iteratively modelled and/or exported when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -4494,7 +4517,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
             <item row="5" column="1" colspan="2">
-             <widget class="QLabel" name="sim_cmd_run_queue_init">
+             <widget class="QLabel" name="sim_run_queue_init">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4516,12 +4539,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>Initialization</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="7" column="6">
-             <widget class="QCheckBox" name="sim_cmd_run_queue_sim_export">
+             <widget class="QCheckBox" name="sim_run_queue_sim_export">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>1</horstretch>
@@ -4537,7 +4560,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="7" column="3" colspan="2">
-             <widget class="QWidget" name="sim_cmd_run_queue_sim_model_cell" native="true">
+             <widget class="QWidget" name="sim_run_queue_sim_model_cell" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4561,7 +4584,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 <number>0</number>
                </property>
                <item>
-                <widget class="QCheckBox" name="sim_cmd_run_queue_sim_model">
+                <widget class="QCheckBox" name="sim_run_queue_sim_model">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -4577,7 +4600,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <spacer name="sim_cmd_run_queue_sim_model_cell_space">
+                <spacer name="sim_run_queue_sim_model_cell_space">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -4593,7 +4616,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </spacer>
                </item>
                <item>
-                <widget class="QToolButton" name="sim_cmd_run_queue_sim_model_lock">
+                <widget class="QToolButton" name="sim_run_queue_sim_model_lock">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When locked, the &lt;span style=&quot; text-decoration: underline;&quot;&gt;simulation&lt;/span&gt; phase may &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; be queued for modelling. (&lt;span style=&quot; font-style:italic;&quot;&gt;This phase may always be queued for exporting, however.&lt;/span&gt;)&lt;/p&gt;&lt;p&gt;This safety measure prevents accidental deletion of either the simulation generated by this phase or subsequent results requiring this simulation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
@@ -4614,7 +4637,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <spacer name="sim_cmd_run_queue_sim_model_cell_align">
+                <spacer name="sim_run_queue_sim_model_cell_align">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -4630,7 +4653,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="4" column="1">
-             <widget class="QLabel" name="sim_cmd_run_queue_seed">
+             <widget class="QLabel" name="sim_run_queue_seed">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4652,12 +4675,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>Seed</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="1" column="6" rowspan="2">
-             <widget class="QLabel" name="sim_cmd_run_queue_head_export">
+             <widget class="QLabel" name="sim_run_queue_head_export">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4680,7 +4703,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="4" column="3" colspan="2">
-             <widget class="QWidget" name="sim_cmd_run_queue_seed_model_cell" native="true">
+             <widget class="QWidget" name="sim_run_queue_seed_model_cell" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4704,7 +4727,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 <number>0</number>
                </property>
                <item>
-                <widget class="QCheckBox" name="sim_cmd_run_queue_seed_model">
+                <widget class="QCheckBox" name="sim_run_queue_seed_model">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -4720,7 +4743,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <spacer name="sim_cmd_run_queue_seed_model_cell_space">
+                <spacer name="sim_run_queue_seed_model_cell_space">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -4736,7 +4759,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </spacer>
                </item>
                <item>
-                <widget class="QToolButton" name="sim_cmd_run_queue_seed_model_lock">
+                <widget class="QToolButton" name="sim_run_queue_seed_model_lock">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When locked, the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase may &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; be queued for modelling. (&lt;span style=&quot; font-style:italic;&quot;&gt;This phase may always be queued for exporting, however.&lt;/span&gt;)&lt;/p&gt;&lt;p&gt;This safety measure prevents accidental deletion of either the cell cluster generated by this phase or subsequent results requiring this cell cluster.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
@@ -4757,7 +4780,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <spacer name="sim_cmd_run_queue_seed_model_cell_align">
+                <spacer name="sim_run_queue_seed_model_cell_align">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -4773,7 +4796,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="5" column="6">
-             <widget class="QCheckBox" name="sim_cmd_run_queue_init_export">
+             <widget class="QCheckBox" name="sim_run_queue_init_export">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>1</horstretch>
@@ -4789,7 +4812,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="5" column="3" colspan="2">
-             <widget class="QWidget" name="sim_cmd_run_queue_init_model_cell" native="true">
+             <widget class="QWidget" name="sim_run_queue_init_model_cell" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4813,7 +4836,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 <number>0</number>
                </property>
                <item>
-                <widget class="QCheckBox" name="sim_cmd_run_queue_init_model">
+                <widget class="QCheckBox" name="sim_run_queue_init_model">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -4829,7 +4852,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <spacer name="sim_cmd_run_queue_init_model_cell_space">
+                <spacer name="sim_run_queue_init_model_cell_space">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -4845,7 +4868,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </spacer>
                </item>
                <item>
-                <widget class="QToolButton" name="sim_cmd_run_queue_init_model_lock">
+                <widget class="QToolButton" name="sim_run_queue_init_model_lock">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When locked, the &lt;span style=&quot; text-decoration: underline;&quot;&gt;initialization&lt;/span&gt; phase may &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; be queued for modelling. (&lt;span style=&quot; font-style:italic;&quot;&gt;This phase may always be queued for exporting, however.&lt;/span&gt;)&lt;/p&gt;&lt;p&gt;This safety measure prevents accidental deletion of either the initialization generated by this phase or subsequent results requiring this initialization.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
@@ -4866,7 +4889,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <spacer name="sim_cmd_run_queue_init_model_cell_align">
+                <spacer name="sim_run_queue_init_model_cell_align">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -4882,7 +4905,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="5" column="0">
-             <widget class="QLabel" name="sim_cmd_run_queue_init_index">
+             <widget class="QLabel" name="sim_run_queue_init_index">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -4903,12 +4926,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>2.</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="1" column="3" rowspan="2">
-             <widget class="QLabel" name="sim_cmd_run_queue_head_model">
+             <widget class="QLabel" name="sim_run_queue_head_model">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4934,7 +4957,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="7" column="0">
-             <widget class="QLabel" name="sim_cmd_run_queue_sim_index">
+             <widget class="QLabel" name="sim_run_queue_sim_index">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -4955,12 +4978,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>3.</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="7" column="1" colspan="2">
-             <widget class="QLabel" name="sim_cmd_run_queue_sim">
+             <widget class="QLabel" name="sim_run_queue_sim">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -4982,12 +5005,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>Simulation</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="4" column="0">
-             <widget class="QLabel" name="sim_cmd_run_queue_seed_index">
+             <widget class="QLabel" name="sim_run_queue_seed_index">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -5008,12 +5031,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>1.</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="1" column="1" rowspan="2">
-             <widget class="QLabel" name="sim_cmd_run_queue_head_phase">
+             <widget class="QLabel" name="sim_run_queue_head_phase">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -5039,7 +5062,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="3" column="0" colspan="9">
-             <widget class="Line" name="sim_cmd_run_queue_head_line_bottom">
+             <widget class="Line" name="sim_run_queue_head_line_bottom">
               <property name="frameShadow">
                <enum>QFrame::Plain</enum>
               </property>
@@ -5055,7 +5078,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="7" column="8">
-             <widget class="QLabel" name="sim_cmd_run_queue_sim_status">
+             <widget class="QLabel" name="sim_run_queue_sim_status">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -5075,12 +5098,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>Unqueued</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="5" column="8">
-             <widget class="QLabel" name="sim_cmd_run_queue_init_status">
+             <widget class="QLabel" name="sim_run_queue_init_status">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -5100,12 +5123,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>Unqueued</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="4" column="8">
-             <widget class="QLabel" name="sim_cmd_run_queue_seed_status">
+             <widget class="QLabel" name="sim_run_queue_seed_status">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>1</horstretch>
@@ -5125,12 +5148,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>Unqueued</string>
               </property>
               <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
             <item row="0" column="0" colspan="9">
-             <widget class="Line" name="sim_cmd_run_queue_head_line_top">
+             <widget class="Line" name="sim_run_queue_head_line_top">
               <property name="frameShadow">
                <enum>QFrame::Plain</enum>
               </property>
@@ -5146,7 +5169,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="1" column="8" rowspan="2">
-             <widget class="QLabel" name="sim_cmd_run_queue_head_status">
+             <widget class="QLabel" name="sim_run_queue_head_status">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>2</horstretch>
@@ -5169,7 +5192,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="4" column="6">
-             <widget class="QWidget" name="sim_cmd_run_queue_seed_export" native="true">
+             <widget class="QWidget" name="sim_run_queue_seed_export" native="true">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase has &lt;span style=&quot; font-style:italic;&quot;&gt;no&lt;/span&gt; exports and hence cannot be queued to be exported.&lt;/p&gt;&lt;p&gt;This differs from the &lt;span style=&quot; text-decoration: underline;&quot;&gt;initialization&lt;/span&gt; and &lt;span style=&quot; text-decoration: underline;&quot;&gt;simulation&lt;/span&gt; phases, which &lt;span style=&quot; font-style:italic;&quot;&gt;do&lt;/span&gt; have exports and hence can be queued to be exported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -5200,6 +5223,9 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 <widget class="QLabel" name="label_23">
                  <property name="text">
                   <string>N/A</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                  </property>
                 </widget>
                </item>
@@ -5526,7 +5552,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>Remove the current item from the current list.</string>
    </property>
   </action>
-  <action name="action_sim_cmd_toggle">
+  <action name="action_sim_run_toggle">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -5542,7 +5568,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle the execution of the currently queued simulation phase. Clicking this button either:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Starts this phase if unstarted.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Pauses this phase if unpaused.&lt;/li&gt;&lt;/ul&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Unpauses this phase if paused.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
-  <action name="action_sim_cmd_halt">
+  <action name="action_sim_run_halt">
    <property name="icon">
     <iconset resource="../qrc/betsee.qrc">
      <normaloff>:/icon/open_iconic/media-stop.svg</normaloff>:/icon/open_iconic/media-stop.svg</iconset>
@@ -5612,6 +5638,12 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    <class>QBetseeLabelImage</class>
    <extends>QLabel</extends>
    <header>betsee/util/widget/stock/guilabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeSimulatorTabWidget</class>
+   <extends>QTabWidget</extends>
+   <header>betsee/gui/simtab/guisimtab.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

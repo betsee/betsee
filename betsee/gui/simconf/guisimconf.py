@@ -45,7 +45,7 @@ files) functionality.
 #sane. In other words, the noop-based lazy approach may be the correct approach.
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
+from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
 from betse.science.config import confio
 from betse.science.parameters import Parameters
@@ -105,8 +105,8 @@ class QBetseeSimConf(QBetseeControllerABC):
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree` widget.
     _sim_conf_tree_frame : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.
-    _sim_cmd_tabs : QTabWidget
-        Alias of the :attr:`QBetseeMainWindow.sim_cmd_tabs` widget.
+    _sim_tab : QBetseeSimulatorTabWidget
+        Alias of the :attr:`QBetseeMainWindow.sim_tab` widget.
     _status_bar : QStatusBar
         Alias of the :attr:`QBetseeMainWindow.status_bar` widget.
     '''
@@ -121,24 +121,22 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
+        # Nullify all instance variables for safety.
+        self._is_dirty = False
+        self._action_make_sim = None
+        self._action_open_sim = None
+        self._action_close_sim = None
+        self._action_save_sim = None
+        self._action_save_sim_as = None
+        self._sim_conf_stack = None
+        self._sim_conf_tree = None
+        self._sim_conf_tree_frame = None
+        self._sim_tab = None
+        self._status_bar = None
+        self.undo_stack = None
+
         # High-level simulation configuration, defaulting to the unload state.
         self.p = Parameters()
-
-        # Nullify all stateful instance variables for safety. While the signals
-        # subsequently emitted by this method also do so, ensure sanity if these
-        # variables are tested in the interim.
-        self._is_dirty = False
-        self._action_make_sim     = None
-        self._action_open_sim     = None
-        self._action_close_sim    = None
-        self._action_save_sim     = None
-        self._action_save_sim_as  = None
-        self._sim_conf_stack      = None
-        self._sim_conf_tree       = None
-        self._sim_conf_tree_frame = None
-        self._sim_cmd_tabs        = None
-        self._status_bar          = None
-        self.undo_stack = None
 
 
     @type_check
@@ -213,7 +211,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._sim_conf_stack      = main_window.sim_conf_stack
         self._sim_conf_tree       = main_window.sim_conf_tree
         self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
-        self._sim_cmd_tabs        = main_window.sim_cmd_tabs
+        self._sim_tab             = main_window.sim_tab
         self._status_bar          = main_window.status_bar
 
         # Undo stack for this simulation configuration.
@@ -377,7 +375,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Show or hide widgets requiring an open simulation configuration.
         self._sim_conf_stack     .setEnabled(self.p.is_loaded)
         self._sim_conf_tree_frame.setEnabled(self.p.is_loaded)
-        self._sim_cmd_tabs     .setEnabled(self.p.is_loaded)
+        self._sim_tab            .setEnabled(self.p.is_loaded)
 
         # If no simulation configuration is open, clear the undo stack.
         if not self.p.is_loaded:

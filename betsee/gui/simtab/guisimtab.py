@@ -4,73 +4,37 @@
 # See "LICENSE" for further details.
 
 '''
-High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
-*and* controlling the execution of simulation-specific subcommands)
-functionality.
+High-level **tabbed simulation results** (i.e., partitioning of the
+simulation results into multiple pages, each displaying and controlling all
+settings associated with a single result of the current simulation) facilities.
 '''
 
-#FIXME: Note in a more appropriate docstring somewhere that the text overlaid
-#onto the progress bar is only conditionally displayed depending on the current
-#style associated with this bar. Specifically, the official documentation notes:
-#
-#    Note that whether or not the text is drawn is dependent on the style.
-#    Currently CDE, CleanLooks, Motif, and Plastique draw the text. Mac, Windows
-#    and WindowsXP style do not.
-#
-#For orthogonality with native applications, it's probably best to accept this
-#constraint as is and intentionally avoid setting a misson-critical format on
-#progress bars. Nonetheless, this *DOES* appear to be circumventable by manually
-#overlaying a "QLabel" widget over the "QProgressBar" widget in question. For
-#details, see the following StackOverflow answer (which, now that I peer closely
-#at it, appears to be quite incorrect... but, something's better than nothing):
-#    https://stackoverflow.com/a/28816650/2809027
-
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
-from betse.science.export.expenum import SimExportType
-from betse.science.phase.phasecls import SimPhaseKind
-from betse.util.io.log import logs
-from betse.util.type.enums import make_enum
+# from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
+from PySide2.QtWidgets import QMainWindow, QTabWidget
+# from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, StrOrNoneTypes
-# from betsee.guiexception import BetseeSimConfException
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
-from betsee.gui.simcmd.guisimcmdstate import (
-    SimCmdState,
-    SIM_CMD_STATE_TO_STATUS,
-    MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
-    EXPORTING_TYPE_TO_STATUS_DETAILS,
-)
-from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimCmd(QBetseeControllerABC):
+class QBetseeSimulatorTabWidget(QBetseeObjectMixin, QTabWidget):
     '''
-    High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
-    *and* controlling the execution of simulation-specific subcommands).
-
-    This simulator maintains all state required to interactively manage these
-    subcommands (e.g., ``betse sim``, ``betse plot init``), including:
-
-    * A queue of all simulation subcommands to be interactively run.
-    * Whether or not a simulation subcommand is currently being run.
-    * The state of the currently run simulation subcommand (if any), including:
-      * Visualization (typically, Vmem animation) of the most recent step
-        completed for this subcommand.
-      * Textual status describing this step in human-readable language.
-      * Numeric progress as a relative function of the total number of steps
-        required by this subcommand.
+    :mod:`PySide2`-based tab widget containing multiple tabs, each displaying
+    and controlling all settings associated with a single simulation result
+    (e.g., pickled file, plot, animation) of the current simulation created by a
+    single CLI-oriented simulation subcommand (e.g., ``betse plot init``).
 
     Attributes (Public)
     ----------
-    _state : SimCmdState
-        Condition of the currently queued simulation subcommand if any,
-        analogous to a state in a finite state automata.
 
     Attributes (Private: Non-widgets)
     ----------
 
     Attributes (Private: Widgets)
     ----------
+    _simulator : QBetseeSimulator
+        **Simulator** (i.e., :mod:`PySide2`-based object both displaying *and*
+        controlling the execution of simulation-specific subcommands).
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -80,27 +44,30 @@ class QBetseeSimCmd(QBetseeControllerABC):
         Initialize this simulator.
         '''
 
+        # Avoid circular import dependencies.
+        from betsee.gui.simtab.run.guisimrun import QBetseeSimulator
+
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Nullify all stateful instance variables for safety. While the signals
-        # subsequently emitted by this method also do so, ensure sanity if these
-        # variables are tested in the interim.
-        self._state = SimCmdState.UNQUEUED
+        # Nullify all instance variables for safety.
+        # self._simulator = None
 
-        # Classify all instance variables of this main window subsequently
-        # required by this object. Since this main window owns this object,
-        # since weak references are unsafe in a multi-threaded GUI context, and
-        # since circular references are bad, this object intentionally does
-        # *NOT* retain a reference to this main window.
-        # self._action_make_sim     = main_window.action_make_sim
+        # Simulator, displaying and controlling simulation-specific subcommands.
+        self._simulator = QBetseeSimulator()
 
 
+    # To avoid circular import dependencies, this parameter is validated to be
+    # an instance of the "QMainWindow" superclass rather than the expected
+    # "QMainWindow" subclass of the "betsee.gui.window.guimainwindow"
+    # submodule. Why? Because the latter imports the cached "betsee_ui.py"
+    # module which imports the current submodule. Since this application only
+    # contains one main window, this current validation suffices.
     @type_check
-    def init(self, main_window: QBetseeMainWindow) -> None:
+    def init(self, main_window: QMainWindow) -> None:
         '''
-        Finalize this simulator's initialization, owned by the passed main
-        window widget.
+        Finalize this widget's initialization, owned by the passed main window
+        widget.
 
         This method connects all relevant signals and slots of *all* widgets
         (including the main window, top-level widgets of that window, and leaf
@@ -113,16 +80,13 @@ class QBetseeSimCmd(QBetseeControllerABC):
 
         Parameters
         ----------
-        main_window : QBetseeMainWindow
+        main_window : QMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this object.
         '''
 
         # Initialize our superclass with all passed parameters.
-        super().init(main_window)
-
-        # Log this initialization.
-        logs.log_debug('Sanitizing simulation subcommand state...')
+        super().init()
 
         # Initialize all widgets concerning simulation subcommand state the
         # *BEFORE* connecting all relevant signals and slots typically expecting
@@ -132,7 +96,7 @@ class QBetseeSimCmd(QBetseeControllerABC):
 
 
     @type_check
-    def _init_widgets(self, main_window: QBetseeMainWindow) -> None:
+    def _init_widgets(self, main_window: QMainWindow) -> None:
         '''
         Create all widgets owned directly by this object *and* initialize all
         other widgets (not necessarily owned by this object) whose internal
@@ -140,30 +104,23 @@ class QBetseeSimCmd(QBetseeControllerABC):
 
         Parameters
         ----------
-        main_window : QBetseeMainWindow
+        main_window : QMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget.
         '''
 
-        # Avoid circular import dependencies.
-        # from betsee.gui.simconf.guisimconfundo import (
-        #     QBetseeUndoStackSimConf)
+        # Classify all instance variables of this main window subsequently
+        # required by this object. Since this main window owns this object,
+        # since weak references are unsafe in a multi-threaded GUI context, and
+        # since circular references are bad, this object intentionally does
+        # *NOT* retain a reference to this main window.
+        # self._action_make_sim     = main_window.action_make_sim
 
-        # Undo stack for this simulation configuration.
-        # self.undo_stack = QBetseeUndoStackSimConf(
-        #     main_window=main_window, sim_config=self)
-
-        #FIXME: Conditionally enable this group of widgets as described here.
-
-        # Enable all widgets controlling the state of the currently queued
-        # subcommand only if one or more subcommands are currently queued.
-        # main_window.sim_cmd_run_state.setEnabled(False)
-
-        # main_window.sim_cmd_run_state_text.setText(QCoreApplication.translate(
-        #     'QBetseeSimCmd', 'Simulation opened.'))
+        # Initialize the simulator.
+        self._simulator.init(main_window)
 
 
     @type_check
-    def _init_connections(self, main_window: QBetseeMainWindow) -> None:
+    def _init_connections(self, main_window: QMainWindow) -> None:
         '''
         Connect all relevant signals and slots of *all* widgets (including the
         main window, top-level widgets of that window, and leaf widgets
