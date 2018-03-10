@@ -188,10 +188,12 @@ Root-level classes defining this application's graphical user interface (GUI).
 #Annnnnnd we are done.
 
 # ....................{ IMPORTS                            }....................
+from PySide2.QtCore import QCoreApplication
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
+from betsee import guimetadata
 from betsee.gui import guicache
-from betsee.util.app import guiapp, guiappwindow
+from betsee.util.app import guiapp, guiappstatus, guiappwindow
 from betsee.util.io import guierr
 
 # ....................{ CLASSES                            }....................
@@ -302,6 +304,11 @@ class BetseeGUI(object):
 
         # Publicize this main window for use elsewhere in the codebase.
         guiappwindow.set_main_window(main_window)
+
+        # Display a sensible startup message in this window's status bar *AFTER*
+        # publicizing this window, as the former requires the latter.
+        guiappstatus.show_status(QCoreApplication.translate(
+            'BetseeGUI', 'Welcome to {}'.format(guimetadata.NAME)))
 
         # Application-wide settings slotter, which requires this window.
         self._settings = QBetseeSettings(main_window)

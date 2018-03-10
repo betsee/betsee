@@ -14,7 +14,6 @@ from PySide2.QtWidgets import QMainWindow
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideWindowException
-from betsee.util.app import guiapp
 
 # ....................{ GLOBALS                            }....................
 _MAIN_WINDOW = None
@@ -25,7 +24,7 @@ Main window singleton widget for this application.
 # ....................{ GETTERS                            }....................
 def get_main_window() -> QMainWindow:
     '''
-    Main window singleton widget for this application if already instantiated
+    Singleton main window widget for this application if already instantiated
     by the :class:`betsee.gui.guimain.BetseeGUI` class *or* raise an exception
     otherwise (i.e., if this widget is uninstantiated).
 
@@ -33,7 +32,7 @@ def get_main_window() -> QMainWindow:
     ----------
     To avoid circular import dependencies, this getter intentionally resides in
     this submodule known *not* to be subject to these dependencies rather than
-    in an arguably more germain submodule known to be subject to these
+    in an arguably more germane submodule known to be subject to these
     dependencies (e.g., :mod:`betsee.gui.window.guimainwindow`).
 
     Returns

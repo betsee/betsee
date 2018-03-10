@@ -242,6 +242,7 @@ class BetseePySideWindowException(BetseePySideWidgetException):
             'BetseePySideWindowException', 'Window Error')
 
 # ....................{ EXCEPTIONS ~ psd : widget : enum   }....................
+#FIXME: Rename to "BetseePySideEnumWidgetException" for orthogonality.
 class BetseePySideWidgetEnumException(BetseePySideWidgetException):
     '''
     General-purpose exception applicable to mutually exclusive :mod:`PySide2`

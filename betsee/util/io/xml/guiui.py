@@ -15,7 +15,7 @@ from PySide2.QtCore import QCoreApplication, QObject
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
-from betse.util.py import pyident
+from betse.util.py import pyident, pys
 from betse.util.py.pyident import IDENTIFIER_UNQUALIFIED_REGEX
 from betse.util.type import modules, types
 from betse.util.type.cls import classes
@@ -339,6 +339,8 @@ def _munge_ui_code(
 
     Specifically, this function:
 
+    * Prepends this code by a shebang line unambiguously running the executable
+      binary for the active Python interpreter and machine architecture.
     * Globally replaces all lines of this code reducing vector SVG icons to
       non-vector in-memory pixmaps with lines preserving these icons as is. See
       this function's body for detailed commentary.
@@ -455,6 +457,9 @@ def _munge_ui_code(
             regex=promote_regex,
             replacement=r'\1{}\2'.format(promote_class_name),
         )
+
+    # Prepend this code by a shebang running the active Python interpreter.
+    ui_code_str = '{}\n{}'.format(pys.get_shebang(), ui_code_str)
 
     # Return this code.
     return ui_code_str

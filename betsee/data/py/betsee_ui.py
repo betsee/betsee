@@ -1,3 +1,4 @@
+#!/usr/lib/python-exec/python3.4/python3
 from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_main_window(object):
@@ -2997,15 +2998,15 @@ class Ui_main_window(object):
         self.action_sim_run_halt.setText(QtWidgets.QApplication.translate("main_window", "Stop", None, -1))
         self.action_sim_run_halt.setToolTip(QtWidgets.QApplication.translate("main_window", "Prematurely stop the currently running simulation phase.", None, -1))
 
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
-from betsee.gui.simtab.guisimtab import QBetseeSimulatorTabWidget
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.simtab.guisimtab import QBetseeSimulatorTabWidget
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

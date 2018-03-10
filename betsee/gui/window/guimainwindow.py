@@ -71,10 +71,10 @@ from betse.util.path import pathnames
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import guimetadata
 from betsee.gui.guisignal import QBetseeSignaler
+from betsee.util.app import guiappwindow
 from betsee.util.io import guierr
 from betsee.util.io.log import guilogconf
 from betsee.util.io.xml import guiui
-from betsee.util.app import guiappwindow
 
 # ....................{ GLOBALS                            }....................
 MAIN_WINDOW_BASE_CLASSES = guiui.get_ui_module_base_classes(
@@ -285,9 +285,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         from betsee.gui.window.guimainclipboard import QBetseeMainClipboard
         from betsee.gui.simconf.guisimconf import QBetseeSimConf
 
-        # Initialize the status bar with a sensible startup message.
-        self._show_status('Welcome to {}'.format(guimetadata.NAME))
-
         # Object wrapping high-level state, instantiated in arbitrary order.
         self._clipboard = QBetseeMainClipboard()
         self.sim_conf = QBetseeSimConf()
@@ -479,37 +476,3 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         self.setWindowState(self.windowState() | Qt.WindowMaximized)
-
-    # ..................{ STATUS                             }..................
-    #FIXME: This method appears to be useless and hence should probably be
-    #excised. Why? Because it's not safely callable, as doing so would require
-    #callers to retain a circular reference to this main window.
-    @type_check
-    def _show_status(self, text: str) -> None:
-        '''
-        Display the passed string as a **temporary message** (i.e., string
-        temporarily replacing any normal message currently displayed) in the
-        status bar.
-        '''
-
-        #FIXME: Validate this string to contain no newlines. Additionally,
-        #consider emitting a warning if the length of this string exceeds a
-        #sensible maximum (say, 160 characters or so).
-
-        # Display this temporary message with no timeout.
-        self.status_bar.showMessage(text)
-
-
-    #FIXME: This method appears to be useless and hence should probably be
-    #excised. Why? Because it's not safely callable, as doing so would require
-    #callers to retain a circular reference to this main window.
-    def _clear_status(self) -> None:
-        '''
-        Remove the temporary message currently displayed in the status bar if
-        any *or* reduce to a noop otherwise.
-
-        This Any normal message was displayed prior to this temporary message being
-        displayed in the status bar,
-        '''
-
-        self.status_bar.clearMessage()

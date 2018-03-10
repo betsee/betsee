@@ -27,10 +27,10 @@ def convert_qrc_to_py_file_if_able(qrc_filename: str, py_filename: str) -> None:
 
     Dependencies
     ----------
-    This function requires the optional third-party dependency
-    ``pyside2-tools`` distributed by The Qt Company. Specifically, this
-    high-level function wraps the low-level ``pyside2-rcc`` command installed
-    by this dependency with a human-usable API.
+    This function requires the optional third-party dependency ``pyside2-tools``
+    distributed by The Qt Company. Specifically, this high-level function wraps
+    the low-level ``pyside2-rcc`` command installed by this dependency with a
+    human-usable API.
 
     If this command is unavailable, this function logs a non-fatal warning and
     returns *without* raising a fatal exception.
@@ -76,3 +76,7 @@ def convert_qrc_to_py_file_if_able(qrc_filename: str, py_filename: str) -> None:
     # redirected to this application's stdout, stderr, and logging file handles.
     cmdrun.log_output_or_die(
         command_words=('pyside2-rcc', '-o', py_filename, qrc_filename))
+
+    #FIXME: The contents of this output "py_filename" should additionally be
+    #opened for writing and prefixed by a shebang line running the active Python
+    #interpreter. See the "guiui" submodule for relevant logic.

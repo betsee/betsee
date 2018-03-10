@@ -4,34 +4,18 @@
 # See "LICENSE" for further details.
 
 '''
-High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
-*and* controlling the execution of simulation-specific subcommands)
-functionality.
+Low-level **simulator phase** (i.e., simulation phase to be queued for modelling
+and/or exporting by this simulator) functionality.
 '''
-
-#FIXME: Note in a more appropriate docstring somewhere that the text overlaid
-#onto the progress bar is only conditionally displayed depending on the current
-#style associated with this bar. Specifically, the official documentation notes:
-#
-#    Note that whether or not the text is drawn is dependent on the style.
-#    Currently CDE, CleanLooks, Motif, and Plastique draw the text. Mac, Windows
-#    and WindowsXP style do not.
-#
-#For orthogonality with native applications, it's probably best to accept this
-#constraint as is and intentionally avoid setting a misson-critical format on
-#progress bars. Nonetheless, this *DOES* appear to be circumventable by manually
-#overlaying a "QLabel" widget over the "QProgressBar" widget in question. For
-#details, see the following StackOverflow answer (which, now that I peer closely
-#at it, appears to be quite incorrect... but, something's better than nothing):
-#    https://stackoverflow.com/a/28816650/2809027
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal, Slot
 from betse.science.export.expenum import SimExportType
 from betse.science.phase.phasecls import SimPhaseKind
 from betse.util.io.log import logs
+from betse.util.type import enums
 from betse.util.type.types import type_check  #, StrOrNoneTypes
-# from betsee.guiexception import BetseeSimConfException
+from betsee.guiexception import BetseePySideWindowException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunstate import (
     SimulatorState,
@@ -43,120 +27,76 @@ from betsee.gui.simtab.run.guisimrunstate import (
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimulator(QBetseeControllerABC):
+class QBetseeSimulatorPhase(QBetseeControllerABC):
     '''
-    High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
-    *and* controlling the execution of simulation-specific subcommands).
+    Low-level **simulator phase** (i.e., :mod:`PySide2`-based object wrapping a
+    simulation phase to be queued for modelling and/or exporting by this
+    simulator).
 
-    This simulator maintains all state required to interactively manage these
-    subcommands (e.g., ``betse sim``, ``betse plot init``), including:
-
-    * A queue of all simulation subcommands to be interactively run.
-    * Whether or not a simulation subcommand is currently being run.
-    * The state of the currently run simulation subcommand (if any), including:
-      * Visualization (typically, Vmem animation) of the most recent step
-        completed for this subcommand.
-      * Textual status describing this step in human-readable language.
-      * Numeric progress as a relative function of the total number of steps
-        required by this subcommand.
+    This simulator phase maintains all state required to interactively manage
+    this simulation phase, including:
 
     Attributes (Public)
     ----------
 
     Attributes (Private: Non-widgets)
     ----------
-    _state_queued : SimulatorState
-        Condition of the currently queued simulation subcommand if any,
-        analogous to a state in a finite state automata.
-    _state_seed : SimulatorState
-        Current state of the seed phase for the current simulation.
-    _state_init : SimulatorState
-        Current state of the initialization phase for the current simulation.
-    _state_sim : SimulatorState
-        Current state of the simulation phase for the current simulation.
+    _phase_kind : SimPhaseKind
+        Type of simulation phase controlled by this controller.
+    _phase_name : str
+        Machine-readable alphabetic lowercase name of the type of simulation
+        phase controlled by this controller (e.g., ``seed``, ``init``, ``sim``).
+    _state : SimulatorState
+        Current state of this phase for the current simulation.
 
     Attributes (Private: Widgets)
     ----------
-    _action_sim_run_toggle : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle` action.
-    _action_sim_run_halt : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_halt` action.
-    _sim_run_queue_seed_model : QCheckbox
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_seed_model` widget.
-    _sim_run_queue_seed_model_lock : QToolButton
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_seed_model_lock`
-        widget.
-    _sim_run_queue_seed_status : QLabel
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_seed_status` widget.
-    _sim_run_queue_init_model : QCheckbox
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_init_model` widget.
-    _sim_run_queue_init_model_lock : QToolButton
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_init_model_lock`
-        widget.
-    _sim_run_queue_init_export : QCheckbox
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_init_export` widget.
-    _sim_run_queue_init_status : QLabel
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_init_status` widget.
-    _sim_run_queue_sim_model : QCheckbox
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_sim_model` widget.
-    _sim_run_queue_sim_model_lock : QToolButton
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_sim_model_lock`
-        widget.
-    _sim_run_queue_sim_export : QCheckbox
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_sim_export` widget.
-    _sim_run_queue_sim_status : QLabel
-        Alias of the :attr:`QBetseeMainWindow.sim_run_queue_sim_status` widget.
-    _sim_run_state_progress : QProgressBar
-        Alias of the :attr:`QBetseeMainWindow.sim_run_state_progress` widget.
-    _sim_run_state_status : QLabel
-        Alias of the :attr:`QBetseeMainWindow.sim_run_state_status` widget.
-    _sim_run_state_substatus : QLabel
-        Alias of the :attr:`QBetseeMainWindow.sim_run_state_substatus` widget.
+    _is_queueable_model : QCheckBox
+        Checkbox toggling whether this phase is queueable for modelling.
+    _is_queued_model : QCheckBox
+        Checkbox toggling whether this phase is queued for modelling.
+    _is_queued_export : QCheckBox
+        Checkbox toggling whether this phase is queued for exporting.
+    _queue_status : QLabel
+        Label synopsizing the current queueing of this phase.
     '''
 
     # ..................{ INITIALIZERS                       }..................
     @type_check
     def __init__(self, *args, **kwargs) -> None:
         '''
-        Initialize this simulator.
+        Initialize this simulator phase.
         '''
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Nullify all instance variables for safety.
-        self._action_sim_run_toggle = None
-        self._action_sim_run_halt = None
-        self._sim_run_queue_seed_model = None
-        self._sim_run_queue_seed_model_lock = None
-        self._sim_run_queue_seed_status = None
-        self._sim_run_queue_init_model = None
-        self._sim_run_queue_init_model_lock = None
-        self._sim_run_queue_init_export = None
-        self._sim_run_queue_init_status = None
-        self._sim_run_queue_sim_model = None
-        self._sim_run_queue_sim_model_lock = None
-        self._sim_run_queue_sim_export = None
-        self._sim_run_queue_sim_status = None
-        self._sim_run_state_progress = None
-        self._sim_run_state_status = None
-        self._sim_run_state_substatus = None
-        self._state_queued = None
-        self._state_seed = None
-        self._state_init = None
-        self._state_sim = None
+        # Default this phase to the unqueued state.
+        self._state = SimulatorState.UNQUEUED
+
+        # Nullify all remaining instance variables for safety.
+        self._is_queueable_model = None
+        self._is_queued_model = None
+        self._is_queued_export = None
+        self._phase_kind = None
+        self._phase_name = None
+        self._queue_status = None
 
 
     @type_check
-    def init(self, main_window: QBetseeMainWindow) -> None:
+    def init(
+        self,
+        main_window: QBetseeMainWindow,
+        phase_kind: SimPhaseKind,
+    ) -> None:
         '''
-        Finalize this simulator's initialization, owned by the passed main
+        Finalize this simulator phase's initialization, owned by the passed main
         window widget.
 
         This method connects all relevant signals and slots of *all* widgets
         (including the main window, top-level widgets of that window, and leaf
         widgets distributed throughout this application) whose internal state
-        pertains to the high-level state of this simulator.
+        pertains to the high-level state of this simulator phase.
 
         To avoid circular references, this method is guaranteed to *not* retain
         references to this main window on returning. References to child widgets
@@ -167,15 +107,26 @@ class QBetseeSimulator(QBetseeControllerABC):
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this object.
+        phase_kind : SimPhaseKind
+            Type of simulation phase controlled by this controller.
         '''
 
         # Initialize our superclass with all passed parameters.
         super().init(main_window)
 
-        # Log this initialization.
-        logs.log_debug('Sanitizing simulator state...')
+        # Classify all passed parameters *EXCEPT* the passed main window.
+        # Classifying the latter invites circular references.
+        self._phase_kind = phase_kind
 
-        # Initialize all widgets concerning simulator state.
+        # Machine-readable alphabetic lowercase name of the type of simulation
+        # phase controlled by this controller (e.g., "seed", "init", "sim").
+        self._phase_name = enums.get_member_name_lowercase(phase_kind)
+
+        # Log this finalization.
+        logs.log_debug(
+            'Sanitizing simulator phase "%s" state...', self._phase_name)
+
+        # Initialize all widgets concerning simulator phase state.
         self._init_widgets(main_window)
 
         # Connect all relevant signals and slots *AFTER* initializing these
@@ -188,7 +139,7 @@ class QBetseeSimulator(QBetseeControllerABC):
         '''
         Create all widgets owned directly by this object *and* initialize all
         other widgets (*not* always owned by this object) concerning this
-        simulator.
+        simulator phase.
 
         Parameters
         ----------
@@ -196,39 +147,31 @@ class QBetseeSimulator(QBetseeControllerABC):
             Initialized application-specific parent :class:`QMainWindow` widget.
         '''
 
-        # Classify all instance variables of this main window subsequently
-        # required by this object. Since this main window owns this object,
-        # since weak references are unsafe in a multi-threaded GUI context, and
-        # since circular references are bad, this object intentionally does
-        # *NOT* retain a reference to this main window.
-        self._action_sim_run_toggle = main_window.action_sim_run_toggle
-        self._action_sim_run_halt   = main_window.action_sim_run_halt
-        self._sim_run_queue_seed_model = main_window.sim_run_queue_seed_model
-        self._sim_run_queue_seed_model_lock = (
-            main_window.sim_run_queue_seed_model_lock)
-        self._sim_run_queue_seed_status = main_window.sim_run_queue_seed_status
-        self._sim_run_queue_init_model = main_window.sim_run_queue_init_model
-        self._sim_run_queue_init_model_lock = (
-            main_window.sim_run_queue_init_model_lock)
-        self._sim_run_queue_init_export = main_window.sim_run_queue_init_export
-        self._sim_run_queue_init_status = main_window.sim_run_queue_init_status
-        self._sim_run_queue_sim_model = main_window.sim_run_queue_sim_model
-        self._sim_run_queue_sim_model_lock = (
-            main_window.sim_run_queue_sim_model_lock)
-        self._sim_run_queue_sim_export = main_window.sim_run_queue_sim_export
-        self._sim_run_queue_sim_status = main_window.sim_run_queue_sim_status
-        self._sim_run_state_progress   = main_window.sim_run_state_progress
-        self._sim_run_state_status     = main_window.sim_run_state_status
-        self._sim_run_state_substatus  = main_window.sim_run_state_substatus
+        # Names of all instance variables of this main window yielding widgets
+        # specific to this simulator phase.
+        is_queueable_model_name = 'sim_run_queue_{}_model_lock'.format(
+            self._phase_name)
+        is_queued_model_name = 'sim_run_queue_{}_model'.format(self._phase_name)
+        is_queued_export_name = 'sim_run_queue_{}_export'.format(
+            self._phase_name)
+        queue_status_name = 'sim_run_queue_{}_status'.format(self._phase_name)
 
-        #FIXME: After at least partially implementing queueing, uncomment this:
-        # self._state = SimulatorState.UNQUEUED
+        # Classify these widgets. Since this main window owns this object, since
+        # weak references are unsafe in a multi-threaded GUI context, and since
+        # circular references are bad, this object intentionally does *NOT*
+        # retain a reference to this main window.
+        self._is_queueable_model = getattr(
+            main_window, is_queueable_model_name, None)
+        self._is_queued_model = getattr(
+            main_window, is_queued_model_name, None)
+        self._is_queued_export = getattr(
+            main_window, is_queued_export_name, None)
+        self._queue_status = getattr(main_window, queue_status_name, None)
 
-        # By default, queue all subcommands run by the "try" subcommand *AFTER*
-        # classifying instance variables.
-        #
-        # Default the simulator to the queued state.
-        self._state_queued = SimulatorState.QUEUED
+        # If any such widget does *NOT* exist, raise an exception.
+        # raise BetseePySideWindowException()
+
+        # If this is the seed phase
 
         #FIXME: These states should be dynamically set by slots connected to
         #the QCheckBox.toggled() signal emitted by each of these widgets. To do
