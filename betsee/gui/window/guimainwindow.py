@@ -65,16 +65,18 @@ submodule has locally created and cached that module for the current user.
 # subpackage, contrary to pure-Python expectation.
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtGui import QCloseEvent
-from PySide2.QtWidgets import QToolButton
+from PySide2.QtWidgets import QToolButton, QWidget
 from betse.util.io.log import logs
 from betse.util.path import pathnames
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import guimetadata
+from betsee.guiexception import BetseePySideWindowException
 from betsee.gui.guisignal import QBetseeSignaler
 from betsee.util.app import guiappwindow
 from betsee.util.io import guierr
 from betsee.util.io.log import guilogconf
 from betsee.util.io.xml import guiui
+from betsee.util.type.guitype import QWidgetOrNoneTypes
 
 # ....................{ GLOBALS                            }....................
 MAIN_WINDOW_BASE_CLASSES = guiui.get_ui_module_base_classes(
@@ -444,6 +446,79 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # has platform-specific effects usually including appending an asterisk
         # to the current window title.
         self.setWindowModified(is_sim_conf_dirty)
+
+    # ..................{ GETTERS                            }..................
+    @type_check
+    def get_widget(self, widget_name: str) -> QWidget:
+        '''
+        Widget with the passed name directly owned by this main window if such a
+        widget exists *or* raise an exception otherwise.
+
+        The Qt (Creator|Designer)-managed ``.ui`` file underlying this window
+        declares most of this application's widgets as public instance variables
+        of this window, whose variable names are these widget's Qt-specific
+        object names. This function provides dynamica access to these windows in
+        a safe manner raising human-readable exceptions.
+
+        Caveats
+        ----------
+        This function is principally intended for use cases in which this widget
+        is known only at runtime. Widgets known at development time may instead
+        be statically retrieved as public instance variables of this window.
+
+        Parameters
+        ----------
+        widget_name : str
+            Name of the widget to be retrieved.
+
+        Returns
+        ----------
+        QWidget
+            This widget.
+
+        Raises
+        ----------
+        BetseePySideWindowException
+            If this window directly owns no such widget.
+        '''
+
+        # Widget with this name if any *OR* "None" otherwise.
+        widget = self.get_widget_or_none(widget_name)
+
+        # If no such widget exists, raise an exception.
+        if widget is None:
+            raise BetseePySideWindowException(
+                'Qt (Creator|Designer)-managed widget "{}" not found.'.format(
+                    widget_name))
+
+        # Return this widget.
+        return widget
+
+
+    @type_check
+    def get_widget_or_none(self, widget_name: str) -> QWidgetOrNoneTypes:
+        '''
+        Widget with the passed name directly owned by this main window if such a
+        widget exists *or* ``None`` otherwise.
+
+        Parameters
+        ----------
+        widget_name : str
+            Name of the widget to be retrieved.
+
+        Returns
+        ----------
+        QWidgetOrNoneTypes
+            This widget if any *or* ``None`` otherwise.
+
+        See Also
+        ----------
+        :func:`get_widget`
+            Further details.
+        '''
+
+        # All that glitters is not gold.
+        return getattr(self, widget_name, None)
 
     # ..................{ RESIZERS                           }..................
     def resize_full(self) -> None:

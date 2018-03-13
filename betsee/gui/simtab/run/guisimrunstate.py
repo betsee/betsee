@@ -68,7 +68,7 @@ SIMULATOR_STATES_FLUID = {
 }
 '''
 Set of all **fluid simulator states** (i.e., states the simulator may freely
-transition from to any other state).
+transition to from any other state).
 
 Specifically, the states:
 
@@ -129,8 +129,8 @@ SIMULATOR_STATE_TO_STATUS_TERSE = {
 }
 '''
 Dictionary mapping from each type of simulator state to a human-readable,
-translated, unformatted string templating a high-level, terse (i.e., single
-word) synopsis of the action being performed in that state.
+translated string serving as a terse (i.e., single word) synopsis of the action
+being performed in that state.
 '''
 
 
@@ -159,8 +159,8 @@ SIMULATOR_STATE_TO_STATUS_VERBOSE = {
 }
 '''
 Dictionary mapping from each type of simulator state to a human-readable,
-translated, unformatted string templating a high-level, verbose (i.e., single
-sentence) synopsis of the action being performed in that state.
+translated, unformatted string templating a verbose (i.e., single sentence)
+synopsis of the action being performed in that state.
 
 Most such strings contain *no* format specifiers and are thus displayable as is.
 Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)

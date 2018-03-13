@@ -53,6 +53,7 @@ from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.guiexception import BetseeSimConfException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.util.app import guiappstatus
 from betsee.util.io import guimessage
 from betsee.util.path import guifile
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
@@ -107,8 +108,6 @@ class QBetseeSimConf(QBetseeControllerABC):
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.
     _sim_tab : QBetseeSimulatorTabWidget
         Alias of the :attr:`QBetseeMainWindow.sim_tab` widget.
-    _status_bar : QStatusBar
-        Alias of the :attr:`QBetseeMainWindow.status_bar` widget.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -132,7 +131,6 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._sim_conf_tree = None
         self._sim_conf_tree_frame = None
         self._sim_tab = None
-        self._status_bar = None
         self.undo_stack = None
 
         # High-level simulation configuration, defaulting to the unload state.
@@ -212,7 +210,6 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._sim_conf_tree       = main_window.sim_conf_tree
         self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
         self._sim_tab             = main_window.sim_tab
-        self._status_bar          = main_window.status_bar
 
         # Undo stack for this simulation configuration.
         self.undo_stack = QBetseeUndoStackSimConf(
@@ -424,7 +421,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self.load(conf_filename)
 
         # Update the status bar *AFTER* successfully completing this action.
-        self._status_bar.showMessage(QCoreApplication.translate(
+        guiappstatus.show_status(QCoreApplication.translate(
             'QBetseeSimConf', 'Simulation created.'))
 
 
@@ -452,7 +449,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self.load(conf_filename)
 
         # Update the status bar *AFTER* successfully completing this action.
-        self._status_bar.showMessage(QCoreApplication.translate(
+        guiappstatus.show_status(QCoreApplication.translate(
             'QBetseeSimConf', 'Simulation opened.'))
 
 
@@ -480,7 +477,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self.set_filename_signal.emit('')
 
         # Update the status bar *AFTER* successfully completing this action.
-        self._status_bar.showMessage(QCoreApplication.translate(
+        guiappstatus.show_status(QCoreApplication.translate(
             'QBetseeSimConf', 'Simulation closed.'))
 
 
@@ -500,7 +497,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self.set_dirty_signal.emit(False)
 
         # Update the status bar *AFTER* successfully completing this action.
-        self._status_bar.showMessage(QCoreApplication.translate(
+        guiappstatus.show_status(QCoreApplication.translate(
             'QBetseeSimConf', 'Simulation saved.'))
 
 
@@ -527,7 +524,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self.set_filename_signal.emit(conf_filename)
 
         # Update the status bar *AFTER* successfully completing this action.
-        self._status_bar.showMessage(QCoreApplication.translate(
+        guiappstatus.show_status(QCoreApplication.translate(
             'QBetseeSimConf', 'Simulation saved.'))
 
     # ..................{ LOADERS                            }..................

@@ -5192,7 +5192,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item row="4" column="6">
-             <widget class="QWidget" name="sim_run_queue_seed_export" native="true">
+             <widget class="QWidget" name="sim_run_queue_seed_export_none" native="true">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase has &lt;span style=&quot; font-style:italic;&quot;&gt;no&lt;/span&gt; exports and hence cannot be queued to be exported.&lt;/p&gt;&lt;p&gt;This differs from the &lt;span style=&quot; text-decoration: underline;&quot;&gt;initialization&lt;/span&gt; and &lt;span style=&quot; text-decoration: underline;&quot;&gt;simulation&lt;/span&gt; phases, which &lt;span style=&quot; font-style:italic;&quot;&gt;do&lt;/span&gt; have exports and hence can be queued to be exported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
