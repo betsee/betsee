@@ -60,6 +60,17 @@ DONE : enum
 '''
 
 # ....................{ GLOBALS ~ set                      }....................
+SIMULATOR_STATES_RUNNING = {
+    SimulatorState.MODELLING,
+    SimulatorState.EXPORTING,
+}
+'''
+Set of all **running simulator states** (i.e., states implying one or more
+queued subcommands to be currently running and hence neither paused, halted, nor
+done).
+'''
+
+# ....................{ GLOBALS ~ set : (fluid|fixed)      }....................
 SIMULATOR_STATES_FLUID = {
     SimulatorState.UNQUEUED,
     SimulatorState.QUEUED,
@@ -141,15 +152,21 @@ SIMULATOR_STATE_TO_STATUS_VERBOSE = {
         'guisimrunstate', 'Waiting for queued phase(s) to be modelled...'),
     SimulatorState.MODELLING: QCoreApplication.translate(
         'guisimrunstate',
-        'Modelling <b>{phase_type}</b> '
-        'step {step_curr} '
-          '<i>of</i> {step_total}:'),
+        #FIXME: Replace this coarse-grained string with the following
+        #fine-grained string after hooking into the simulation process.
+        'Modelling <b>{phase_type}</b> phase...'),
+        # 'Modelling <b>{phase_type}</b> '
+        # 'step {step_curr} '
+        #   '<i>of</i> {step_total}:'),
     SimulatorState.EXPORTING: QCoreApplication.translate(
         'guisimrunstate',
-        'Exporting <b>{phase_type}</b> '
-        '{export_type} <pre>"{export_name}"</pre> '
-        'step {step_curr} '
-          '<i>of</i> {step_total}:'),
+        #FIXME: Replace this coarse-grained string with the following
+        #fine-grained string after hooking into the simulation process.
+        'Exporting <b>{phase_type}</b> phase...'),
+        # 'Exporting <b>{phase_type}</b> '
+        # '{export_type} <pre>"{export_name}"</pre> '
+        # 'step {step_curr} '
+        #   '<i>of</i> {step_total}:'),
     SimulatorState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused {cmd_prior}'),
     SimulatorState.HALTED: QCoreApplication.translate(

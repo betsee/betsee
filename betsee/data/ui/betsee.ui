@@ -4367,7 +4367,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string>Display and control the state of the currently queued simulation phase.</string>
            </property>
            <property name="title">
-            <string>Phase Queued</string>
+            <string>Phase Player</string>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
@@ -4386,7 +4386,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>High-level synopsis of the action being applied to the currently queued simulation phase.</string>
               </property>
               <property name="text">
-               <string>phase status</string>
+               <string>[insert phase status here]</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -4442,7 +4442,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                   </font>
                  </property>
                  <property name="text">
-                  <string>phase substatus</string>
+                  <string>[insert phase substatus here]</string>
                  </property>
                 </widget>
                </item>
@@ -4513,7 +4513,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Queue (i.e., ordered list) of all simulation phases to be iteratively modelled and/or exported when the &lt;img src=&quot;:/icon/open_iconic/media-play.svg&quot;/&gt; button is clicked. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="title">
-            <string>Phase Queue</string>
+            <string>Phase Playlist</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
             <item row="5" column="1" colspan="2">
@@ -5095,7 +5095,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Synopsis of the current state of the &lt;span style=&quot; text-decoration: underline;&quot;&gt;simulation&lt;/span&gt; phase.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Unqueued</string>
+               <string>[status]</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -5120,7 +5120,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Synopsis of the current state of the &lt;span style=&quot; text-decoration: underline;&quot;&gt;initialization&lt;/span&gt; phase.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Unqueued</string>
+               <string>[status]</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -5145,7 +5145,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Synopsis of the current state of the &lt;span style=&quot; text-decoration: underline;&quot;&gt;seed&lt;/span&gt; phase.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Unqueued</string>
+               <string>[status]</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

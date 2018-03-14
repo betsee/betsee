@@ -7,17 +7,6 @@
 Concrete subclasses defining this application's command line interface (CLI).
 '''
 
-#FIXME: Refactor our "guiignition" submodule to initialize the main
-#"QApplication" singleton (e.g., by simply importing "guiapp"). This is
-#essential, as this singleton *MUST* be instantiated before the "Qt5Agg"
-#matplotlib backend has opportunity to do so.
-#FIXME: Actually, to permit the debugging statements emitted by this
-#initialization to be logged and displayed, this singleton should be overriding
-#the _init_app_libs() method and intentionally initializing the main
-#"QApplication" singleton *BEFORE* calling super()._init_app_libs(). This is
-#absolutely the sanest approach, as it makes explicit the need to perform the
-#prior before the latter.
-
 #FIXME: Display a splash screen in the BetseeCLI.__init__() method. Fortunately,
 #Qt 5 makes this absurdly simple via the stock "QSplashScreen" class -- which
 #comes self-provisioned with multi-threading capability, preventing us from
@@ -107,8 +96,7 @@ Concrete subclasses defining this application's command line interface (CLI).
 from betse.util.cli.cliabc import CLIABC
 from betse.util.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
-from betse.util.type.types import (
-    type_check, ModuleType, SequenceTypes, StrOrNoneTypes)
+from betse.util.type.types import type_check, ModuleType, SequenceTypes
 from betsee import guiignition, guimetadata
 from betsee.lib import guilibs
 
@@ -182,7 +170,15 @@ seed, initialize, and then simulate such a simulation in the current directory:
     # ..................{ SUPERCLASS ~ igniters              }..................
     def _init_app_libs(self) -> None:
 
-        # Initialize all mandatory runtime dependencies.
+        # Initialize all mandatory runtime dependencies of this application,
+        # including both BETSE and BETSEE.
+        #
+        # Note that the superclass _init_app_libs() method is intentionally
+        # *NOT* called, as that method sets the matplotlib backend. While doing
+        # so is typically desirable, a chicken-and-egg conflict between Qt and
+        # matplotlib complicates the initialization of both.
+        #
+        # See the body of the function called here for further details.
         guilibs.reinit()
 
     # ..................{ SUPERCLASS ~ options               }..................

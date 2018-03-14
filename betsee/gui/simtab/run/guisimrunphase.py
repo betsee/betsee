@@ -10,20 +10,17 @@ and/or exporting by this simulator) functionality.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, Signal, Slot
-from betse.science.export.expenum import SimExportType
+# from betse.science.export.expenum import SimExportType
 from betse.science.phase.phasecls import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
 from betse.util.type.types import type_check  #, StrOrNoneTypes
-from betsee.guiexception import BetseePySideWindowException
+# from betsee.guiexception import BetseePySideWindowException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunstate import (
     SimulatorState,
     SIMULATOR_STATE_TO_STATUS_TERSE,
-    SIMULATOR_STATE_TO_STATUS_VERBOSE,
     SIMULATOR_STATES_FLUID,
-    MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
-    EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
@@ -39,6 +36,8 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
 
     Attributes (Public)
     ----------
+    state : SimulatorState
+        Current state of this phase for the current simulation.
 
     Attributes (Private: Non-widgets)
     ----------
@@ -47,8 +46,6 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
     _phase_name : str
         Machine-readable alphabetic lowercase name of the type of simulation
         phase controlled by this controller (e.g., ``seed``, ``init``, ``sim``).
-    _state : SimulatorState
-        Current state of this phase for the current simulation.
 
     Attributes (Private: Widgets)
     ----------
@@ -75,7 +72,7 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
         super().__init__(*args, **kwargs)
 
         # Default this phase to the unqueued state.
-        self._state = SimulatorState.UNQUEUED
+        self.state = SimulatorState.UNQUEUED
 
         # Nullify all remaining instance variables for safety.
         self._is_unqueueable_model = None
@@ -154,10 +151,12 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
         # specific to this simulator phase.
         is_unqueueable_model_name = 'sim_run_queue_{}_model_lock'.format(
             self._phase_name)
-        is_queued_model_name = 'sim_run_queue_{}_model'.format(self._phase_name)
+        is_queued_model_name = 'sim_run_queue_{}_model'.format(
+            self._phase_name)
         is_queued_export_name = 'sim_run_queue_{}_export'.format(
             self._phase_name)
-        queue_status_name = 'sim_run_queue_{}_status'.format(self._phase_name)
+        queue_status_name = 'sim_run_queue_{}_status'.format(
+            self._phase_name)
 
         # Classify mandatory widgets unconditionally defined for *ALL* phases.
         self._is_unqueueable_model = main_window.get_widget(
@@ -178,42 +177,17 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
         if self._is_queued_export is not None:
             self._is_queued_export.setChecked(True)
 
+            #FIXME: Excise the following code block after implementing queueing.
+            # Prevent this phase from being dequeued for modelling or exporting.
+            self._is_queued_export.setEnabled(False)
+
+        #FIXME: Excise the following code block after implementing queueing.
+        # Prevent this phase from being dequeued for modelling.
+        self._is_unqueueable_model.setEnabled(False)
+        self._is_queued_model.setEnabled(False)
+
         # Update the state of simulator widgets to reflect these changes.
         self._update_widgets()
-
-
-    def _update_widgets(self) -> None:
-        '''
-        Update the low-level state of all widgets controlled by this simulator
-        to reflect the current high-level state of this simulator.
-        '''
-
-        # If the current state of this phase is fluid (i.e., freely replaceable
-        # with any other state)...
-        if self._state in SIMULATOR_STATES_FLUID:
-            # If either...
-            if (
-                # The modelling checkbox for this phase is checked...
-                self._is_queued_model.isChecked() or
-                # This phase has an exporting checkbox that is checked...
-                (self._is_queued_export is not None and
-                 self._is_queued_export.isChecked())
-            # Then set this state to queued for modelling and/or exporting.
-            ):
-                self._state = SimulatorState.QUEUED
-            # Else, this phase is queued for neither modelling nor exporting.
-            # Set this state to unqueued.
-            else:
-                self._state = SimulatorState.UNQUEUED
-        # Else, the current state of this phase is fixed and hence *NOT* freely
-        # replaceable with any other state. For safety, this state is preserved.
-
-        # Text synopsizing the action being performed in this state *AFTER*
-        # possibly setting this state above.
-        queue_status_text = SIMULATOR_STATE_TO_STATUS_TERSE[self._state]
-
-        # Set the text of the label displaying this synopsis to this text.
-        self._queue_status.setText(queue_status_text)
 
 
     @type_check
@@ -246,16 +220,16 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
     @Slot(bool)
     def _toggle_is_unqueueable_model(self, is_unqueueable_model: bool) -> None:
         '''
-        Slot signalled on interactively or programmatically toggling the
-        :class:`QToolButton` widget associated with the
-        :attr:`_is_unqueueable_model` variable.
+        Slot signalled on either the user interactively *or* the codebase
+        programmatically toggling the checkable :class:`QToolButton` widget
+        corresponding to the :attr:`_is_unqueueable_model` variable.
 
         Specifically, if:
 
-        * This button is checked, this method locks (i.e., disables) the
-          :class:`QCheckBox` widget associated with the
+        * This button is checked, this slot locks (i.e., disables) the
+          :class:`QCheckBox` widget corresponding to the
           :attr:`_is_queued_model` variable.
-        * This button is unchecked, this method unlocks (i.e., enables) that
+        * This button is unchecked, this slot unlocks (i.e., enables) that
           :class:`QCheckBox` widget.
 
         Parameters
@@ -266,3 +240,37 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
 
         # One-liners for the greater glory of godly efficiency.
         self._is_queued_model.setEnabled(not is_unqueueable_model)
+
+    # ..................{ UPDATERS                           }..................
+    def _update_widgets(self) -> None:
+        '''
+        Update the contents of all widgets controlled by this simulator phase to
+        reflect the current state of this phase.
+        '''
+
+        # If the current state of this phase is fluid (i.e., freely replaceable
+        # with any other state)...
+        if self.state in SIMULATOR_STATES_FLUID:
+            # If either...
+            if (
+                # The modelling checkbox for this phase is checked...
+                self._is_queued_model.isChecked() or
+                # This phase has an exporting checkbox that is checked...
+                (self._is_queued_export is not None and
+                 self._is_queued_export.isChecked())
+            # Then set this state to queued for modelling and/or exporting.
+            ):
+                self.state = SimulatorState.QUEUED
+            # Else, this phase is queued for neither modelling nor exporting.
+            # Set this state to unqueued.
+            else:
+                self.state = SimulatorState.UNQUEUED
+        # Else, the current state of this phase is fixed and hence *NOT* freely
+        # replaceable with any other state. For safety, this state is preserved.
+
+        # Text synopsizing the action being performed in this state *AFTER*
+        # possibly setting this state above.
+        queue_status_text = SIMULATOR_STATE_TO_STATUS_TERSE[self.state]
+
+        # Set the text of the label displaying this synopsis to this text.
+        self._queue_status.setText(queue_status_text)

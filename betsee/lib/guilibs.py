@@ -135,7 +135,8 @@ def import_runtime_optional(*requirement_names: str) -> object:
 # ....................{ INITIALIZERS                       }....................
 def reinit() -> None:
     '''
-    (Re-)initialize all mandatory runtime dependencies of this application.
+    (Re-)initialize all mandatory runtime dependencies of this application,
+    thus including both BETSE and BETSEE.
     '''
 
     # Defer heavyweight imports.

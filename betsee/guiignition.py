@@ -28,6 +28,7 @@ def reinit() -> None:
     #. Validates but does *not* initialize mandatory third-party dependencies of
        this application, which must be initialized independently by the
        :func:`betsee.lib.guilibs.init` function.
+    #. Validates that the active Python interpreter supports multithreading.
 
     Design
     ----------
@@ -50,6 +51,7 @@ def reinit() -> None:
 
     # Defer heavyweight and possibly circular imports.
     from betse import ignition as betse_ignition
+    from betse.util.py import pythread
     from betsee.lib import guilibs
 
     # Initialize all lower-level BETSE logic *BEFORE* any higher-level BETSEE
@@ -58,8 +60,19 @@ def reinit() -> None:
     # betse_ignition.init() function is called here.
     betse_ignition.reinit()
 
-    # Validate mandatory dependencies. Avoid initializing these dependencies
-    # here (e.g., by calling guilibs.init()), which requires the logging
-    # configuration to have been finalized (e.g., by parsing CLI options), which
-    # has yet to occur this early in the application lifecycle.
+    # Validate mandatory dependencies *AFTER* BETSE is initialized.
+    #
+    # These dependencies are intentionally *NOT* initialized here (e.g., by
+    # calling guilibs.init()), as doing so requires the logging configuration to
+    # have been finalized (e.g., by parsing CLI options), which has yet to occur
+    # this early in the application lifecycle.
     guilibs.die_unless_runtime_mandatory_all()
+
+    # If the active Python interpreter does *NOT* support multithreading, raise
+    # an exception *AFTER* BETSE is initialized.
+    #
+    # While Qt-based multithreading primitives are typically preferable to
+    # Python-based multithreading primitives, the latter have their occasional
+    # use. More critically, the lack of latter typically implies this
+    # interpreter to be in insufficiently sane for our purposes.
+    pythread.die_unless_threadable()

@@ -41,6 +41,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
     EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
+from collections import deque
 
 # ....................{ CLASSES                            }....................
 class QBetseeSimulator(QBetseeControllerABC):
@@ -65,12 +66,23 @@ class QBetseeSimulator(QBetseeControllerABC):
 
     Attributes (Private: Non-widgets)
     ----------
-    _state_queued : SimulatorState
+    _queue_running : deque
+        Queue of all currently running simulation subcommands if any *or*
+        ``None`` otherwise (i.e., if no such subcommands are running). While
+        this container is technically a double-ended queue (i.e., deque), Python
+        provides *no* corresponding single-ended queue. Since the former
+        generalizes the latter, utilizing the former in a single-ended manner
+        suffices to replicate the behaviour of the latter. Ergo, a deque remains
+        the most space- *and* time-efficient data structure for doing so.
+    _state : SimulatorState
         Condition of the currently queued simulation subcommand if any,
         analogous to a state in a finite state automata.
 
     Attributes (Private: Controllers)
     ----------
+    _phases : SequenceTypes
+        Sequence of all simulator phase controllers (e.g., :attr:`_phase_seed`),
+        needed for iteration over these controllers.
     _phase_seed : QBetseeSimulatorPhase
         Controller for the seed phase of this simulator.
     _phase_init : QBetseeSimulatorPhase
@@ -80,9 +92,9 @@ class QBetseeSimulator(QBetseeControllerABC):
 
     Attributes (Private: Widgets)
     ----------
-    _action_sim_run_toggle : QAction
+    _action_toggle_simming : QAction
         Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle` action.
-    _action_sim_run_halt : QAction
+    _action_halt_simming : QAction
         Alias of the :attr:`QBetseeMainWindow.action_sim_run_halt` action.
     '''
 
@@ -97,14 +109,18 @@ class QBetseeSimulator(QBetseeControllerABC):
         super().__init__(*args, **kwargs)
 
         # Nullify all instance variables for safety.
-        self._action_sim_run_toggle = None
-        self._action_sim_run_halt = None
-        self._state_queued = None
+        self._action_toggle_simming = None
+        self._action_halt_simming = None
+        self._queue_running = None
+        self._state = None
 
         # Controllers for each phase encapsulated by this simulator.
         self._phase_seed = QBetseeSimulatorPhase(self)
         self._phase_init = QBetseeSimulatorPhase(self)
         self._phase_sim  = QBetseeSimulatorPhase(self)
+
+        # Sequence of these controllers.
+        self._phases = (self._phase_seed, self._phase_init, self._phase_sim)
 
 
     @type_check
@@ -157,8 +173,8 @@ class QBetseeSimulator(QBetseeControllerABC):
         '''
 
         # Classify variables of this main window required by this simulator.
-        self._action_sim_run_toggle = main_window.action_sim_run_toggle
-        self._action_sim_run_halt   = main_window.action_sim_run_halt
+        self._action_toggle_simming = main_window.action_sim_run_toggle
+        self._action_halt_simming   = main_window.action_sim_run_halt
 
         # Initialize all simulator phase controllers (in arbitrary order).
         self._phase_seed.init(
@@ -168,23 +184,16 @@ class QBetseeSimulator(QBetseeControllerABC):
         self._phase_sim.init(
             main_window=main_window, phase_kind=SimPhaseKind.SIM)
 
+        #FIXME: Excise the following code block after hooking this high-level
+        #simulator GUI into the low-level "simrunner" submodule.
+
+        # Avoid displaying detailed status for the currently queued subcommand,
+        # as the low-level BETSE codebase lacks sufficient hooks to update this
+        # status in a sane manner.
+        main_window.sim_run_state_substatus_group.hide()
+
         # Update the state of simulator widgets to reflect these changes.
         self._update_widgets()
-
-
-    def _update_widgets(self) -> None:
-        '''
-        Update the low-level state of all widgets controlled by this simulator
-        to reflect the current high-level state of this simulator.
-        '''
-
-        #FIXME: Conditionally enable this group of widgets as described here.
-
-        # Enable all widgets controlling the state of the currently queued
-        # subcommand only if one or more subcommands are currently queued.
-        # main_window.sim_cmd_run_state.setEnabled(False)
-
-        pass
 
 
     @type_check
@@ -197,7 +206,8 @@ class QBetseeSimulator(QBetseeControllerABC):
         '''
 
         # Connect each such action to this object's corresponding slot.
-        # self._action_make_sim.triggered.connect(self._make_sim)
+        self._action_toggle_simming.toggled.connect(self._toggle_simming)
+        self._action_halt_simming.triggered.connect(self._halt_simming)
 
         # Connect this object's signals to all corresponding slots.
         # self.set_filename_signal.connect(self.set_filename)
@@ -209,8 +219,6 @@ class QBetseeSimulator(QBetseeControllerABC):
         # Note that, as this slot only accepts strings, the empty string rather
         # than "None" is intentionally passed for safety.
         # self.set_filename_signal.emit('')
-
-        pass
 
     # ..................{ SIGNALS                            }..................
     # set_filename_signal = Signal(str)
@@ -225,14 +233,121 @@ class QBetseeSimulator(QBetseeControllerABC):
     # '''
 
     # ..................{ SLOTS ~ action                     }..................
-    # @Slot()
-    # def _open_sim(self) -> None:
-    #     '''
-    #     Slot invoked on the user requesting that the currently open simulation
-    #     configuration if any be closed and an existing external simulation
-    #     configuration be opened.
-    #     '''
-    #
-    #     # Absolute path of an existing YAML-formatted simulation configuration
-    #     # file selected by the user.
-    #     conf_filename = self._show_dialog_sim_conf_open()
+    @Slot(bool)
+    def _toggle_simming(self, is_simming: bool) -> None:
+        '''
+        Slot signalled on either the user interactively *or* the codebase
+        programmatically toggling the checkable :class:`QPushButton` widget
+        corresponding to the :attr:`_action_toggle_simming` variable.
+
+        Specifically, if:
+
+        * This button is checked, this slot runs the currently queued subcommand
+          by either:
+          * If this subcommand was paused, resuming this subcommand.
+          * Else, starting this subcommand.
+        * This button is unchecked, this slot pauses this subcommand.
+
+        Parameters
+        ----------
+        is_simming : bool
+            ``True`` only if this :class:`QPushButton` is currently checked, in
+            which case this slot runs this subcommand.
+        '''
+
+        # If now running the currently queued subcommand...
+        if is_simming:
+            #FIXME: Implement us up, please. To do so, note that we want to:
+            #
+            #* Define a new QBetseeSimulatorPhase.is_queued() method returning
+            #  true only if either of the two checkboxes for that phase are
+            #  currently checked. (Trivial.)
+            #* Define a new _queue_running() method in this class. This
+            #  method should (in order):
+            #  * Raise an exception if "self._queue_running" is *NOT* "None".
+            #  * Initialize "self._queue_running = deque()".
+            #  * Iterate over the phases of "self._phases" and, for each such
+            #    phase whose is_queued() method returns true, should append that
+            #    phase object to "self._queue_running".
+            #  * After iteration, validate that "self._queue_running" is
+            #    non-empty. This queue should *NEVER* be empty. Why? Because we
+            #    should do the following elsewhere:
+            #    * Define a new toggle_is_queued() slot of this class, which
+            #      each QBetseeSimulatorPhase.init() call should connect to the
+            #      toggled() signals emitted by both of the modelling and export
+            #      checkboxes specific to that phase. Note this implies that the
+            #      QBetseeSimulatorPhase.init() method will need to be passed a
+            #      reference to this parent, which that method must not retain.
+            #    * In this toggle_is_queued() slot, if and only if
+            #      "self._queue_running" is "None" (i.e., no subcommands are
+            #      running), conditionally enable and disable the entire "Phase
+            #      Player" "QGroupBox" depending on whether the passed boolean
+            #      is true or not. (Trivial.)
+            #* Perhaps define a new is_queue_running() property as follows, as
+            #  we appear to require this logic in numerous code blocks:
+            #
+            #     @property
+            #     def is_queue_running(self) -> bool:
+            #         return self._queue_running is None
+            #
+            #* Call the _queue_running() method here.
+
+            # If no simulation subcommands are currently running...
+            if self._queue_running is None:
+            # if self._state in SIMULATOR_STATES_RUNNING:
+                pass
+            #FIXME: Implement us up, please.
+            # Else, a simulation subcommands is currently running.
+            else:
+                pass
+        #FIXME: Implement us up, please.
+        # Else, pause this subcommand.
+        else:
+            pass
+
+        # Update the state of simulator widgets to reflect these changes.
+        self._update_widgets()
+
+
+    @Slot()
+    def _halt_simming(self) -> None:
+        '''
+        Slot signalled on the user interactively (but *not* the codebase
+        programmatically) clicking the :class:`QPushButton` widget
+        corresponding to the :attr:`_action_halt_simming` variable.
+        '''
+
+        #FIXME: Actually halt the running subcommand here, please.
+
+        # Note that no simulation subcommands are currently running.
+        self._queue_running = None
+
+        # Set the current state to the halted state.
+        self._state = SimulatorState.HALTED
+
+        # Update the state of simulator widgets to reflect these changes.
+        self._update_widgets()
+
+    # ..................{ UPDATERS                           }..................
+    def _update_widgets(self) -> None:
+        '''
+        Update the contents of all widgets controlled by this simulator to
+        reflect the current state of this simulation.
+        '''
+
+        # True only if the user has queued one or more subcommands.
+        is_queued = False
+
+        #FIXME: Classify "_sim_cmd_run_state" above.
+
+        # Enable all widgets controlling the state of the currently queued
+        # subcommand only if one or more subcommands are currently queued.
+        # self._sim_cmd_run_state.setEnabled(is_queued)
+
+        #FIXME: Conditionally enable this group of widgets as described here.
+
+        # Enable all widgets controlling the state of the currently queued
+        # subcommand only if one or more subcommands are currently queued.
+        # main_window.sim_cmd_run_state.setEnabled(False)
+
+        pass
