@@ -168,11 +168,11 @@ SIMULATOR_STATE_TO_STATUS_VERBOSE = {
         # 'step {step_curr} '
         #   '<i>of</i> {step_total}:'),
     SimulatorState.PAUSED: QCoreApplication.translate(
-        'guisimrunstate', 'Paused {cmd_prior}'),
+        'guisimrunstate', 'Paused {status_prior}'),
     SimulatorState.HALTED: QCoreApplication.translate(
-        'guisimrunstate', 'Stopped {cmd_prior}'),
+        'guisimrunstate', 'Stopped {status_prior}'),
     SimulatorState.DONE: QCoreApplication.translate(
-        'guisimrunstate', 'Finished {cmd_prior}'),
+        'guisimrunstate', 'Finished {status_prior}'),
 }
 '''
 Dictionary mapping from each type of simulator state to a human-readable,
@@ -182,6 +182,15 @@ synopsis of the action being performed in that state.
 Most such strings contain *no* format specifiers and are thus displayable as is.
 Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
 and are thus displayable *only* after interpolating the corresponding values.
+
+Format specifiers embedded in these strings include:
+
+* ``{phase_type}``, a word signifying the type of currently running simulator
+  phase if any (e.g., "seed," "initialization").
+* ``{status_prior}``, text previously formatted from a string of this dictionary
+  synopsizing the prior state of this simulator. Since this text is interpolated
+  into the middle of arbitrary sentences, the first character of this text
+  *must* be lowercase.
 '''
 
 # ....................{ GLOBALS ~ dict : status : details  }....................

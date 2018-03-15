@@ -288,3 +288,16 @@ class BetseePySideEditWidgetException(BetseePySideException):
     def _title_default(self) -> str:
         return QCoreApplication.translate(
             'BetseePySideEditWidgetException', 'Editable Widget Error')
+
+# ....................{ EXCEPTIONS ~ sim                   }....................
+class BetseeSimulatorException(BetseePySideException):
+    '''
+    General-purpose exception applicable to the **simulator** (i.e.,
+    :mod:`PySide2`-based object both displaying *and* controlling the execution
+    of simulation phases).
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseeSimulatorException', 'Simulator Error')

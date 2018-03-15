@@ -9,7 +9,7 @@ and/or exporting by this simulator) functionality.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, Signal, Slot
+from PySide2.QtCore import Slot  # QCoreApplication, Signal
 # from betse.science.export.expenum import SimExportType
 from betse.science.phase.phasecls import SimPhaseKind
 from betse.util.io.log import logs
@@ -57,8 +57,8 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
         Checkbox toggling whether this phase is queued for exporting if this
         phase supports exporting *or* ``None`` otherwise. While most phases
         support exporting, some (e.g., the seed phase) do *not*.
-    _queue_status : QLabel
-        Label synopsizing the current queueing of this phase.
+    _status : QLabel
+        Label synopsizing the current state of this phase.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -80,7 +80,7 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
         self._is_queued_export = None
         self._phase_kind = None
         self._phase_name = None
-        self._queue_status = None
+        self._status = None
 
 
     @type_check
@@ -155,16 +155,15 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
             self._phase_name)
         is_queued_export_name = 'sim_run_queue_{}_export'.format(
             self._phase_name)
-        queue_status_name = 'sim_run_queue_{}_status'.format(
-            self._phase_name)
+        status_name = 'sim_run_queue_{}_status'.format(self._phase_name)
 
         # Classify mandatory widgets unconditionally defined for *ALL* phases.
         self._is_unqueueable_model = main_window.get_widget(
             widget_name=is_unqueueable_model_name)
         self._is_queued_model = main_window.get_widget(
             widget_name=is_queued_model_name)
-        self._queue_status = main_window.get_widget(
-            widget_name=queue_status_name)
+        self._status = main_window.get_widget(
+            widget_name=status_name)
 
         # Classify optional widgets conditionally defined for only some phases.
         self._is_queued_export = main_window.get_widget_or_none(
@@ -204,17 +203,22 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
         self._is_unqueueable_model.toggled.connect(
             self._toggle_is_unqueueable_model)
 
-    # ..................{ SIGNALS                            }..................
-    # set_filename_signal = Signal(str)
-    # '''
-    # Signal passed either the absolute path of the currently open YAML-formatted
-    # simulation configuration file if any *or* the empty string otherwise.
-    #
-    # This signal is typically emitted on the user:
-    #
-    # * Opening a new simulation configuration.
-    # * Closing a currently open simulation configuration.
-    # '''
+    # ..................{ PROPERTIES ~ bool                  }..................
+    @property
+    def is_queued(self) -> bool:
+        '''
+        ``True`` only if this simulator phase is currently queued for modelling
+        and/or exporting.
+        '''
+
+        # Return true only if this phase is either...
+        return (
+            # Queued for modelling.
+            self._is_queued_model.isChecked() or
+            # Exportable *AND* queued for exporting.
+            (self._is_queued_export is not None and
+             self._is_queued_export.isChecked())
+        )
 
     # ..................{ SLOTS ~ state                      }..................
     @Slot(bool)
@@ -270,7 +274,7 @@ class QBetseeSimulatorPhase(QBetseeControllerABC):
 
         # Text synopsizing the action being performed in this state *AFTER*
         # possibly setting this state above.
-        queue_status_text = SIMULATOR_STATE_TO_STATUS_TERSE[self.state]
+        status_text = SIMULATOR_STATE_TO_STATUS_TERSE[self.state]
 
         # Set the text of the label displaying this synopsis to this text.
-        self._queue_status.setText(queue_status_text)
+        self._status.setText(status_text)
