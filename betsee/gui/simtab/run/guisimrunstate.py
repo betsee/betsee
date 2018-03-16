@@ -149,7 +149,7 @@ SIMULATOR_STATE_TO_STATUS_VERBOSE = {
     SimulatorState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Waiting for phase(s) to be queued...'),
     SimulatorState.QUEUED: QCoreApplication.translate(
-        'guisimrunstate', 'Waiting for queued phase(s) to be modelled...'),
+        'guisimrunstate', 'Waiting for queued phase(s) to be run...'),
     SimulatorState.MODELLING: QCoreApplication.translate(
         'guisimrunstate',
         #FIXME: Replace this coarse-grained string with the following

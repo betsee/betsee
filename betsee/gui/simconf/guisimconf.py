@@ -106,7 +106,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree` widget.
     _sim_conf_tree_frame : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_conf_tree_frame` widget.
-    _sim_tab : QBetseeSimulatorTabWidget
+    _sim_tab : QBetseeSimmerTabWidget
         Alias of the :attr:`QBetseeMainWindow.sim_tab` widget.
     '''
 

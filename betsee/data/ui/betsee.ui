@@ -4322,7 +4322,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
      </widget>
     </item>
     <item row="0" column="2">
-     <widget class="QBetseeSimulatorTabWidget" name="sim_tab">
+     <widget class="QBetseeSimmerTabWidget" name="sim_tab">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>3</horstretch>
@@ -4362,7 +4362,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
         </property>
         <layout class="QGridLayout" name="gridLayout_30">
          <item row="0" column="0">
-          <widget class="QGroupBox" name="sim_run_state">
+          <widget class="QGroupBox" name="sim_run_player">
            <property name="toolTip">
             <string>Display and control the state of the currently queued simulation phase.</string>
            </property>
@@ -4371,7 +4371,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QProgressBar" name="sim_run_state_progress">
+             <widget class="QProgressBar" name="sim_run_player_progress">
               <property name="toolTip">
                <string>Percentage completed of the action being applied to the currently queued simulation phase.</string>
               </property>
@@ -4381,7 +4381,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="sim_run_state_status">
+             <widget class="QLabel" name="sim_run_player_status">
               <property name="toolTip">
                <string>High-level synopsis of the action being applied to the currently queued simulation phase.</string>
               </property>
@@ -4394,7 +4394,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item>
-             <widget class="QWidget" name="sim_run_state_substatus_group" native="true">
+             <widget class="QWidget" name="sim_run_player_substatus_group" native="true">
               <property name="toolTip">
                <string>Low-level details of the action being applied to the currently queued simulation phase.</string>
               </property>
@@ -4418,7 +4418,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 <number>0</number>
                </property>
                <item>
-                <widget class="QLabel" name="sim_run_state_substatus_icon">
+                <widget class="QLabel" name="sim_run_player_substatus_icon">
                  <property name="text">
                   <string/>
                  </property>
@@ -4428,7 +4428,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="sim_run_state_substatus">
+                <widget class="QLabel" name="sim_run_player_substatus">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -4450,7 +4450,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="sim_run_state_toolbar_frame">
+             <widget class="QFrame" name="sim_run_player_toolbar_frame">
               <property name="frameShape">
                <enum>QFrame::StyledPanel</enum>
               </property>
@@ -4474,7 +4474,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 <number>0</number>
                </property>
                <item>
-                <widget class="QToolBar" name="sim_run_state_toolbar ">
+                <widget class="QToolBar" name="sim_run_player_toolbar ">
                  <property name="toolTip">
                   <string>Control the state of the currently queued simulation phase.</string>
                  </property>
@@ -5640,7 +5640,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    <header>betsee/util/widget/stock/guilabel.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeSimulatorTabWidget</class>
+   <class>QBetseeSimmerTabWidget</class>
    <extends>QTabWidget</extends>
    <header>betsee/gui/simtab/guisimtab.h</header>
    <container>1</container>

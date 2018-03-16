@@ -17,7 +17,7 @@ from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimulatorTabWidget(QBetseeObjectMixin, QTabWidget):
+class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     '''
     :mod:`PySide2`-based tab widget containing multiple tabs, each displaying
     and controlling all settings associated with a single simulation result
@@ -26,15 +26,15 @@ class QBetseeSimulatorTabWidget(QBetseeObjectMixin, QTabWidget):
 
     Attributes (Public)
     ----------
+    simmer : QBetseeSimmer
+        **Simulator** (i.e., :mod:`PySide2`-based object both displaying *and*
+        controlling the execution of simulation-specific subcommands).
 
     Attributes (Private: Non-widgets)
     ----------
 
     Attributes (Private: Widgets)
     ----------
-    _simulator : QBetseeSimulator
-        **Simulator** (i.e., :mod:`PySide2`-based object both displaying *and*
-        controlling the execution of simulation-specific subcommands).
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -45,16 +45,16 @@ class QBetseeSimulatorTabWidget(QBetseeObjectMixin, QTabWidget):
         '''
 
         # Avoid circular import dependencies.
-        from betsee.gui.simtab.run.guisimrun import QBetseeSimulator
+        from betsee.gui.simtab.run.guisimrun import QBetseeSimmer
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Nullify all instance variables for safety.
-        # self._simulator = None
-
         # Simulator, displaying and controlling simulation-specific subcommands.
-        self._simulator = QBetseeSimulator()
+        self.simmer = QBetseeSimmer()
+
+        # Nullify all remaining instance variables for safety.
+        # self.simmer = None
 
 
     # To avoid circular import dependencies, this parameter is validated to be
@@ -109,14 +109,11 @@ class QBetseeSimulatorTabWidget(QBetseeObjectMixin, QTabWidget):
         '''
 
         # Classify all instance variables of this main window subsequently
-        # required by this object. Since this main window owns this object,
-        # since weak references are unsafe in a multi-threaded GUI context, and
-        # since circular references are bad, this object intentionally does
-        # *NOT* retain a reference to this main window.
+        # required by this object.
         # self._action_make_sim     = main_window.action_make_sim
 
         # Initialize the simulator.
-        self._simulator.init(main_window)
+        self.simmer.init(main_window=main_window)
 
 
     @type_check

@@ -118,7 +118,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         :class:`PySide2`-based collection of various application-wide signals.
     sim_conf : QBetseeSimConf
         Object encapsulating high-level simulation configuration state.
-    sim_tab : QBetseeSimulatorTabWidget
+    sim_tab : QBetseeSimmerTabWidget
         Object encapsulating high-level simulator state.
 
     Attributes (Private)
