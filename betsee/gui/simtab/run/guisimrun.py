@@ -40,11 +40,11 @@ from betsee.gui.simtab.run.guisimrunstate import (
     # MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
-from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
+from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from collections import deque
 
 # ....................{ CLASSES                            }....................
-class QBetseeSimmer(QBetseeControllerABC):
+class QBetseeSimmer(QBetseeSimmerStatefulABC):
     '''
     High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
     *and* controlling the execution of simulation phases).
@@ -61,9 +61,6 @@ class QBetseeSimmer(QBetseeControllerABC):
       * Numeric progress as a relative function of the total number of steps
         required by this subcommand.
 
-    Attributes (Public)
-    ----------
-
     Attributes (Private: Non-widgets)
     ----------
     _queue_running : deque
@@ -79,9 +76,6 @@ class QBetseeSimmer(QBetseeControllerABC):
         generalizes the latter, utilizing the former in a single-ended manner
         suffices to replicate the behaviour of the latter. Ergo, a deque remains
         the most space- *and* time-efficient data structure for doing so.
-    _state : SimulatorState
-        Condition of the currently queued simulation subcommand if any,
-        analogous to a state in a finite state automata.
 
     Attributes (Private: Controllers)
     ----------
@@ -125,13 +119,17 @@ class QBetseeSimmer(QBetseeControllerABC):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Default this phase to the unqueued state.
-        self._state = SimulatorState.UNQUEUED
-
-        # Controllers for each phase encapsulated by this simulator.
+        # Controllers for each simulator phase.
         self._phase_seed = QBetseeSimmerPhase(self)
         self._phase_init = QBetseeSimmerPhase(self)
         self._phase_sim  = QBetseeSimmerPhase(self)
+
+        # Set the type of such phase. Since the QObject.__init__() method cannot
+        # be redefined to accept subclass-specific parameters, these types
+        # *MUST* be subsequently set as follows.
+        self._phase_seed.kind = SimPhaseKind.SEED
+        self._phase_init.kind = SimPhaseKind.INIT
+        self._phase_sim .kind = SimPhaseKind.SIM
 
         # Sequence of all simulator phases. For sanity (e.g., during iteration),
         # these phases are intentionally listed in simulation order.
@@ -146,53 +144,13 @@ class QBetseeSimmer(QBetseeControllerABC):
 
 
     @type_check
-    def init(self, main_window: QBetseeMainWindow) -> None:
-        '''
-        Finalize this simulator's initialization, owned by the passed main
-        window widget.
+    def _init_widgets(self, main_window: QBetseeMainWindow) -> None:
 
-        This method connects all relevant signals and slots of *all* widgets
-        (including the main window, top-level widgets of that window, and leaf
-        widgets distributed throughout this application) whose internal state
-        pertains to the high-level state of this simulator.
-
-        To avoid circular references, this method is guaranteed to *not* retain
-        references to this main window on returning. References to child widgets
-        (e.g., actions) of this window may be retained, however.
-
-        Parameters
-        ----------
-        main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget
-            against which to initialize this object.
-        '''
-
-        # Initialize our superclass with all passed parameters.
-        super().init(main_window)
+        # Initialize all superclass widgets.
+        super()._init_widgets(main_window)
 
         # Log this initialization.
         logs.log_debug('Sanitizing simulator state...')
-
-        # Initialize all widgets concerning simulator state.
-        self._init_widgets(main_window)
-
-        # Connect all relevant signals and slots *AFTER* initializing these
-        # widgets, as the former typically requires the latter.
-        self._init_connections(main_window)
-
-
-    @type_check
-    def _init_widgets(self, main_window: QBetseeMainWindow) -> None:
-        '''
-        Create all widgets owned directly by this object *and* initialize all
-        other widgets (*not* always owned by this object) concerning this
-        simulator.
-
-        Parameters
-        ----------
-        main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
-        '''
 
         # Classify variables of this main window required by this simulator.
         self._action_toggle_playing = main_window.action_sim_run_toggle
@@ -201,12 +159,9 @@ class QBetseeSimmer(QBetseeControllerABC):
         self._status = main_window.sim_run_player_status
 
         # Initialize all simulator phase controllers (in arbitrary order).
-        self._phase_seed.init(
-            main_window=main_window, phase_kind=SimPhaseKind.SEED)
-        self._phase_init.init(
-            main_window=main_window, phase_kind=SimPhaseKind.INIT)
-        self._phase_sim.init(
-            main_window=main_window, phase_kind=SimPhaseKind.SIM)
+        self._phase_seed.init(main_window)
+        self._phase_init.init(main_window)
+        self._phase_sim.init(main_window)
 
         #FIXME: Excise the following code block after hooking this high-level
         #simulator GUI into the low-level "simrunner" submodule.
@@ -216,18 +171,12 @@ class QBetseeSimmer(QBetseeControllerABC):
         # status in a sane manner.
         main_window.sim_run_player_substatus_group.hide()
 
-        # Update the state of player widgets to reflect these changes.
-        self.update_state()
-
 
     @type_check
     def _init_connections(self, main_window: QBetseeMainWindow) -> None:
-        '''
-        Connect all relevant signals and slots of *all* widgets (including the
-        main window, top-level widgets of that window, and leaf widgets
-        distributed throughout this application) whose internal state pertains
-        to the high-level state of simulation subcommands.
-        '''
+
+        # Initialize all superclass connections.
+        super()._init_connections(main_window)
 
         # Connect each such action to this object's corresponding slot.
         self._action_toggle_playing.toggled.connect(self._toggle_playing)
@@ -244,9 +193,9 @@ class QBetseeSimmer(QBetseeControllerABC):
         # than "None" is intentionally passed for safety.
         # self.set_filename_signal.emit('')
 
-    # ..................{ PROPERTIES ~ bool                  }..................
+    # ..................{ PROPERTIES ~ bool : public         }..................
     @property
-    def _is_queued(self) -> bool:
+    def is_queued(self) -> bool:
         '''
         ``True`` only if one or more simulator phases are currently queued for
         modelling and/or exporting.
@@ -255,7 +204,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         # Return true only if one or more phases are queued.
         return any(phase.is_queued for phase in self._phases)
 
-
+    # ..................{ PROPERTIES ~ bool : private        }..................
     @property
     def _is_running(self) -> bool:
         '''
@@ -382,7 +331,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         self._phase_running.state = state
 
         # Set the state of this simulator to the same state.
-        self._state = state
+        self.state = state
 
     # ..................{ EXCEPTIONS                         }..................
     def _die_if_running(self) -> None:
@@ -442,13 +391,13 @@ class QBetseeSimmer(QBetseeControllerABC):
 
         # If the current state of this player is fluid (i.e., freely replaceable
         # with any other state)...
-        if self._state in SIMULATOR_STATES_FLUID:
+        if self.state in SIMULATOR_STATES_FLUID:
             # If this player is queued, set this state accordingly.
-            if self._is_queued:
-                self._state = SimulatorState.QUEUED
+            if self.is_queued:
+                self.state = SimulatorState.QUEUED
             # Else, this player is unqueued. Set this state accordingly.
             else:
-                self._state = SimulatorState.UNQUEUED
+                self.state = SimulatorState.UNQUEUED
         # Else, the current state of this player is fixed and hence *NOT* freely
         # replaceable with any other state. For safety, this state is preserved.
 
@@ -538,10 +487,6 @@ class QBetseeSimmer(QBetseeControllerABC):
 
     # ..................{ UPDATERS                           }..................
     def _update_widgets(self) -> None:
-        '''
-        Update the contents of all widgets controlled by this simulator player
-        to reflect the current state of this player.
-        '''
 
         # Enable (in arbitrary order):
         #
@@ -552,7 +497,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         #
         # To reduce the likelihood of accidental interaction with widgets
         # intended to be disabled, do so *BEFORE* subsequent slot logic.
-        self._player_toolbar.setEnabled(self._is_queued)
+        self._player_toolbar.setEnabled(self.is_queued)
         self._action_halt_playing.setEnabled(self._is_running)
 
         # Update the verbose status of this simulator.
@@ -566,7 +511,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         '''
 
         # Unformatted template synopsizing the current state of this simulator.
-        status_text_template = SIMULATOR_STATE_TO_STATUS_VERBOSE[self._state]
+        status_text_template = SIMULATOR_STATE_TO_STATUS_VERBOSE[self.state]
 
         #FIXME: Actually set this text to the prior word (e.g., "seed",
         #"initialization"). We'll probably need to get our queue up and running.
@@ -623,7 +568,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         #signals and slots.
 
         # If no simulator phase is currently queued, raise an exception.
-        if not self._is_queued:
+        if not self.is_queued:
             raise BetseeSimulatorException(QCoreApplication.translate(
                 'QBetseeSimmer', 'Simulator currently running.'))
 

@@ -2110,8 +2110,8 @@ class Ui_main_window(object):
         self.sim_run_queue_sim_model_lock = QtWidgets.QToolButton(self.sim_run_queue_sim_model_cell)
         self.sim_run_queue_sim_model_lock.setText("")
         icon18 = QtGui.QIcon()
-        icon18.addFile(":/icon/open_iconic/lock-unlocked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon18.addFile(":/icon/open_iconic/lock-locked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon18.addFile(":/icon/open_iconic/lock-unlocked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.sim_run_queue_sim_model_lock.setIcon(icon18)
         self.sim_run_queue_sim_model_lock.setCheckable(True)
         self.sim_run_queue_sim_model_lock.setAutoRaise(True)
@@ -2509,8 +2509,8 @@ class Ui_main_window(object):
         self.action_sim_run_toggle = QtWidgets.QAction(main_window)
         self.action_sim_run_toggle.setCheckable(True)
         icon29 = QtGui.QIcon()
-        icon29.addFile(":/icon/open_iconic/media-play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon29.addFile(":/icon/open_iconic/media-pause.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon29.addFile(":/icon/open_iconic/media-play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action_sim_run_toggle.setIcon(icon29)
         self.action_sim_run_toggle.setObjectName("action_sim_run_toggle")
         self.action_sim_run_halt = QtWidgets.QAction(main_window)
@@ -2908,10 +2908,10 @@ class Ui_main_window(object):
         self.label_68.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
         self.sim_run_player.setToolTip(QtWidgets.QApplication.translate("main_window", "Display and control the state of the currently queued simulation phase.", None, -1))
         self.sim_run_player.setTitle(QtWidgets.QApplication.translate("main_window", "Phase Player", None, -1))
-        self.sim_run_player_progress.setToolTip(QtWidgets.QApplication.translate("main_window", "Percentage completed of the action being applied to the currently queued simulation phase.", None, -1))
-        self.sim_run_player_status.setToolTip(QtWidgets.QApplication.translate("main_window", "High-level synopsis of the action being applied to the currently queued simulation phase.", None, -1))
+        self.sim_run_player_progress.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Percentage completed of the currently running simulation phase (if any).</p></body></html>", None, -1))
+        self.sim_run_player_status.setToolTip(QtWidgets.QApplication.translate("main_window", "Synopsis of the currently queued simulation phase (if any).", None, -1))
         self.sim_run_player_status.setText(QtWidgets.QApplication.translate("main_window", "[insert phase status here]", None, -1))
-        self.sim_run_player_substatus_group.setToolTip(QtWidgets.QApplication.translate("main_window", "Low-level details of the action being applied to the currently queued simulation phase.", None, -1))
+        self.sim_run_player_substatus_group.setToolTip(QtWidgets.QApplication.translate("main_window", "Details of the currently queued simulation phase (if any).", None, -1))
         self.sim_run_player_substatus.setText(QtWidgets.QApplication.translate("main_window", "[insert phase substatus here]", None, -1))
         self.sim_run_player_toolbar .setToolTip(QtWidgets.QApplication.translate("main_window", "Control the state of the currently queued simulation phase.", None, -1))
         self.sim_run_queue_group.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Queue (i.e., ordered list) of all simulation phases to be iteratively modelled and/or exported when the <img src=\":/icon/open_iconic/media-play.svg\"/> button is clicked. </p></body></html>", None, -1))
@@ -2994,19 +2994,19 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
         self.action_sim_run_toggle.setText(QtWidgets.QApplication.translate("main_window", "Start (Pause)", None, -1))
-        self.action_sim_run_toggle.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Toggle the execution of the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if unpaused.</li></ul><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if paused.</li></ul></body></html>", None, -1))
+        self.action_sim_run_toggle.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Run or pause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if unpaused.</li></ul><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if paused.</li></ul></body></html>", None, -1))
         self.action_sim_run_halt.setText(QtWidgets.QApplication.translate("main_window", "Stop", None, -1))
-        self.action_sim_run_halt.setToolTip(QtWidgets.QApplication.translate("main_window", "Prematurely stop the currently running simulation phase.", None, -1))
+        self.action_sim_run_halt.setToolTip(QtWidgets.QApplication.translate("main_window", "Forcefully stop the currently running simulation phase.", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit
-from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
+from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
 from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

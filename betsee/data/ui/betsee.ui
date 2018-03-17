@@ -4373,7 +4373,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <item>
              <widget class="QProgressBar" name="sim_run_player_progress">
               <property name="toolTip">
-               <string>Percentage completed of the action being applied to the currently queued simulation phase.</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Percentage completed of the currently running simulation phase (if any).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -4383,7 +4383,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <item>
              <widget class="QLabel" name="sim_run_player_status">
               <property name="toolTip">
-               <string>High-level synopsis of the action being applied to the currently queued simulation phase.</string>
+               <string>Synopsis of the currently queued simulation phase (if any).</string>
               </property>
               <property name="text">
                <string>[insert phase status here]</string>
@@ -4396,7 +4396,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <item>
              <widget class="QWidget" name="sim_run_player_substatus_group" native="true">
               <property name="toolTip">
-               <string>Low-level details of the action being applied to the currently queued simulation phase.</string>
+               <string>Details of the currently queued simulation phase (if any).</string>
               </property>
               <property name="is_group" stdset="0">
                <bool>true</bool>
@@ -5565,7 +5565,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>Start (Pause)</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle the execution of the currently queued simulation phase. Clicking this button either:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Starts this phase if unstarted.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Pauses this phase if unpaused.&lt;/li&gt;&lt;/ul&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Unpauses this phase if paused.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run or pause the currently queued simulation phase. Clicking this button either:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Starts this phase if unstarted.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Pauses this phase if unpaused.&lt;/li&gt;&lt;/ul&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Unpauses this phase if paused.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="action_sim_run_halt">
@@ -5577,7 +5577,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>Stop</string>
    </property>
    <property name="toolTip">
-    <string>Prematurely stop the currently running simulation phase.</string>
+    <string>Forcefully stop the currently running simulation phase.</string>
    </property>
   </action>
  </widget>
