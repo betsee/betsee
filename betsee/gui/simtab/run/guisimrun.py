@@ -25,18 +25,21 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #    https://stackoverflow.com/a/28816650/2809027
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, Slot  # Signal
+from PySide2.QtCore import QCoreApplication, QObject, Slot  # Signal
 # from betse.science.export.expenum import SimExportType
-from betse.science.phase.phasecls import SimPhaseKind
+from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
+from betse.util.type import enums
 from betse.util.type.text import strs
 from betse.util.type.types import type_check  #, StrOrNoneTypes
-from betsee.guiexception import BetseeSimulatorException
+from betsee.guiexception import BetseeSimmerException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.guisimrunstate import (
-    SimulatorState,
-    SIMULATOR_STATE_TO_STATUS_VERBOSE,
-    SIMULATOR_STATES_FLUID,
+    SimmerState,
+    SIMMER_STATE_TO_STATUS_VERBOSE,
+    SIMMER_STATES_FIXED,
+    SIMMER_STATES_FLUID,
     # MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
@@ -113,9 +116,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         Initialize this simulator.
         '''
 
-        # Avoid circular import dependencies.
-        from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
-
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
@@ -144,10 +144,51 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
 
     @type_check
-    def _init_widgets(self, main_window: QBetseeMainWindow) -> None:
+    def init(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Finalize this simulator's initialization, owned by the passed main
+        window widget.
 
-        # Initialize all superclass widgets.
-        super()._init_widgets(main_window)
+        This method connects all relevant signals and slots of *all* widgets
+        (including the main window, top-level widgets of that window, and leaf
+        widgets distributed throughout this application) whose internal state
+        pertains to the high-level state of this simulator.
+
+        To avoid circular references, this method is guaranteed to *not* retain
+        references to this main window on returning. References to child widgets
+        (e.g., actions) of this window may be retained, however.
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget
+            against which to initialize this object.
+        '''
+
+        # Initialize our superclass with all passed parameters.
+        super().init(main_window)
+
+        # Initialize all widgets concerning simulator state.
+        self._init_widgets(main_window)
+
+        # Connect all relevant signals and slots *AFTER* initializing these
+        # widgets, as the former typically requires the latter.
+        self._init_connections(main_window)
+
+
+
+    @type_check
+    def _init_widgets(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Create all widgets owned directly by this object *and* initialize all
+        other widgets (*not* always owned by this object) concerning this
+        simulator.
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget.
+        '''
 
         # Log this initialization.
         logs.log_debug('Sanitizing simulator state...')
@@ -158,10 +199,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._player_toolbar = main_window.sim_run_player_toolbar_frame
         self._status = main_window.sim_run_player_status
 
-        # Initialize all simulator phase controllers (in arbitrary order).
-        self._phase_seed.init(main_window)
-        self._phase_init.init(main_window)
-        self._phase_sim.init(main_window)
+        # Initialize all phases (in arbitrary order).
+        for phase in self._phases:
+            phase.init(main_window)
 
         #FIXME: Excise the following code block after hooking this high-level
         #simulator GUI into the low-level "simrunner" submodule.
@@ -174,24 +214,30 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     @type_check
     def _init_connections(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Connect all relevant signals and slots of *all* widgets (including the
+        main window, top-level widgets of that window, and leaf widgets
+        distributed throughout this application) whose internal state pertains
+        to the high-level state of this simulator.
 
-        # Initialize all superclass connections.
-        super()._init_connections(main_window)
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget.
+        '''
 
         # Connect each such action to this object's corresponding slot.
         self._action_toggle_playing.toggled.connect(self._toggle_playing)
         self._action_halt_playing.triggered.connect(self._halt_playing)
 
-        # Connect this object's signals to all corresponding slots.
-        # self.set_filename_signal.connect(self.set_filename)
+        # For each possible phase...
+        for phase in self._phases:
+            # Connect this phase's signals to this object's corresponding slots.
+            phase.set_state_signal.connect(self._set_phase_state)
 
-        # Set the state of all widgets dependent upon this simulation
-        # subcommand state *AFTER* connecting all relavant signals and slots.
-        # Initially, no simulation subcommands have yet to be queued or run.
-        #
-        # Note that, as this slot only accepts strings, the empty string rather
-        # than "None" is intentionally passed for safety.
-        # self.set_filename_signal.emit('')
+            # Initialize the state of this phase *AFTER* connecting these slots,
+            # implicitly initializing the state of this simulator.
+            phase.update_state()
 
     # ..................{ PROPERTIES ~ bool : public         }..................
     @property
@@ -230,8 +276,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     # ..................{ PROPERTIES ~ phase                 }..................
     @property
-    def _phase_running(self) -> (
-        'betsee.gui.simtab.run.guisimrunphase.QBetseeSimmerPhase'):
+    def _phase_running(self) -> QBetseeSimmerPhase:
         '''
         Queued simulator phase that is currently **running** (i.e., either being
         modelled or exported by this simulator) if any *or* raise an exception
@@ -248,7 +293,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         Raises
         ----------
-        BetseeSimulatorException
+        BetseeSimmerException
             If no simulator phase is currently running (i.e.,
               :attr:`_queue_running` is either ``None`` or empty).
         '''
@@ -263,7 +308,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     # This trivial property getter exists only so that the corresponding
     # non-trivial property setter may be defined.
     @property
-    def _phase_running_state(self) -> SimulatorState:
+    def _phase_running_state(self) -> SimmerState:
         '''
         State of the queued simulator phase that is currently **running** (i.e.,
         either being modelled or exported by this simulator) if any *or* raise
@@ -277,7 +322,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         Raises
         ----------
-        BetseeSimulatorException
+        BetseeSimmerException
             If no simulator phase is currently running (i.e.,
               :attr:`_queue_running` is either ``None`` or empty).
 
@@ -292,7 +337,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     @_phase_running_state.setter
     @type_check
-    def _phase_running_state(self, state: SimulatorState) -> None:
+    def _phase_running_state(self, state: SimmerState) -> None:
         '''
         Set the state of the queued simulator phase that is currently
         **running** (i.e., either being modelled or exported by this simulator)
@@ -312,12 +357,12 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         Parameters
         ----------
-        state: SimulatorState
+        state: SimmerState
             New state to set this phase to.
 
         Raises
         ----------
-        BetseeSimulatorException
+        BetseeSimmerException
             If no simulator phase is currently running (i.e.,
               :attr:`_queue_running` is either ``None`` or empty).
 
@@ -327,13 +372,15 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             Further details.
         '''
 
+        #FIXME: This may now induce infinite recursion. *sigh*
+
         # Set the state of the currently running phase to this state.
         self._phase_running.state = state
 
         # Set the state of this simulator to the same state.
-        self.state = state
+        # self.state = state
 
-    # ..................{ EXCEPTIONS                         }..................
+    # ..................{ EXCEPTIONS ~ running               }..................
     def _die_if_running(self) -> None:
         '''
         Raise an exception if some queued simulator phase is currently
@@ -346,7 +393,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         if self._is_running:
-            raise BetseeSimulatorException(QCoreApplication.translate(
+            raise BetseeSimmerException(QCoreApplication.translate(
                 'QBetseeSimmer', 'Simulator currently running.'))
 
 
@@ -365,44 +412,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         if not self._is_running:
-            raise BetseeSimulatorException(QCoreApplication.translate(
+            raise BetseeSimmerException(QCoreApplication.translate(
                 'QBetseeSimmer', 'Simulator currently running.'))
-
-    # ..................{ SLOTS ~ public                     }..................
-    @Slot()
-    def update_state(self) -> None:
-        '''
-        Slot signalled on either the user interactively *or* the codebase
-        programmatically interacting with any widget relevant to the current
-        state of this simulator player, including phase-specific checkboxes
-        queueing that simulator phase for modelling and/or exporting.
-
-        This slot internally updates the **simulator player** (i.e., widgets
-        both displaying *and* controlling the currently queued simulator phase
-        if any) to reflect the current state of this simulator. Notably, this
-        slot prevents interaction with inapplicable widgets by:
-
-        * If any phase-specific checkbox is checked, enabling this player.
-        * If no phase-specific checkbox is checked, disabling this player.
-        '''
-
-        #FIXME: Eliminate code duplication. See commentary in the
-        #QBetseeSimmerPhase.update_state() slot.
-
-        # If the current state of this player is fluid (i.e., freely replaceable
-        # with any other state)...
-        if self.state in SIMULATOR_STATES_FLUID:
-            # If this player is queued, set this state accordingly.
-            if self.is_queued:
-                self.state = SimulatorState.QUEUED
-            # Else, this player is unqueued. Set this state accordingly.
-            else:
-                self.state = SimulatorState.UNQUEUED
-        # Else, the current state of this player is fixed and hence *NOT* freely
-        # replaceable with any other state. For safety, this state is preserved.
-
-        # Update the state of player widgets to reflect these changes.
-        self._update_widgets()
 
     # ..................{ SLOTS ~ private : action           }..................
     # Slots connected to signals emitted by "QAction" objects.
@@ -441,11 +452,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             # start the first queued phase.
             else:
                 # Initialize the queue of simulator phases to be run.
-                self._enqueue_running()
+                self.enqueue_running()
 
-                #FIXME: Actually run these phases.
-                #FIXME: Set the state of this simulator.
-                #FIXME: Set the state of the currently running phase.
+                # Iteratively run each such phase.
+                self.run_enqueued()
 
             #FIXME: Set the state of both this simulator *AND* the currently
             #running phase *AFTER* successfully running this phase above.
@@ -455,10 +465,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
             # Set this simulator and the previously running phase to the paused
             # state *AFTER* successfully pausing this phase.
-            self._phase_running_state = SimulatorState.PAUSED
-
-        # Update the state of player widgets to reflect these changes.
-        self._update_widgets()
+            self._phase_running_state = SimmerState.PAUSED
 
 
     @Slot()
@@ -476,14 +483,142 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Uninitialize the queue of simulator phases to be run *AFTER*
         # successfully halting this phase.
-        self._dequeue_running()
+        self.dequeue_running()
 
         # Set this simulator and the previously running phase to the halted
         # state *AFTER* successfully halting this phase.
-        self._phase_running_state = SimulatorState.HALTED
+        self._phase_running_state = SimmerState.HALTED
 
-        # Update the state of player widgets to reflect these changes.
-        self._update_widgets()
+    # ..................{ SLOTS ~ private : action           }..................
+    # Slots connected to signals emitted by "QAction" objects.
+
+    @Slot(QObject)
+    def _set_phase_state(self, phase: QBetseeSimmerPhase) -> None:
+        '''
+        Slot signalled on either the user interactively *or* the codebase
+        programmatically setting the current state of any simulator phase.
+
+        Parameters
+        ----------
+        phase : QBetseeSimmerPhase
+            Simulator phase whose current state has been set.
+        '''
+
+        # Log this slot.
+        logs.log_debug(
+            'Simulator phase "%s" state updated to "%s"...',
+            phase.name,
+            enums.get_member_name_lowercase(phase.state))
+
+        # If the current state of either:
+        #
+        # * This phase is fixed (i.e., high-priority) and hence superceding the
+        #   current state of this simulator...
+        # * This simulator is fluid (i.e., low-priority) and hence superceded by
+        #   current state of this phase...
+        if (
+            phase.state in SIMMER_STATES_FIXED or
+             self.state in SIMMER_STATES_FLUID
+        ):
+            # If this phase's new state is unqueued...
+            if phase.state is SimmerState.UNQUEUED:
+                # If one or more *OTHER* phases are still queued, ignore this
+                # phase's change. Unqueueing is minimally low priority.
+                if self.is_queued:
+                    pass
+                # Else, all phases are unqueued. Set the current state of this
+                # simulator to also be unqueued.
+                else:
+                    self.state = SimmerState.UNQUEUED
+            # Else, this phase's new state unconditionally takes precedence. Set
+            # the current state of this simulator to this phase's new state.
+            else:
+                self.state = phase.state
+
+            # Update the state of simulator widgets *AFTER* setting this state.
+            self._update_widgets()
+
+    # ..................{ QUEUERS                            }..................
+    def enqueue_running(self) -> None:
+        '''
+        Define the :attr:`_queue_running` queue of all simulator phases to be
+        subsequently run.
+
+        This method enqueues (i.e., pushes onto this queue) all simulator phases
+        for which the end user interactively checked at least one of the
+        corresponding modelling and exporting checkboxes. For sanity, phases are
+        enqueued in simulation order such that:
+
+        * The seed phase is enqueued *before* the initialization phase.
+        * The initialization phase is enqueued *before* the simulation phase.
+
+        Raises
+        ----------
+        BetseeSimmerException
+            If either:
+            * No simulator phase is currently queued.
+            * Some simulator phase is currently running (i.e.,
+              :attr:`_queue_running` is already defined to be non-``None``).
+        '''
+
+        # Enqueue our superclass.
+        super().enqueue_running()
+
+        # If some simulator phase is currently running, raise an exception.
+        self._die_if_running()
+
+        # Initialize this queue to the empty double-ended queue (i.e., deque).
+        self._queue_running = deque()
+
+        # For each possible phase...
+        for phase in self._phases:
+            # If this phase is currently queued for modelling or exporting...
+            if phase.is_queued:
+                # Record which actions this phase was queued for.
+                phase.enqueue_running()
+
+                # Enqueue this phase.
+                self._queue_running.append(phase)
+
+
+    def dequeue_running(self) -> None:
+        '''
+        Revert the :attr:`_queue_running` queue to ``None``, effectively
+        dequeueing (i.e., popping from this queue) all previously queued
+        simulator phases.
+        '''
+
+        # Dequeue our superclass.
+        super().dequeue_running()
+
+        # Uninitialize this queue.
+        self._queue_running = None
+
+        # For each possible phase, forget which actions this phase was queued
+        # for (if any). While technically optional, doing so should preserve
+        # sanity by assisting in debugging.
+        for phase in self._phases:
+            phase.dequeue_running()
+
+
+    def run_enqueued(self) -> None:
+        '''
+        Iteratively run each simulator phase enqueued (i.e., appended to the
+        :attr:`_queue_running` queue of such phases) by a prior call to the
+        :meth:`enqueue_running` method.
+        '''
+
+        # While one or more enqueued phases have yet to be run...
+        while self._is_running:
+            # Enqueued simulator phase to be run.
+            phase_queued = self._phase_running
+
+            # Run all actions previously enqueued for this phase (e.g.,
+            # modelling, exporting).
+            phase_queued.run_enqueued()
+
+            # Dequeue this phase *AFTER* successfully running these actions.
+            self._queue_running.pop()
 
     # ..................{ UPDATERS                           }..................
     def _update_widgets(self) -> None:
@@ -507,11 +642,11 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     def _update_status(self) -> None:
         '''
         Update the text displayed by the :attr:`_status` label, verbosely
-        synopsizing the current state of this simulator player.
+        synopsizing the current state of this simulator.
         '''
 
         # Unformatted template synopsizing the current state of this simulator.
-        status_text_template = SIMULATOR_STATE_TO_STATUS_VERBOSE[self.state]
+        status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[self.state]
 
         #FIXME: Actually set this text to the prior word (e.g., "seed",
         #"initialization"). We'll probably need to get our queue up and running.
@@ -537,56 +672,3 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Set the text of the label displaying this synopsis to this text.
         self._status.setText(status_text)
-
-    # ..................{ QUEUERS                            }..................
-    def _enqueue_running(self) -> None:
-        '''
-        Define the :attr:`_queue_running` queue of all simulator phases to be
-        subsequently run.
-
-        This method enqueues (i.e., pushes onto this queue) all simulator phases
-        for which the end user interactively checked at least one of the
-        corresponding modelling and exporting checkboxes. For sanity, phases are
-        enqueued in simulation order such that:
-
-        * The seed phase is enqueued *before* the initialization phase.
-        * The initialization phase is enqueued *before* the simulation phase.
-
-        Raises
-        ----------
-        BetseeSimulatorException
-            If either:
-            * No simulator phase is currently queued.
-            * Some simulator phase is currently running (i.e.,
-              :attr:`_queue_running` is already defined to be non-``None``).
-        '''
-
-        # If some simulator phase is currently running, raise an exception.
-        self._die_if_running()
-
-        #FIXME: Programmatically ensure this to be the case with appropriate
-        #signals and slots.
-
-        # If no simulator phase is currently queued, raise an exception.
-        if not self.is_queued:
-            raise BetseeSimulatorException(QCoreApplication.translate(
-                'QBetseeSimmer', 'Simulator currently running.'))
-
-        # Initialize this queue to the empty double-ended queue (i.e., deque).
-        self._queue_running = deque()
-
-        # For each simulator phase, queue each phase requested by the end user.
-        for phase in self._phases:
-            if phase.is_queued:
-                self._queue_running.append(phase)
-
-
-    def _dequeue_running(self) -> None:
-        '''
-        Revert the :attr:`_queue_running` queue to ``None``, effectively
-        dequeueing (i.e., popping from this queue) all previously queued
-        simulator phases.
-        '''
-
-        # Uninitialize this queue.
-        self._queue_running = None

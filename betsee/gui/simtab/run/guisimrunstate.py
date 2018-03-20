@@ -11,13 +11,13 @@ corresponding to this simulator) functionality.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication
 from betse.science.export.expenum import SimExportType
-from betse.science.phase.phasecls import SimPhaseKind
+from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.type.enums import make_enum
 # from betse.util.type.types import type_check  #, StrOrNoneTypes
 
 # ....................{ ENUMS                              }....................
-SimulatorState = make_enum(
-    class_name='SimulatorState',
+SimmerState = make_enum(
+    class_name='SimmerState',
     member_names=(
         'UNQUEUED',
         'QUEUED',
@@ -60,9 +60,9 @@ DONE : enum
 '''
 
 # ....................{ GLOBALS ~ set                      }....................
-SIMULATOR_STATES_RUNNING = {
-    SimulatorState.MODELLING,
-    SimulatorState.EXPORTING,
+SIMMER_STATES_RUNNING = {
+    SimmerState.MODELLING,
+    SimmerState.EXPORTING,
 }
 '''
 Set of all **running simulator states** (i.e., states implying one or more
@@ -71,11 +71,11 @@ done).
 '''
 
 # ....................{ GLOBALS ~ set : (fluid|fixed)      }....................
-SIMULATOR_STATES_FLUID = {
-    SimulatorState.UNQUEUED,
-    SimulatorState.QUEUED,
-    SimulatorState.HALTED,
-    SimulatorState.DONE,
+SIMMER_STATES_FLUID = {
+    SimmerState.UNQUEUED,
+    SimmerState.QUEUED,
+    SimmerState.HALTED,
+    SimmerState.DONE,
 }
 '''
 Set of all **fluid simulator states** (i.e., states the simulator may freely
@@ -94,22 +94,22 @@ Caveats
 Technically, the claims implied by this set are *not* actually all the case.
 For example, the simulator may transition from the:
 
-* :attr:`SimulatorState.UNQUEUED` state to *only* the
-  :attr:`SimulatorState.QUEUED` state.
-* :attr:`SimulatorState.QUEUED` state to *only* the
-  :attr:`SimulatorState.UNQUEUED`,
-  :attr:`SimulatorState.MODELLING`, and
-  :attr:`SimulatorState.EXPORTING` states.
+* :attr:`SimmerState.UNQUEUED` state to *only* the
+  :attr:`SimmerState.QUEUED` state.
+* :attr:`SimmerState.QUEUED` state to *only* the
+  :attr:`SimmerState.UNQUEUED`,
+  :attr:`SimmerState.MODELLING`, and
+  :attr:`SimmerState.EXPORTING` states.
 
 Pragmatically, preserving these distinctions would incur more cost than
 pretending these states may be freely transitioned from. We prefer the latter.
 '''
 
 
-SIMULATOR_STATES_FIXED = {
-    SimulatorState.MODELLING,
-    SimulatorState.EXPORTING,
-    SimulatorState.PAUSED,
+SIMMER_STATES_FIXED = {
+    SimmerState.MODELLING,
+    SimmerState.EXPORTING,
+    SimmerState.PAUSED,
 }
 '''
 Set of all **fixed simulator states** (i.e., states the simulator may *not*
@@ -117,25 +117,25 @@ freely transition from to any other state).
 
 See Also
 ----------
-:data:`SIMULATOR_STATES_FIXED`
+:data:`SIMMER_STATES_FIXED`
     Negation of this set.
 '''
 
 # ....................{ GLOBALS ~ dict : status            }....................
-SIMULATOR_STATE_TO_STATUS_TERSE = {
-    SimulatorState.UNQUEUED: QCoreApplication.translate(
+SIMMER_STATE_TO_STATUS_TERSE = {
+    SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Unqueued'),
-    SimulatorState.QUEUED: QCoreApplication.translate(
+    SimmerState.QUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Queued'),
-    SimulatorState.MODELLING: QCoreApplication.translate(
+    SimmerState.MODELLING: QCoreApplication.translate(
         'guisimrunstate', 'Modelling'),
-    SimulatorState.EXPORTING: QCoreApplication.translate(
+    SimmerState.EXPORTING: QCoreApplication.translate(
         'guisimrunstate', 'Exporting'),
-    SimulatorState.PAUSED: QCoreApplication.translate(
+    SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused'),
-    SimulatorState.HALTED: QCoreApplication.translate(
+    SimmerState.HALTED: QCoreApplication.translate(
         'guisimrunstate', 'Stopped'),
-    SimulatorState.DONE: QCoreApplication.translate(
+    SimmerState.DONE: QCoreApplication.translate(
         'guisimrunstate', 'Finished'),
 }
 '''
@@ -145,12 +145,12 @@ being performed in that state.
 '''
 
 
-SIMULATOR_STATE_TO_STATUS_VERBOSE = {
-    SimulatorState.UNQUEUED: QCoreApplication.translate(
+SIMMER_STATE_TO_STATUS_VERBOSE = {
+    SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Waiting for phase(s) to be queued...'),
-    SimulatorState.QUEUED: QCoreApplication.translate(
+    SimmerState.QUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Waiting for queued phase(s) to be run...'),
-    SimulatorState.MODELLING: QCoreApplication.translate(
+    SimmerState.MODELLING: QCoreApplication.translate(
         'guisimrunstate',
         #FIXME: Replace this coarse-grained string with the following
         #fine-grained string after hooking into the simulation process.
@@ -158,7 +158,7 @@ SIMULATOR_STATE_TO_STATUS_VERBOSE = {
         # 'Modelling <b>{phase_type}</b> '
         # 'step {step_curr} '
         #   '<i>of</i> {step_total}:'),
-    SimulatorState.EXPORTING: QCoreApplication.translate(
+    SimmerState.EXPORTING: QCoreApplication.translate(
         'guisimrunstate',
         #FIXME: Replace this coarse-grained string with the following
         #fine-grained string after hooking into the simulation process.
@@ -167,11 +167,11 @@ SIMULATOR_STATE_TO_STATUS_VERBOSE = {
         # '{export_type} <pre>"{export_name}"</pre> '
         # 'step {step_curr} '
         #   '<i>of</i> {step_total}:'),
-    SimulatorState.PAUSED: QCoreApplication.translate(
+    SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused {status_prior}'),
-    SimulatorState.HALTED: QCoreApplication.translate(
+    SimmerState.HALTED: QCoreApplication.translate(
         'guisimrunstate', 'Stopped {status_prior}'),
-    SimulatorState.DONE: QCoreApplication.translate(
+    SimmerState.DONE: QCoreApplication.translate(
         'guisimrunstate', 'Finished {status_prior}'),
 }
 '''
