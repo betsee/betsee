@@ -173,6 +173,17 @@ class BetseePySideFocusException(BetseePySideException):
         return QCoreApplication.translate(
             'BetseePySideFocusException', 'Widget Focus Error')
 
+# ....................{ EXCEPTIONS ~ psd : thread          }....................
+class BetseePySideThreadException(BetseePySideException):
+    '''
+    :class:`PySide2.QtCore.QThread`-specific exception.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideThreadException', 'Thread Error'),
+
 # ....................{ EXCEPTIONS ~ psd : widget          }....................
 class BetseePySideWidgetException(BetseePySideException):
     '''

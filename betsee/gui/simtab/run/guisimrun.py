@@ -8,6 +8,61 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 *and* controlling the execution of simulation phases) functionality.
 '''
 
+#FIXME: Refactor to leverage threading via the new "work" subpackage as follows:
+#
+#* Preserve most existing attributes and properties of this class. That said...
+#* Remove the three methods in the "QUEUERS" subsection from *ALL* submodules,
+#  possibly excluding the _run_queued() method -- which we might want to
+#  preserve *ONLY* in this submodule. Even then, that method should still be
+#  removed from all other submodules.
+#* Refactor the "_queue_running" variable from a deque of phases to a deque of
+#  simulator workers produced by the "work.guisimrunworkqueue" submodule.
+#* In the __init__() method:
+#  * Define a new "_thread" variable as an instance of "QBetseeWorkableThread".
+#  * Define one new "_worker_"-prefixed variable for each of the five possible
+#    simulation subcommands (e.g., "_worker_seed").
+#  * For each such worker, manually adopt that worker into that thread: e.g.,
+#
+#      self._thread.adopt_worker(self._worker_seed)
+#
+#  * Define a new "_PHASE_KIND_TO_PHASE" dictionary mapping from phase types to
+#    simulator phases: e.g.,
+#
+#      # Rename the "self._phases" sequence to "self._PHASES" as well, please.
+#      self._PHASE_KIND_TO_PHASE = {
+#          SimPhaseKind.SEED: self._phase_seed, ...
+#      }
+#
+#* Refactor the critical _phase_running() property to:
+#  * Get the "kind" property of the leading worker in "_queue_running".
+#  * Map this property to the corresponding phase via "_PHASE_KIND_TO_PHASE".
+#* Refactor the _run_queued() method as follows:
+#  * For the first worker in "_queued_running":
+#    * Emit a signal connected to the start() slot of that worker. (Probably
+#      just a signal of that same worker named "start_signal", for brevity.)
+#  * ...that's it. Crazy, eh?
+#* Rename the _run_queued() method to _start_worker_queued_next().
+#* Rename the "_queue_running" variable to "_worker_queue".
+#* Rename the _phase_running() property (and all subsidiary properties) to
+#  _phase_working().
+#* Rename the _is_running() property to _is_working().
+#* Define a new private _handle_worker_finished() slot of this simulator. This
+#  slot should receive a "QBetseeSimmerWorkerABC" instance as follows:
+#  * Validate that the leading item of "_worker_queue" is the passed worker.
+#  * Pop this worker from "_worker_queue".
+#  * If "_worker_queue" is non-empty, then:
+#    * Call the _start_worker_queued_next() method.
+#* In the _init_connections() method:
+#  * Iterate over each possible worker (e.g., "_worker_seed"). This may merit a
+#    new "_WORKERS" sequence or possibly even "_PHASE_KIND_TO_WORKER" map.
+#  * For each possible worker:
+#    * Connect the finished() signal emitted by that worker to
+#      _handle_worker_finished() slot.
+#
+#Severely non-trivial, but awesome nonetheless.
+#
+#I'm all out of bubblegum. Let's do this.
+
 #FIXME: Note in a more appropriate docstring somewhere that the text overlaid
 #onto the progress bar is only conditionally displayed depending on the current
 #style associated with this bar. Specifically, the official documentation notes:
@@ -110,7 +165,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    @type_check
     def __init__(self, *args, **kwargs) -> None:
         '''
         Initialize this simulator.

@@ -8,6 +8,33 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 *and* controlling the execution of simulation phases) functionality.
 '''
 
+#FIXME: Refactor this to leverage Qt's existing "QStateMachine" framework. Had
+#we known about the existence of this framework, we likely wouldn't have
+#implemented the cumbersome "QBetseeSimmerStatefulABC" API but instead leveraged
+#the existing quite elegant "QStateMachine" API. Sadly, we know which of these
+#two roads was taken. Unfortunately, refactoring this subpackage from the former
+#to latter will probably be highly non-trivial -- but ultimately essential.
+#
+#There exist many, many reasons to transition to the "QStateMachine" API,
+#including:
+#
+#* Sanity. We really just wanted a finite state machine (FSM). Now, we can. In
+#  theory, an FSM-based implementation should be significantly saner.
+#* Properties. The "QStateMachine" API permits the properties of arbitrary
+#  "QObject" instances (like, say, whether or not a given "QPushButton" is
+#  enabled or disabled) to be trivially set on transitioning to and from a
+#  state. In theory, leveraging this should simplify our life with respect to
+#  updating widget states.
+#* History. The "QStateMachine" API provides the concept of "history states,"
+#  which would permit the current state of the simulator to be saved and
+#  restored (e.g., across desktop sessions). Probably essential, at some point.
+#* Animations. The "QStateMachine" API provides the concept of "transition
+#  animations," permitting the properties of arbitrary "QObject" instances to be
+#  animated between... seemlessly. Nice, but hardly essential.
+#
+#Fortunately, Qt's documentation for this API is phenomenal. See the article
+#entitled "The State Machine Framework." It's a surprisingly stunning read.
+
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
 from abc import abstractmethod
@@ -35,7 +62,6 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    @type_check
     def __init__(self, *args, **kwargs) -> None:
         '''
         Initialize this stateful simulator controller.
@@ -132,7 +158,6 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         self._update_widgets()
 
     # ..................{ SLOTS ~ updaters                   }..................
-    @abstractmethod
     def _update_state(self) -> None:
         '''
         Update the current public state of this stateful simulator controller

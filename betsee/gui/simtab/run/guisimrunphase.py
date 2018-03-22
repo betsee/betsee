@@ -74,7 +74,6 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    @type_check
     def __init__(self, *args, **kwargs) -> None:
         '''
         Initialize this simulator phase.
