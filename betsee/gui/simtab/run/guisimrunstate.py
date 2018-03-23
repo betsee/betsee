@@ -15,7 +15,7 @@ from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.type.enums import make_enum
 # from betse.util.type.types import type_check  #, StrOrNoneTypes
 
-# ....................{ ENUMS                              }....................
+# ....................{ ENUMERATIONS                       }....................
 SimmerState = make_enum(
     class_name='SimmerState',
     member_names=(
