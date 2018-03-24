@@ -18,7 +18,65 @@ from betsee.guiexception import BetseePySideThreadException
 from betsee.util.type.guitype import (
     QAbstractEventDispatcherOrNoneTypes, QThreadOrNoneTypes)
 
+# ....................{ TESTERS                            }....................
+@type_check
+def should_halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
+    '''
+    ``True`` only if some object has requested that the passed thread of
+    execution voluntarily halt *all* tasks (e.g., overriden :meth:`QThread.run`
+    method) and workers (e.g., subclassed :class:`QBetseeThreadWorkerABC` object)
+    currently running in this thread.
+
+    This function is intended to be voluntarily called by tasks and workers.
+
+    Caveats
+    ----------
+    One parent thread may run an arbitrary number of child workers. However, the
+    request to halt tested by this function is a low-level condition applying to
+    a single thread rather than a single worker. Hence, if this function returns
+    ``False``, *all* tasks and workers currently running in this thread are
+    expected to gracefully halt all work being performed and then terminate.
+
+    For fine-grained control over worker lifecycles, external callers are
+    strongly advised to signal each such worker to gracefully halt (e.g., by
+    emitting a signal connected to the :meth:`QBetseeThreadWorkerABC.stop` slot)
+    rather than requesting that the thread running those workers halt (e.g., by
+    calling the :meth:`QThread.requestInterruption` method). Nonetheless,
+    workers are expected to respect both types of requests.
+
+    For convenience, note that the
+    :meth:`QBetseeThreadWorkerABC._halt_work_if_requested` method implicitly
+    respects both types of requests. Ergo, :class:`QBetseeThreadWorkerABC`
+    subclasses need *not* and should *not* explicitly call this function.
+
+    Parameters
+    ----------
+    thread : QThreadOrNoneTypes
+        Thread to request to be halted. Defaults to ``None``, in which case the
+        current thread of execution is requested to be halted.
+
+    Returns
+    ----------
+    bool
+        ``True`` only if some object has requested this thread to voluntarily
+        halt *all* tasks and workers currently running in this thread.
+
+    See Also
+    ----------
+    :func:`halt_thread_work`
+        Companion function requesting this thread to voluntarily halt these
+        tasks and workers.
+    '''
+
+    # Default this thread if unpassed to the current thread of execution.
+    if thread is None:
+        thread = get_current_thread()
+
+    # Return true only if this thread has been requested to be halted.
+    return thread.isInterruptionRequested()
+
 # ....................{ GETTERS                            }....................
+@type_check
 def get_event_dispatcher(
     thread: QThreadOrNoneTypes = None) -> QAbstractEventDispatcher:
     '''
@@ -102,6 +160,60 @@ def get_current_event_dispatcher() -> QAbstractEventDispatcher:
     # Return the event dispatcher for this thread.
     return get_event_dispatcher(thread)
 
+# ....................{ HALTERS                            }....................
+@type_check
+def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
+    '''
+    Requested that the passed thread of execution voluntarily halt *all* tasks
+    (e.g., overriden :meth:`QThread.run` method) and workers (e.g., subclassed
+    :class:`QBetseeThreadWorkerABC` object) currently running in this thread.
+
+    This function is intended to be called from objects in other threads.
+
+    Caveats
+    ----------
+    After this function is called, this request will be unconditionally
+    preserved in this thread until this thread is manually halted and restarted
+    (e.g., by calling the :meth:`QBetseeWorkerThread.halt` and
+    :meth:`QBetseeWorkerThread.start` methods in that order). However, doing so:
+
+    * Terminates all tasks and workers currently running in this thread,
+      typically in a non-graceful manner resulting in in-memory or on-disk data
+      corruption.
+    * Discards all pending events currently queued with this thread -- including
+      both outgoing signals emitted by *and* incoming slots signalled on any
+      workers still running in this thread.
+
+    Hence, due to long-standing deficiencies in the Qt API, this request
+    *cannot* be gracefully "undone." Attempting to do so *always* runs a risk of
+    non-gracefully terminating running and pending work. The only alternative to
+    this extremely concerning caveat is to signal each such worker to gracefully
+    halt (e.g., by emitting a signal connected to the
+    :meth:`QBetseeThreadWorkerABC.stop` slot) rather than calling this method.
+
+    **You have been warned.** There be vicious vipers scuttling about here.
+
+    Parameters
+    ----------
+    thread : QThreadOrNoneTypes
+        Thread to request to be halted. Defaults to ``None``, in which case the
+        current thread of execution is requested to be halted.
+
+    See Also
+    ----------
+    :func:`should_halt_thread_work`
+        Further details.
+    https://forum.qt.io/topic/43067/qthread-requestinterruption-cannot-be-undone
+        Prominent Qt forum discussion on this lamentable topic.
+    '''
+
+    # Default this thread if unpassed to the current thread of execution.
+    if thread is None:
+        thread = get_current_thread()
+
+    # Request this thread's work to be halted.
+    return thread.requestInterruption()
+
 # ....................{ PROCESSORS                         }....................
 @type_check
 def process_events(
@@ -145,7 +257,8 @@ def process_events(
 
 
 #FIXME: Explicitly raise an exception if this event dispatcher is the main event
-#dispatcher (i.e., event dispatcher running the main GUI event loop).
+#dispatcher (i.e., event dispatcher running the main GUI event loop). Permitting
+#this edge case results in the main GUI being blocked -- which is bad.
 @type_check
 def wait_for_events_if_none(
     event_dispatcher: QAbstractEventDispatcherOrNoneTypes = None) -> (

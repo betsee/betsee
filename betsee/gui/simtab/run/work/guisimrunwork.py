@@ -36,11 +36,11 @@ from betsee.gui.simtab.run.guisimrunstate import (
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
-from betsee.util.thread.guiworker import QBetseeWorkerABC
+from betsee.util.thread.guiworker import QBetseeThreadWorkerABC
 from collections import deque
 
 # ....................{ SUPERCLASSES                       }....................
-class QBetseeSimmerWorkerABC(QBetseeWorkerABC):
+class QBetseeSimmerWorkerABC(QBetseeThreadWorkerABC):
     '''
     Low-level **simulator worker** (i.e., thread-safe object running a single
     startable, pausable, resumable, and haltable simulation subcommand in a

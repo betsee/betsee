@@ -184,6 +184,18 @@ class BetseePySideThreadException(BetseePySideException):
         return QCoreApplication.translate(
             'BetseePySideThreadException', 'Thread Error'),
 
+
+class BetseePySideThreadWorkerException(BetseePySideThreadException):
+    '''
+    :class:`betsee.util.thread.guiworker.QBetseeThreadWorkerABC`-specific
+    exception.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideThreadException', 'Thread Worker Error'),
+
 # ....................{ EXCEPTIONS ~ psd : widget          }....................
 class BetseePySideWidgetException(BetseePySideException):
     '''

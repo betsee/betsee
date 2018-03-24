@@ -11,11 +11,12 @@ object) classes.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
-# from betse.util.io.log import logs
+from PySide2.QtCore import QObject, Signal, Slot  # QCoreApplication,
+from betse.exceptions import BetseMethodUnimplementedException
+from betse.util.io.log import logs
 from betse.util.type.enums import make_enum
 # from betse.util.type.types import type_check
-# from betsee.guiexception import BetseePySideThreadException
+from betsee.guiexception import BetseePySideThreadWorkerException
 from betsee.util.thread import guithread
 
 # ....................{ ENUMERATIONS                       }....................
@@ -24,7 +25,7 @@ QBetseeWorkerState = make_enum(
     member_names=('IDLE', 'WORKING', 'PAUSED',))
 '''
 Enumeration of all supported types of **worker state** (i.e., mutually
-exclusive high-level execution state of a :class:`QBetseeWorkerABC` instance,
+exclusive high-level execution state of a :class:`QBetseeThreadWorkerABC` instance,
 analogous to a state in a finite state automata).
 
 Attributes
@@ -44,8 +45,23 @@ PAUSED : enum
     this state to the working state is also referred to as "resuming."
 '''
 
+# ....................{ EXCEPTIONS                         }....................
+class _BetseePySideThreadWorkerStopException(
+    BetseePySideThreadWorkerException):
+    '''
+    :class:`QBetseeThreadWorkerABC`-specific exception internally raised by the
+    :meth:`QBetseeThreadWorkerABC._halt_work_if_requested` method and caught by
+    the :meth:`QBetseeThreadWorkerABC.start` slot.
+
+    This exception is intended exclusively for private use by the aforementioned
+    methods as a crude, albeit sufficient, means of facilitating subclass
+    intercommunication.
+    '''
+
+    pass
+
 # ....................{ SUPERCLASS                         }....................
-class QBetseeWorkerABC(QObject):
+class QBetseeThreadWorkerABC(QObject):
     '''
     Low-level **worker** (i.e., thread-safe object implementing generically
     startable, pausable, resumable, and haltable business logic in a
@@ -79,9 +95,142 @@ class QBetseeWorkerABC(QObject):
 
         # Garbage collect all child objects of this parent worker *AFTER* this
         # worker gracefully (i.e., successfully) terminates.
-        self.finished.connect(self.deleteLater)
+        self.stopped.connect(self.deleteLater)
+
+    # ..................{ SIGNALS                            }..................
+    started = Signal()
+    '''
+    Signal emitted immediately on entering the :meth:`start` slot starting this
+    worker.
+
+    This signal is emitted *before* that slot performs *any* subclass-specific
+    business logic for this worker.
+    '''
+
+
+    stopped = Signal()
+    '''
+    Signal emitted immediately before returning from the :meth:`start` slot for
+    this worker.
+
+    This signal is emitted *after* that slot performs *all* subclass-specific
+    business logic for this worker.
+    '''
 
     # ..................{ SLOTS                              }..................
+    @Slot()
+    def start(self) -> None:
+        '''
+        Slot performing *all* subclass-specific business logic for this worker.
+
+        This slot works in a thread-safe manner safely pausable and stoppable at
+        any time (e.g., by emitting a signal connected to the :meth:`pause` or
+        :meth:`stop` slots).
+
+        States
+        ----------
+        If this worker is in the :attr:`QBetseeWorkerState.IDLE` state, this
+        slot changes to the :attr:`QBetseeWorkerState.WORKING` state and calls
+        the subclass :meth:`_work` method.
+
+        If this worker is in the :attr:`QBetseeWorkerState.PAUSED` state, this
+        slot interprets this signal as a request to resume the work presumably
+        previously performed by this worker by a prior signalling of this slot.
+        To avoid reentrancy issues, this slot changes to the
+        :attr:`QBetseeWorkerState.WORKING` state and immediately returns.
+        Assuming that a prior call to this slot is still executing, that call
+        will internally detect this change and resume working as expected.
+
+        If this worker is in the :attr:`QBetseeWorkerState.WORKING` state, this
+        slot interprets this signal as an accidental attempt by an external
+        caller to re-perform the work concurrently being performed by a prior
+        call to this slot. In that case, this slot safely logs a non-fatal
+        warning and immediately returns.
+
+        See the :meth:`pause` slot for commentary on these design decisions.
+
+        Signals
+        ----------
+        This slot emits the following signals:
+
+        * :attr:`started` immediately *before* this slot performs any
+          subclass-specific business logic for this worker.
+        * :attr:`finished` immediately *after* this slot performs all
+          subclass-specific business logic for this worker.
+
+        Caveats
+        ----------
+        Subclasses must override the :meth:`_work` method rather than this slot
+        to perform subclass-specific business logic. This slot is neither
+        intended nor designed to be overriden by subclasses.
+        '''
+
+        # If this worker is currently paused, resume the prior call to this
+        # start() slot by changing to the working state and returning. See the
+        # method docstring for commentary.
+        if self._state == QBetseeWorkerState.PAUSED:
+            self._state = QBetseeWorkerState.WORKING
+            return
+
+        # If this worker is currently running, resume the prior call to this
+        # start() slot by preserving the working state and returning. See the
+        # method docstring for commentary. Unlike the prior logic, this logic
+        # constitutes a non-fatal error and is logged as such.
+        if self._state == QBetseeWorkerState.WORKING:
+            logs.log_warning(
+                'Thread worker "%s" start() slot reentrancy ignored.',
+                self.objectName())
+            return
+
+        # Change to the working state.
+        self.state = QBetseeWorkerState.WORKING
+
+        # Notify external subscribers *BEFORE* beginning subclass work.
+        self.started.emit()
+
+        # Perform all subclass work.
+        self._work()
+
+        # Notify external subscribers *AFTER* completing subclass work.
+        self.stopped.emit()
+
+
+    #FIXME: Amend the documentation, which is now erroneous. Once stopped, a
+    #worker is *NOT* safely restartable. This is principally due to the
+    #deleteLater() slot signalled by the __init__() method of this base class.
+    @Slot()
+    def stop(self) -> None:
+        '''
+        Slot stopping all work performed by this worker.
+
+        This slot prematurely halts this work in a thread-safe manner. Whether
+        this work is safely restartable (e.g., by emitting a signal connected to
+        the :meth:`start` slot) is a subclass-specific implementation detail.
+        Subclasses may voluntarily elect to either prohibit or permit restarts,
+        but in either case
+
+        resumes working in a thread-safe manner safely re-pausable at
+        any time (e.g., by re-emitting a signal connected to the :meth:`pause`
+        slot).
+
+        States
+        ----------
+        If this worker is in the :attr:`QBetseeWorkerState.IDLE` state, this
+        slot silently reduces to a noop and preserves the existing state. In
+        this case, this worker remains idle.
+
+        If this worker is in either the :attr:`QBetseeWorkerState.WORKING` or
+        :attr:`QBetseeWorkerState.PAUSED`, implying this worker to either
+        currently be or recently have been working, this slot changes the
+        current state to the :attr:`QBetseeWorkerState.IDLE` state. In either
+        case, this worker ceases working.
+        '''
+
+        # If this worker is currently working or paused, stop this worker.
+        if self._state != QBetseeWorkerState.IDLE:
+            self._state = QBetseeWorkerState.IDLE
+
+    # ..................{ SLOTS ~ pause                      }..................
     @Slot()
     def pause(self) -> None:
         '''
@@ -91,6 +240,8 @@ class QBetseeWorkerABC(QObject):
         resumable at any time (e.g., by emitting a signal connected to the
         :meth:`resume` slot).
 
+        States
+        ----------
         If this worker is *not* currently working, this slot silently reduces to
         a noop. While raising a fatal exception in this edge case might
         superficially appear to be reasonable, the queued nature of signal-slot
@@ -117,3 +268,112 @@ class QBetseeWorkerABC(QObject):
         # externally signalled by another object (typically in another thread).
         while self._state == QBetseeWorkerState.PAUSED:
             guithread.wait_for_events_if_none(event_dispatcher)
+
+
+    @Slot()
+    def resume(self) -> None:
+        '''
+        Slot **resuming** (i.e., unpausing) this worker.
+
+        This slot resumes working in a thread-safe manner safely re-pausable at
+        any time (e.g., by re-emitting a signal connected to the :meth:`pause`
+        slot).
+
+        States
+        ----------
+        If this worker is in either of the following states, this slot silently
+        reduces to a noop and preserves the existing state:
+
+        * :attr:`QBetseeWorkerState.IDLE`, implying this worker to *not*
+          currently be paused. In this case, this worker remains idle.
+        * :attr:`QBetseeWorkerState.WORKING`, implying this worker to already
+          have been resumed. In this case, this worker remains working.
+
+        See the :meth:`pause` slot for commentary on this design decision.
+        '''
+
+        # If this worker is currently paused, unpause this worker.
+        if self._state == QBetseeWorkerState.PAUSED:
+            self._state = QBetseeWorkerState.WORKING
+
+    # ..................{ METHODS ~ abstract                 }..................
+    # Abstract methods required to be redefined by subclasses.
+
+    def _work(self) -> None:
+        '''
+        Perform *all* subclass-specific business logic for this worker.
+
+        The superclass :meth:`start` slot internally calls this method in a
+        thread-safe manner safely pausable *and* stoppable at any time (e.g., by
+        emitting a signal connected to the :meth:`pause` or :meth:`stop` slots).
+
+        Design
+        ----------
+        Subclasses are required to redefine this method to perform this logic in
+        an iterative manner periodically calling the
+        :meth:`_halt_work_if_requested` method.
+
+        If either:
+
+        * This worker has been externally signalled to stop (e.g., by emitting a
+          signal connected to the :meth:`stop` slot).
+        * The thread of execution currently running this worker has been
+          externally requested to stop (e.g., by calling the
+          :func:`guithread.halt_thread_work` function).
+
+        Then the next such call to the :meth:`_halt_work_if_requested` method
+        will raise an exception caught by the parent :meth:`start` slot,
+        signalling that slot to immediately terminate this worker. Ergo, that
+        method should be called *only* when the subclass is in an
+        **interruptible state** (i.e., a self-consistent internal state in which
+        this subclass is fully prepared to be immediately terminated).
+        '''
+
+        # The next best thing to a properly abstract method, given "QObject"
+        # constraints against declaring an "ABCMeta" metaclass. *shrug*
+        raise BetseMethodUnimplementedException()
+
+    # ..................{ METHODS ~ concrete                 }..................
+    # Concrete methods intended to be called but *NOT* overriden by subclasses.
+
+    def _halt_work_if_requested(self) -> None:
+        '''
+        Raise an exception if either:
+
+        * This worker has been externally signalled to stop (e.g., by emitting a
+          signal connected to the :meth:`stop` slot).
+        * The thread of execution currently running this worker has been
+          externally requested to stop (e.g., by calling the
+          :func:`guithread.halt_thread_work` function).
+
+        This function is intended to be periodically called by the subclass
+        :meth:`_work` function. The exception raised by this function is
+        guaranteed to be caught by the :meth:`start` method calling that
+        :meth:`_work` function.
+
+        Caveats
+        ----------
+        This function imposes minor computational overhead and hence should be
+        called intermittently (rather than overly frequently).
+
+        Raises
+        ----------
+        _BetseePySideThreadWorkerStopException
+            If this worker or this worker's thread of execution has been
+            signalled or requested to be stopped.
+        '''
+
+        # Process all pending events currently queued with this worker's thread,
+        # notably including any incoming signalling of the stop() slot by
+        # objects in other threads..
+        guithread.process_events()
+
+        # If either:
+        if (
+            # This worker has been externally signalled to stop...
+            self._state == QBetseeWorkerState.IDLE or
+            # This worker's thread has been externally requested to stop...
+            guithread.should_halt_thread_work()
+        # Then instruct the parent start() slot to do so.
+        ):
+            raise _BetseePySideThreadWorkerStopException('So say we all.')

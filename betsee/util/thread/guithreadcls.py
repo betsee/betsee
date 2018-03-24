@@ -7,7 +7,7 @@
 Low-level **worker thread"** (i.e., platform-portable, pure-Qt,
 :class:`QThread`-based parallelization implemented external to Python and hence
 Python's restrictive Global Interpreter Lock (GIL) running zero or more
-subordinate :class:`QBetseeWorkerABC`-based workers at a given time) classes.
+subordinate :class:`QBetseeThreadWorkerABC`-based workers at a given time) classes.
 '''
 
 # ....................{ IMPORTS                            }....................
@@ -15,7 +15,7 @@ from PySide2.QtCore import QCoreApplication, QThread
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, CallableTypes
 from betsee.guiexception import BetseePySideThreadException
-from betsee.util.thread.guiworker import QBetseeWorkerABC
+from betsee.util.thread.guiworker import QBetseeThreadWorkerABC
 
 #FIXME: Most (all?) methods defined below are intended to be run *ONLY* from the
 #main thread and hence should raise "BetseePySideThreadException" when this is
@@ -27,7 +27,7 @@ class QBetseeWorkerThread(QThread):
     Low-level **worker thread"** (i.e., platform-portable, pure-Qt,
     :class:`QThread`-based parallelization implemented external to Python and
     hence Python's restrictive Global Interpreter Lock (GIL) running zero or
-    more subordinate :class:`QBetseeWorkerABC`-based workers at a given time).
+    more subordinate :class:`QBetseeThreadWorkerABC`-based workers at a given time).
 
     Design
     ----------
@@ -49,7 +49,7 @@ class QBetseeWorkerThread(QThread):
       * Thread-safe types (e.g., C++-style atomics).
 
     Instead, this subclass *strongly* recommends that
-    :class:`QBetseeWorkerABC`-based workers be moved from the main
+    :class:`QBetseeThreadWorkerABC`-based workers be moved from the main
     event-handling thread to this thread by the :meth:`adopt_worker` method.
 
     Caveats
@@ -129,7 +129,7 @@ class QBetseeWorkerThread(QThread):
 
     # ..................{ ADOPTERS                           }..................
     @type_check
-    def adopt_worker(self, worker: QBetseeWorkerABC) -> None:
+    def adopt_worker(self, worker: QBetseeThreadWorkerABC) -> None:
         '''
         Adopt the passed application-specific worker into this thread if no
         other worker has already been adopted by this thread *or* raise an
@@ -154,7 +154,7 @@ class QBetseeWorkerThread(QThread):
 
         Caveats
         ----------
-        The :meth:`QBetseeWorkerABC.moveToThread` method should *never* be
+        The :meth:`QBetseeThreadWorkerABC.moveToThread` method should *never* be
         called to manually move a worker into this thread. Doing so violates
         subclass encapsulation and hence subclass guarantees (e.g., that this
         thread run *only* a single worker at a time).
@@ -169,7 +169,7 @@ class QBetseeWorkerSingleThread(QBetseeWorkerThread):
     Low-level **single worker thread"** (i.e., platform-portable, pure-Qt,
     :class:`QThread`-based parallelization implemented external to Python and
     hence Python's restrictive Global Interpreter Lock (GIL), confined to run a
-    single subordinate :class:`QBetseeWorkerABC`-based worker at a given time).
+    single subordinate :class:`QBetseeThreadWorkerABC`-based worker at a given time).
 
     By default, both the standard :class:`QThread` class and our
     :class:`QBetseeWorkerThread` superclass implicitly allow a one-to-many
@@ -308,7 +308,7 @@ class QBetseeWorkerSingleThread(QBetseeWorkerThread):
 
     # ..................{ ADOPTERS                           }..................
     @type_check
-    def adopt_worker(self, worker: QBetseeWorkerABC) -> None:
+    def adopt_worker(self, worker: QBetseeThreadWorkerABC) -> None:
         '''
         Adopt the passed application-specific worker into this thread if no
         other worker has already been adopted by this thread *or* raise an
@@ -336,7 +336,7 @@ class QBetseeWorkerSingleThread(QBetseeWorkerThread):
 
         Caveats
         ----------
-        The :meth:`QBetseeWorkerABC.moveToThread` method should *never* be
+        The :meth:`QBetseeThreadWorkerABC.moveToThread` method should *never* be
         called to manually move a worker into this thread. Doing so violates
         subclass encapsulation and hence the guarantee that this thread run
         *only* a single worker at a time.
