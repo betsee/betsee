@@ -20,8 +20,8 @@ from betsee.guiexception import BetseePySideThreadWorkerException
 from betsee.util.thread import guithread
 
 # ....................{ ENUMERATIONS                       }....................
-QBetseeWorkerState = make_enum(
-    class_name='QBetseeWorkerState',
+_ThreadWorkerState = make_enum(
+    class_name='_ThreadWorkerState',
     member_names=('IDLE', 'WORKING', 'PAUSED',))
 '''
 Enumeration of all supported types of **worker state** (i.e., mutually
@@ -46,7 +46,7 @@ PAUSED : enum
 '''
 
 # ....................{ EXCEPTIONS                         }....................
-class _BetseePySideThreadWorkerStopException(
+class _ThreadWorkerStopException(
     BetseePySideThreadWorkerException):
     '''
     :class:`QBetseeThreadWorkerABC`-specific exception internally raised by the
@@ -63,17 +63,19 @@ class _BetseePySideThreadWorkerStopException(
 # ....................{ SUPERCLASS                         }....................
 class QBetseeThreadWorkerABC(QObject):
     '''
-    Low-level **worker** (i.e., thread-safe object implementing generically
-    startable, pausable, resumable, and haltable business logic in a
-    multithreaded manner intended to be moved to the thread encapsulated by a
-    :class:`QThread` object).
+    Abstract base class of all low-level **worker** (i.e., thread-safe object
+    implementing generically startable, pausable, resumable, and haltable
+    business logic in a multithreaded manner intended to be adopted by the
+    thread encapsulated by a :class:`QBetseeWorkerThread` object) subclasses.
 
     Attributes
     ----------
-    _state : QBetseeWorkerState
+    _state : _ThreadWorkerState
         Current execution state of this worker. For thread-safety, this state
         should *not* be externally accessed by objects residing in other
-        threads.
+        threads. Doing so safely would require thread-safe mutual exclusion
+        (e.g., with a dedicated :class:`QMutexLocker` context manager), which
+        currently exceeds the mandate of this superclass.
 
     See Also
     ----------
@@ -91,7 +93,7 @@ class QBetseeThreadWorkerABC(QObject):
         super().__init__(*args, **kwargs)
 
         # Default this worker's initial state to the idle state.
-        self._state = QBetseeWorkerState.IDLE
+        self._state = _ThreadWorkerState.IDLE
 
         # Garbage collect all child objects of this parent worker *AFTER* this
         # worker gracefully (i.e., successfully) terminates.
@@ -129,19 +131,19 @@ class QBetseeThreadWorkerABC(QObject):
 
         States
         ----------
-        If this worker is in the :attr:`QBetseeWorkerState.IDLE` state, this
-        slot changes to the :attr:`QBetseeWorkerState.WORKING` state and calls
+        If this worker is in the :attr:`_ThreadWorkerState.IDLE` state, this
+        slot changes to the :attr:`_ThreadWorkerState.WORKING` state and calls
         the subclass :meth:`_work` method.
 
-        If this worker is in the :attr:`QBetseeWorkerState.PAUSED` state, this
+        If this worker is in the :attr:`_ThreadWorkerState.PAUSED` state, this
         slot interprets this signal as a request to resume the work presumably
         previously performed by this worker by a prior signalling of this slot.
         To avoid reentrancy issues, this slot changes to the
-        :attr:`QBetseeWorkerState.WORKING` state and immediately returns.
+        :attr:`_ThreadWorkerState.WORKING` state and immediately returns.
         Assuming that a prior call to this slot is still executing, that call
         will internally detect this change and resume working as expected.
 
-        If this worker is in the :attr:`QBetseeWorkerState.WORKING` state, this
+        If this worker is in the :attr:`_ThreadWorkerState.WORKING` state, this
         slot interprets this signal as an accidental attempt by an external
         caller to re-perform the work concurrently being performed by a prior
         call to this slot. In that case, this slot safely logs a non-fatal
@@ -168,18 +170,18 @@ class QBetseeThreadWorkerABC(QObject):
         # If this worker is currently paused, resume the prior call to this
         # start() slot by changing to the working state and returning. See the
         # method docstring for commentary.
-        if self._state == QBetseeWorkerState.PAUSED:
+        if self._state == _ThreadWorkerState.PAUSED:
             logs.log_debug(
                 'Resuming thread worker "%s" via reentrant start() slot...',
                 self.objectName())
-            self._state = QBetseeWorkerState.WORKING
+            self._state = _ThreadWorkerState.WORKING
             return
 
         # If this worker is currently running, resume the prior call to this
         # start() slot by preserving the working state and returning. See the
         # method docstring for commentary. Unlike the prior logic, this logic
         # constitutes a non-fatal error and is logged as such.
-        if self._state == QBetseeWorkerState.WORKING:
+        if self._state == _ThreadWorkerState.WORKING:
             logs.log_warning(
                 'Ignoring attempt to reenter thread worker "%s" start() slot.',
                 self.objectName())
@@ -189,19 +191,26 @@ class QBetseeThreadWorkerABC(QObject):
         logs.log_debug('Starting thread worker "%s"...', self.objectName())
 
         # Change to the working state.
-        self.state = QBetseeWorkerState.WORKING
+        self.state = _ThreadWorkerState.WORKING
 
         # Notify external subscribers *BEFORE* beginning subclass work.
         self.started.emit()
 
-        # Attempt to perform all subclass work.
+        # Attempt to...
         try:
+            # If this worker or this worker's thread has been externally
+            # requested to stop immediately after being requested to start,
+            # promptly respect this wish on behalf of all workers. Although an
+            # unlikely edge case, the fixed cost of this test is negligible.
+            self._halt_work_if_requested()
+
+            # Perform all subclass work.
             self._work()
         # If a periodic call to the _halt_work_if_requested() method performed
         # within the above call detects either this worker or this worker's
         # thread has been externally requested to stop, do so gracefully by...
         # doing absolutely nothing. Welp, that was easy.
-        except _BetseePySideThreadWorkerStopException:
+        except _ThreadWorkerStopException:
             pass
 
         # Log this completion.
@@ -231,14 +240,14 @@ class QBetseeThreadWorkerABC(QObject):
 
         States
         ----------
-        If this worker is in the :attr:`QBetseeWorkerState.IDLE` state, this
+        If this worker is in the :attr:`_ThreadWorkerState.IDLE` state, this
         slot silently reduces to a noop and preserves the existing state. In
         this case, this worker remains idle.
 
-        If this worker is in either the :attr:`QBetseeWorkerState.WORKING` or
-        :attr:`QBetseeWorkerState.PAUSED`, implying this worker to either
+        If this worker is in either the :attr:`_ThreadWorkerState.WORKING` or
+        :attr:`_ThreadWorkerState.PAUSED`, implying this worker to either
         currently be or recently have been working, this slot changes the
-        current state to the :attr:`QBetseeWorkerState.IDLE` state. In either
+        current state to the :attr:`_ThreadWorkerState.IDLE` state. In either
         case, this worker ceases working.
         '''
 
@@ -246,8 +255,8 @@ class QBetseeThreadWorkerABC(QObject):
         logs.log_debug('Stopping thread worker "%s"...', self.objectName())
 
         # If this worker is currently working or paused, stop this worker.
-        if self._state != QBetseeWorkerState.IDLE:
-            self._state = QBetseeWorkerState.IDLE
+        if self._state != _ThreadWorkerState.IDLE:
+            self._state = _ThreadWorkerState.IDLE
 
     # ..................{ SLOTS ~ pause                      }..................
     @Slot()
@@ -276,7 +285,7 @@ class QBetseeThreadWorkerABC(QObject):
         event_dispatcher = guithread.get_current_event_dispatcher()
 
         # If this worker is *NOT* currently working...
-        if self._state != QBetseeWorkerState.WORKING:
+        if self._state != _ThreadWorkerState.WORKING:
             # Log this attempt.
             logs.log_debug(
                 'Ignoring attempt to pause idle or already paused '
@@ -291,11 +300,11 @@ class QBetseeThreadWorkerABC(QObject):
         logs.log_debug('Pausing thread worker "%s"...', self.objectName())
 
         # Change this worker's state to paused.
-        self._state = QBetseeWorkerState.PAUSED
+        self._state = _ThreadWorkerState.PAUSED
 
         # While this worker's state is paused, wait for the resume() slot to be
         # externally signalled by another object (typically in another thread).
-        while self._state == QBetseeWorkerState.PAUSED:
+        while self._state == _ThreadWorkerState.PAUSED:
             guithread.wait_for_events_if_none(event_dispatcher)
 
 
@@ -313,9 +322,9 @@ class QBetseeThreadWorkerABC(QObject):
         If this worker is in either of the following states, this slot silently
         reduces to a noop and preserves the existing state:
 
-        * :attr:`QBetseeWorkerState.IDLE`, implying this worker to *not*
+        * :attr:`_ThreadWorkerState.IDLE`, implying this worker to *not*
           currently be paused. In this case, this worker remains idle.
-        * :attr:`QBetseeWorkerState.WORKING`, implying this worker to already
+        * :attr:`_ThreadWorkerState.WORKING`, implying this worker to already
           have been resumed. In this case, this worker remains working.
 
         See the :meth:`pause` slot for commentary on this design decision.
@@ -325,8 +334,8 @@ class QBetseeThreadWorkerABC(QObject):
         logs.log_debug('Resuming thread worker "%s"...', self.objectName())
 
         # If this worker is currently paused, unpause this worker.
-        if self._state == QBetseeWorkerState.PAUSED:
-            self._state = QBetseeWorkerState.WORKING
+        if self._state == _ThreadWorkerState.PAUSED:
+            self._state = _ThreadWorkerState.WORKING
 
     # ..................{ METHODS ~ abstract                 }..................
     # Abstract methods required to be redefined by subclasses.
@@ -393,7 +402,7 @@ class QBetseeThreadWorkerABC(QObject):
 
         Raises
         ----------
-        _BetseePySideThreadWorkerStopException
+        _ThreadWorkerStopException
             If this worker or this worker's thread of execution has been
             signalled or requested to be stopped.
         '''
@@ -406,7 +415,7 @@ class QBetseeThreadWorkerABC(QObject):
         # If either:
         if (
             # This worker has been externally signalled to stop...
-            self._state == QBetseeWorkerState.IDLE or
+            self._state == _ThreadWorkerState.IDLE or
             # This worker's thread has been externally requested to stop...
             guithread.should_halt_thread_work()
         # Then
@@ -416,4 +425,4 @@ class QBetseeThreadWorkerABC(QObject):
                 'Interrupting thread worker "%s"...', self.objectName())
 
             # Instruct the parent start() slot to stop.
-            raise _BetseePySideThreadWorkerStopException('So say we all.')
+            raise _ThreadWorkerStopException('So say we all.')
