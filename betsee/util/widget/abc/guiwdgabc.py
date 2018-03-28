@@ -17,6 +17,9 @@ Abstract base classes of most application-specific widget subclasses.
 
 from PySide2.QtWidgets import QUndoStack
 from betse.util.io.log import logs
+from betse.util.py import pyident
+from betse.util.type.cls import classes
+from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideEditWidgetException
 
@@ -37,13 +40,6 @@ class QBetseeObjectMixin(object):
     This class is suitable for use as a multiple-inheritance mixin. To preserve
     the expected method resolution order (MRO) semantics, this class should
     typically be inherited *first* rather than *last* in subclasses.
-
-    Attributes (Public)
-    ----------
-    obj_name : str
-        Qt-specific name of this object, identical to the string returned by the
-        :meth:`objectName` method at widget initialization time. This string is
-        stored as an instance variable only for readability.
 
     Attributes (Private)
     ----------
@@ -87,11 +83,12 @@ class QBetseeObjectMixin(object):
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
 
-        #FIXME: Rename to "obj_name".
-
         # Nullify all remaining instance variables for safety.
         self._is_initted = False
-        self.obj_name = _OBJ_NAME_DEFAULT
+
+        # If this object has no name, default this object's name.
+        if not self.obj_name:
+            self.obj_name = _OBJ_NAME_DEFAULT
 
 
     def init(self) -> None:
@@ -151,16 +148,78 @@ class QBetseeObjectMixin(object):
 
         return self._is_initted
 
+    # ..................{ PROPERTIES                         }..................
+    @property
+    def obj_name(self) -> str:
+        '''
+        Qt-specific name of this object.
+
+        This property getter is a convenience alias of the non-Pythonic
+        :meth:`objectName` method.
+        '''
+
+        return self.objectName()
+
+
+    @obj_name.setter
+    @type_check
+    def obj_name(self, obj_name: str) -> None:
+        '''
+        Set the Qt-specific name of this object to the passed string.
+
+        This property setter is a convenience alias of the non-Pythonic
+        :meth:`setObjectName` method.
+        '''
+
+        self.setObjectName(obj_name)
+
     # ..................{ SETTERS                            }..................
-    def setObjectName(self, obj_name: str) -> None:
+    def set_obj_name_from_class_name(self) -> None:
+        '''
+        Set the Qt-specific name of this object to the unqualified name of this
+        subclass, altered to comply with object name standards (e.g., from
+        ``QBetseeSimmerWorkerSeed`` to ``simmer_worker_seed``).
 
-        # Defer to the superclass setter.
-        super().setObjectName(obj_name)
+        Specifically, this function (in order):
 
-        # Store this name as an instance variable for negligible efficiency.
-        self.obj_name = self.objectName()
+        #. Obtains the unqualified name of this subclass.
+        #. Removes any of the following prefixes from this name:
 
+           * ``QBetsee``, the string prefixing the names of all
+             application-specific :class:`QObject` subclasses.
+           * ``Q``, the string prefixing the names of all
+             application-agnostic :class:`QObject` subclasses.
 
+        #. Converts this name from CamelCase to snake_case.
+        #. Sets this object's name to this name.
+
+        Design
+        ----------
+        This method is intentionally *not* called by the :meth:`__init__` method
+        to set this object's name to a (seemingly) sane default. Why? Because
+        numerous subclasses prefer to manually set this name. Unconditionally
+        calling this method for every subclass would have the undesirable side
+        effect of preventing this and other subclasses from detecting when the
+        object name has yet to be set (e.g., via a comparison against the
+        :data:`_OBJ_NAME_DEFAULT` default).
+        '''
+
+        # Subclass of this object.
+        cls = type(self)
+
+        # Unqualified CamelCase name of this subclass.
+        cls_name = classes.get_name(cls)
+
+        # Remove the application-specific class name prefix if found and then
+        # remove the application-agnostic class name prefix if found, as the
+        # latter is a substring of the former.
+        cls_name = strs.remove_prefix_if_found(text=cls_name, prefix='QBetsee')
+        cls_name = strs.remove_prefix_if_found(text=cls_name, prefix='Q')
+
+        # Set this object's name to this CamelCase converted into snake_case.
+        self.obj_name = pyident.convert_camelcase_to_snakecase(cls_name)
+
+# ....................{ MIXINS ~ edit                      }....................
 class QBetseeEditWidgetMixin(QBetseeObjectMixin):
     '''
     Abstract base class of most application-specific **editable widget** (i.e.,

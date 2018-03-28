@@ -82,16 +82,20 @@ from betse.util.type.types import type_check
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
     SimmerWorkerPhaseSubkind)
-from betsee.util.thread.guiworkercls import QBetseeThreadWorkerABC
+from betsee.util.thread.guiworkercls import QBetseeThreadWorkerThrowawayABC
 
 # ....................{ SUPERCLASSES                       }....................
-class QBetseeSimmerWorkerABC(QBetseeThreadWorkerABC):
+class QBetseeSimmerWorkerABC(QBetseeThreadWorkerThrowawayABC):
     '''
     Abstract base class of all low-level **simulator worker** (i.e., thread-safe
     object running a single startable, pausable, resumable, and haltable
     simulation subcommand in a multithreaded manner intended to be adopted by
     the thread encapsulated by a :class:`QBetseeWorkerThread` object)
     subclasses.
+
+    Caveats
+    ----------
+    Simulator workers are
 
     Attributes
     ----------
@@ -116,6 +120,10 @@ class QBetseeSimmerWorkerABC(QBetseeThreadWorkerABC):
         # Nullify all remaining instance variables for safety.
         self._sim_runner = None
 
+        # Set this object's name to this subclass' munged name (e.g., from
+        # "QBetseeSimmerWorkerSeed" to "simmer_worker_seed").
+        self.set_obj_name_from_class_name()
+
 
     @type_check
     def init(self, sim_runner: SimRunner) -> None:
@@ -130,6 +138,10 @@ class QBetseeSimmerWorkerABC(QBetseeThreadWorkerABC):
             logic required to do so.
         '''
 
+        # Initialize our superclass.
+        super().init()
+
+        # Classify this simulation runner.
         self._sim_runner = sim_runner
 
     # ..................{ PROPERTIES ~ abstract              }..................
@@ -152,6 +164,35 @@ class QBetseeSimmerWorkerABC(QBetseeThreadWorkerABC):
         '''
 
         pass
+
+    # ..................{ PROPERTIES ~ concrete              }..................
+    # Settable concrete properties required by all subclasses.
+
+    #FIXME: Excise us up.
+    # @property
+    # def sim_runner(self) -> SimRunner:
+    #     '''
+    #     Simulation runner run by this simulator worker, encapsulating both the
+    #     simulation configuration file to be run *and* all low-level logic
+    #     required to do so.
+    #
+    #     This property elegantly bridges the gap between the low-level CLI-based
+    #     BETSE simulator and this high-level GUI-based BETSEE wrapper. Arguably,
+    #     this property is the most important attribute in either codebase.
+    #     '''
+    #
+    #     pass
+    #
+    #
+    # @sim_runner.setter
+    # @type_check
+    # def sim_runner(self, sim_runner: SimRunner) -> None:
+    #     '''
+    #     Type of work performed within the type of simulation phase run by this
+    #     simulator worker.
+    #     '''
+    #
+    #     pass
 
 # ....................{ SUBCLASSES                         }....................
 #FIXME: Define *NO* additional subclasses until this subclass has been shown to

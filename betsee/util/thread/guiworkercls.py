@@ -17,7 +17,7 @@ from betse.util.io.log import logs
 from betse.util.type.enums import make_enum
 # from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideThreadWorkerException
-from betsee.util.thread import guithread
+from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ ENUMERATIONS                       }....................
 _ThreadWorkerState = make_enum(
@@ -46,8 +46,7 @@ PAUSED : enum
 '''
 
 # ....................{ EXCEPTIONS                         }....................
-class _ThreadWorkerStopException(
-    BetseePySideThreadWorkerException):
+class _ThreadWorkerStopException(BetseePySideThreadWorkerException):
     '''
     :class:`QBetseeThreadWorkerABC`-specific exception internally raised by the
     :meth:`QBetseeThreadWorkerABC._halt_work_if_requested` method and caught by
@@ -60,13 +59,19 @@ class _ThreadWorkerStopException(
 
     pass
 
-# ....................{ SUPERCLASS                         }....................
-class QBetseeThreadWorkerABC(QObject):
+# ....................{ SUPERCLASSES                       }....................
+class QBetseeThreadWorkerABC(QBetseeObjectMixin, QObject):
     '''
     Abstract base class of all low-level **worker** (i.e., thread-safe object
     implementing generically startable, pausable, resumable, and haltable
     business logic in a multithreaded manner intended to be adopted by the
     thread encapsulated by a :class:`QBetseeWorkerThread` object) subclasses.
+
+    By default, workers are recyclable and hence may be reused (i.e., have their
+    :meth:`start` slots signalled) an arbitrary number of times within any
+    arbitrary thread. Where undesirable, see the
+    :cless:`QBetseeThreadWorkerThrowawayABC` for an alternative superclass
+    constraining workers to be non-recyclable.
 
     Attributes
     ----------
@@ -95,11 +100,56 @@ class QBetseeThreadWorkerABC(QObject):
         # Default this worker's initial state to the idle state.
         self._state = _ThreadWorkerState.IDLE
 
-        # Garbage collect all child objects of this parent worker *AFTER* this
-        # worker gracefully (i.e., successfully) terminates.
-        self.finished.connect(self.deleteLater)
+        # Connect this worker's external-facing signals to corresponding slots.
+        self.start_signal .connect(self.start)
+        self.stop_signal  .connect(self.stop)
+        self.pause_signal .connect(self.pause)
+        self.resume_signal.connect(self.resume)
 
-    # ..................{ SIGNALS                            }..................
+    # ..................{ SIGNALS ~ external                 }..................
+    # Signals externally emitted by callers owning instances of this superclass.
+
+    #FIXME: These may be a bad idea, as they reside in the worker's thread
+    #rather than the main thread. Consider removal, after testing.
+
+    start_signal = Signal()
+    '''
+    Signal connected the :meth:`start` slot starting this worker.
+
+    This signal is a caller convenience simplifying worker usage. Alternately,
+    callers may elect to connect caller-defined signals to this slot as needed.
+    '''
+
+
+    stop_signal = Signal()
+    '''
+    Signal connected the :meth:`stop` slot starting this worker.
+
+    This signal is a caller convenience simplifying worker usage. Alternately,
+    callers may elect to connect caller-defined signals to this slot as needed.
+    '''
+
+
+    pause_signal = Signal()
+    '''
+    Signal connected the :meth:`pause` slot pausing this worker.
+
+    This signal is a caller convenience simplifying worker usage. Alternately,
+    callers may elect to connect caller-defined signals to this slot as needed.
+    '''
+
+
+    resume_signal = Signal()
+    '''
+    Signal connected the :meth:`resume` slot resuming this worker.
+
+    This signal is a caller convenience simplifying worker usage. Alternately,
+    callers may elect to connect caller-defined signals to this slot as needed.
+    '''
+
+    # ..................{ SIGNALS ~ internal                 }..................
+    # Signals internally emitted by instances of this superclass.
+
     started = Signal()
     '''
     Signal emitted immediately on entering the :meth:`start` slot starting this
@@ -110,7 +160,7 @@ class QBetseeThreadWorkerABC(QObject):
     '''
 
 
-    stopped = Signal()
+    finished = Signal()
     '''
     Signal emitted immediately before returning from the :meth:`start` slot for
     this worker.
@@ -170,10 +220,10 @@ class QBetseeThreadWorkerABC(QObject):
         # If this worker is currently paused, resume the prior call to this
         # start() slot by changing to the working state and returning. See the
         # method docstring for commentary.
-        if self._state == _ThreadWorkerState.PAUSED:
+        if self._state is _ThreadWorkerState.PAUSED:
             logs.log_debug(
                 'Resuming thread worker "%s" via reentrant start() slot...',
-                self.objectName())
+                self.obj_name)
             self._state = _ThreadWorkerState.WORKING
             return
 
@@ -181,17 +231,17 @@ class QBetseeThreadWorkerABC(QObject):
         # start() slot by preserving the working state and returning. See the
         # method docstring for commentary. Unlike the prior logic, this logic
         # constitutes a non-fatal error and is logged as such.
-        if self._state == _ThreadWorkerState.WORKING:
+        if self._state is _ThreadWorkerState.WORKING:
             logs.log_warning(
                 'Ignoring attempt to reenter thread worker "%s" start() slot.',
-                self.objectName())
+                self.obj_name)
             return
 
         # Log this beginning.
-        logs.log_debug('Starting thread worker "%s"...', self.objectName())
+        logs.log_debug('Starting thread worker "%s"...', self.obj_name)
 
         # Change to the working state.
-        self.state = _ThreadWorkerState.WORKING
+        self._state = _ThreadWorkerState.WORKING
 
         # Notify external subscribers *BEFORE* beginning subclass work.
         self.started.emit()
@@ -214,15 +264,12 @@ class QBetseeThreadWorkerABC(QObject):
             pass
 
         # Log this completion.
-        logs.log_debug('Finishing thread worker "%s"...', self.objectName())
+        logs.log_debug('Finishing thread worker "%s"...', self.obj_name)
 
         # Notify external subscribers *AFTER* completing subclass work.
         self.finished.emit()
 
 
-    #FIXME: Amend the documentation, which is now erroneous. Once stopped, a
-    #worker is *NOT* safely restartable. This is principally due to the
-    #deleteLater() slot signalled by the __init__() method of this base class.
     @Slot()
     def stop(self) -> None:
         '''
@@ -231,12 +278,7 @@ class QBetseeThreadWorkerABC(QObject):
         This slot prematurely halts this work in a thread-safe manner. Whether
         this work is safely restartable (e.g., by emitting a signal connected to
         the :meth:`start` slot) is a subclass-specific implementation detail.
-        Subclasses may voluntarily elect to either prohibit or permit restarts,
-        but in either case
-
-        resumes working in a thread-safe manner safely re-pausable at
-        any time (e.g., by re-emitting a signal connected to the :meth:`pause`
-        slot).
+        Subclasses may voluntarily elect to either prohibit or permit restarts.
 
         States
         ----------
@@ -252,10 +294,10 @@ class QBetseeThreadWorkerABC(QObject):
         '''
 
         # Log this change.
-        logs.log_debug('Stopping thread worker "%s"...', self.objectName())
+        logs.log_debug('Stopping thread worker "%s"...', self.obj_name)
 
         # If this worker is currently working or paused, stop this worker.
-        if self._state != _ThreadWorkerState.IDLE:
+        if self._state is not _ThreadWorkerState.IDLE:
             self._state = _ThreadWorkerState.IDLE
 
     # ..................{ SLOTS ~ pause                      }..................
@@ -279,32 +321,35 @@ class QBetseeThreadWorkerABC(QObject):
         working worker to be paused and that worker's completion of its work.
         '''
 
+        # Avoid circular import dependencies.
+        from betsee.util.thread import guithread
+
         # Event dispatcher associated with the current thread of execution,
         # obtained *BEFORE* modifying the state of this worker to raise an
         # exception in the event that this thread has no such dispatcher.
         event_dispatcher = guithread.get_current_event_dispatcher()
 
         # If this worker is *NOT* currently working...
-        if self._state != _ThreadWorkerState.WORKING:
+        if self._state is not _ThreadWorkerState.WORKING:
             # Log this attempt.
             logs.log_debug(
                 'Ignoring attempt to pause idle or already paused '
                 'thread worker "%s".',
-                self.objectName())
+                self.obj_name)
 
             # Safely reduce to a noop.
             return
         # Else, this worker is currently working.
 
         # Log this change.
-        logs.log_debug('Pausing thread worker "%s"...', self.objectName())
+        logs.log_debug('Pausing thread worker "%s"...', self.obj_name)
 
         # Change this worker's state to paused.
         self._state = _ThreadWorkerState.PAUSED
 
         # While this worker's state is paused, wait for the resume() slot to be
         # externally signalled by another object (typically in another thread).
-        while self._state == _ThreadWorkerState.PAUSED:
+        while self._state is _ThreadWorkerState.PAUSED:
             guithread.wait_for_events_if_none(event_dispatcher)
 
 
@@ -331,10 +376,10 @@ class QBetseeThreadWorkerABC(QObject):
         '''
 
         # Log this change.
-        logs.log_debug('Resuming thread worker "%s"...', self.objectName())
+        logs.log_debug('Resuming thread worker "%s"...', self.obj_name)
 
         # If this worker is currently paused, unpause this worker.
-        if self._state == _ThreadWorkerState.PAUSED:
+        if self._state is _ThreadWorkerState.PAUSED:
             self._state = _ThreadWorkerState.WORKING
 
     # ..................{ METHODS ~ abstract                 }..................
@@ -407,6 +452,9 @@ class QBetseeThreadWorkerABC(QObject):
             signalled or requested to be stopped.
         '''
 
+        # Avoid circular import dependencies.
+        from betsee.util.thread import guithread
+
         # Process all pending events currently queued with this worker's thread,
         # notably including any incoming signalling of the stop() slot by
         # objects in other threads..
@@ -415,14 +463,51 @@ class QBetseeThreadWorkerABC(QObject):
         # If either:
         if (
             # This worker has been externally signalled to stop...
-            self._state == _ThreadWorkerState.IDLE or
+            self._state is _ThreadWorkerState.IDLE or
             # This worker's thread has been externally requested to stop...
             guithread.should_halt_thread_work()
         # Then
         ):
             # Log this interrupt.
             logs.log_debug(
-                'Interrupting thread worker "%s"...', self.objectName())
+                'Interrupting thread worker "%s"...', self.obj_name)
 
             # Instruct the parent start() slot to stop.
             raise _ThreadWorkerStopException('So say we all.')
+
+# ....................{ SUPERCLASSES ~ throwaway           }....................
+class QBetseeThreadWorkerThrowawayABC(QBetseeThreadWorkerABC):
+    '''
+    Abstract base class of all low-level **throw-away worker** (i.e., worker
+    guaranteed to be garbage-collected after completing its work) subclasses.
+
+    Equivalently, this is the superclass of all single-use, one-shot, one-time,
+    non-recyclable workers. By default, workers are recyclable and hence may be
+    reused (i.e., have their :meth:`start` slots signalled) an arbitrary number
+    of times within any arbitrary thread. Instances of this superclass are
+    non-recyclable and hence may *not* be reused more than once, however.
+
+    Usage
+    ----------
+    Ideally, the :meth:`start` slot of each instance of this superclass should
+    be signalled at most once. Immediately *after* performing all
+    subclass-specific work via the :meth:`_work` method, this slot (in order):
+
+    #. Emits the :attr:`finished` signal.
+    #. Signals itself to be garbage-collected via the :meth:`deleteLater` slot.
+    #. Returns.
+
+    After returning from the :meth:`start` slot, all external references to this
+    worker are effectively invalidated and hence equivalent to ``None``; no such
+    worker may be safely used for *any* subsequent purposes.
+    '''
+
+    # ..................{ INITIALIZERS                       }..................
+    def __init__(self, *args, **kwargs) -> None:
+
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
+
+        # Garbage collect all child objects of this parent worker *AFTER* this
+        # worker gracefully (i.e., successfully) terminates.
+        self.finished.connect(self.deleteLater)

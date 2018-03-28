@@ -10,18 +10,18 @@ Python's restrictive Global Interpreter Lock (GIL) running zero or more
 subordinate :class:`QBetseeThreadWorkerABC`-based workers at a given time) classes.
 '''
 
+#FIXME: Most (all?) methods defined below are intended to be run *ONLY* from the
+#main thread and hence should raise "BetseePySideThreadException" when this is
+#*NOT* the case. At the very least, this should be well-documented below.
+
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication, QThread
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, CallableTypes
 from betsee.guiexception import BetseePySideThreadException
-from betsee.util.thread.guiworker import QBetseeThreadWorkerABC
+from betsee.util.thread.guiworkercls import QBetseeThreadWorkerABC
 
-#FIXME: Most (all?) methods defined below are intended to be run *ONLY* from the
-#main thread and hence should raise "BetseePySideThreadException" when this is
-#*NOT* the case. At the very least, this should be well-documented below.
-
-# ....................{ SUPERCLASS ~ single                }....................
+# ....................{ SUPERCLASSES                       }....................
 class QBetseeWorkerThread(QThread):
     '''
     Low-level **worker thread"** (i.e., platform-portable, pure-Qt,
@@ -80,6 +80,38 @@ class QBetseeWorkerThread(QThread):
         # by an external call to the halt() method).
         self.finished.connect(self.deleteLater)
 
+    # ..................{ PROPERTIES                         }..................
+    @property
+    def process_name(self) -> str:
+        '''
+        Name of the OS-level process associated with this thread, equivalent to
+        the Qt-specific name of this object.
+
+        While Qt-specific object names are typically hidden from end users, the
+        name of this thread is perhaps surprisingly published to end users
+        through the process list for most operating systems (e.g., via the
+        external ``ps -L`` command on POSIX-compatible systems).
+
+        This name defaults to the unqualified and largely unreadable name of
+        this class (e.g., ``QBetseeWorkerThread``). Callers are advised to set
+        this property to a human-readable name uniquely identifying this thread
+        *before* calling the :meth:`start` method. (Attempting to set this name
+        *after* calling that method silently reduces to a noop.)
+        '''
+
+        return self.objectName()
+
+
+    @process_name.setter
+    @type_check
+    def process_name(self, process_name: str) -> None:
+        '''
+        Set the name of the OS-level process associated with this thread,
+        equivalent to the Qt-specific name of this object, to the passed string.
+        '''
+
+        self.setObjectName(process_name)
+
     # ..................{ HALTERS                            }..................
     @type_check
     def halt(self) -> None:
@@ -129,24 +161,20 @@ class QBetseeWorkerThread(QThread):
 
     # ..................{ ADOPTERS                           }..................
     @type_check
-    def adopt_worker(self, worker: QBetseeThreadWorkerABC) -> None:
+    def adopt_worker(self, *workers: QBetseeThreadWorkerABC) -> None:
         '''
-        Adopt the passed application-specific worker into this thread if no
-        other worker has already been adopted by this thread *or* raise an
-        exception otherwise (i.e., if this thread has already adopted a worker).
+        Adopt all passed application-specific workers into this thread.
 
-        Equivalently, this method:
+        Specifically, this method iteratively:
 
-        * Moves this worker to this thread while preserving the guarantees
-          contractually stipulated by this thread -- notably, that this thread
-          run one and *only* one worker at a time.
+        * Moves each such worker into this thread.
+        * Automates the lifecycle of these workers by deleting these workers
+          when this thread is deleted.
 
-        Design
-        ----------
-        For safety, this method does *not* classify this worker as an instance
-        variable of this object. Why? Because this object is technically *not* a
-        thread; this object is merely a high-level wrapper encapsulating a
-        thread. This object does *not* reside in this thread but rather in the
+        This method does *not* classify these workers as instance variables of
+        this object. This thread object is technically *not* a thread; this
+        thread object is merely a high-level wrapper encapsulating a thread.
+        This thread object does *not* reside in this thread but rather in the
         parent thread (e.g., main event-handling thread) in which this object
         was instantiated. This worker *does* reside in this thread after this
         method returns, however. Objects residing in different threads should
@@ -154,16 +182,32 @@ class QBetseeWorkerThread(QThread):
 
         Caveats
         ----------
-        The :meth:`QBetseeThreadWorkerABC.moveToThread` method should *never* be
-        called to manually move a worker into this thread. Doing so violates
-        subclass encapsulation and hence subclass guarantees (e.g., that this
-        thread run *only* a single worker at a time).
+        Avoid manually calling the :meth:`QBetseeThreadWorkerABC.moveToThread`
+        method to move workers into this thread. Doing so prevents this method
+        from automating the lifecycle of these workers -- notably, the guarantee
+        that these workers be deleted when this thread is deleted.
+
+        Parameters
+        ----------
+        workers : tuple[QBetseeThreadWorkerABC]
+            Tuple of all workers to be adopted by this thread.
         '''
 
-        # Move this worker to this thread.
-        worker.moveToThread(self)
+        # For each such worker...
+        for worker in workers:
+            # Move this worker into this thread.
+            worker.moveToThread(self)
 
-# ....................{ SUPERCLASS ~ single                }....................
+            #FIXME: *NOPE.* While this seems sensible, actually doing this
+            #results in the entire application fatally segmentation-faulting
+            #without a human-readable exception or error. Ergo, bad. Somehow.
+
+            # Garbage collect all child objects of this worker *AFTER* this
+            # thread's event loop and hence execution gracefully terminates
+            # (e.g., by an external call to the halt() method).
+            # self.finished.connect(worker.deleteLater)
+
+# ....................{ SUPERCLASSES ~ single              }....................
 class QBetseeWorkerSingleThread(QBetseeWorkerThread):
     '''
     Low-level **single worker thread"** (i.e., platform-portable, pure-Qt,
@@ -308,17 +352,17 @@ class QBetseeWorkerSingleThread(QBetseeWorkerThread):
 
     # ..................{ ADOPTERS                           }..................
     @type_check
-    def adopt_worker(self, worker: QBetseeThreadWorkerABC) -> None:
+    def adopt_worker(self, *workers: QBetseeThreadWorkerABC) -> None:
         '''
-        Adopt the passed application-specific worker into this thread if no
+        Adopt all passed application-specific workers into this thread if no
         other worker has already been adopted by this thread *or* raise an
         exception otherwise (i.e., if this thread has already adopted a worker).
 
-        Equivalently, this method:
+        Specifically, this method iteratively:
 
-        * Moves this worker to this thread while preserving the guarantees
-          contractually stipulated by this thread -- notably, that this thread
-          run one and *only* one worker at a time.
+        * Moves each such worker into this thread while preserving the
+          guarantees contractually stipulated by this thread -- notably, that
+          this thread run one and *only* one worker at a time.
 
         Design
         ----------
@@ -346,7 +390,7 @@ class QBetseeWorkerSingleThread(QBetseeWorkerThread):
         self._die_if_worker()
 
         # Move this worker to this thread.
-        super().adopt_worker(worker)
+        super().adopt_worker(workers)
 
         #FIXME: Connect appropriate signals and slots... after defining them. In
         #particular, at least:

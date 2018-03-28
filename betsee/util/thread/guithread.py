@@ -9,6 +9,20 @@ Low-level **multithreading** (i.e., platform-portable, pure-Qt,
 Python's restrictive Global Interpreter Lock (GIL)) facilities.
 '''
 
+#FIXME: This submodule is increasingly awkward, largely due to the unctuous
+#requirement that a "thread" reference always be passed whenever an
+#"event_dispatcher" reference is required. Instead, do the following:
+#
+#* Define a new "ThreadEventDispatcherWrapper" class subclassing "object" rather
+#  than "QObject" in this submodule.
+#* Define the following instance variables of this class:
+#  * "thread".
+#  * "event_dispatcher".
+#* Redefine the process_events() and wait_for_events_if_none() functions into
+#  methods of this class operating upon these variables.
+#* Redefine the get_current_event_dispatcher() to return an instance of the
+#  "ThreadEventDispatcherWrapper" class.
+
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import (
     QAbstractEventDispatcher, QCoreApplication, QEventLoop, QThread)
@@ -215,10 +229,16 @@ def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     return thread.requestInterruption()
 
 # ....................{ PROCESSORS                         }....................
+#FIXME: This and the function below require fundamental refactoring. Why? It
+#appears infeasible to pass arbitrary "event_dispatcher" objects around. For
+#unknown reasons, Python and/or Qt aggressively garbage collect these objects in
+#the absence of a reference to the threads owning these objects. Ergo:
+#
+#* Refactor this function to accept an additional preceding "thread" argument.
+#* Likewise for the function defined below.
 @type_check
 def process_events(
-    event_dispatcher: QAbstractEventDispatcherOrNoneTypes = None) -> (
-    QAbstractEventDispatcher):
+    event_dispatcher: QAbstractEventDispatcherOrNoneTypes = None) -> None:
     '''
     Process all pending events currently queued with the thread of execution
     associated with the passed event dispatcher.
@@ -250,10 +270,26 @@ def process_events(
     # Default this event dispatcher if unpassed to that associated with the
     # current thread of execution.
     if event_dispatcher is None:
-        event_dispatcher = get_current_event_dispatcher()
+        thread, event_dispatcher = get_current_thread_event_dispatcher()
 
     # Process all pending events currently queued with this dispatcher.
     event_dispatcher.processEvents(QEventLoop.AllEvents)
+
+
+#FIXME: Shift above, please.
+#FIXME: Annotate and document properly, please.
+#FIXME: Replace *ALL* calls to the get_current_event_dispatcher() function with
+#calls to this function instead.
+def get_current_thread_event_dispatcher():
+    thread = QThread.currentThread()
+    event_dispatcher = thread.eventDispatcher()
+    if not event_dispatcher:
+        raise BetseePySideThreadException(QCoreApplication.translate(
+            'get_current_event_dispatcher',
+            'No event dispatcher running for thread "{}".'.format(
+                thread.objectName())))
+
+    return thread, event_dispatcher
 
 
 #FIXME: Explicitly raise an exception if this event dispatcher is the main event
@@ -261,8 +297,7 @@ def process_events(
 #this edge case results in the main GUI being blocked -- which is bad.
 @type_check
 def wait_for_events_if_none(
-    event_dispatcher: QAbstractEventDispatcherOrNoneTypes = None) -> (
-    QAbstractEventDispatcher):
+    event_dispatcher: QAbstractEventDispatcherOrNoneTypes = None) -> None:
     '''
     Indefinitely block the thread of execution associated with the passed
     event dispatcher until *another* thread of execution posts a new event to
