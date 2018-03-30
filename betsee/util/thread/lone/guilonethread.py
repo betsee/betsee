@@ -4,10 +4,9 @@
 # See "LICENSE" for further details.
 
 '''
-Low-level **worker thread"** (i.e., platform-portable, pure-Qt,
-:class:`QThread`-based parallelization implemented external to Python and hence
-Python's restrictive Global Interpreter Lock (GIL) running zero or more
-subordinate :class:`QBetseeThreadWorkerABC`-based workers at a given time) classes.
+Low-level **non-pooled worker thread** (i.e., platform-portable, pure-Qt,
+:class:`QThread`-based thread wrapper running zero or more subordinate
+:class:`QBetseeLoneThreadWorkerABC`-based workers at a given time) classes.
 '''
 
 #FIXME: Most (all?) methods defined below are intended to be run *ONLY* from the
@@ -19,15 +18,26 @@ from PySide2.QtCore import QCoreApplication, QThread
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, CallableTypes
 from betsee.guiexception import BetseePySideThreadException
-from betsee.util.thread.guiworkercls import QBetseeThreadWorkerABC
+from betsee.util.thread.lone.guiloneworker import QBetseeLoneThreadWorkerABC
 
 # ....................{ SUPERCLASSES                       }....................
-class QBetseeWorkerThread(QThread):
+class QBetseeLoneThread(QThread):
     '''
-    Low-level **worker thread"** (i.e., platform-portable, pure-Qt,
-    :class:`QThread`-based parallelization implemented external to Python and
-    hence Python's restrictive Global Interpreter Lock (GIL) running zero or
-    more subordinate :class:`QBetseeThreadWorkerABC`-based workers at a given time).
+    Low-level **non-pooled worker thread"** (i.e., platform-portable, pure-Qt,
+    :class:`QThread`-based wrapper running zero or more subordinate
+    :class:`QBetseeLoneThreadWorkerABC`-based workers at a given time).
+
+    Caveats
+    ----------
+    This obsolete superclass has been superceded by the superior
+    :class:`betse.util.thread.pool.guipoolthread.QBetseeThreadPool` superclass,
+    whose :class:`QRunnable`-based API requires substantially less boilerplate.
+
+    The *only* methods of this subclass safely callable by external objects are
+    the superclass :meth:`start` method and all subclass-specific public methods
+    and properties. Other superclass methods (e.g., :meth:`exec`, :meth:`exit`,
+    :meth:`quit`, :meth:`run`) should be considered unsafe for external usage
+    and hence *never* called externally.
 
     Design
     ----------
@@ -49,16 +59,8 @@ class QBetseeWorkerThread(QThread):
       * Thread-safe types (e.g., C++-style atomics).
 
     Instead, this subclass *strongly* recommends that
-    :class:`QBetseeThreadWorkerABC`-based workers be moved from the main
+    :class:`QBetseeLoneThreadWorkerABC`-based workers be moved from the main
     event-handling thread to this thread by the :meth:`adopt_worker` method.
-
-    Caveats
-    ----------
-    The *only* methods of this subclass safely callable by external objects are
-    the superclass :meth:`start` method and all subclass-specific public methods
-    and properties. Other superclass methods (e.g., :meth:`exec`, :meth:`exit`,
-    :meth:`quit`, :meth:`run`) should be considered unsafe for external usage
-    and hence *never* called externally.
 
     See Also
     ----------
@@ -93,7 +95,7 @@ class QBetseeWorkerThread(QThread):
         external ``ps -L`` command on POSIX-compatible systems).
 
         This name defaults to the unqualified and largely unreadable name of
-        this class (e.g., ``QBetseeWorkerThread``). Callers are advised to set
+        this class (e.g., ``QBetseeLoneThread``). Callers are advised to set
         this property to a human-readable name uniquely identifying this thread
         *before* calling the :meth:`start` method. (Attempting to set this name
         *after* calling that method silently reduces to a noop.)
@@ -161,7 +163,7 @@ class QBetseeWorkerThread(QThread):
 
     # ..................{ ADOPTERS                           }..................
     @type_check
-    def adopt_worker(self, *workers: QBetseeThreadWorkerABC) -> None:
+    def adopt_worker(self, *workers: QBetseeLoneThreadWorkerABC) -> None:
         '''
         Adopt all passed application-specific workers into this thread.
 
@@ -182,14 +184,14 @@ class QBetseeWorkerThread(QThread):
 
         Caveats
         ----------
-        Avoid manually calling the :meth:`QBetseeThreadWorkerABC.moveToThread`
+        Avoid manually calling the :meth:`QBetseeLoneThreadWorkerABC.moveToThread`
         method to move workers into this thread. Doing so prevents this method
         from automating the lifecycle of these workers -- notably, the guarantee
         that these workers be deleted when this thread is deleted.
 
         Parameters
         ----------
-        workers : tuple[QBetseeThreadWorkerABC]
+        workers : tuple[QBetseeLoneThreadWorkerABC]
             Tuple of all workers to be adopted by this thread.
         '''
 
@@ -208,15 +210,15 @@ class QBetseeWorkerThread(QThread):
             # self.finished.connect(worker.deleteLater)
 
 # ....................{ SUPERCLASSES ~ single              }....................
-class QBetseeWorkerSingleThread(QBetseeWorkerThread):
+class QBetseeLoneSingleThread(QBetseeLoneThread):
     '''
-    Low-level **single worker thread"** (i.e., platform-portable, pure-Qt,
-    :class:`QThread`-based parallelization implemented external to Python and
-    hence Python's restrictive Global Interpreter Lock (GIL), confined to run a
-    single subordinate :class:`QBetseeThreadWorkerABC`-based worker at a given time).
+    Low-level **non-pooled single worker thread"** (i.e., platform-portable,
+    pure-Qt, :class:`QThread`-based thread wrapper, confined to run a single
+    subordinate :class:`QBetseeLoneThreadWorkerABC`-based worker at a given
+    time).
 
     By default, both the standard :class:`QThread` class and our
-    :class:`QBetseeWorkerThread` superclass implicitly allow a one-to-many
+    :class:`QBetseeLoneThread` superclass implicitly allow a one-to-many
     relation between a parent thread and its child workers such that a single
     thread may run an arbitrary number of (i.e., zero or more) workers.
 
@@ -352,7 +354,7 @@ class QBetseeWorkerSingleThread(QBetseeWorkerThread):
 
     # ..................{ ADOPTERS                           }..................
     @type_check
-    def adopt_worker(self, *workers: QBetseeThreadWorkerABC) -> None:
+    def adopt_worker(self, *workers: QBetseeLoneThreadWorkerABC) -> None:
         '''
         Adopt all passed application-specific workers into this thread if no
         other worker has already been adopted by this thread *or* raise an
@@ -380,10 +382,10 @@ class QBetseeWorkerSingleThread(QBetseeWorkerThread):
 
         Caveats
         ----------
-        The :meth:`QBetseeThreadWorkerABC.moveToThread` method should *never* be
-        called to manually move a worker into this thread. Doing so violates
-        subclass encapsulation and hence the guarantee that this thread run
-        *only* a single worker at a time.
+        The :meth:`QBetseeLoneThreadWorkerABC.moveToThread` method should
+        *never* be called to manually move a worker into this thread. Doing so
+        violates subclass encapsulation and hence the guarantee that this thread
+        run *only* a single worker at a time.
         '''
 
         # If this thread has already adopted a worker, raise an exception.

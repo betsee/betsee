@@ -90,6 +90,9 @@ def should_halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     return thread.isInterruptionRequested()
 
 # ....................{ GETTERS                            }....................
+#FIXME: *NO*. This function is fundamentally broken, as some combination of
+#PySide2 and/or Qt erroneously garbage collect event dispatchers unless the
+#threads owning those dispatchers are also in scope. See the above "FIXME".
 @type_check
 def get_event_dispatcher(
     thread: QThreadOrNoneTypes = None) -> QAbstractEventDispatcher:
@@ -136,7 +139,7 @@ def get_event_dispatcher(
     # Return this event dispatcher.
     return event_dispatcher
 
-# ....................{ GETTERS ~ current                  }....................
+# ....................{ GETTERS ~ current : thread         }....................
 def get_current_thread() -> QThread:
     '''
     Wrapper encapsulating the **current thread** (i.e., Qt-specific thread of
@@ -146,6 +149,38 @@ def get_current_thread() -> QThread:
     return QThread.currentThread()
 
 
+def get_current_thread_id() -> int:
+    '''
+    Arbitrary Qt-specific integer uniquely identifying the current thread within
+    the active Python interpreter.
+
+    See Also
+    ----------
+    :func:`get_current_thread`
+        Further details.
+    '''
+
+    return QThread.currentThreadId()
+
+
+def get_current_thread_process_name() -> str:
+    '''
+    Name of the OS-level process associated with the current thread, equivalent
+    to the Qt-specific name of this object.
+
+    See Also
+    ----------
+    :meth:`betsee.util.thread.guithreadcls.QBetseeWorkerThread.process_name`
+        Further details.
+    '''
+
+    # Current thread.
+    thread = get_current_thread()
+
+    # Return this thread's process name.
+    return thread.objectName()
+
+# ....................{ GETTERS ~ current : event          }....................
 def get_current_event_dispatcher() -> QAbstractEventDispatcher:
     '''
     Wrapper encapsulating the event dispatcher for the current thread of

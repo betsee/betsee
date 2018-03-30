@@ -265,9 +265,10 @@ def _init_qt_dpi() -> None:
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
 # ....................{ INITIALIZERS : globals             }....................
-def _init_qt_app() -> None:
+def _init_qt_app() -> QApplication:
     '''
-    Instantiate the :class:`QApplication` singleton for this application.
+    Instantiate and return the :class:`QApplication` singleton for this
+    application.
     '''
 
     # Avoid circular import dependencies.
@@ -297,6 +298,26 @@ def _init_qt_app() -> None:
     # parsed by the current CLI! That's bad.
     gui_app = QApplication([])
 
+    #FIXME: Document why this might be an awful idea: notably, the GIL blocking
+    #multithreaded event handling. If this is indeed one of several culprits
+    #(which seems fairly likely), we'll want to revise our original
+    #StackOverflow answer advising usage of this paradigm under Python. Clearly,
+    #this approach only applies to languages other than Python -- notably, C++.
+    #FIXME: O.K.; we've verified by manual inspection that this event filter
+    #does indeed slow event handling down by approximately 200% when attempting
+    #to perform multithreading -- clearly due to the GIL. Given that, we'll need
+    #to manually implement the equivalent of this filter by:
+    #
+    #* For each plaintext (i.e., non-HTML) tooltip across the entire
+    #  application...
+    #  * Coercively embed that tooltip in HTML tags.
+    #
+    #To do so sanely, we'll probably want to perform a simple global
+    #search-and-replace in our "betsee.ui" file. *sigh*
+
     # Install an application-wide event filter globally addressing severe issues
     # in Qt's default plaintext tooltip behaviour.
-    gui_app.installEventFilter(QBetseePlaintextTooltipEventFilter(gui_app))
+    # gui_app.installEventFilter(QBetseePlaintextTooltipEventFilter(gui_app))
+
+    # Return this application.
+    return gui_app

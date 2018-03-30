@@ -8,6 +8,33 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 *and* controlling the execution of simulation phases) functionality.
 '''
 
+#FIXME: *O.K.* Ultimately, the long-term solution will be to leverage the
+#standard "multiprocessing" package in concert with the third-party "dill"
+#package to isolate a BETSE simulator subcommand to be run to a separate
+#process. Why? The GIL. That said, a great deal of the work required to
+#facilate multiprocess-style communication between BETSE and BETSEE is the exact
+#same work required to facilitate multithreading-style communication between
+#BETSE and BETSEE. Ergo, we do the latter first; then we switch to the former.
+#It's non-ideal, of course, but everything on hand is non-ideal. This is the
+#best we have on hand.
+#
+#Note that the "multiprocessing" module has different means of facilitating
+#interprocess communication. The two most prominent are the event-based API
+#defined by "multiprocessing.Event" and the "pickle" and/or "dill"-based API
+#defined by... something. Further research is clearly required here.
+#
+#Note also that I examined numerous alternatives. The "concurrent.futures"
+#submodule is particularly inapplicable, as it leverages the prototypical
+#cloud-based map + reduce paradigm. Completely useless for our purposes, sadly.
+#
+#That said, there may yet be a better way than "multiprocessing" + "dill" -- but
+#we have to yet to discover it. If such an improved solution does exist, it will
+#almost certainly be a third-party alternative to "multiprocessing". Our
+#suspicion is that we almost certainly want to adopt the "multiprocessing" +
+#"dill" solution as a first-draft solution for all of the obvious reasons:
+#"multiprocessing" is standard and we already require and love "dill", so no
+#additional dependencies are required. That's incredibly nice, really.
+
 #FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
 #with unsaved changes), the GUI should prompt the user as to whether or not they
 #would like to save those changes *BEFORE* running the simulation. In theory, we
@@ -73,7 +100,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #    https://stackoverflow.com/a/28816650/2809027
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, QObject, Slot  # Signal
+from PySide2.QtCore import QCoreApplication, QObject, Slot, Signal
 # from betse.science.export.expenum import SimExportType
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
@@ -93,10 +120,9 @@ from betsee.gui.simtab.run.guisimrunstate import (
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
-from betsee.gui.simtab.run.work.guisimrunworkcls import (
-    QBetseeSimmerWorkerSeed,
-)
-from betsee.util.thread.guithreadcls import QBetseeWorkerThread
+# from betsee.gui.simtab.run.work.guisimrunworkcls import (
+#     QBetseeSimmerWorkerSeed,
+# )
 from collections import deque
 
 # ....................{ CLASSES                            }....................
@@ -241,14 +267,18 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # # Immutable set of all simulator thread workers.
         # self._workers = frozenset({self._worker_seed,})
 
+        #FIXME: This thread object probably needs to be parented. Consider
+        #reverting the commented-out line, please.
+
         # Simulator thread controller.
-        self._thread = QBetseeWorkerThread(self)
+        # self._thread = QBetseeWorkerThread(self)
+        # self._thread = QBetseeWorkerThread()
 
         # Set the name of the OS-level process associated with this thread to
         # the same name of the OS-level process associated with the main thread
         # appended by a unique arbitrary suffix *BEFORE* starting this thread.
         # After this thread is started, setting this name reduces to a noop.
-        self._thread.process_name = SCRIPT_BASENAME + '_simmer'
+        # self._thread.process_name = SCRIPT_BASENAME + '_simmer'
 
         #FIXME: We *REALLY* need to do something resembling the following here:
         #
@@ -281,8 +311,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Start this thread and hence this thread's event loop. This does *NOT*
         # start any workers adopted into this thread; this only permits slots
         # for these workers to begin receiving signals.
-        self._thread.start()
+        # self._thread.start()
 
+        from PySide2.QtCore import QThreadPool
+        self.threadpool = QThreadPool()
 
     @type_check
     def init(self, main_window: QBetseeMainWindow) -> None:
@@ -613,6 +645,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             # state *AFTER* successfully pausing this phase.
             self._phase_working_state = SimmerState.PAUSED
 
+        logs.log_debug('Returning from _toggle_playing...')
+
 
     @Slot()
     def _halt_playing(self) -> None:
@@ -747,6 +781,19 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             phase.dequeue_running()
 
 
+    #FIXME: Sadly, this remains entrenched in horror. The issue appears to be
+    #that "QThread" is too low-level to actually bother with "trivial" issues
+    #like sharing the time slice with other running Qt-based threads -- like,
+    #say, the main thread. This is completely non-sensical, as well as
+    #completely contrary to the concept of multithreading as implemented in
+    #effectively *OTHER* other multithreading framework. Consequently, it would
+    #appear that we either need to:
+    #
+    #* Completely abandon the current "QThread"-based approach in favour of
+    #  either:
+    #  * A "QRunner" + "QThreadPool"-based approach.
+    #  * A "QConcurrent"-based approach. This is infeasible in our case, sadly.
+    #* Laboriously refactor the
     def run_enqueued(self) -> None:
         '''
         Iteratively run each simulator phase enqueued (i.e., appended to the
@@ -757,17 +804,75 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #FIXME: Refactor the following to leverage the "_worker_queue" deque.
         #See the "FIXME" above for exhaustive details.
 
-        #FIXME: Set "self.sim_conf" in init(), please.
-
         # Simulation runner run by all simulator workers.
-        from betse.science.simrunner import SimRunner
-        sim_runner = SimRunner(conf_filename=self._sim_conf.filename)
+        # from betse.science.simrunner import SimRunner
+        # sim_runner = SimRunner(conf_filename=self._sim_conf.filename)
 
-        # Test the seed worker.
-        worker_seed = QBetseeSimmerWorkerSeed()
-        worker_seed.init(sim_runner)
-        self._thread.adopt_worker(worker_seed)
-        worker_seed.start_signal.emit()
+        #FIXME: *OMFG.* This was it. The GIL ensured that only the _work()
+        #method of this worker had access to the time slice, thus preventing
+        #this method and hence the parent _toggle_playing() slot from returning
+        #and hence returning control to the main event loop. Absolute insanity,
+        #which I only realized after reading the following astute logic:
+        #
+        #    "Similarly, if your application makes use of a large number of
+        #     threads and Python result handlers, you may come up against the
+        #     limitations of the GIL. As mentioned previously, when using
+        #     threads execution of Python is limited to a single thread at one
+        #     time. The Python code [i.e., slots in the main thread] that
+        #     handles signals from your threads can be blocked by your workers
+        #     and vice versa. Since blocking your slot functions blocks the
+        #     event loop, this can directly impact GUI responsiveness.
+        #     In these cases it is often better to investigate using a
+        #     pure-Python thread pool (e.g. concurrent futures) implementation
+        #     to keep your processing and thread event handling further isolated
+        #     from your GUI."
+        #
+        #See also: https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
+        #
+        #The final paragraph fails to make sense to me, however. What would
+        #using a pure-Python thread pool seek to achieve? How would doing so in
+        #any way circumvent the GIL? Unless you're actually using a pure-Python
+        #*PROCESS* pool, the GIL absolutely still remains in effect.
+        #FIXME: Actually, wait. Something's critically wrong. While the GIL is
+        #absolutely in effect, that still fails to explain why the GUI is
+        #literally unresponsive. Clearly, the worker is still being run in the
+        #main event thread -- even though Qt claims otherwise. some combination
+        #of PySide2, Qt, and/or Python are *NOT* correctly multithreading. This
+        #is trivially observed by running the sample PyQt5-based "threado"
+        #application, which actually is responsive despite multithreading. Our
+        #dim suspicion is that we're doing something *HORRIBLE* in pure-Python
+        #that's causing the GUI to constaintly sieze the GIL. Tooltip filtering
+        #and log handling seem like reasonable culprits. This is going to take
+        #forever to sort out, sadly. Unfortunately, because we implemented this
+        #functionality last rather than first, we have *SO* much baggage that
+        #needs to be disabled one-by-one to get to the bottom of this.
+        #
+        #As a start, we need to isolate whether or not:
+        #
+        #* "PySide2" is the issue. To do so, refactor the sample "threado"
+        #  application to leverage PySide2 instead. (Trivial).
+        #* "QThread" is the issue. To do so, refactor the sample "threado"
+        #  application to leverage "QThread" instead. (Hopefully trivial, but
+        #  probably not).
+        #* BETSE is the issue. To do so, refactor the sample "threado"
+        #  application to just run a hard-coded BETSE seed phase with a
+        #  hard-coded simulation configuration file. (Hopefully trivial, but
+        #  probably not).
+        #
+        #Our working assumption is that *NONE* of the above are the issue, but
+        #that BETSEE itself is somehow the issue. If that's the case, the only
+        #sane solution will be to:
+        #
+        #* Recursively copy "~/py/betsee" to... say, "~/tmp/betsee".
+        #* Iteratively remove functionality from "~/tmp/betsee" until the GUI
+        #  becomes responsive while seeding. This will be *EXTREMELY* tedious
+        #  and annoying, but we see no alternatives. Again, start with tooltip
+        #  filtering and log handling.
+
+        #FIXME: Demonstrably awful. Pass "QObject" instances instead.
+        # self._start_signal.connect(worker_seed.start)
+        # self._start_signal.emit(self._sim_conf.filename)
+        # worker_seed.start_signal.emit(self._sim_conf.filename)
 
         #FIXME: Revive this, please.
         # # While one or more enqueued phases have yet to be run...
@@ -781,6 +886,78 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #
         #     # Dequeue this phase *AFTER* successfully running these actions.
         #     self._worker_queue.pop()
+
+        from betsee.util.thread import guithread
+        logs.log_debug(
+            'Object "%s" in main GUI thread "%d"...',
+            self.obj_name, guithread.get_current_thread_id())
+
+        # from PySide2.QtCore import QThread
+        # thread = QThread()
+        # thread.setObjectName('simmer_thread')
+        # thread.finished.connect(thread.deleteLater)
+
+        # Start this thread and hence this thread's event loop. This does *NOT*
+        # start any workers adopted into this thread; this only permits slots
+        # for these workers to begin receiving signals.
+        # thread.start()
+
+        # self._start_signal.connect(worker_seed.start)
+        # self._start_signal.emit(self._sim_conf.filename)
+
+        # Test the seed worker.
+        # worker_seed = QBetseeSimmerWorkerSeed()
+        #
+        # # Adopt these workers into this thread.
+        # self._thread.adopt_worker(worker_seed)
+        # # worker_seed.moveToThread(self._thread)
+        # # worker_seed.moveToThread(thread)
+        #
+        # #FIXME: Demonstrably awful. Pass "QObject" instances instead.
+        # worker_seed.start_signal.emit(self._sim_conf.filename)
+
+        from betsee.gui.simtab.run.work.guisimrunworkpool import Worker
+
+        worker = Worker(self._run_seed, self._sim_conf.filename) # Any other args, kwargs are passed to the run function
+        # worker = Worker(self.execute_this_fn) # Any other args, kwargs are passed to the run function
+        worker.signals.result.connect(self.print_output)
+        worker.signals.finished.connect(self.thread_complete)
+        worker.signals.progress.connect(self.progress_fn)
+
+        self.threadpool.start(worker)
+
+    # _start_signal = Signal(str)
+
+    def _run_seed(self, conf_filename):
+
+        # Isolate importation statements to this worker.
+        from betse.science.simrunner import SimRunner
+
+        sim_runner = SimRunner(conf_filename=conf_filename)
+        sim_runner.seed()
+
+    def execute_this_fn(self, progress_callback):
+        import time
+        for n in range(0, 32):
+            # time.sleep(1)
+            a = '\0'
+            for i in range(10000000):
+                a = '\0'*10000
+            progress_callback.emit(n*100/4)
+
+        return "Done."
+
+    @Slot(int)
+    def progress_fn(self, n):
+        print("%d%% done" % n)
+
+    @Slot()
+    def thread_complete(self):
+        print("THREAD COMPLETE!")
+
+    @Slot(str)
+    def print_output(self, s):
+        print(s)
 
     # ..................{ UPDATERS                           }..................
     def _update_widgets(self) -> None:

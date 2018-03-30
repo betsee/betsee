@@ -85,6 +85,7 @@ from betsee.gui.simtab.run.work.guisimrunworkenum import (
 from betsee.util.thread.guiworkercls import QBetseeThreadWorkerThrowawayABC
 
 # ....................{ SUPERCLASSES                       }....................
+#FIXME: Shift the "_sim_runner" documentation below elsewhere, please.
 class QBetseeSimmerWorkerABC(QBetseeThreadWorkerThrowawayABC):
     '''
     Abstract base class of all low-level **simulator worker** (i.e., thread-safe
@@ -92,10 +93,6 @@ class QBetseeSimmerWorkerABC(QBetseeThreadWorkerThrowawayABC):
     simulation subcommand in a multithreaded manner intended to be adopted by
     the thread encapsulated by a :class:`QBetseeWorkerThread` object)
     subclasses.
-
-    Caveats
-    ----------
-    Simulator workers are
 
     Attributes
     ----------
@@ -117,32 +114,39 @@ class QBetseeSimmerWorkerABC(QBetseeThreadWorkerThrowawayABC):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Nullify all remaining instance variables for safety.
-        self._sim_runner = None
-
         # Set this object's name to this subclass' munged name (e.g., from
         # "QBetseeSimmerWorkerSeed" to "simmer_worker_seed").
         self.set_obj_name_from_class_name()
 
 
-    @type_check
-    def init(self, sim_runner: SimRunner) -> None:
-        '''
-        Finalize the initialization of this simulator worker.
+    #FIXME: *UGH.* Remove the QBetseeSimmerWorkerABC.init() method -- which,
+    #in hindsight, was an atrocious idea. Document why: notably, the fact
+    #that any passed objects owned by the parent thread (presumably, all of
+    #them) will continue to be owned by this thread even after this worker
+    #is adopted into its parent thread. Which, of course, entirely defeats
+    #the point of multithreading in the first place.
+    #
+    #Explicitly document this as a caveat somewhere. *WE MUST NEVER MAKE
+    #THIS AWFUL MISTAKE AGAIN.*
 
-        Parameters
-        ----------
-        sim_runner : SimRunner
-            Simulation runner run by this simulator worker, encapsulating both
-            the simulation configuration file to be run *and* all low-level
-            logic required to do so.
-        '''
-
-        # Initialize our superclass.
-        super().init()
-
-        # Classify this simulation runner.
-        self._sim_runner = sim_runner
+    # @type_check
+    # def init(self, sim_runner: SimRunner) -> None:
+    #     '''
+    #     Finalize the initialization of this simulator worker.
+    #
+    #     Parameters
+    #     ----------
+    #     sim_runner : SimRunner
+    #         Simulation runner run by this simulator worker, encapsulating both
+    #         the simulation configuration file to be run *and* all low-level
+    #         logic required to do so.
+    #     '''
+    #
+    #     # Initialize our superclass.
+    #     super().init()
+    #
+    #     # Classify this simulation runner.
+    #     self._sim_runner = sim_runner
 
     # ..................{ PROPERTIES ~ abstract              }..................
     # Read-only abstract properties required to be overridden by subclasses.
@@ -206,7 +210,29 @@ class QBetseeSimmerWorkerSeed(QBetseeSimmerWorkerABC):
     '''
 
     # ..................{ METHODS                            }..................
-    def _work(self) -> None:
+    #FIXME: Obviously, forcing "str" usage is awful. See "guiworkercls" for
+    #demonstrably superior alternatives.
+    def _work(self, conf_filename: str) -> None:
 
-        # Well, that was easy.
-        self._sim_runner.seed()
+        # Well, that was easy. (No, it really wasn't.)
+        # sim_runner = SimRunner(conf_filename=conf_filename)
+        # sim_runner.seed()
+
+        #FIXME: Let's try sleeping. Something absolutely isn't right here.
+        #FIXME: O.K.; it absolutely is the GIL that's killing us. Iteratively
+        #calling self._halt_work_if_requested() dramatically improves matters,
+        #which is horrible. Note that calling QThread.yieldCurrentThread()
+        #slightly improves GUI responsiveness even more, but (presumably) at a
+        #dramatic performance penalty that we absolutely shouldn't pay. The call
+        #to self._halt_work_if_requested() should suffice to at least permit the
+        #pause and stop buttons to be meaningfully responded to. *sigh*
+        from betse.util.io.log import logs
+        import time
+        for _ in range(8):
+            logs.log_debug('Sleeping for one second...')
+            # QThread.sleep(1)
+            time.sleep(1)
+            self._halt_work_if_requested()
+            # QThread.yieldCurrentThread()
+        # QThread.msleep(1024**2)
+        # QThread.msleep(4096*2)
