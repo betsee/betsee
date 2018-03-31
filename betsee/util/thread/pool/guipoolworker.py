@@ -4,21 +4,19 @@
 # See "LICENSE" for further details.
 
 '''
-Low-level **non-pooled worker** (i.e., thread-safe object implementing
-generically startable, pausable, resumable, and haltable business logic in a
-multithreaded manner intended to be moved to the thread encapsulated by a
-:class:`QThread` object) classes.
+Low-level **pooled worker** (i.e., thread-safe object implementing generically
+startable, pausable, resumable, and stoppable business logic isolated to a
+dedicated thread by a parent :class:`QThreadPool` container) classes.
 '''
 
-#FIXME: Refactor this submodule as follows:
-#
-#* Rename "QBetseeThreadPoolWorkerABC" to "QBetseeThreadPoolWorker".
-#* Subclass "QBetseeThreadPoolWorker" from "QRunnable" rather than "QObject".
-#* Refactor "QBetseeThreadPoolWorker" ala the "Worker" class delineated by:
-#    https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool/
+#FIXME: Investigate the "QtConcurent" framework further. My working assumption
+#is that this framework required a map-reduce architecture. If that is *NOT* the
+#case, we may in fact prefer to leverage "QtConcurent", which would offer worker
+#pausing functionality built-in. *shrug*
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QObject, Signal, Slot  # QCoreApplication,
+import traceback, sys
+from PySide2.QtCore import QObject, QRunnable, Signal, Slot  # QCoreApplication,
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.enums import make_enum
@@ -28,6 +26,8 @@ from betsee.util.thread import guithread
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ ENUMERATIONS                       }....................
+#FIXME: Consider extracting into a new "betsee.util.thread.guithreadenum"
+#submodule for use across multiple worker submodules.
 _ThreadWorkerState = make_enum(
     class_name='_ThreadWorkerState',
     member_names=('IDLE', 'WORKING', 'PAUSED',))
@@ -54,6 +54,7 @@ PAUSED : enum
 '''
 
 # ....................{ EXCEPTIONS                         }....................
+#FIXME: Genericize this as well. Maybe to a new "guithreadexception" submodule?
 class _ThreadWorkerStopException(BetseePySideThreadWorkerException):
     '''
     :class:`QBetseeThreadPoolWorkerABC`-specific exception internally raised by the
@@ -67,27 +68,107 @@ class _ThreadWorkerStopException(BetseePySideThreadWorkerException):
 
     pass
 
-# ....................{ SUPERCLASSES                       }....................
-class QBetseeThreadPoolWorkerABC(QBetseeObjectMixin, QObject):
+# ....................{ SUPERCLASSES ~ worker : signal     }....................
+class QBetseeThreadPoolWorkerSignals(QObject):
     '''
-    Abstract base class of all low-level **non-pooled worker** (i.e.,
-    thread-safe object implementing generically startable, pausable, resumable,
-    and haltable business logic in a multithreaded manner intended to be adopted
-    by the thread encapsulated by a :class:`QBetseeLoneThread` object)
-    subclasses.
+    Low-level collection of all **pooled worker signals** (i.e., :class:`Signal`
+    instances thread-safely emittable
 
-    By default, workers are recyclable and hence may be reused (i.e., have their
-    :meth:`start` slots signalled) an arbitrary number of times within any
-    arbitrary thread. Where undesirable, see the
-    :cless:`QBetseeThreadPoolWorkerThrowawayABC` for an alternative superclass
-    constraining workers to be non-recyclable.
+    Each instance of this class is owned by a pooled worker (i.e.,
+    :class:`QBetseeThreadPoolWorker` instance), whose :meth:`run` method emits
+    signals defined by this class typically connected to slots defined by
+    objects residing in the original thread in which this worker was
+    instantiated (e.g., the main event thread).
 
-    Caveats
+    Thread Affinity
     ----------
-    This obsolete superclass has been superceded by the superior
-    :class:`betse.util.thread.pool.guipoolworker.QBetseeThreadPoolWorker`
-    superclass, whose :class:`QRunnable`-based API requires substantially less
-    boilerplate.
+    Each instance of this class resides in the original thread in which this
+    worker was instantiated and resides. Hence, neither this class nor any
+    subclass of this class should define slots. Why? Qt would execute these
+    slots in that original thread rather than the thread running this worker.
+    '''
+
+    # ..................{ SIGNALS                            }..................
+    progress = Signal(int)
+    '''
+    Signal emitting an integer in the range ``[0, 100]`` indicating the current
+    percentage of progress currently completed by this worker.
+    '''
+
+
+    finished = Signal()
+    '''
+    Signal emitted by the :meth:`run` method on completing this worker,
+    regardless of whether this method successfully returned or raised an
+    exception.
+    '''
+
+
+    result = Signal(object)
+    '''
+    Signal emitting the arbitrary value returned by the :meth:`run` method on
+    successfully completing this worker if this method returned a value *or*
+    ``None`` otherwise (i.e., if this method returned no value).
+    '''
+
+
+    error = Signal(tuple)
+    '''
+    Signal emitting a 3-tuple ``(exctype, value, traceback.format_exc())`` when
+    an exception is raised by this worker.
+    '''
+
+# ....................{ SUPERCLASSES ~ worker              }....................
+class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
+    '''
+    Low-level **pooled worker** (i.e., thread-safe object implementing
+    generically startable, pausable, resumable, and stoppable business logic
+    isolated to a dedicated thread by a parent :class:`QThreadPool` container).
+
+    Lifecycle
+    ----------
+    By default, workers are **non-recyclable** (i.e., implicitly garbage
+    collected by their parent :class:`QThreadPool` container immediately on
+    returning from the :meth:`run` method).
+
+    Thread Affinity
+    ----------
+    All attributes of instances of this class reside in the original thread in
+    which this worker was instantiated *except* the following, which reside in a
+    dedicated thread of a parent :class:`QThreadPool` container and hence are
+    guaranteed to be thread-safe by definition:
+
+    * The :meth:`run` method.
+    * All local objects instantiated by the :meth:`run` method.
+
+    All other attributes guaranteed to *not* initially be thread-safe. These
+    attributes may nonetheless be rendered thread-safe as follows; either:
+
+    * Define these attributes to be Qt-specific atomic types (e.g.,
+      :class:`QAtomicInt`).
+    * Lock access to these attributes behind Qt-specific mutual exclusion
+      primitives and context managers (e.g., :class:`QMutexLocker`).
+
+    Signal-slot Connections
+    ----------
+    This class subclasses the :class:`QRunnable` interface rather than the
+    standard :class:`QObject` base class. This has various real-world
+    implications, including:
+
+    * Instances of this class cannot directly participate in standard queued
+      signal-slot connections. Hence, subclasses of this class should define
+      neither signals *nor* slots. Instead:
+
+      * To emit signals from this worker to slots on objects residing in other
+        threads:
+
+        * Declare a separate :class:`QObject` subclass defining these signals.
+        * Instantiate an instance of this subclass in the parent thread in which
+          this worker is instantiated.
+        * Pass this instance to this worker's :meth:`__init__` method.
+
+      * To receive signals emitted from objects residing in other threads into
+        this worker:
 
     Attributes
     ----------
@@ -100,39 +181,74 @@ class QBetseeThreadPoolWorkerABC(QBetseeObjectMixin, QObject):
 
     See Also
     ----------
-    https://codereview.stackexchange.com/a/173258/124625
+    https://martinfitzpatrick.name/article/multithreading-pyqt-applications-with-qthreadpool
+        Prominent blog article entitled "Multithreading PyQt applications with
+        QThreadPool," strongly inspiring this implementation.
+    https://stackoverflow.com/a/34302791/2809027
         StackOverflow answer strongly inspiring this implementation.
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def __init__(self) -> None:
+    def __init__(self, fn, *args, **kwargs):
         '''
-        Initialize this worker.
-
-        Caveats
-        ----------
-        This method intentionally accepts *no* passed parameters and hence
-        cannot be passed a parent `QObject`. So, this worker is **unparented**
-        (i.e., has no such parent). Why? Because this worker will be
-        subsequently adopted into a different thread than the original thread in
-        which this worker was instantiated. However, most candidate `QObject`
-        parents of this worker would presumably reside in that original thread.
-        Objects in different threads should typically *not* control the
-        lifecycle of each other, as the parent of a child `QObject` does;
-        doing so typically violates thread-safety. (That's bad.)
+        Initialize this pooled worker.
         '''
 
-        # Initialize our superclass with *NO* passed parameters. (See above.)
+        # Initialize our superclass.
         super().__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+
+        #FIXME: This object should probably be optionally passed to this method
+        #by the external caller, permitting callers to define additional
+        #signals. Or perhaps not? Perhaps the default signals suffice. *shrug*
+        self.signals = QBetseeThreadPoolWorkerSignals()
 
         # Default this worker's initial state to the idle state.
         self._state = _ThreadWorkerState.IDLE
 
+        #FIXME: We'll probably want at least the "start_signal" attribute to be
+        #shifted into the QBetseeThreadPoolWorkerSignals() class. The remainder
+        #are probably safely deletable, now.
+
         # Connect this worker's external-facing signals to corresponding slots.
-        self.start_signal .connect(self.start)
-        self.stop_signal  .connect(self.stop)
-        self.pause_signal .connect(self.pause)
-        self.resume_signal.connect(self.resume)
+        # self.start_signal .connect(self.start)
+        # self.stop_signal  .connect(self.stop)
+        # self.pause_signal .connect(self.pause)
+        # self.resume_signal.connect(self.resume)
+
+    # ..................{ SLOTS                              }..................
+    @Slot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+
+
+    #FIXME: Everything that follows is "QObject"-based and must be refactored to
+    #leverage the "QRunnable"-based approach. Unfortunately, this means that
+    #*ALL* slots will need to be refactored into simple methods operating on
+    #either Qt-specific atomic types (e.g., "QAtomicInt") *OR* Qt-specific
+    #mutual exclusion primitives (e.g., "QMutexLocker"). Let's be honest: it's
+    #hardly ideal, but things could be substantially worse. The best example of
+    #this probably resides at:
+    #
+    #
 
     # ..................{ SIGNALS ~ external                 }..................
     # Signals externally emitted by callers owning instances of this superclass.

@@ -8,33 +8,41 @@ from PySide2.QtWidgets import (
 from PySide2.QtCore import (
     QObject, QRunnable, QThreadPool, QTimer, Signal, Slot)
 
-import time
 import traceback, sys
 
+#FIXME: Obsolete this entire submodule by the "guipoolworker" submodule. *sigh*
 
 class WorkerSignals(QObject):
     '''
     Defines the signals available from a running worker thread.
-
-    Supported signals are:
-
-    finished
-        No data
-
-    error
-        `tuple` (exctype, value, traceback.format_exc() )
-
-    result
-        `object` data returned from processing, anything
-
-    progress
-        `int` indicating % progress
-
     '''
+
+
     finished = Signal()
+    '''
+    Signal emitted by the :meth:`run` method on completing this worker,
+    regardless of whether this method successfully returned or raised an
+    exception.
+    '''
+
     error = Signal(tuple)
+    '''
+    Signal emitting a 3-tuple ``(exctype, value, traceback.format_exc())`` when
+    an exception is raised by this worker.
+    '''
+
     result = Signal(object)
+    '''
+    Signal emitting the arbitrary value returned by the :meth:`run` method on
+    successfully completing this worker if this method returned a value *or*
+    ``None`` otherwise (i.e., if this method returned no value).
+    '''
+
     progress = Signal(int)
+    '''
+    Signal emitting an integer in the range ``[0, 100]`` indicating the current
+    percentage of progress currently completed by this worker.
+    '''
 
 
 class Worker(QRunnable):

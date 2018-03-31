@@ -8,6 +8,33 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 *and* controlling the execution of simulation phases) functionality.
 '''
 
+#FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
+#with unsaved changes), the GUI should prompt the user as to whether or not they
+#would like to save those changes *BEFORE* running the simulation. In theory, we
+#should be able to reuse existing "sim_conf" functionality to do so.
+
+#FIXME: When the application closure signal is emmited (e.g., from the
+#QApplication.aboutToQuit() signal and/or QMainWindow.closeEvent() handler), the
+#following logic should be performed (in order):
+#
+#1. In the QMainWindow.closeEvent() handler only:
+#   * When the user attempts to close the application when one or more threads
+#     are currently running, a warning dialog should be displayed to the user
+#     confirming this action.
+#2. If any workers are currently running:
+#   * The stop() signal of each such worker should be emitted.
+#   * The slot handling this application closure event should then block for a
+#     reasonable amount of time (say, 100ms?) for this worker to gracefully
+#     terminate. If this worker fails to do so, more drastic measures may be
+#     necessary. (Gulp.)
+#3. If any threads are currently running (e.g., as testable via the
+#   guithreadpool.is_worker() tester), these threads should be terminated as
+#   gracefully as feasible.
+#
+#Note the QThreadPool.waitForDone(), which may assist us. If we do call that
+#function, we'll absolutely need to pass a reasonable timeout; if this timeout
+#is hit, the thread pool will need to be forcefully terminated. *shrug*
+
 #FIXME: *O.K.* Ultimately, the long-term solution will be to leverage the
 #standard "multiprocessing" package in concert with the third-party "dill"
 #package to isolate a BETSE simulator subcommand to be run to a separate
@@ -34,11 +61,6 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #"dill" solution as a first-draft solution for all of the obvious reasons:
 #"multiprocessing" is standard and we already require and love "dill", so no
 #additional dependencies are required. That's incredibly nice, really.
-
-#FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
-#with unsaved changes), the GUI should prompt the user as to whether or not they
-#would like to save those changes *BEFORE* running the simulation. In theory, we
-#should be able to reuse existing "sim_conf" functionality to do so.
 
 #FIXME: Refactor to leverage threading via the new "work" subpackage as follows:
 #
@@ -108,7 +130,7 @@ from betse.util.type import enums
 from betse.util.type.text import strs
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.guiexception import BetseeSimmerException
-from betsee.guimetadata import SCRIPT_BASENAME
+# from betsee.guimetadata import SCRIPT_BASENAME
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.guisimrunstate import (
@@ -120,6 +142,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
+from betsee.util.thread.pool import guipoolthread
 # from betsee.gui.simtab.run.work.guisimrunworkcls import (
 #     QBetseeSimmerWorkerSeed,
 # )
@@ -254,6 +277,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._phases = (self._phase_seed, self._phase_init, self._phase_sim)
 
 
+    #FIXME: Excise this method entirely, which is no longer needed.
     def _init_thread(self) -> None:
         '''
         Initialize this simulator's thread and all workers of this thread.
@@ -313,8 +337,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # for these workers to begin receiving signals.
         # self._thread.start()
 
-        from PySide2.QtCore import QThreadPool
-        self.threadpool = QThreadPool()
+        # from PySide2.QtCore import QThreadPool
+        # self.threadpool = QThreadPool()
+        pass
+
 
     @type_check
     def init(self, main_window: QBetseeMainWindow) -> None:
@@ -912,40 +938,47 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # self._thread.adopt_worker(worker_seed)
         # # worker_seed.moveToThread(self._thread)
         # # worker_seed.moveToThread(thread)
-        #
-        # #FIXME: Demonstrably awful. Pass "QObject" instances instead.
-        # worker_seed.start_signal.emit(self._sim_conf.filename)
 
         from betsee.gui.simtab.run.work.guisimrunworkpool import Worker
 
-        worker = Worker(self._run_seed, self._sim_conf.filename) # Any other args, kwargs are passed to the run function
-        # worker = Worker(self.execute_this_fn) # Any other args, kwargs are passed to the run function
-        worker.signals.result.connect(self.print_output)
+        #FIXME: The current "Worker" API accepting an arbitrary callable seems
+        #dangerous, particularly if that callable is a bound method living in a
+        #different thread. We probably instead want to leverage the old
+        #_work()-based approach by requiring workers to subclass this superclass
+        #and define an abstract _work() method that the superclass run() method
+        #then internally calls. Anyway!
+
+        # Any other args, kwargs are passed to the run function.
+        #
+        # Note: is deep copying arguments necessary? No idea. It probably is to
+        # avoid race conditions induced by desynchronization issues.
+        worker = Worker(_run_all_subcommands, str(self._sim_conf.filename))
+
+        #FIXME: Uncommenting the following line induces hard segmentation faults
+        #on worker completion with *NO* explicit error message. We have little
+        #to no interest in debugging this at the moment; ergo, this remains
+        #commented out until further notice. *mournful_sigh*
+        # worker.signals.result.connect(self.print_output)
+
         worker.signals.finished.connect(self.thread_complete)
         worker.signals.progress.connect(self.progress_fn)
 
-        self.threadpool.start(worker)
+        #FIXME: *CRITICAL*: we're currently ignoring exceptions raised by this
+        #worker. To handle these exceptions, we'll need to:
+        #
+        #* Define a new _catch_exception(tuple) slot of this class, presumably
+        #  by either:
+        #  * Re-raising the exception described by the passed tuple. (Unclear if
+        #    this is feasible. If it is, this might be the ideal solution.)
+        #  * Directly call a method displaying the exception described by the
+        #    passed tuple. (Less ideal, but probably *MUCH* simpler to
+        #    implement as a first-draft approach.)
+        #* Connect this slot to the "worker.signals.error" signal above.
 
-    # _start_signal = Signal(str)
+        #FIXME: Do this rather than what we currently do:
+        # guipoolthread.run_worker(worker)
+        guipoolthread.get_thread_pool().start(worker)
 
-    def _run_seed(self, conf_filename):
-
-        # Isolate importation statements to this worker.
-        from betse.science.simrunner import SimRunner
-
-        sim_runner = SimRunner(conf_filename=conf_filename)
-        sim_runner.seed()
-
-    def execute_this_fn(self, progress_callback):
-        import time
-        for n in range(0, 32):
-            # time.sleep(1)
-            a = '\0'
-            for i in range(10000000):
-                a = '\0'*10000
-            progress_callback.emit(n*100/4)
-
-        return "Done."
 
     @Slot(int)
     def progress_fn(self, n):
@@ -955,7 +988,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     def thread_complete(self):
         print("THREAD COMPLETE!")
 
-    @Slot(str)
+    @Slot(object)
     def print_output(self, s):
         print(s)
 
@@ -1011,3 +1044,60 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Set the text of the label displaying this synopsis to this text.
         self._status.setText(status_text)
+
+# ....................{ RUNNERS                            }....................
+def _run_all_subcommands(conf_filename):
+
+    # Isolate importation statements to this worker.
+    from betse.science.parameters import Parameters
+    from betse.science.simrunner import SimRunner
+
+    #FIXME: Non-ideal for the following obvious reasons:
+    #
+    #* The "main_window.sim_conf" object already has a Parameters() object
+    #  in-memory. The changes performed here will *NOT* be propagated back
+    #  into that object. That is bad.
+    #* We shouldn't need to manually modify this file, anyway. Or should we?
+    #  Should the GUI just assume absolute control over this file? That
+    #  doesn't quite seem right, but it certainly would be simpler to do so.
+    #  Well, at least for now.
+    #FIXME: Ah-ha! The simplest means of circumventing the need to write
+    #these changes back out to disk would be to refactor the
+    #SimRunner.__init__() method to optionally accept a "Parameters" object
+    #classified into a "_p" instance variable. Doing so, however, would mean
+    #refactoring most methods of this class to reuse "_p" rather than
+    #instantiate a new "Parameters" object each call. Of course, we arguably
+    #should be doing that *ANYWAY* by unconditionally creating "_p" in
+    #SimRunner.__init__() regardless of whether a "Parameters" object is
+    #passed or not. We'll need to examine this further, of course.
+
+    # Simulation configuration deserialized from this file.
+    p = Parameters().load(conf_filename)
+
+    # Disable all simulation configuration options either requiring
+    # interactive user input *OR* displaying graphical output intended for
+    # interactive user consumption (e.g., plots, animations).
+    p.anim.is_after_sim_show = False
+    p.anim.is_while_sim_show = False
+    p.plot.is_after_sim_show = False
+
+    # Enable all simulation configuration options exporting to disk.
+    p.anim.is_after_sim_save = True
+    p.anim.is_while_sim_save = True
+    p.plot.is_after_sim_save = True
+
+    # Reserialize these changes back to this file.
+    p.save_inplace()
+
+    # return
+
+    #FIXME: Uncomment the plot_seed() call after pipelining that subcommand.
+
+    # Run all simulation subcommands.
+    sim_runner = SimRunner(conf_filename=conf_filename)
+    sim_runner.seed()
+    sim_runner.init()
+    sim_runner.sim()
+    # sim_runner.plot_seed()
+    sim_runner.plot_init()
+    sim_runner.plot_sim()

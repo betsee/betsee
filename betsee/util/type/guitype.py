@@ -8,7 +8,7 @@ Core :mod:`PySide2`-specific **type** (i.e., class) functionality.
 '''
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QAbstractEventDispatcher, QThread
+from PySide2.QtCore import QAbstractEventDispatcher, QThread, QThreadPool
 from PySide2.QtWidgets import QWidget
 from betse.util.type.types import NoneType
 
@@ -34,6 +34,13 @@ the singleton ``None`` object.
 QThreadOrNoneTypes = (QThread, NoneType)
 '''
 Tuple of both the :mod:`PySide2`-based thread type *and* the type of the
+singleton ``None`` object.
+'''
+
+
+QThreadPoolOrNoneTypes = (QThreadPool, NoneType)
+'''
+Tuple of both the :mod:`PySide2`-based thread pool type *and* the type of the
 singleton ``None`` object.
 '''
 
