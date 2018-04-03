@@ -415,6 +415,12 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # status in a sane manner.
         main_window.sim_run_player_substatus_group.hide()
 
+        #FIXME: Re-enable after implementing queueing properly.
+        main_window.sim_run_queue_group.setEnabled(False)
+
+        #FIXME: Unhide after implementing progress bar updating properly.
+        main_window.sim_run_player_progress.hide()
+
 
     @type_check
     def _init_connections(self, main_window: QBetseeMainWindow) -> None:
@@ -1005,7 +1011,11 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # To reduce the likelihood of accidental interaction with widgets
         # intended to be disabled, do so *BEFORE* subsequent slot logic.
         self._player_toolbar.setEnabled(self.is_queued)
-        self._action_halt_playing.setEnabled(self._is_working)
+
+        #FIXME: Uncomment this line and comment the following after implementing
+        #the _halt_playing() method.
+        # self._action_halt_playing.setEnabled(self._is_working)
+        self._action_halt_playing.setEnabled(False)
 
         # Update the verbose status of this simulator.
         self._update_status()
