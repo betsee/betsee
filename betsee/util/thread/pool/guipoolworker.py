@@ -16,7 +16,7 @@ dedicated thread by a parent :class:`QThreadPool` container) classes.
 
 # ....................{ IMPORTS                            }....................
 import traceback, sys
-from PySide2.QtCore import QObject, QRunnable, Signal, Slot  # QCoreApplication,
+from PySide2.QtCore import QObject, QRunnable, Signal  # QCoreApplication,
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.enums import make_enum
@@ -115,7 +115,7 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     error = Signal(tuple)
     '''
     Signal emitting a 3-tuple ``(exctype, value, traceback.format_exc())`` when
-    an exception is raised by this worker.
+    this worker raises an exception.
     '''
 
 # ....................{ SUPERCLASSES ~ worker              }....................
@@ -153,22 +153,105 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
     ----------
     This class subclasses the :class:`QRunnable` interface rather than the
     standard :class:`QObject` base class. This has various real-world
-    implications, including:
+    implications. In particular, subclasses of this class *cannot* directly
+    participate in standard queued signal-slot connections and hence should
+    define neither signals *nor* slots.
 
-    * Instances of this class cannot directly participate in standard queued
-      signal-slot connections. Hence, subclasses of this class should define
-      neither signals *nor* slots. Instead:
+    Instead, to emit signals from this worker to slots on objects residing in
+    other threads:
 
-      * To emit signals from this worker to slots on objects residing in other
-        threads:
+    * Declare a separate :class:`QObject` subclass defining these signals.
+    * Instantiate an instance of this subclass in the parent thread in which
+      this worker is instantiated.
+    * Pass this instance to this worker's :meth:`__init__` method.
 
-        * Declare a separate :class:`QObject` subclass defining these signals.
-        * Instantiate an instance of this subclass in the parent thread in which
-          this worker is instantiated.
-        * Pass this instance to this worker's :meth:`__init__` method.
+    By definition, this worker *cannot* receive any signals emitted from any
+    objects residing in other threads as conventional slots. Instead:
 
-      * To receive signals emitted from objects residing in other threads into
-        this worker:
+    * Define each such slot as a simple method of this subclass. Since this
+      method will be run from the other thread in which the object calling this
+      method resides rather than the pooled thread in which this worker resides,
+      care should be taken within the body of this method to protectively guard
+      access to instance variables with Qt-specific mutual exclusion primitives.
+      While numerous primitives exist, the following maximize thread-safety in
+      common edge cases (e.g., exceptions) and hence are strongly preferred:
+
+      * :class:`QReadLocker` and :class:`QWriteLocker`, context managers
+        suitable for general-purpose use in guarding access to variables safely:
+
+        * Readable from multiple concurrent threads.
+        * Writable from only a single thread at a time.
+
+      * :class:`QMutexLocker`, a context manager suitable for general-purpose
+        use in guarding access to variables safely readable *and* writable from
+        only a single thread at a time.
+
+    Lastly, note that Qt defines numerous atomic types publicly accessible to
+    C++ but *not* Python applications (e.g., :class:`QtCore::QAtomicInt`).
+    In theory, these types could be leveraged as an efficient alternative to the
+    primitives listed above. In practice, these types have yet to be exposed via
+    any Python Qt framework (PyQt5, PySide2, or otherwise) and hence remain a
+    pipe dream.
+
+    Versus QtConcurrent
+    ----------
+    The API published by this superclass bears a mildly passing resemblance to
+    the API published by the QtConcurrent framework -- notably, the
+    :class:`PySide2.QtCore.QFuture` class. Unfortunately, the latter imposes
+    extreme constraints *not* imposed by this superclass.
+
+    The QtConcurrent framework only provides a single means of multithreading
+    arbitrary long-running tasks: :func:`PySide2.QtConcurrent.run`. The
+    official documentation publicly admits the uselessness of this function:
+
+        Note that the :class:`PySide2.QtCore.QFuture` returned by
+        :func:`PySide2.QtConcurrent.run` does not support canceling, pausing, or
+        progress reporting. The :class:`PySide2.QtCore.QFuture` returned can
+        only be used to query for the running/finished status and the return
+        value of the function.
+
+    One enterprising StackOverflower `circumvented this constraint`_ by defining
+    a robust C++ :class:`PySide2.QtCore.QFuture` analogue supporting canceling,
+    pausing, and progress reporting. Sadly, this analogue requires C++-specific
+    facilities unavailable under Python, including:
+
+    * **Templating.** Since the :class:`PySide2.QtCore.QFuture` API is
+      templated, all analogues of that API are also necessarily templated.
+    * Private, undocumented Qt APIs (e.g., ``QFutureInterface``,
+      ``QFutureInterfaceBase``).
+
+    Ergo, the QtConcurrent framework is largely inapplicable in Python and
+    certainly inapplicable for multithreading arbitrary long-running tasks.
+
+    .. _circumvented this constraint:
+       https://stackoverflow.com/a/16729619/2809027
+
+    Versus QThread + QObject
+    ----------
+    The API published by this superclass also bears a passing resemblance to
+    various third-party APIs duplicating the common worker-thread Qt model,
+    which typically:
+
+    * Defines one or more application-specific **worker types** (i.e.,
+      :class:`QObject` subclasses performing long-running tasks to be
+      multithreaded).
+    * Instantiates these subclasses as local worker objects.
+    * Instantiates a local :class:`QThread` object.
+    * Moves these workers into this thread via the
+      :class:`QObject.moveToThread` method.
+    * Starts this thread by calling the :class:`QThread.start` method.
+    * Starts, pauses, resumes, cancels, and restarts these workers thread by
+      emitting signals connected to slots defined on these workers.
+
+    As with the aforementioned QtConcurrent framework, this approach
+    fundamentally works in C++ but fails in Python. For unknown reasons, the
+    :class:`QObject.moveToThread` method silently fails to properly move worker
+    objects in entirety from the main thread into the worker thread. Slots
+    signalled on workers claim to run from within the worker thread but instead
+    run from within the main thread, as trivially observed with logging.
+
+    Ergo, the worker-thread Qt model is also largely inapplicable in Python and
+    certainly inapplicable for multithreading arbitrary long-running tasks.
 
     Attributes
     ----------
@@ -330,9 +413,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
     '''
 
     # ..................{ SLOTS                              }..................
-    #FIXME: Obviously, forcing "str" usage is awful. See above for solutions.
-    @Slot(str)
-    def start(self, arbitrary_str: str) -> None:
+    def start(self) -> None:
         '''
         Slot performing *all* subclass-specific business logic for this worker.
 
