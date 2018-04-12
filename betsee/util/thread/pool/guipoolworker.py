@@ -9,70 +9,29 @@ startable, pausable, resumable, and stoppable business logic isolated to a
 dedicated thread by a parent :class:`QThreadPool` container) classes.
 '''
 
-#FIXME: Investigate the "QtConcurent" framework further. My working assumption
-#is that this framework required a map-reduce architecture. If that is *NOT* the
-#case, we may in fact prefer to leverage "QtConcurent", which would offer worker
-#pausing functionality built-in. *shrug*
-
 # ....................{ IMPORTS                            }....................
 import traceback, sys
-from PySide2.QtCore import QObject, QRunnable, Signal  # QCoreApplication,
+from PySide2.QtCore import (
+    QMutex, QMutexLocker, QObject, QRunnable, Signal)  # QCoreApplication,
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
-from betse.util.type.enums import make_enum
-# from betse.util.type.types import type_check
-from betsee.guiexception import BetseePySideThreadWorkerException
+from betse.util.type.call.memoizers import property_cached
+from betse.util.type.types import (
+    type_check,
+    CallableTypes,
+    MappingOrNoneTypes,
+    SequenceOrNoneTypes,
+)
+from betsee.guiexception import BetseePySideThreadWorkerStopException
 from betsee.util.thread import guithread
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
-
-# ....................{ ENUMERATIONS                       }....................
-#FIXME: Consider extracting into a new "betsee.util.thread.guithreadenum"
-#submodule for use across multiple worker submodules.
-_ThreadWorkerState = make_enum(
-    class_name='_ThreadWorkerState',
-    member_names=('IDLE', 'WORKING', 'PAUSED',))
-'''
-Enumeration of all supported types of **worker state** (i.e., mutually
-exclusive high-level execution state of a :class:`QBetseeThreadPoolWorkerABC` instance,
-analogous to a state in a finite state automata).
-
-Attributes
-----------
-IDLE : enum
-    Idle state, implying this worker to be **idle** (i.e., neither working nor
-    paused while working). From this state, this worker may freely transition to
-    the working but *not* paused state.
-WORKING : enum
-    Working state, implying this worker to be **working** (i.e., performing
-    subclass-specific business logic, typically expected to be long-running).
-    From this state, this worker may freely transition to *any* other state.
-PAUSED : enum
-    Paused state, implying this worker to be **paused** (i.e., temporarily
-    halted from performing subclass-specific business logic). From this state,
-    this worker may freely transition to *any* other state. Transitioning from
-    this state to the working state is also referred to as "resuming."
-'''
-
-# ....................{ EXCEPTIONS                         }....................
-#FIXME: Genericize this as well. Maybe to a new "guithreadexception" submodule?
-class _ThreadWorkerStopException(BetseePySideThreadWorkerException):
-    '''
-    :class:`QBetseeThreadPoolWorkerABC`-specific exception internally raised by the
-    :meth:`QBetseeThreadPoolWorkerABC._halt_work_if_requested` method and caught by
-    the :meth:`QBetseeThreadPoolWorkerABC.start` slot.
-
-    This exception is intended exclusively for private use by the aforementioned
-    methods as a crude, albeit sufficient, means of facilitating subclass
-    intercommunication.
-    '''
-
-    pass
+from betsee.util.thread.guithreadenum import ThreadWorkerState
 
 # ....................{ SUPERCLASSES ~ worker : signal     }....................
 class QBetseeThreadPoolWorkerSignals(QObject):
     '''
     Low-level collection of all **pooled worker signals** (i.e., :class:`Signal`
-    instances thread-safely emittable
+    instances thread-safely emittable by the :meth:`QBetseeThreadPoolWorker.run`
+    method from an arbitrary pooled thread possibly running *no* Qt event loop).
 
     Each instance of this class is owned by a pooled worker (i.e.,
     :class:`QBetseeThreadPoolWorker` instance), whose :meth:`run` method emits
@@ -89,37 +48,63 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     '''
 
     # ..................{ SIGNALS                            }..................
-    progress = Signal(int)
+    started = Signal()
     '''
-    Signal emitting an integer in the range ``[0, 100]`` indicating the current
-    percentage of progress currently completed by this worker.
+    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method immediately
+    before running the :meth:`QBetseeThreadPoolWorker._work` method performing
+    all subclass-specific business logic.
+    '''
+
+    # ..................{ SIGNALS ~ finished                 }..................
+    failed = Signal(tuple)
+    '''
+    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method on catching
+    a fatal exception raised by the subclass-specific
+    :meth:`QBetseeThreadPoolWorker._work` method, passed the 2-tuple
+    ``(exception, exception_traceback)`` describing that exception, where:
+
+    * ``exception`` is the raised exception.
+    * ``exception_traceback`` is the traceback object associated with that
+      exception, suitable for passing as is to utility functions in the
+      standard :mod:`traceback` module accepting a traceback object (e.g.,
+      :func:`traceback.format_exception`, :func:`traceback.print_exception`).
     '''
 
 
-    finished = Signal()
+    finished = Signal(bool)
     '''
-    Signal emitted by the :meth:`run` method on completing this worker,
-    regardless of whether this method successfully returned or raised an
-    exception.
+    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method immediately
+    before returning from that method, passed either ``True`` if that method
+    successfully performed all worker-specific business logic (i.e., if the
+    :meth:`_work` method successfully returned *without* raising exceptions)
+    *or* ``False`` otherwise.
+
+    For finer-grained control over worker results, connect to:
+
+    * The :attr:`failed` signal to obtain exceptions raised by this worker.
+    * The :attr:`succeeded` signal to obtain objects returned by this worker.
     '''
 
 
-    result = Signal(object)
+    progressed = Signal(int)
     '''
-    Signal emitting the arbitrary value returned by the :meth:`run` method on
-    successfully completing this worker if this method returned a value *or*
-    ``None`` otherwise (i.e., if this method returned no value).
-    '''
-
-
-    error = Signal(tuple)
-    '''
-    Signal emitting a 3-tuple ``(exctype, value, traceback.format_exc())`` when
-    this worker raises an exception.
+    Signal repeatedly emitted by the :meth:`QBetseeThreadPoolWorker.run` method,
+    passed the **progress percentage** (i.e., non-negative integer in the
+    range ``[0, 100]``) of work currently completed by this worker.
     '''
 
-# ....................{ SUPERCLASSES ~ worker              }....................
-class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
+
+    succeeded = Signal(object)
+    '''
+    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method on
+    successfully completing this worker, passed the arbitrary value returned by
+    the subclass-specific :meth:`QBetseeThreadPoolWorker._work` method if that
+    method returned a value *or* ``None`` otherwise (i.e., in the case that
+    method returned no value).
+    '''
+
+# ....................{ SUPERCLASSES                       }....................
+class QBetseeThreadPoolWorker(QRunnable):
     '''
     Low-level **pooled worker** (i.e., thread-safe object implementing
     generically startable, pausable, resumable, and stoppable business logic
@@ -191,7 +176,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
     In theory, these types could be leveraged as an efficient alternative to the
     primitives listed above. In practice, these types have yet to be exposed via
     any Python Qt framework (PyQt5, PySide2, or otherwise) and hence remain a
-    pipe dream.
+    pipe dream at best.
 
     Versus QtConcurrent
     ----------
@@ -229,25 +214,25 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
     Versus QThread + QObject
     ----------
     The API published by this superclass also bears a passing resemblance to
-    various third-party APIs duplicating the common worker-thread Qt model,
-    which typically:
+    various third-party APIs duplicating the common worker-thread Qt model.
+    These models typically:
 
-    * Defines one or more application-specific **worker types** (i.e.,
+    * Define one or more application-specific **worker types** (i.e.,
       :class:`QObject` subclasses performing long-running tasks to be
       multithreaded).
-    * Instantiates these subclasses as local worker objects.
-    * Instantiates a local :class:`QThread` object.
-    * Moves these workers into this thread via the
-      :class:`QObject.moveToThread` method.
-    * Starts this thread by calling the :class:`QThread.start` method.
-    * Starts, pauses, resumes, cancels, and restarts these workers thread by
-      emitting signals connected to slots defined on these workers.
+    * Instantiate these subclasses as local worker objects.
+    * Instantiate a local :class:`QThread` object.
+    * Move these workers into this thread via the :class:`QObject.moveToThread`
+      method.
+    * Start this thread by calling the :class:`QThread.start` method.
+    * Start, pause, resume, cancel, and restart these workers thread by emitting
+      signals connected to slots defined on these workers.
 
     As with the aforementioned QtConcurrent framework, this approach
     fundamentally works in C++ but fails in Python. For unknown reasons, the
     :class:`QObject.moveToThread` method silently fails to properly move worker
     objects in entirety from the main thread into the worker thread. Slots
-    signalled on workers claim to run from within the worker thread but instead
+    defined on workers claim to run from within their worker thread but instead
     run from within the main thread, as trivially observed with logging.
 
     Ergo, the worker-thread Qt model is also largely inapplicable in Python and
@@ -255,12 +240,20 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
 
     Attributes
     ----------
-    _state : _ThreadWorkerState
-        Current execution state of this worker. For thread-safety, this state
-        should *not* be externally accessed by objects residing in other
-        threads. Doing so safely would require thread-safe mutual exclusion
-        (e.g., with a dedicated :class:`QMutexLocker` context manager), which
-        currently exceeds the mandate of this superclass.
+    _state : ThreadWorkerState:
+        Non-thread-safe current execution state of this worker. This state is
+        non-thread-safe and hence should *never* be accessed by any callable
+        except the thread-safe :meth:`state` property guarding this state with
+        mutual exclusion primitives.
+    _state_lock : QMutex
+        Non-exception-safe mutual exclusion primitive rendering the
+        :meth:`state` property thread-safe. This primitive is non-exception-safe
+        and hence should *never* be accessed directly. Each access to this
+        primitive should be encapsulated by instantiating a one-off
+        exception-safe :class:QMutexLocker` context manager as the target of a
+        `with` context. Note that the context provided by the
+        :class:QMutexLocker` class is *not* safely reusable and hence *must* be
+        re-instantiated in each `with` context.
 
     See Also
     ----------
@@ -272,7 +265,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def __init__(self, fn, *args, **kwargs):
+    def __init__(self) -> None:
         '''
         Initialize this pooled worker.
         '''
@@ -280,142 +273,103 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
         # Initialize our superclass.
         super().__init__()
 
-        # Store constructor arguments (re-used for processing)
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
+        # Classify all mutual exclusion objects.
+        self._state_lock = QMutex()
 
-        #FIXME: This object should probably be optionally passed to this method
-        #by the external caller, permitting callers to define additional
-        #signals. Or perhaps not? Perhaps the default signals suffice. *shrug*
-        self.signals = QBetseeThreadPoolWorkerSignals()
+        # Nullify all remaining instance variables for safety.
+        self._state = None
 
-        # Default this worker's initial state to the idle state.
-        self._state = _ThreadWorkerState.IDLE
+        # Default this worker's initial state to the idle state *AFTER*
+        # initializing all instance variables, which this property setter
+        # internally assumes to be initialized.
+        self.state = ThreadWorkerState.IDLE
 
-        #FIXME: We'll probably want at least the "start_signal" attribute to be
-        #shifted into the QBetseeThreadPoolWorkerSignals() class. The remainder
-        #are probably safely deletable, now.
+    # ..................{ PROPERTIES                         }..................
+    @property_cached
+    def signals(self) -> QBetseeThreadPoolWorkerSignals:
+        '''
+        Low-level collection of all public signals thread-safely emittable by
+        the :meth:`run` method from within an arbitrary pooled thread possibly
+        running *no* Qt event loop.
 
-        # Connect this worker's external-facing signals to corresponding slots.
-        # self.start_signal .connect(self.start)
-        # self.stop_signal  .connect(self.stop)
-        # self.pause_signal .connect(self.pause)
-        # self.resume_signal.connect(self.resume)
+        Design
+        ----------
+        This instance variable is intentionally implemented as a cached property
+        to permit subclasses to expose subclass-specific signals (e.g., by
+        trivially redefining this property to return a
+        subclass-specific :class:`QBetseeThreadPoolWorkerSignals` instance).
+        '''
+
+        return QBetseeThreadPoolWorkerSignals()
+
+    # ..................{ PROPERTIES ~ state                 }..................
+    @property
+    def state(self) -> ThreadWorkerState:
+        '''
+        Current execution state of this worker, thread-safely accessible from
+        *any* object in *any* thread (including this worker in its own thread).
+        '''
+
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads, return this state.
+        #
+        # Note that this "QMutexLocker" object is *NOT* safely reusable and
+        # hence *MUST* be re-instantiated in each "with" context.
+        with QMutexLocker(self._state_lock):
+            return self._state
+
+
+    @state.setter
+    def state(self, state: ThreadWorkerState) -> None:
+        '''
+        Thread-safely set the current execution state of this worker to the
+        passed state in a manner settable from *any* object in *any* thread
+        (including this worker in its own thread).
+
+        Parameters
+        ----------
+        state : ThreadWorkerState
+            Execution state to set this worker to.
+        '''
+
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads, set this state.
+        #
+        # Note that this "QMutexLocker" object is *NOT* safely reusable and
+        # hence *MUST* be re-instantiated in each "with" context.
+        with QMutexLocker(self._state_lock):
+            self._state = state
 
     # ..................{ SLOTS                              }..................
-    @Slot()
     def run(self):
-        '''
-        Initialise the runner function with passed args, kwargs.
-        '''
 
-        # Retrieve args/kwargs here; and fire processing using them
+        # Attempt to...
         try:
-            result = self.fn(*self.args, **self.kwargs)
+            # Value returned by performing all subclass-specific business logic.
+            return_value = self._work()
+        # If this worker raised an exception...
         except:
+            #FIXME: Refactor to emit a 2-tuple as described above instead.
+            #FIXME: Log something up.
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
+            self.signals.failed.emit((exctype, value, traceback.format_exc()))
+        # Else, this worker raised no exception. In this case...
         else:
-            self.signals.result.emit(result)  # Return the result of the processing
+            #FIXME: Log something up.
+            self.signals.succeeded.emit(return_value)
+        # In either case, this worker completed. In this case...
         finally:
-            self.signals.finished.emit()  # Done
+            #FIXME: Log something up.
+            self.signals.finished.emit()
 
 
-    #FIXME: Everything that follows is "QObject"-based and must be refactored to
-    #leverage the "QRunnable"-based approach. Unfortunately, this means that
-    #*ALL* slots will need to be refactored into simple methods operating on
-    #either Qt-specific atomic types (e.g., "QAtomicInt") *OR* Qt-specific
-    #mutual exclusion primitives (e.g., "QMutexLocker"). Let's be honest: it's
-    #hardly ideal, but things could be substantially worse. The best example of
-    #this probably resides at:
-    #
-    #
-
-    # ..................{ SIGNALS ~ external                 }..................
-    # Signals externally emitted by callers owning instances of this superclass.
-
-    #FIXME: Obviously, requiring a string be unconditionally passed to all
-    #start_signal() invocations is... well, insane. Instead, this should be
-    #refactored as follows:
-    #
-    #* Define a new "QBetseeThreadPoolWorkerStartArgsABC(QObject)" class in this
-    #  or possibly another submodule (e.g., "guiworkerstartcls").
-    #* Rewrite this signal to simply read:
-    #     start_signal = Signal(QBetseeThreadPoolWorkerStartArgsABC)
-    #* Rewrite the start() slot and _work() methods defined below to similarly
-    #  accept instances of this "QBetseeThreadPoolWorkerStartArgsABC" class rather
-    #  than... raw strings. *sigh*
-    #* Refactor all subclasses of this class similarly.
-    #* Refactor all emissions of this signal to emit
-    #  "QBetseeThreadPoolWorkerStartArgsABC" instances rather than raw strings.
-    #FIXME: Actually, we didn't realize that signals could emit arbitrary Python
-    #objects. Apparently, they can. Ergo, the above plan should be refactored to
-    #instead subclass "ThreadWorkerStartArgsABC(object, meta=ABCMeta)". Maybe?
-    start_signal = Signal(str)
-    '''
-    Signal connected the :meth:`start` slot starting this worker.
-
-    This signal is a caller convenience simplifying worker usage. Alternately,
-    callers may elect to connect caller-defined signals to this slot as needed.
-    '''
-
-
-    stop_signal = Signal()
-    '''
-    Signal connected the :meth:`stop` slot starting this worker.
-
-    This signal is a caller convenience simplifying worker usage. Alternately,
-    callers may elect to connect caller-defined signals to this slot as needed.
-    '''
-
-
-    pause_signal = Signal()
-    '''
-    Signal connected the :meth:`pause` slot pausing this worker.
-
-    This signal is a caller convenience simplifying worker usage. Alternately,
-    callers may elect to connect caller-defined signals to this slot as needed.
-    '''
-
-
-    resume_signal = Signal()
-    '''
-    Signal connected the :meth:`resume` slot resuming this worker.
-
-    This signal is a caller convenience simplifying worker usage. Alternately,
-    callers may elect to connect caller-defined signals to this slot as needed.
-    '''
-
-    # ..................{ SIGNALS ~ internal                 }..................
-    # Signals internally emitted by instances of this superclass.
-
-    started = Signal()
-    '''
-    Signal emitted immediately on entering the :meth:`start` slot starting this
-    worker.
-
-    This signal is emitted *before* that slot performs *any* subclass-specific
-    business logic for this worker.
-    '''
-
-
-    finished = Signal(bool)
-    '''
-    Signal emitted immediately before returning from the :meth:`start` slot for
-    this worker, passed either ``True`` if this slot successfully performed all
-    subclass-specific business logic for this worker (i.e., if the :meth:`_work`
-    method returns *without* raising exceptions) *or* ``False`` otherwise.
-
-    This signal is emitted *after* that slot performs *all* subclass-specific
-    business logic for this worker.
-    '''
-
-    # ..................{ SLOTS                              }..................
+    #FIXME: Integrate into the run() method above.
     def start(self) -> None:
         '''
-        Slot performing *all* subclass-specific business logic for this worker.
+        Thread-safe psuedo-slot (i.e., non-slot method mimicking the
+        thread-safe, push-based action of a genuine slot) performing *all*
+        subclass-specific business logic for this worker.
 
         This slot works in a thread-safe manner safely pausable and stoppable at
         any time (e.g., by emitting a signal connected to the :meth:`pause` or
@@ -423,19 +377,19 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
 
         States
         ----------
-        If this worker is in the :attr:`_ThreadWorkerState.IDLE` state, this
-        slot changes to the :attr:`_ThreadWorkerState.WORKING` state and calls
+        If this worker is in the :attr:`ThreadWorkerState.IDLE` state, this
+        slot changes to the :attr:`ThreadWorkerState.WORKING` state and calls
         the subclass :meth:`_work` method.
 
-        If this worker is in the :attr:`_ThreadWorkerState.PAUSED` state, this
+        If this worker is in the :attr:`ThreadWorkerState.PAUSED` state, this
         slot interprets this signal as a request to resume the work presumably
         previously performed by this worker by a prior signalling of this slot.
         To avoid reentrancy issues, this slot changes to the
-        :attr:`_ThreadWorkerState.WORKING` state and immediately returns.
+        :attr:`ThreadWorkerState.WORKING` state and immediately returns.
         Assuming that a prior call to this slot is still executing, that call
         will internally detect this change and resume working as expected.
 
-        If this worker is in the :attr:`_ThreadWorkerState.WORKING` state, this
+        If this worker is in the :attr:`ThreadWorkerState.WORKING` state, this
         slot interprets this signal as an accidental attempt by an external
         caller to re-perform the work concurrently being performed by a prior
         call to this slot. In that case, this slot safely logs a non-fatal
@@ -466,19 +420,19 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
         # If this worker is currently paused, resume the prior call to this
         # start() slot by changing to the working state and returning. See the
         # method docstring for commentary.
-        if self._state is _ThreadWorkerState.PAUSED:
+        if self._state is ThreadWorkerState.PAUSED:
             logs.log_debug(
                 'Resuming thread "%d" worker "%s" '
                 'via reentrant start() slot...',
                 guithread.get_current_thread_id(), self.obj_name)
-            self._state = _ThreadWorkerState.WORKING
+            self._state = ThreadWorkerState.WORKING
             return
 
         # If this worker is currently running, resume the prior call to this
         # start() slot by preserving the working state and returning. See the
         # method docstring for commentary. Unlike the prior logic, this logic
         # constitutes a non-fatal error and is logged as such.
-        if self._state is _ThreadWorkerState.WORKING:
+        if self._state is ThreadWorkerState.WORKING:
             logs.log_warning(
                 'Ignoring attempt to reenter '
                 'thread "%d" worker "%s" start() slot.',
@@ -491,7 +445,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
             guithread.get_current_thread_id(), self.obj_name)
 
         # Change to the working state.
-        self._state = _ThreadWorkerState.WORKING
+        self._state = ThreadWorkerState.WORKING
 
         # Notify external subscribers *BEFORE* beginning subclass work.
         self.started.emit()
@@ -505,7 +459,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
             self._halt_work_if_requested()
 
             # Perform all subclass work.
-            self._work(arbitrary_str)
+            self._work()
 
             # Note the _work() method called above to have returned successfully
             # (i.e., *WITHOUT* raising exceptions).
@@ -513,13 +467,13 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
 
             # If the state of this worker is still the working state, set this
             # state to the idle (i.e., non-working) state to preserve sanity.
-            if self._state is _ThreadWorkerState.WORKING:
-                self._state = _ThreadWorkerState.IDLE
+            if self._state is ThreadWorkerState.WORKING:
+                self._state = ThreadWorkerState.IDLE
         # If a periodic call to the _halt_work_if_requested() method performed
         # within the above call detects either this worker or this worker's
         # thread has been externally requested to stop, do so gracefully by...
         # doing absolutely nothing. Welp, that was easy.
-        except _ThreadWorkerStopException:
+        except BetseePySideThreadWorkerStopException:
             pass
 
         # Log this completion.
@@ -534,10 +488,20 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
         self.finished.emit(is_success)
 
 
-    @Slot()
+    #FIXME: Everything that follows is "QObject"-based and must be refactored to
+    #leverage the "QRunnable"-based approach. Unfortunately, this means that
+    #*ALL* slots will need to be refactored into simple methods operating on
+    #either Qt-specific atomic types (e.g., "QAtomicInt") *OR* Qt-specific
+    #mutual exclusion primitives (e.g., "QMutexLocker"). Let's be honest: it's
+    #hardly ideal, but things could be substantially worse. The best example of
+    #this probably resides at... *shrug*
+
+    # ..................{ PSEUDO-SLOTS                       }..................
     def stop(self) -> None:
         '''
-        Slot stopping all work performed by this worker.
+        Thread-safe psuedo-slot (i.e., non-slot method mimicking the
+        thread-safe, push-based action of a genuine slot) stopping all work
+        performed by this worker.
 
         This slot prematurely halts this work in a thread-safe manner. Whether
         this work is safely restartable (e.g., by emitting a signal connected to
@@ -546,14 +510,14 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
 
         States
         ----------
-        If this worker is in the :attr:`_ThreadWorkerState.IDLE` state, this
+        If this worker is in the :attr:`ThreadWorkerState.IDLE` state, this
         slot silently reduces to a noop and preserves the existing state. In
         this case, this worker remains idle.
 
-        If this worker is in either the :attr:`_ThreadWorkerState.WORKING` or
-        :attr:`_ThreadWorkerState.PAUSED`, implying this worker to either
+        If this worker is in either the :attr:`ThreadWorkerState.WORKING` or
+        :attr:`ThreadWorkerState.PAUSED`, implying this worker to either
         currently be or recently have been working, this slot changes the
-        current state to the :attr:`_ThreadWorkerState.IDLE` state. In either
+        current state to the :attr:`ThreadWorkerState.IDLE` state. In either
         case, this worker ceases working.
         '''
 
@@ -563,14 +527,15 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
             guithread.get_current_thread_id(), self.obj_name)
 
         # If this worker is currently working or paused, stop this worker.
-        if self._state is not _ThreadWorkerState.IDLE:
-            self._state = _ThreadWorkerState.IDLE
+        if self._state is not ThreadWorkerState.IDLE:
+            self._state = ThreadWorkerState.IDLE
 
     # ..................{ SLOTS ~ pause                      }..................
-    @Slot()
     def pause(self) -> None:
         '''
-        Slot pausing all work performed by this worker.
+        Thread-safe psuedo-slot (i.e., non-slot method mimicking the
+        thread-safe, push-based action of a genuine slot) pausing all work
+        performed by this worker.
 
         This slot temporarily halts this work in a thread-safe manner safely
         resumable at any time (e.g., by emitting a signal connected to the
@@ -593,7 +558,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
         event_dispatcher = guithread.get_current_event_dispatcher()
 
         # If this worker is *NOT* currently working...
-        if self._state is not _ThreadWorkerState.WORKING:
+        if self._state is not ThreadWorkerState.WORKING:
             # Log this attempt.
             logs.log_debug(
                 'Ignoring attempt to pause idle or already paused '
@@ -610,31 +575,31 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
             guithread.get_current_thread_id(), self.obj_name)
 
         # Change this worker's state to paused.
-        self._state = _ThreadWorkerState.PAUSED
+        self._state = ThreadWorkerState.PAUSED
 
         # While this worker's state is paused, wait for the resume() slot to be
         # externally signalled by another object (typically in another thread).
-        while self._state is _ThreadWorkerState.PAUSED:
+        while self._state is ThreadWorkerState.PAUSED:
             guithread.wait_for_events_if_none(event_dispatcher)
 
 
-    @Slot()
     def resume(self) -> None:
         '''
-        Slot **resuming** (i.e., unpausing) this worker.
+        Slot
+        Thread-safe psuedo-slot (i.e., non-slot method mimicking the
+        thread-safe, push-based action of a genuine slot) unpausing this worker.
 
-        This slot resumes working in a thread-safe manner safely re-pausable at
-        any time (e.g., by re-emitting a signal connected to the :meth:`pause`
-        slot).
+        This slot resumes work in a thread-safe manner safely re-pausable at any
+        time (e.g., by re-calling the :meth:`pause` method).
 
         States
         ----------
         If this worker is in either of the following states, this slot silently
         reduces to a noop and preserves the existing state:
 
-        * :attr:`_ThreadWorkerState.IDLE`, implying this worker to *not*
+        * :attr:`ThreadWorkerState.IDLE`, implying this worker to *not*
           currently be paused. In this case, this worker remains idle.
-        * :attr:`_ThreadWorkerState.WORKING`, implying this worker to already
+        * :attr:`ThreadWorkerState.WORKING`, implying this worker to already
           have been resumed. In this case, this worker remains working.
 
         See the :meth:`pause` slot for commentary on this design decision.
@@ -646,14 +611,13 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
             guithread.get_current_thread_id(), self.obj_name)
 
         # If this worker is currently paused, unpause this worker.
-        if self._state is _ThreadWorkerState.PAUSED:
-            self._state = _ThreadWorkerState.WORKING
+        if self._state is ThreadWorkerState.PAUSED:
+            self._state = ThreadWorkerState.WORKING
 
     # ..................{ METHODS ~ abstract                 }..................
     # Abstract methods required to be redefined by subclasses.
 
-    #FIXME: Obviously, forcing "str" usage is awful. See above for solutions.
-    def _work(self, arbitrary_str: str) -> None:
+    def _work(self) -> None:
         '''
         Perform *all* subclass-specific business logic for this worker.
 
@@ -715,7 +679,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
 
         Raises
         ----------
-        _ThreadWorkerStopException
+        BetseePySideThreadWorkerStopException
             If this worker or this worker's thread of execution has been
             signalled or requested to be stopped.
         '''
@@ -728,7 +692,7 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
         # If either:
         if (
             # This worker has been externally signalled to stop...
-            self._state is _ThreadWorkerState.IDLE or
+            self._state is ThreadWorkerState.IDLE or
             # This worker's thread has been externally requested to stop...
             guithread.should_halt_thread_work()
         # Then
@@ -739,4 +703,90 @@ class QBetseeThreadPoolWorker(QBetseeObjectMixin, QRunnable):
                 guithread.get_current_thread_id(), self.obj_name)
 
             # Instruct the parent start() slot to stop.
-            raise _ThreadWorkerStopException('So say we all.')
+            raise BetseePySideThreadWorkerStopException('So say we all.')
+
+# ....................{ SUPERCLASSES ~ callable            }....................
+class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):
+    '''
+    Low-level **callable-defined pooled worker** (i.e., pooled worker whose
+    business logic is encapsulated by a caller-defined callable at worker
+    initialization time).
+
+    This superclass is a convenience wrapper for the
+    :class:`QBetseeThreadPoolWorker` superclass, simplifying usage in the common
+    case of business logic definable by a single callable. Under the more
+    general-purpose :class:`QBetseeThreadPoolWorker` API, each novel type of
+    business logic must be implemented as a distinct subclass overriding the
+    :meth:`_work` method to perform that specific logic. Under the less
+    general-purpose API provided by this superclass, each such type of business
+    logic is instead implemented as a simple callable (e.g., function, lambda)
+    performing that specific logic; no new subclasses need be defined.
+
+    Attributes
+    ----------
+    _func : CallableTypes
+        Callable to be subsequently called by the :meth:`start` method,
+        performing all business logic isolated to this worker within its parent
+        thread.
+    _func_args : SequenceTypes
+        Sequence of all positional arguments to be passed to the :func:`func`
+        callable when subsequently called.
+    _func_kwargs : MappingType
+        Mapping of all keyword arguments to be passed to the :func:`func`
+        callable when subsequently called.
+    '''
+
+    # ..................{ INITIALIZERS                       }..................
+    @type_check
+    def __init__(
+        self,
+
+        # Mandatory parameters.
+        func: CallableTypes,
+
+        # Optional parameters.
+        func_args: SequenceOrNoneTypes,
+        func_kwargs: MappingOrNoneTypes,
+    ) -> None:
+        '''
+        Initialize this callable-defined pooled worker with the passed callable
+        and positional and keyword arguments to be passed to that callable when
+        subsequently called by the :meth:`start` method.
+
+        Parameters
+        ----------
+        func : CallableTypes
+            Callable to be subsequently called by the :meth:`start` method,
+            performing all business logic isolated to this worker within its
+            parent thread.
+        func_args : SequenceOrNoneTypes
+            Sequence of all positional arguments to be passed to the
+            :func:`func` callable when subsequently called. Defaults to
+            ``None``, in which case this sequence defaults to the empty tuple.
+        func_kwargs : MappingOrNoneTypes
+            Mapping of all keyword arguments to be passed to the :func:`func`
+            callable when subsequently called. Defaults to ``None``, in which
+            case this mapping defaults to the empty dictionary.
+        '''
+
+        # Initialize our superclass.
+        super().__init__()
+
+        # Default all unpassed optional parameters to sane defaults.
+        if func_args is None:
+            func_args = ()
+        if func_kwargs is None:
+            func_kwargs = {}
+
+        # Classify all passed parameters *AFTER* defaulting these parameters.
+        self._func = func
+        self._func_args = func_args
+        self._func_kwargs = func_kwargs
+
+    # ..................{ WORKERS                            }..................
+    def _work(self) -> object:
+
+        # Call this callable with these positional and keyword arguments and
+        # return the value returned by this callable, which the parent run()
+        # method will emit to slots connected to the "succeeded" signal.
+        return self._func(*self._func_args, **self._func_kwargs)

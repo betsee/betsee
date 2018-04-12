@@ -184,17 +184,32 @@ class BetseePySideThreadException(BetseePySideException):
         return QCoreApplication.translate(
             'BetseePySideThreadException', 'Thread Error'),
 
-
+# ....................{ EXCEPTIONS ~ psd : thread : worker }....................
 class BetseePySideThreadWorkerException(BetseePySideThreadException):
     '''
-    :class:`betsee.util.thread.guiworker.QBetseeThreadWorkerABC`-specific
-    exception.
+    Multithreaded worker object-specific exception, where "worker" implies any
+    :class:`QObject`- or :class:`QRunnable`-derived object isolated in whole or
+    part to a secondary application thread.
     '''
 
     @property
     def _title_default(self) -> str:
         return QCoreApplication.translate(
             'BetseePySideThreadException', 'Thread Worker Error'),
+
+
+class BetseePySideThreadWorkerStopException(BetseePySideThreadWorkerException):
+    '''
+    Multithreaded worker object-specific exception internally raised by the
+    ``_halt_work_if_requested`` methods and caught by the ``start`` methods
+    defined on these objects.
+
+    This exception is intended exclusively for private use by the aforementioned
+    methods as a crude (albeit sufficient) means of facilitating
+    superclass-subclass intercommunication.
+    '''
+
+    pass
 
 # ....................{ EXCEPTIONS ~ psd : widget          }....................
 class BetseePySideWidgetException(BetseePySideException):
