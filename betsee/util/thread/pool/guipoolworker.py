@@ -10,9 +10,15 @@ dedicated thread by a parent :class:`QThreadPool` container) classes.
 '''
 
 # ....................{ IMPORTS                            }....................
-import traceback, sys
+# import traceback, sys
 from PySide2.QtCore import (
-    QMutex, QMutexLocker, QObject, QRunnable, Signal)  # QCoreApplication,
+    QMutex,
+    QMutexLocker,
+    QObject,
+    QRunnable,
+    QWaitCondition,
+    Signal,
+)  # QCoreApplication,
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.call.memoizers import property_cached
@@ -21,10 +27,33 @@ from betse.util.type.types import (
     CallableTypes,
     MappingOrNoneTypes,
     SequenceOrNoneTypes,
+    # StrOrNoneTypes,
 )
-from betsee.guiexception import BetseePySideThreadWorkerStopException
+from betsee.guiexception import (
+    BetseePySideThreadWorkerException,
+    BetseePySideThreadWorkerStopException,
+)
 from betsee.util.thread import guithread
 from betsee.util.thread.guithreadenum import ThreadWorkerState
+
+# ..................{ GLOBALS                            }..................
+_worker_id_next = 0
+'''
+Non-thread-safe 0-based integer uniquely identifying the next **pooled worker**
+(i.e., instance of the :class:`QBetseeThreadPoolWorker` superclass).
+'''
+
+
+_worker_id_lock = QMutex()
+'''
+Non-exception-safe mutual exclusion primitive rendering the
+:func:`_get_worker_id_next` function thread-safe. This primitive is
+non-exception-safe and hence should *never* be accessed directly. Each access to
+this primitive should be encapsulated by instantiating a one-off exception-safe
+:class:QMutexLocker` context manager as the target of a `with` context. Note
+that the context provided by the :class:QMutexLocker` class is *not* safely
+reusable and hence *must* be re-instantiated in each ``with`` context.
+'''
 
 # ....................{ SUPERCLASSES ~ worker : signal     }....................
 class QBetseeThreadPoolWorkerSignals(QObject):
@@ -56,19 +85,31 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     '''
 
     # ..................{ SIGNALS ~ finished                 }..................
-    failed = Signal(tuple)
+    failed = Signal(Exception)
     '''
     Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method on catching
     a fatal exception raised by the subclass-specific
-    :meth:`QBetseeThreadPoolWorker._work` method, passed the 2-tuple
-    ``(exception, exception_traceback)`` describing that exception, where:
+    :meth:`QBetseeThreadPoolWorker._work` method, passed this exception as is.
 
-    * ``exception`` is the raised exception.
-    * ``exception_traceback`` is the traceback object associated with that
-      exception, suitable for passing as is to utility functions in the
-      standard :mod:`traceback` module accepting a traceback object (e.g.,
-      :func:`traceback.format_exception`, :func:`traceback.print_exception`).
+    Usage
+    ----------
+    Since this is Python 3.x rather than Python 2.x, slots connected to this
+    signal may trivially reraise this exception from any other thread (complete
+    with a contextual traceback specific to the stack for this thread) via the
+    usual ``from`` clause of a ``raise`` statement.
+
+    For this reason, this signal was intentionally designed *not* to emit the
+    3-tuple returned by the standard :func:`sys.exc_info` function -- as would
+    be required under Python 2.x to properly reraise this exception. Note that a
+    little-known alternative to the ``from`` clause of a ``raise`` statement
+    does technically exist: the :meth:`Exception.with_traceback` method. By
+    explicitly calling this method on a newly instantiated exception passed
+    `sys.exc_info()[2]`` (e.g., as
+    ``raise MyNewException('wat?').with_traceback(sys.exc_info()[2])``), a
+    similar effect is achievable. Since this is substantially less trivial,
+    however, the prior approach is currently preferred.
     '''
+
 
 
     finished = Signal(bool)
@@ -238,7 +279,15 @@ class QBetseeThreadPoolWorker(QRunnable):
     Ergo, the worker-thread Qt model is also largely inapplicable in Python and
     certainly inapplicable for multithreading arbitrary long-running tasks.
 
-    Attributes
+    Attributes (Public)
+    ----------
+    _worker_id : int
+        0-based integer uniquely identifying this worker. This worker is
+        guaranteed to be the *only* instance of this class assigned this
+        integer for the lifetime of the current process. For disambiguity with
+        the :func:`id` builtin, this variable is explicitly *not* named ``_id``.
+
+    Attributes (Private: State)
     ----------
     _state : ThreadWorkerState:
         Non-thread-safe current execution state of this worker. This state is
@@ -253,7 +302,12 @@ class QBetseeThreadPoolWorker(QRunnable):
         exception-safe :class:QMutexLocker` context manager as the target of a
         `with` context. Note that the context provided by the
         :class:QMutexLocker` class is *not* safely reusable and hence *must* be
-        re-instantiated in each `with` context.
+        re-instantiated in each ``with`` context.
+    _state_unpaused : QWaitCondition
+        Thread synchronization primitive, permitting this worker when paused in
+        its parent thread to indefinitely block until an object in another
+        thread (e.g., the main thread) requests this worker be unpaused by
+        waking up this primitive and hence this worker.
 
     See Also
     ----------
@@ -265,6 +319,7 @@ class QBetseeThreadPoolWorker(QRunnable):
     '''
 
     # ..................{ INITIALIZERS                       }..................
+    @type_check
     def __init__(self) -> None:
         '''
         Initialize this pooled worker.
@@ -273,8 +328,12 @@ class QBetseeThreadPoolWorker(QRunnable):
         # Initialize our superclass.
         super().__init__()
 
+        # 0-based integer uniquely identifying this worker.
+        self._worker_id = _get_worker_id_next()
+
         # Classify all mutual exclusion objects.
         self._state_lock = QMutex()
+        self._state_unpaused = QWaitCondition()
 
         # Nullify all remaining instance variables for safety.
         self._state = None
@@ -342,193 +401,176 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     # ..................{ SLOTS                              }..................
     def run(self):
-
-        # Attempt to...
-        try:
-            # Value returned by performing all subclass-specific business logic.
-            return_value = self._work()
-        # If this worker raised an exception...
-        except:
-            #FIXME: Refactor to emit a 2-tuple as described above instead.
-            #FIXME: Log something up.
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.failed.emit((exctype, value, traceback.format_exc()))
-        # Else, this worker raised no exception. In this case...
-        else:
-            #FIXME: Log something up.
-            self.signals.succeeded.emit(return_value)
-        # In either case, this worker completed. In this case...
-        finally:
-            #FIXME: Log something up.
-            self.signals.finished.emit()
-
-
-    #FIXME: Integrate into the run() method above.
-    def start(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe, push-based action of a genuine slot) performing *all*
+        thread-safe, push-based action of a genuine method) performing *all*
         subclass-specific business logic for this worker.
 
-        This slot works in a thread-safe manner safely pausable and stoppable at
-        any time (e.g., by emitting a signal connected to the :meth:`pause` or
-        :meth:`stop` slots).
+        This method works in a thread-safe manner safely pausable, resumable,
+        and stoppable at any time from any object in any thread by directly
+        calling the equally thread-safe :meth:`pause`, :meth:`resume`, and
+        :meth :meth:`stop` methods.
 
         States
         ----------
         If this worker is in the :attr:`ThreadWorkerState.IDLE` state, this
-        slot changes to the :attr:`ThreadWorkerState.WORKING` state and calls
+        method changes to the :attr:`ThreadWorkerState.WORKING` state and calls
         the subclass :meth:`_work` method.
 
         If this worker is in the :attr:`ThreadWorkerState.PAUSED` state, this
-        slot interprets this signal as a request to resume the work presumably
-        previously performed by this worker by a prior signalling of this slot.
-        To avoid reentrancy issues, this slot changes to the
+        method interprets this signal as a request to resume the work presumably
+        previously performed by this worker by a prior signalling of this method.
+        To avoid reentrancy issues, this method changes to the
         :attr:`ThreadWorkerState.WORKING` state and immediately returns.
-        Assuming that a prior call to this slot is still executing, that call
+        Assuming that a prior call to this method is still executing, that call
         will internally detect this change and resume working as expected.
 
         If this worker is in the :attr:`ThreadWorkerState.WORKING` state, this
-        slot interprets this signal as an accidental attempt by an external
+        method interprets this signal as an accidental attempt by an external
         caller to re-perform the work concurrently being performed by a prior
-        call to this slot. In that case, this slot safely logs a non-fatal
+        call to this method. In that case, this method safely logs a non-fatal
         warning and immediately returns.
 
-        See the :meth:`pause` slot for commentary on these design decisions.
+        See the :meth:`pause` method for commentary on these design decisions.
 
         Signals
         ----------
-        This slot emits the following signals:
+        This method emits the following signals:
 
-        * :attr:`started` immediately *before* this slot performs any
+        * :attr:`started` immediately *before* this method performs any
           subclass-specific business logic for this worker.
-        * :attr:`finished` immediately *after* this slot performs all
+        * :attr:`failed` immediately *after* this method raises an exception
+          while performing subclass-specific business logic for this worker.
+        * :attr:`finished` immediately *after* this method performs all
           subclass-specific business logic for this worker.
 
         Caveats
         ----------
-        Subclasses must override the :meth:`_work` method rather than this slot
-        to perform subclass-specific business logic. This slot is neither
-        intended nor designed to be overriden by subclasses.
+        Subclasses must override the :meth:`_work` method rather than this
+        method to perform subclass-specific business logic. This method is
+        neither intended nor designed to be redefined by subclasses.
         '''
 
         # True only if the _work() method called below returns successfully
         # (i.e., *WITHOUT* raising exceptions). Defaults to False for safety.
         is_success = False
 
-        # If this worker is currently paused, resume the prior call to this
-        # start() slot by changing to the working state and returning. See the
-        # method docstring for commentary.
-        if self._state is ThreadWorkerState.PAUSED:
-            logs.log_debug(
-                'Resuming thread "%d" worker "%s" '
-                'via reentrant start() slot...',
-                guithread.get_current_thread_id(), self.obj_name)
-            self._state = ThreadWorkerState.WORKING
-            return
-
-        # If this worker is currently running, resume the prior call to this
-        # start() slot by preserving the working state and returning. See the
-        # method docstring for commentary. Unlike the prior logic, this logic
-        # constitutes a non-fatal error and is logged as such.
-        if self._state is ThreadWorkerState.WORKING:
-            logs.log_warning(
-                'Ignoring attempt to reenter '
-                'thread "%d" worker "%s" start() slot.',
-                guithread.get_current_thread_id(), self.obj_name)
-            return
-
-        # Log this beginning.
-        logs.log_debug(
-            'Starting thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
-
-        # Change to the working state.
-        self._state = ThreadWorkerState.WORKING
-
-        # Notify external subscribers *BEFORE* beginning subclass work.
-        self.started.emit()
-
-        # Attempt to...
+        # To ensure that callers receive notification of *ALL* exceptions raised
+        # by this method, the remainder of this method *MUST* be embedded within
+        # an exception handler.
         try:
+            # Log this run.
+            logs.log_debug(
+                'Starting thread "%d" worker "%d"...',
+                guithread.get_current_thread_id(), self._worker_id)
+
+            # If this worker is *NOT* currently idle (i.e., is either currently
+            # working or paused), the Universe is on the verge of imploding. In
+            # short, this should *NEVER* happen; if it does, the caller probably
+            # erroneously attempted to manually call this method multiple times
+            # from the calling thread.
+            #
+            # Regardless, this constitutes a fatal error. Raise an exception!
+            if self.state is not ThreadWorkerState.IDLE:
+                raise BetseePySideThreadWorkerException(
+                    'Non-reentrant thread "%d" worker "%d" run() method '
+                    'called reentrantly (i.e., multiple times).')
+
+            # Change to the working state.
+            self.state = ThreadWorkerState.WORKING
+
+            # Notify external subscribers *BEFORE* beginning subclass work.
+            self.started.emit()
+
             # If this worker or this worker's thread has been externally
-            # requested to stop immediately after being requested to start,
-            # promptly respect this wish on behalf of all workers. Although an
-            # unlikely edge case, the fixed cost of this test is negligible.
+            # requested to halt immediately after being requested to start,
+            # respect this wish. While an unlikely edge case, the fixed cost of
+            # this test is negligible. Ergo, we do so.
             self._halt_work_if_requested()
 
-            # Perform all subclass work.
-            self._work()
-
-            # Note the _work() method called above to have returned successfully
-            # (i.e., *WITHOUT* raising exceptions).
-            is_success = True
-
-            # If the state of this worker is still the working state, set this
-            # state to the idle (i.e., non-working) state to preserve sanity.
-            if self._state is ThreadWorkerState.WORKING:
-                self._state = ThreadWorkerState.IDLE
+            # Value returned by performing all subclass-specific business logic.
+            return_value = self._work()
         # If a periodic call to the _halt_work_if_requested() method performed
         # within the above call detects either this worker or this worker's
         # thread has been externally requested to stop, do so gracefully by...
         # doing absolutely nothing. Welp, that was easy.
         except BetseePySideThreadWorkerStopException:
             pass
+        # If this worker raised any other exception...
+        except Exception as exception:
+            # Log this failure.
+            logs.log_debug(
+                'Reraising thread "%d" worker "%d" exception "%r"...',
+                guithread.get_current_thread_id(), self._worker_id, exception)
 
-        # Log this completion.
-        logs.log_debug(
-            'Finishing thread "%d" worker "%s" with success status "%r"...',
-            guithread.get_current_thread_id(),
-            self.obj_name,
-            is_success)
+            # Emit this exception to external subscribers.
+            self.signals.failed.emit(exception)
+        # Else, this worker raised no exception. In this case...
+        else:
+            # Note the _work() method called above to have returned successfully
+            # (i.e., *WITHOUT* raising exceptions).
+            is_success = True
 
-        # Notify external subscribers of whether this work succeeded or not
-        # *AFTER* completing all such work.
-        self.finished.emit(is_success)
+            # Log this success.
+            logs.log_debug(
+                'Returning thread "%d" worker "%d" value "%r"...',
+                guithread.get_current_thread_id(),
+                self._worker_id,
+                return_value)
 
+            # Emit this return value to external subscribers.
+            self.signals.succeeded.emit(return_value)
+        # In either case, this worker completed. In this case...
+        finally:
+            # Log this completion.
+            logs.log_debug(
+                'Finishing thread "%d" worker "%d" with success status "%r"...',
+                guithread.get_current_thread_id(),
+                self._worker_id,
+                is_success)
 
-    #FIXME: Everything that follows is "QObject"-based and must be refactored to
-    #leverage the "QRunnable"-based approach. Unfortunately, this means that
-    #*ALL* slots will need to be refactored into simple methods operating on
-    #either Qt-specific atomic types (e.g., "QAtomicInt") *OR* Qt-specific
-    #mutual exclusion primitives (e.g., "QMutexLocker"). Let's be honest: it's
-    #hardly ideal, but things could be substantially worse. The best example of
-    #this probably resides at... *shrug*
+            # If the state of this worker is still the working state, set this
+            # state to the idle (i.e., non-working) state to preserve sanity.
+            if self.state is ThreadWorkerState.WORKING:
+                self.state = ThreadWorkerState.IDLE
+
+            # Emit this completion status to external subscribers.
+            self.signals.finished.emit()
 
     # ..................{ PSEUDO-SLOTS                       }..................
     def stop(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe, push-based action of a genuine slot) stopping all work
-        performed by this worker.
+        thread-safe, push-based action of a genuine slot) gracefully and
+        permanently halting all work performed by this worker.
 
-        This slot prematurely halts this work in a thread-safe manner. Whether
-        this work is safely restartable (e.g., by emitting a signal connected to
-        the :meth:`start` slot) is a subclass-specific implementation detail.
-        Subclasses may voluntarily elect to either prohibit or permit restarts.
+        By :class:`QRunnable` design, this worker is *not* safely restartable
+        after finishing -- whether by this method being called, the
+        :meth:`_work` method either raising an exception or returning
+        successfully without doing so, the parent thread running this worker
+        being terminated, or otherwise. Ergo, completion is permanent.
 
         States
         ----------
         If this worker is in the :attr:`ThreadWorkerState.IDLE` state, this
-        slot silently reduces to a noop and preserves the existing state. In
+        method silently reduces to a noop and preserves the existing state. In
         this case, this worker remains idle.
 
         If this worker is in either the :attr:`ThreadWorkerState.WORKING` or
-        :attr:`ThreadWorkerState.PAUSED`, implying this worker to either
-        currently be or recently have been working, this slot changes the
+        :attr:`ThreadWorkerState.PAUSED` states (implying this worker to either
+        currently be or recently have been working), this method changes the
         current state to the :attr:`ThreadWorkerState.IDLE` state. In either
         case, this worker ceases working.
         '''
 
         # Log this change.
         logs.log_debug(
-            'Stopping thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
+            'Stopping thread "%d" worker "%d"...',
+            guithread.get_current_thread_id(), self._worker_id)
 
         # If this worker is currently working or paused, stop this worker.
-        if self._state is not ThreadWorkerState.IDLE:
-            self._state = ThreadWorkerState.IDLE
+        if self.state is not ThreadWorkerState.IDLE:
+            self.state = ThreadWorkerState.IDLE
 
     # ..................{ SLOTS ~ pause                      }..................
     def pause(self) -> None:
@@ -538,32 +580,28 @@ class QBetseeThreadPoolWorker(QRunnable):
         performed by this worker.
 
         This slot temporarily halts this work in a thread-safe manner safely
-        resumable at any time (e.g., by emitting a signal connected to the
-        :meth:`resume` slot).
+        resumable at any time by calling the :meth:`resume` method.
 
         States
         ----------
-        If this worker is *not* currently working, this slot silently reduces to
-        a noop. While raising a fatal exception in this edge case might
-        superficially appear to be reasonable, the queued nature of signal-slot
-        connections introduces unavoidable delays in event delivery and hence
-        slot execution. In particular, raising an exception would introduce a
-        race condition between the time that a user interactively requests a
-        working worker to be paused and that worker's completion of its work.
+        If this worker is in the :attr:`ThreadWorkerState.WORKING` state,
+        this method pauses work by changing this state to
+        :attr:`ThreadWorkerState.PAUSED`. The :meth:`_halt_work_if_requested`
+        method is then expected to detect this state change and respond by
+        indefinitely blocking on the thread synchronization primitive until
+        subsequently awoken by a call to the :meth:`resume` method.
+
+        If this worker is in any other state, this method silently reduces to a
+        noop and hence preserves the existing state.
         '''
 
-        # Event dispatcher associated with the current thread of execution,
-        # obtained *BEFORE* modifying the state of this worker to raise an
-        # exception in the event that this thread has no such dispatcher.
-        event_dispatcher = guithread.get_current_event_dispatcher()
-
         # If this worker is *NOT* currently working...
-        if self._state is not ThreadWorkerState.WORKING:
+        if self.state is not ThreadWorkerState.WORKING:
             # Log this attempt.
             logs.log_debug(
                 'Ignoring attempt to pause idle or already paused '
-                'thread "%d" worker "%s".',
-                guithread.get_current_thread_id(), self.obj_name)
+                'thread "%d" worker "%d".',
+                guithread.get_current_thread_id(), self._worker_id)
 
             # Safely reduce to a noop.
             return
@@ -571,48 +609,58 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Log this change.
         logs.log_debug(
-            'Pausing thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
+            'Pausing thread "%d" worker "%d"...',
+            guithread.get_current_thread_id(), self._worker_id)
 
         # Change this worker's state to paused.
-        self._state = ThreadWorkerState.PAUSED
-
-        # While this worker's state is paused, wait for the resume() slot to be
-        # externally signalled by another object (typically in another thread).
-        while self._state is ThreadWorkerState.PAUSED:
-            guithread.wait_for_events_if_none(event_dispatcher)
+        self.state = ThreadWorkerState.PAUSED
 
 
     def resume(self) -> None:
         '''
-        Slot
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
         thread-safe, push-based action of a genuine slot) unpausing this worker.
 
-        This slot resumes work in a thread-safe manner safely re-pausable at any
-        time (e.g., by re-calling the :meth:`pause` method).
+        This method resumes work in a thread-safe manner safely re-pausable at
+        any time by re-calling the :meth:`pause` method.
 
         States
         ----------
-        If this worker is in either of the following states, this slot silently
-        reduces to a noop and preserves the existing state:
+        If this worker is in the :attr:`ThreadWorkerState.PAUSED` state,
+        this method resumes work by changing this state to
+        :attr:`ThreadWorkerState.WORKING` and waking up the currently blocked
+        thread synchronization primitive if any. The
+        :meth:`_halt_work_if_requested` method is then expected to detect this
+        state change and respond by unblocking from this primitive and returning
+        to the subclass-specific :meth:`_work` method.
 
-        * :attr:`ThreadWorkerState.IDLE`, implying this worker to *not*
-          currently be paused. In this case, this worker remains idle.
-        * :attr:`ThreadWorkerState.WORKING`, implying this worker to already
-          have been resumed. In this case, this worker remains working.
-
-        See the :meth:`pause` slot for commentary on this design decision.
+        If this worker is in any other state, this method silently reduces to a
+        noop and hence preserves the existing state.
         '''
+
+        # If this worker is *NOT* currently paused...
+        if self.state is not ThreadWorkerState.PAUSED:
+            # Log this attempt.
+            logs.log_debug(
+                'Ignoring attempt to resume idle or already working '
+                'thread "%d" worker "%d".',
+                guithread.get_current_thread_id(), self._worker_id)
+
+            # Safely reduce to a noop.
+            return
+        # Else, this worker is currently paused.
 
         # Log this change.
         logs.log_debug(
-            'Resuming thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
+            'Resuming thread "%d" worker "%d"...',
+            guithread.get_current_thread_id(), self._worker_id)
+
+        #FIXME: Insufficient. We also need to safely wake up "_state_unpaused".
+        #See the _halt_work_if_requested() method for similar logic.
 
         # If this worker is currently paused, unpause this worker.
-        if self._state is ThreadWorkerState.PAUSED:
-            self._state = ThreadWorkerState.WORKING
+        if self.state is ThreadWorkerState.PAUSED:
+            self.state = ThreadWorkerState.WORKING
 
     # ..................{ METHODS ~ abstract                 }..................
     # Abstract methods required to be redefined by subclasses.
@@ -654,6 +702,16 @@ class QBetseeThreadPoolWorker(QRunnable):
     # ..................{ METHODS ~ concrete                 }..................
     # Concrete methods intended to be called but *NOT* overriden by subclasses.
 
+    #FIXME: Handle pausing. To do so, leverage the "_state_unpaused" wait
+    #condition by *THREAD-SAFELY* performing logic resembling:
+    #
+    #    # Within a thread- and exception-safe context manager synchronizing
+    #    # access to this state across multiple threads...
+    #    with QMutexLocker(self._state_lock):
+    #        if self._state is ThreadWorkerState.PAUSED:
+    #            self._state_unpaused.wait(self._state_lock)
+    #
+    #For similar logic, see: https://stackoverflow.com/a/20522975/2809027
     def _halt_work_if_requested(self) -> None:
         '''
         Raise an exception if either:
@@ -671,7 +729,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Caveats
         ----------
-        This function imposes minor computational overhead and hence should be
+        This method imposes minor computational overhead and hence should be
         called intermittently (rather than overly frequently). Notably, each
         call to this method processes *all* pending events currently queued with
         this worker's thread -- including those queued for all other workers
@@ -692,15 +750,15 @@ class QBetseeThreadPoolWorker(QRunnable):
         # If either:
         if (
             # This worker has been externally signalled to stop...
-            self._state is ThreadWorkerState.IDLE or
+            self.state is ThreadWorkerState.IDLE or
             # This worker's thread has been externally requested to stop...
             guithread.should_halt_thread_work()
         # Then
         ):
             # Log this interrupt.
             logs.log_debug(
-                'Interrupting thread "%d" worker "%s"...',
-                guithread.get_current_thread_id(), self.obj_name)
+                'Interrupting thread "%d" worker "%d"...',
+                guithread.get_current_thread_id(), self._worker_id)
 
             # Instruct the parent start() slot to stop.
             raise BetseePySideThreadWorkerStopException('So say we all.')
@@ -790,3 +848,29 @@ class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):
         # return the value returned by this callable, which the parent run()
         # method will emit to slots connected to the "succeeded" signal.
         return self._func(*self._func_args, **self._func_kwargs)
+
+# ..................{ GETTERS                            }..................
+def _get_worker_id_next() -> int:
+    '''
+    Thread-safe 0-based integer uniquely identifying the next **pooled worker**
+    (i.e., instance of the :class:`QBetseeThreadPoolWorker` superclass).
+
+    This function internally increments this integer in a thread-safe manner,
+    ensuring each of several concurrently instantiated workers to be assigned a
+    unique 0-based integer.
+    '''
+
+    # Permit this global to be thread-safely incremented.
+    global _worker_id_next
+
+    # Within a thread- and exception-safe context manager synchronizing access
+    # to this global across multiple threads...
+    with QMutexLocker(_worker_id_lock):
+        # 0-based integer uniquely identifying the next pooled worker.
+        worker_id_next = _worker_id_next
+
+        # Thread-safely increment this integer.
+        _worker_id_next += 1
+
+        # Return this integer.
+        return worker_id_next
