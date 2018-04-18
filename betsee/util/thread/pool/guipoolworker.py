@@ -335,13 +335,8 @@ class QBetseeThreadPoolWorker(QRunnable):
         self._state_lock = QMutex()
         self._state_unpaused = QWaitCondition()
 
-        # Nullify all remaining instance variables for safety.
-        self._state = None
-
-        # Default this worker's initial state to the idle state *AFTER*
-        # initializing all instance variables, which this property setter
-        # internally assumes to be initialized.
-        self.state = ThreadWorkerState.IDLE
+        # Default this worker's initial state to the idle state.
+        self._state = ThreadWorkerState.IDLE
 
     # ..................{ PROPERTIES                         }..................
     @property_cached
@@ -360,44 +355,6 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         return QBetseeThreadPoolWorkerSignals()
-
-    # ..................{ PROPERTIES ~ state                 }..................
-    @property
-    def state(self) -> ThreadWorkerState:
-        '''
-        Current execution state of this worker, thread-safely accessible from
-        *any* object in *any* thread (including this worker in its own thread).
-        '''
-
-        # Within a thread- and exception-safe context manager synchronizing
-        # access to this state across multiple threads, return this state.
-        #
-        # Note that this "QMutexLocker" object is *NOT* safely reusable and
-        # hence *MUST* be re-instantiated in each "with" context.
-        with QMutexLocker(self._state_lock):
-            return self._state
-
-
-    @state.setter
-    def state(self, state: ThreadWorkerState) -> None:
-        '''
-        Thread-safely set the current execution state of this worker to the
-        passed state in a manner settable from *any* object in *any* thread
-        (including this worker in its own thread).
-
-        Parameters
-        ----------
-        state : ThreadWorkerState
-            Execution state to set this worker to.
-        '''
-
-        # Within a thread- and exception-safe context manager synchronizing
-        # access to this state across multiple threads, set this state.
-        #
-        # Note that this "QMutexLocker" object is *NOT* safely reusable and
-        # hence *MUST* be re-instantiated in each "with" context.
-        with QMutexLocker(self._state_lock):
-            self._state = state
 
     # ..................{ SLOTS                              }..................
     def run(self):
@@ -464,20 +421,23 @@ class QBetseeThreadPoolWorker(QRunnable):
                 'Starting thread "%d" worker "%d"...',
                 guithread.get_current_thread_id(), self._worker_id)
 
-            # If this worker is *NOT* currently idle (i.e., is either currently
-            # working or paused), the Universe is on the verge of imploding. In
-            # short, this should *NEVER* happen; if it does, the caller probably
-            # erroneously attempted to manually call this method multiple times
-            # from the calling thread.
-            #
-            # Regardless, this constitutes a fatal error. Raise an exception!
-            if self.state is not ThreadWorkerState.IDLE:
-                raise BetseePySideThreadWorkerException(
-                    'Non-reentrant thread "%d" worker "%d" run() method '
-                    'called reentrantly (i.e., multiple times).')
+            # Within a thread- and exception-safe context manager synchronizing
+            # access to this state across multiple threads...
+            with QMutexLocker(self._state_lock):
+                # If this worker is *NOT* currently idle (i.e., is either
+                # currently working or paused), the Universe is on the verge of
+                # imploding. In short, this should *NEVER* happen; if it does,
+                # the caller probably erroneously attempted to manually call
+                # this method multiple times from the calling thread.
+                #
+                # Regardless, this constitutes an error. Raise an exception!
+                if self._state is not ThreadWorkerState.IDLE:
+                    raise BetseePySideThreadWorkerException(
+                        'Non-reentrant thread "%d" worker "%d" run() method '
+                        'called reentrantly (i.e., multiple times).')
 
-            # Change to the working state.
-            self.state = ThreadWorkerState.WORKING
+                # Change to the working state.
+                self._state = ThreadWorkerState.WORKING
 
             # Notify external subscribers *BEFORE* beginning subclass work.
             self.started.emit()
@@ -529,10 +489,13 @@ class QBetseeThreadPoolWorker(QRunnable):
                 self._worker_id,
                 is_success)
 
-            # If the state of this worker is still the working state, set this
-            # state to the idle (i.e., non-working) state to preserve sanity.
-            if self.state is ThreadWorkerState.WORKING:
-                self.state = ThreadWorkerState.IDLE
+            # Within a thread- and exception-safe context manager synchronizing
+            # access to this state across multiple threads...
+            with QMutexLocker(self._state_lock):
+                # If this worker's state is working, set this state to the idle
+                # (i.e., non-working) state.
+                if self._state is ThreadWorkerState.WORKING:
+                    self._state = ThreadWorkerState.IDLE
 
             # Emit this completion status to external subscribers.
             self.signals.finished.emit()
@@ -552,32 +515,32 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         States
         ----------
-        If this worker is in the :attr:`ThreadWorkerState.IDLE` state, this
-        method silently reduces to a noop and preserves the existing state. In
-        this case, this worker remains idle.
-
-        If this worker is in either the :attr:`ThreadWorkerState.WORKING` or
-        :attr:`ThreadWorkerState.PAUSED` states (implying this worker to either
-        currently be or recently have been working), this method changes the
-        current state to the :attr:`ThreadWorkerState.IDLE` state. In either
-        case, this worker ceases working.
+        Regardless of the current state of this worker, this method halts work
+        by changing this state to :attr:`ThreadWorkerState.IDLE`. The
+        :meth:`_halt_work_if_requested` method in the thread running this worker
+        then detects this state change and responds by raising an exception
+        internally caught by the parent :meth:`run` method.
         '''
 
-        # Attempt to...
-        try:
-            # Log this change.
-            logs.log_debug(
-                'Stopping thread "%d" worker "%d"...',
-                guithread.get_current_thread_id(), self._worker_id)
+        # Log this action.
+        logs.log_debug(
+            'Stopping thread "%d" worker "%d"...',
+            guithread.get_current_thread_id(), self._worker_id)
 
-            # If this worker is currently working or paused, stop this worker.
-            if self.state is not ThreadWorkerState.IDLE:
-                self.state = ThreadWorkerState.IDLE
-        # Regardless of whether the prior logic raised an exception or not...
-        finally:
-            # Unblock the parent thread of this worker if currently blocking.
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads...
+        with QMutexLocker(self._state_lock):
+            # Regardless of the current state of this worker, change this
+            # worker's state to idle (i.e., non-working).
+            self._state = ThreadWorkerState.IDLE
+
+            # Unblock the parent thread of this worker if currently blocked.
             # Deadlocks are unlikely but feasible in edge cases unless this
             # method is unconditionally called here.
+            #
+            # Note that, as the prior logic is sufficiently simplistic to ensure
+            # *NO* exception to be raised, this call need not be embedded in a
+            # try-finally block for safety.
             self._unblock_work()
 
     # ..................{ SLOTS ~ pause                      }..................
@@ -595,33 +558,36 @@ class QBetseeThreadPoolWorker(QRunnable):
         If this worker is in the :attr:`ThreadWorkerState.WORKING` state,
         this method pauses work by changing this state to
         :attr:`ThreadWorkerState.PAUSED`. The :meth:`_halt_work_if_requested`
-        method is then expected to detect this state change and respond by
-        indefinitely blocking on the thread synchronization primitive until
-        subsequently awoken by a call to the :meth:`resume` method.
+        method in the thread running this worker then detects this state change
+        and responds by indefinitely blocking on this synchronization primitive
+        until subsequently awoken by a call to the :meth:`resume` method.
 
         If this worker is in any other state, this method silently reduces to a
         noop and hence preserves the existing state.
         '''
 
-        # If this worker is *NOT* currently working...
-        if self.state is not ThreadWorkerState.WORKING:
-            # Log this attempt.
-            logs.log_debug(
-                'Ignoring attempt to pause idle or already paused '
-                'thread "%d" worker "%d".',
-                guithread.get_current_thread_id(), self._worker_id)
-
-            # Safely reduce to a noop.
-            return
-        # Else, this worker is currently working.
-
-        # Log this change.
+        # Log this action.
         logs.log_debug(
             'Pausing thread "%d" worker "%d"...',
             guithread.get_current_thread_id(), self._worker_id)
 
-        # Change this worker's state to paused.
-        self.state = ThreadWorkerState.PAUSED
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads...
+        with QMutexLocker(self._state_lock):
+            # If this worker is *NOT* currently working...
+            if self._state is not ThreadWorkerState.WORKING:
+                # Log this attempt.
+                logs.log_debug(
+                    'Ignoring attempt to pause idle or already paused '
+                    'thread "%d" worker "%d".',
+                    guithread.get_current_thread_id(), self._worker_id)
+
+                # Safely reduce to a noop.
+                return
+            # Else, this worker is currently working.
+
+            # Change this worker's state to paused.
+            self._state = ThreadWorkerState.PAUSED
 
 
     def resume(self) -> None:
@@ -637,43 +603,45 @@ class QBetseeThreadPoolWorker(QRunnable):
         If this worker is in the :attr:`ThreadWorkerState.PAUSED` state,
         this method resumes work by changing this state to
         :attr:`ThreadWorkerState.WORKING` and waking up the currently blocked
-        thread synchronization primitive if any. The
-        :meth:`_halt_work_if_requested` method is then expected to detect this
-        state change and respond by unblocking from this primitive and returning
-        to the subclass-specific :meth:`_work` method.
+        synchronization primitive if any. The :meth:`_halt_work_if_requested`
+        method in the thread running this worker then detects this state change
+        and responds by unblocking from this primitive and returning to the
+        subclass-specific :meth:`_work` method.
 
         If this worker is in any other state, this method silently reduces to a
         noop and hence preserves the existing state.
         '''
 
-        # Attempt to...
-        try:
-            # If this worker is *NOT* currently paused...
-            if self.state is not ThreadWorkerState.PAUSED:
-                # Log this attempt.
-                logs.log_debug(
-                    'Ignoring attempt to resume idle or already working '
-                    'thread "%d" worker "%d".',
-                    guithread.get_current_thread_id(), self._worker_id)
+        # Log this action.
+        logs.log_debug(
+            'Resuming thread "%d" worker "%d"...',
+            guithread.get_current_thread_id(), self._worker_id)
 
-                # Safely reduce to a noop.
-                return
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads...
+        with QMutexLocker(self._state_lock):
+            # Attempt to...
+            try:
+                # If this worker is *NOT* currently paused...
+                if self._state is not ThreadWorkerState.PAUSED:
+                    # Log this attempt.
+                    logs.log_debug(
+                        'Ignoring attempt to resume idle or already working '
+                        'thread "%d" worker "%d".',
+                        guithread.get_current_thread_id(), self._worker_id)
+
+                    # Safely reduce to a noop.
+                    return
                 # Else, this worker is currently paused.
 
-            # Log this change.
-            logs.log_debug(
-                'Resuming thread "%d" worker "%d"...',
-                guithread.get_current_thread_id(), self._worker_id)
-
-            # If this worker is currently paused, unpause this worker.
-            if self.state is ThreadWorkerState.PAUSED:
-                self.state = ThreadWorkerState.WORKING
-        # Regardless of whether the prior logic raised an exception or not...
-        finally:
-            # Unblock the parent thread of this worker if currently blocking.
-            # Deadlocks are unlikely but feasible in edge cases unless this
-            # method is unconditionally called here.
-            self._unblock_work()
+                # Change this worker's state to working, thus unpausing.
+                self._state = ThreadWorkerState.WORKING
+            # Regardless of whether doing so raised an exception or not...
+            finally:
+                # Unblock the parent thread of this worker if currently blocked.
+                # Deadlocks are unlikely but feasible in edge cases unless this
+                # method is unconditionally called here.
+                self._unblock_work()
 
     # ..................{ WORKERS ~ abstract                 }..................
     # Abstract methods required to be redefined by subclasses.
@@ -717,18 +685,23 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     def _halt_work_if_requested(self) -> None:
         '''
-        Raise an exception if either:
-
-        * This worker has been externally signalled to stop (e.g., by emitting a
-          signal connected to the :meth:`stop` slot).
-        * The thread of execution currently running this worker has been
-          externally requested to stop (e.g., by calling the
-          :func:`guithread.halt_thread_work` function).
+        Temporarily or permanently halt all subclass-specific business logic
+        when requested to do so by external callers residing in other threads.
 
         This function is intended to be periodically called by the subclass
-        :meth:`_work` function. The exception raised by this function is
-        guaranteed to be caught by the :meth:`start` method calling that
-        :meth:`_work` function.
+        :meth:`_work` function. Specifically, this method:
+
+        * Raises an exception (expected to be caught by the :meth:`run` method
+          calling the :meth:`_work` function) if either:
+
+          * This worker has been externally signalled to stop (e.g., by an
+            external call to the the :meth:`stop` method).
+          * The thread of execution currently running this worker has been
+            externally requested to stop (e.g., by calling the
+            :func:`guithread.halt_thread_work` function).
+
+        * Pauses this worker if this worker has been externally signalled to
+          pause (e.g., by an external call to the the :meth:`pause` method).
 
         Caveats
         ----------
@@ -755,14 +728,9 @@ class QBetseeThreadPoolWorker(QRunnable):
                 self._state is ThreadWorkerState.IDLE or
                 # This worker's thread has been externally requested to stop...
                 guithread.should_halt_thread_work()
+            # ...then permanently halt this worker.
             ):
-                # Log this interrupt.
-                logs.log_debug(
-                    'Stopping thread "%d" worker "%d" work...',
-                    guithread.get_current_thread_id(), self._worker_id)
-
-                # Instruct the parent run() method to stop.
-                raise BetseePySideThreadWorkerStopException('So say we all.')
+                self._stop_work()
 
             # If an external call to the pause() method from another thread has
             # requested this worker to temporarily halt work, do so *AFTER*
@@ -771,6 +739,25 @@ class QBetseeThreadPoolWorker(QRunnable):
             # temporarily halt.
             if self._state is ThreadWorkerState.PAUSED:
                 self._block_work()
+
+    # ..................{ STOPPERS                           }..................
+    def _stop_work(self) -> None:
+        '''
+        Gracefully terminate all subclass-specific business logic performed by
+        this worker.
+
+        This method raises an internal exception expected to be caught *only* by
+        the parent :meth:`run` method, as a crude form of coordinating
+        signalling between this and that method.
+        '''
+
+        # Log this action.
+        logs.log_debug(
+            'Stopping thread "%d" worker "%d" work...',
+            guithread.get_current_thread_id(), self._worker_id)
+
+        # Instruct the parent run() method to stop.
+        raise BetseePySideThreadWorkerStopException('So say we all.')
 
     # ..................{ (UN)BLOCKERS                       }..................
     def _block_work(self) -> None:
@@ -835,18 +822,20 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         If the parent thread of this worker is *NOT* currently blocked, this
         method silently reduces to a noop.
+
+        Caveats
+        ----------
+        The :attr:`_state_lock` primitive *must* be acquired (i.e., locked)
+        before this method is called. See the :meth:`_block_work` method.
         '''
 
-        # Within a thread- and exception-safe context manager synchronizing
-        # access to this state across multiple threads...
-        with QMutexLocker(self._state_lock):
-            # Log this unblocking behaviour.
-            logs.log_debug(
-                'Unblocking thread "%d" worker "%d"...',
-                guithread.get_current_thread_id(), self._worker_id)
+        # Log this unblocking behaviour.
+        logs.log_debug(
+            'Unblocking thread "%d" worker "%d"...',
+            guithread.get_current_thread_id(), self._worker_id)
 
-            # Wake up the parent thread of this worker if currently blocking.
-            self._state_unpaused.wakeOne()
+        # Wake up the parent thread of this worker if currently blocking.
+        self._state_unpaused.wakeOne()
 
 # ....................{ SUPERCLASSES ~ callable            }....................
 class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):

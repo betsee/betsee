@@ -946,6 +946,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # # worker_seed.moveToThread(thread)
 
         from betsee.gui.simtab.run.work.guisimrunworkpool import Worker
+        # from betsee.util.thread.pool.guipoolworker import (
+        #     QBetseeThreadPoolWorkerCallable)
 
         #FIXME: The current "Worker" API accepting an arbitrary callable seems
         #dangerous, particularly if that callable is a bound method living in a
@@ -959,6 +961,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Note: is deep copying arguments necessary? No idea. It probably is to
         # avoid race conditions induced by desynchronization issues.
         worker = Worker(_run_all_subcommands, str(self._sim_conf.filename))
+        # worker = QBetseeThreadPoolWorkerCallable(
+        #     _run_all_subcommands, str(self._sim_conf.filename))
 
         #FIXME: Uncommenting the following line induces hard segmentation faults
         #on worker completion with *NO* explicit error message. We have little
@@ -1062,25 +1066,6 @@ def _run_all_subcommands(conf_filename):
     from betse.science.parameters import Parameters
     from betse.science.simrunner import SimRunner
 
-    #FIXME: Non-ideal for the following obvious reasons:
-    #
-    #* The "main_window.sim_conf" object already has a Parameters() object
-    #  in-memory. The changes performed here will *NOT* be propagated back
-    #  into that object. That is bad.
-    #* We shouldn't need to manually modify this file, anyway. Or should we?
-    #  Should the GUI just assume absolute control over this file? That
-    #  doesn't quite seem right, but it certainly would be simpler to do so.
-    #  Well, at least for now.
-    #FIXME: Ah-ha! The simplest means of circumventing the need to write
-    #these changes back out to disk would be to refactor the
-    #SimRunner.__init__() method to optionally accept a "Parameters" object
-    #classified into a "_p" instance variable. Doing so, however, would mean
-    #refactoring most methods of this class to reuse "_p" rather than
-    #instantiate a new "Parameters" object each call. Of course, we arguably
-    #should be doing that *ANYWAY* by unconditionally creating "_p" in
-    #SimRunner.__init__() regardless of whether a "Parameters" object is
-    #passed or not. We'll need to examine this further, of course.
-
     # Simulation configuration deserialized from this file.
     p = Parameters().load(conf_filename)
 
@@ -1098,8 +1083,6 @@ def _run_all_subcommands(conf_filename):
 
     # Reserialize these changes back to this file.
     p.save_inplace()
-
-    # return
 
     #FIXME: Uncomment the plot_seed() call after pipelining that subcommand.
 

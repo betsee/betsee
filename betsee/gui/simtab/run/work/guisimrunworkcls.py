@@ -71,9 +71,10 @@ equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 #      passed. For now, periodic_callback() suffices.
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, QObject, QThread, Slot  # Signal
-from betse.science.simrunner import SimRunner
+# from PySide2.QtCore import QCoreApplication  # Slot, Signal
+from betse.science.parameters import Parameters
 from betse.science.phase.phaseenum import SimPhaseKind
+from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
 from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.types import type_check
@@ -82,76 +83,94 @@ from betse.util.type.types import type_check
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
     SimmerWorkerPhaseSubkind)
-from betsee.util.thread.guiworkercls import QBetseeThreadWorkerThrowawayABC
+from betsee.util.thread.pool.guipoolworker import QBetseeThreadPoolWorker
 
 # ....................{ SUPERCLASSES                       }....................
-#FIXME: Shift the "_sim_runner" documentation below elsewhere, please.
-class QBetseeSimmerWorkerABC(QBetseeThreadWorkerThrowawayABC):
+class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
     '''
     Abstract base class of all low-level **simulator worker** (i.e., thread-safe
     object running a single startable, pausable, resumable, and haltable
-    simulation subcommand in a multithreaded manner intended to be adopted by
-    the thread encapsulated by a :class:`QBetseeWorkerThread` object)
-    subclasses.
+    simulation subcommand in a multithreaded manner intended to be run by an
+    arbitrary thread from a :class:`QThreadPool` container) subclasses.
 
     Attributes
     ----------
-    _sim_runner : SimRunner
-        Simulation runner run by this simulator worker, encapsulating both the
-        simulation configuration file to be run *and* all low-level logic
-        required to do so. This variable tidely bridges the gap between the
-        low-level CLI-based BETSE simulator and this high-level GUI-based BETSEE
-        application -- and is arguably the most important attribute in either
-        codebase.
+    _p : Parameters
+        Simulation configuration to be run by this simulator worker.
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    def __init__(self, *args, **kwargs) -> None:
+    #FIXME: Ensure that the passed "Parameters" object is a copy of the
+    #GUI-specific "main_window.sim_conf.p" singleton.
+    @type_check
+    def __init__(self, p: Parameters) -> None:
         '''
         Initialize this simulator worker.
+
+        Attributes
+        ----------
+        p : Parameters
+            Simulation configuration to be run by this simulator worker. For
+            thread-safety, this worker internally retains only a deep copy of
+            rather than shallow reference to this object; ergo, the original
+            simulation configuration passed by the caller is guaranteed to
+            remain unchanged by this worker. This object bridges the critical
+            gap between the low-level CLI-based simulator and this high-level
+            GUI, making this the most important attribute in either codebase.
         '''
 
         # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
-        # Set this object's name to this subclass' munged name (e.g., from
-        # "QBetseeSimmerWorkerSeed" to "simmer_worker_seed").
-        self.set_obj_name_from_class_name()
+        # Initialize a worker-specific configuration from this configuration.
+        self._init_p(p)
 
 
-    #FIXME: *UGH.* Remove the QBetseeSimmerWorkerABC.init() method -- which,
-    #in hindsight, was an atrocious idea. Document why: notably, the fact
-    #that any passed objects owned by the parent thread (presumably, all of
-    #them) will continue to be owned by this thread even after this worker
-    #is adopted into its parent thread. Which, of course, entirely defeats
-    #the point of multithreading in the first place.
-    #
-    #Explicitly document this as a caveat somewhere. *WE MUST NEVER MAKE
-    #THIS AWFUL MISTAKE AGAIN.*
+    @type_check
+    def _init_p(self, p: Parameters) -> None:
+        '''
+        Initialize a worker-specific simulation configuration from the passed
+        simulation configuration by classifying a deep copy of the latter for
+        thread-safety into the :attr:`_p` instance variable of this worker.
 
-    # @type_check
-    # def init(self, sim_runner: SimRunner) -> None:
-    #     '''
-    #     Finalize the initialization of this simulator worker.
-    #
-    #     Parameters
-    #     ----------
-    #     sim_runner : SimRunner
-    #         Simulation runner run by this simulator worker, encapsulating both
-    #         the simulation configuration file to be run *and* all low-level
-    #         logic required to do so.
-    #     '''
-    #
-    #     # Initialize our superclass.
-    #     super().init()
-    #
-    #     # Classify this simulation runner.
-    #     self._sim_runner = sim_runner
+        Attributes
+        ----------
+        p : Parameters
+            Simulation configuration to be run by this simulator worker.
+        '''
+
+        # Simulation configuration newly deserialized from the passed original
+        # Simulation configuration.
+        self._p = Parameters().load(p.conf_filename)
+
+        # Disable all simulation configuration options either requiring
+        # interactive user input *OR* displaying graphical output intended for
+        # interactive user consumption (e.g., plots, animations).
+        self._p.anim.is_after_sim_show = False
+        self._p.anim.is_while_sim_show = False
+        self._p.plot.is_after_sim_show = False
+
+        # Enable all simulation configuration options exporting to disk.
+        self._p.anim.is_after_sim_save = True
+        self._p.anim.is_while_sim_save = True
+        self._p.plot.is_after_sim_save = True
+
+        #FIXME: This must go. The above changes must absolutely *NOT* be
+        #reserialized back to disk, as doing so now desynchronizes the already
+        #deserialized "main_window.sim_conf.p" object from these changes. See
+        #the QBetseeSimmerWorkerSeed._work() method for the full commentary.
+
+        # Reserialize these changes back to this file.
+        self._p.save_inplace()
 
     # ..................{ PROPERTIES ~ abstract              }..................
     # Read-only abstract properties required to be overridden by subclasses.
 
-    @abstractproperty
+    #FIXME: Uncomment the following @abstractproperty decorators *AFTER*
+    #properly disaggregating the "QBetseeSimmerWorkerSeed" subclass into
+    #separate subclass implementations.
+
+    # @abstractproperty
     def phase_kind(self) -> SimPhaseKind:
         '''
         Type of simulation phase run by this simulator worker.
@@ -160,7 +179,7 @@ class QBetseeSimmerWorkerABC(QBetseeThreadWorkerThrowawayABC):
         pass
 
 
-    @abstractproperty
+    # @abstractproperty
     def phase_subkind(self) -> SimmerWorkerPhaseSubkind:
         '''
         Type of work performed within the type of simulation phase run by this
@@ -169,35 +188,6 @@ class QBetseeSimmerWorkerABC(QBetseeThreadWorkerThrowawayABC):
 
         pass
 
-    # ..................{ PROPERTIES ~ concrete              }..................
-    # Settable concrete properties required by all subclasses.
-
-    #FIXME: Excise us up.
-    # @property
-    # def sim_runner(self) -> SimRunner:
-    #     '''
-    #     Simulation runner run by this simulator worker, encapsulating both the
-    #     simulation configuration file to be run *and* all low-level logic
-    #     required to do so.
-    #
-    #     This property elegantly bridges the gap between the low-level CLI-based
-    #     BETSE simulator and this high-level GUI-based BETSEE wrapper. Arguably,
-    #     this property is the most important attribute in either codebase.
-    #     '''
-    #
-    #     pass
-    #
-    #
-    # @sim_runner.setter
-    # @type_check
-    # def sim_runner(self, sim_runner: SimRunner) -> None:
-    #     '''
-    #     Type of work performed within the type of simulation phase run by this
-    #     simulator worker.
-    #     '''
-    #
-    #     pass
-
 # ....................{ SUBCLASSES                         }....................
 #FIXME: Define *NO* additional subclasses until this subclass has been shown to
 #behave as expected. Why? Because copying-and-pasting says, "Do a right thing."
@@ -205,34 +195,42 @@ class QBetseeSimmerWorkerSeed(QBetseeSimmerWorkerABC):
     '''
     Low-level **seed-specific simulator worker** (i.e., thread-safe object
     running a single startable, pausable, resumable, and haltable "seed"
-    simulation subcommand in a multithreaded manner intended to be adopted by
-    the thread encapsulated by a :class:`QBetseeWorkerThread` object).
+    simulation subcommand in a multithreaded manner intended to be run by an
+    arbitrary thread from a :class:`QThreadPool` container).
     '''
 
     # ..................{ METHODS                            }..................
-    #FIXME: Obviously, forcing "str" usage is awful. See "guiworkercls" for
-    #demonstrably superior alternatives.
-    def _work(self, conf_filename: str) -> None:
+    def _work(self) -> None:
 
-        # Well, that was easy. (No, it really wasn't.)
-        # sim_runner = SimRunner(conf_filename=conf_filename)
-        # sim_runner.seed()
+        #FIXME: Non-ideal for the following obvious reasons:
+        #
+        #* The "main_window.sim_conf" object already has a Parameters() object
+        #  in-memory. The changes performed here will *NOT* be propagated back
+        #  into that object. That is bad.
+        #* We shouldn't need to manually modify this file, anyway. Or should we?
+        #  Should the GUI just assume absolute control over this file? That
+        #  doesn't quite seem right, but it certainly would be simpler to do so.
+        #  Well, at least for now.
+        #FIXME: Ah-ha! The simplest means of circumventing the need to write
+        #these changes back out to disk would be to refactor the
+        #SimRunner.__init__() method to optionally accept a "Parameters" object
+        #classified into a "_p" instance variable. Doing so, however, would mean
+        #refactoring most methods of that class to reuse "_p" rather than
+        #instantiate a new "Parameters" object each call. Of course, we arguably
+        #should be doing that *ANYWAY* by unconditionally creating "_p" in
+        #SimRunner.__init__() regardless of whether a "Parameters" object is
+        #passed or not. We'll need to examine this further, of course.
+        #FIXME: Pass the actual "self._p" object as is after refactoring the
+        #SimRunner.__init__() method to accept such objects.
 
-        #FIXME: Let's try sleeping. Something absolutely isn't right here.
-        #FIXME: O.K.; it absolutely is the GIL that's killing us. Iteratively
-        #calling self._halt_work_if_requested() dramatically improves matters,
-        #which is horrible. Note that calling QThread.yieldCurrentThread()
-        #slightly improves GUI responsiveness even more, but (presumably) at a
-        #dramatic performance penalty that we absolutely shouldn't pay. The call
-        #to self._halt_work_if_requested() should suffice to at least permit the
-        #pause and stop buttons to be meaningfully responded to. *sigh*
-        from betse.util.io.log import logs
-        import time
-        for _ in range(8):
-            logs.log_debug('Sleeping for one second...')
-            # QThread.sleep(1)
-            time.sleep(1)
-            self._halt_work_if_requested()
-            # QThread.yieldCurrentThread()
-        # QThread.msleep(1024**2)
-        # QThread.msleep(4096*2)
+        #FIXME: Uncomment the plot_seed() call after pipelining that subcommand.
+
+        # Run all simulation subcommands. Well, that was easy. (No, it really
+        # wasn't.)
+        sim_runner = SimRunner(conf_filename=self._p.conf_filename)
+        sim_runner.seed()
+        sim_runner.init()
+        sim_runner.sim()
+        # sim_runner.plot_seed()
+        sim_runner.plot_init()
+        sim_runner.plot_sim()
