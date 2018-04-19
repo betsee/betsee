@@ -357,6 +357,10 @@ class QBetseeThreadPoolWorker(QRunnable):
         return QBetseeThreadPoolWorkerSignals()
 
     # ..................{ SLOTS                              }..................
+    #FIXME: It would be great to additionally set the object name of (and hence
+    #the name of the process associated with) the parent thread of this worker
+    #to a human-readable name based on the subclass of this worker. For similar
+    #logic, see the QBetseeObjectMixin.set_obj_name_from_class_name() method.
     def run(self):
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
@@ -392,14 +396,28 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Signals
         ----------
-        This method emits the following signals:
+        This method emits the following signals (in order):
 
-        * :attr:`started` immediately *before* this method performs any
-          subclass-specific business logic for this worker.
-        * :attr:`failed` immediately *after* this method raises an exception
-          while performing subclass-specific business logic for this worker.
-        * :attr:`finished` immediately *after* this method performs all
-          subclass-specific business logic for this worker.
+        * :attr:`signals.started` immediately *before* this method performs any
+          subclass work.
+        * :attr:`signals.progressed` at arbitrary intervals while performing
+          subclass work. This signal is guaranteed to be emitted only at the
+          following progress percentages; all other emissions of this signal are
+          subclass-specific:
+
+          * **0%,** immediately *after* this method emits the
+            :attr:`signals.started` signal.
+          * **100%,** immediately *before* this method emits the
+            :attr:`signals.finished` signal.
+
+        * :attr:`signals.failed` immediately *after* this method erroneously
+          raises an unexpected exception while performing subclass work but
+          *before* the :attr:`signals.finished` signal is emitted.
+        * :attr:`signals.succeeded` immediately *after* all subclass work
+          performed by this method successfully returns but *before* the
+          :attr:`signals.finished` signal is emitted.
+        * :attr:`signals.finished` immediately *after* this method performs all
+          subclass work, regardless of whether that work succeeded or failed.
 
         Caveats
         ----------
@@ -440,7 +458,12 @@ class QBetseeThreadPoolWorker(QRunnable):
                 self._state = ThreadWorkerState.WORKING
 
             # Notify external subscribers *BEFORE* beginning subclass work.
-            self.started.emit()
+            self.signals.started.emit()
+
+            # Notify external subscribers of the first progress percentage
+            # *BEFORE* beginning subclass work but *AFTER* emitting the
+            # "started" signal.
+            self.signals.progressed.emit(0)
 
             # If this worker or this worker's thread has been externally
             # requested to halt immediately after being requested to start,
@@ -448,19 +471,24 @@ class QBetseeThreadPoolWorker(QRunnable):
             # this test is negligible. Ergo, we do so.
             self._halt_work_if_requested()
 
+            # Retain this purely for exception testing purposes.
+            # raise ValueError('wat?')
+
             # Value returned by performing all subclass-specific business logic.
             return_value = self._work()
         # If a periodic call to the _halt_work_if_requested() method performed
         # within the above call detects either this worker or this worker's
         # thread has been externally requested to stop, do so gracefully by...
-        # doing absolutely nothing. Welp, that was easy.
         except BetseePySideThreadWorkerStopException:
-            pass
+            # Log this cessation. That's it. Welp, that was easy.
+            logs.log_debug(
+                'Stopping thread "%d" worker "%d"...',
+                guithread.get_current_thread_id(), self._worker_id)
         # If this worker raised any other exception...
         except Exception as exception:
             # Log this failure.
             logs.log_debug(
-                'Reraising thread "%d" worker "%d" exception "%r"...',
+                'Emitting thread "%d" worker "%d" exception "%r"...',
                 guithread.get_current_thread_id(), self._worker_id, exception)
 
             # Emit this exception to external subscribers.
@@ -497,8 +525,13 @@ class QBetseeThreadPoolWorker(QRunnable):
                 if self._state is ThreadWorkerState.WORKING:
                     self._state = ThreadWorkerState.IDLE
 
+            # Emit the last progress percentage to external subscribers *AFTER*
+            # completing subclass work but *BEFORE* emitting the "finished"
+            # signal.
+            self.signals.progressed.emit(100)
+
             # Emit this completion status to external subscribers.
-            self.signals.finished.emit()
+            self.signals.finished.emit(is_success)
 
     # ..................{ PSEUDO-SLOTS                       }..................
     def stop(self) -> None:
@@ -524,7 +557,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Log this action.
         logs.log_debug(
-            'Stopping thread "%d" worker "%d"...',
+            'Requesting thread "%d" worker "%d" to stop...',
             guithread.get_current_thread_id(), self._worker_id)
 
         # Within a thread- and exception-safe context manager synchronizing
@@ -568,7 +601,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Log this action.
         logs.log_debug(
-            'Pausing thread "%d" worker "%d"...',
+            'Requesting thread "%d" worker "%d" to pause...',
             guithread.get_current_thread_id(), self._worker_id)
 
         # Within a thread- and exception-safe context manager synchronizing
@@ -614,7 +647,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Log this action.
         logs.log_debug(
-            'Resuming thread "%d" worker "%d"...',
+            'Requesting thread "%d" worker "%d" to resume...',
             guithread.get_current_thread_id(), self._worker_id)
 
         # Within a thread- and exception-safe context manager synchronizing
@@ -784,7 +817,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Log this blocking behaviour.
         logs.log_debug(
-            'Blocking thread "%d" worker "%d"...',
+            'Pausing thread "%d" worker "%d"...',
             guithread.get_current_thread_id(), self._worker_id)
 
         # Indefinitely wait for an external call to the resume() method from
@@ -831,7 +864,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Log this unblocking behaviour.
         logs.log_debug(
-            'Unblocking thread "%d" worker "%d"...',
+            'Resuming thread "%d" worker "%d"...',
             guithread.get_current_thread_id(), self._worker_id)
 
         # Wake up the parent thread of this worker if currently blocking.

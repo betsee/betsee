@@ -122,14 +122,15 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #    https://stackoverflow.com/a/28816650/2809027
 
 # ....................{ IMPORTS                            }....................
-from PySide2.QtCore import QCoreApplication, QObject, Slot, Signal
-# from betse.science.export.expenum import SimExportType
+from PySide2.QtCore import QCoreApplication, QObject, Slot  #, Signal
+from betse.exceptions import BetseSimUnstableException
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
 from betse.util.type.text import strs
 from betse.util.type.types import type_check  #, StrOrNoneTypes
-from betsee.guiexception import BetseeSimmerException
+from betsee.guiexception import (
+    BetseeSimmerException, BetseeSimmerBetseException)
 # from betsee.guimetadata import SCRIPT_BASENAME
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
@@ -142,10 +143,11 @@ from betsee.gui.simtab.run.guisimrunstate import (
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
+from betsee.util.thread import guithread
 from betsee.util.thread.pool import guipoolthread
-# from betsee.gui.simtab.run.work.guisimrunworkcls import (
-#     QBetseeSimmerWorkerSeed,
-# )
+from betsee.gui.simtab.run.work.guisimrunworkcls import (
+    QBetseeSimmerWorkerSeed,
+)
 from collections import deque
 
 # ....................{ CLASSES                            }....................
@@ -625,8 +627,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             raise BetseeSimmerException(QCoreApplication.translate(
                 'QBetseeSimmer', 'Simulator currently running.'))
 
-    # ..................{ SLOTS ~ private : action           }..................
-    # Slots connected to signals emitted by "QAction" objects.
+    # ..................{ SLOTS ~ action : simulator         }..................
+    # Slots connected to signals emitted by "QAction" objects specific to the
+    # currently running simulator worker if any.
 
     @Slot(bool)
     def _toggle_playing(self, is_playing: bool) -> None:
@@ -701,8 +704,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # state *AFTER* successfully halting this phase.
         self._phase_working_state = SimmerState.HALTED
 
-    # ..................{ SLOTS ~ private : action           }..................
-    # Slots connected to signals emitted by "QAction" objects.
+    # ..................{ SLOTS ~ action : queue             }..................
+    # Slots connected to signals emitted by "QAction" objects specific to the
+    # queue of simulator phases to be run.
 
     @Slot(QObject)
     def _set_phase_state(self, phase: QBetseeSimmerPhase) -> None:
@@ -749,6 +753,52 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
             # Update the state of simulator widgets *AFTER* setting this state.
             self._update_widgets()
+
+    # ..................{ SLOTS ~ worker                     }..................
+    # Slots connected to signals emitted by "QRunnable" workers.
+
+    @Slot(Exception)
+    def _handle_worker_exception(self, exception: Exception) -> None:
+        '''
+        Slot signalled on the currently running simulator worker erroneously
+        raising an unexpected exception.
+
+        This slot trivially handles this exception by re-raising this exception.
+        Since the only means of explicitly re-raising an exception exposed by
+        Python 3.x is to encapsulate that exception inside another exception,
+        this slot unconditionally raises a :class:`BetseeSimmerBetseException`
+        exception encapsulating the passed exception.
+
+        Parameters
+        ----------
+        exception : Exception
+            Exception raised by this worker.
+
+        Raises
+        ----------
+        BetseeSimmerBetseException
+            Unconditionally encapsulates the passed exception.
+        '''
+
+        # Human-readable translated synopsis of this exception.
+        synopsis = None
+
+        # If this exception signifies an instability, synopsize this exception.
+        # This type of fatal error is sufficiently common to warrant special
+        # handling improving the user experience (UX).
+        if isinstance(exception, BetseSimUnstableException):
+            synopsis = QCoreApplication.translate(
+                'QBetseeSimmer',
+                'Simulation halted prematurely '
+                'due to computational instability.')
+        # Else, the type of error is unclear. Fallback to a generic synopsis.
+        else:
+            synopsis = QCoreApplication.translate(
+                'QBetseeSimmer',
+                'Simulation halted prematurely with unexpected error.')
+
+        # Just do it, Johnny!
+        raise BetseeSimmerBetseException(synopsis=synopsis) from exception
 
     # ..................{ QUEUERS                            }..................
     def enqueue_running(self) -> None:
@@ -813,19 +863,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             phase.dequeue_running()
 
 
-    #FIXME: Sadly, this remains entrenched in horror. The issue appears to be
-    #that "QThread" is too low-level to actually bother with "trivial" issues
-    #like sharing the time slice with other running Qt-based threads -- like,
-    #say, the main thread. This is completely non-sensical, as well as
-    #completely contrary to the concept of multithreading as implemented in
-    #effectively *OTHER* other multithreading framework. Consequently, it would
-    #appear that we either need to:
-    #
-    #* Completely abandon the current "QThread"-based approach in favour of
-    #  either:
-    #  * A "QRunner" + "QThreadPool"-based approach.
-    #  * A "QConcurrent"-based approach. This is infeasible in our case, sadly.
-    #* Laboriously refactor the
     def run_enqueued(self) -> None:
         '''
         Iteratively run each simulator phase enqueued (i.e., appended to the
@@ -919,59 +956,21 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #     # Dequeue this phase *AFTER* successfully running these actions.
         #     self._worker_queue.pop()
 
-        from betsee.util.thread import guithread
         logs.log_debug(
-            'Object "%s" in main GUI thread "%d"...',
-            self.obj_name, guithread.get_current_thread_id())
+            'Spawning simulator worker thread from main thread "%d"...',
+            guithread.get_current_thread_id())
 
-        # from PySide2.QtCore import QThread
-        # thread = QThread()
-        # thread.setObjectName('simmer_thread')
-        # thread.finished.connect(thread.deleteLater)
-
-        # Start this thread and hence this thread's event loop. This does *NOT*
-        # start any workers adopted into this thread; this only permits slots
-        # for these workers to begin receiving signals.
-        # thread.start()
-
-        # self._start_signal.connect(worker_seed.start)
-        # self._start_signal.emit(self._sim_conf.filename)
-
-        # Test the seed worker.
-        # worker_seed = QBetseeSimmerWorkerSeed()
+        # Simulator worker.
         #
-        # # Adopt these workers into this thread.
-        # self._thread.adopt_worker(worker_seed)
-        # # worker_seed.moveToThread(self._thread)
-        # # worker_seed.moveToThread(thread)
+        # Note that the simulation configuration passed to this worker is
+        # deep-copied and hence *NOT* changed by this worker, preserving
+        # thread-safety and preventing object desynchronization.
+        worker = QBetseeSimmerWorkerSeed(p=self._sim_conf.p)
 
-        from betsee.gui.simtab.run.work.guisimrunworkpool import Worker
-        # from betsee.util.thread.pool.guipoolworker import (
-        #     QBetseeThreadPoolWorkerCallable)
-
-        #FIXME: The current "Worker" API accepting an arbitrary callable seems
-        #dangerous, particularly if that callable is a bound method living in a
-        #different thread. We probably instead want to leverage the old
-        #_work()-based approach by requiring workers to subclass this superclass
-        #and define an abstract _work() method that the superclass run() method
-        #then internally calls. Anyway!
-
-        # Any other args, kwargs are passed to the run function.
-        #
-        # Note: is deep copying arguments necessary? No idea. It probably is to
-        # avoid race conditions induced by desynchronization issues.
-        worker = Worker(_run_all_subcommands, str(self._sim_conf.filename))
-        # worker = QBetseeThreadPoolWorkerCallable(
-        #     _run_all_subcommands, str(self._sim_conf.filename))
-
-        #FIXME: Uncommenting the following line induces hard segmentation faults
-        #on worker completion with *NO* explicit error message. We have little
-        #to no interest in debugging this at the moment; ergo, this remains
-        #commented out until further notice. *mournful_sigh*
-        # worker.signals.result.connect(self.print_output)
-
+        # Connects signals emitted by this worker to slots on this simulator.
+        worker.signals.failed.connect(self._handle_worker_exception)
+        worker.signals.progressed.connect(self.progress_fn)
         worker.signals.finished.connect(self.thread_complete)
-        worker.signals.progress.connect(self.progress_fn)
 
         #FIXME: *CRITICAL*: we're currently ignoring exceptions raised by this
         #worker. To handle these exceptions, we'll need to:
@@ -983,24 +982,35 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #  * Directly call a method displaying the exception described by the
         #    passed tuple. (Less ideal, but probably *MUCH* simpler to
         #    implement as a first-draft approach.)
-        #* Connect this slot to the "worker.signals.error" signal above.
-
-        #FIXME: Do this rather than what we currently do:
-        # guipoolthread.run_worker(worker)
-        guipoolthread.get_thread_pool().start(worker)
+        #* Connect this slot to the "worker.signals.failed" signal above.
+        guipoolthread.run_worker(worker)
 
 
+    #FIXME: Awful slot name and implementation, obviously. Refactor as follows:
+    #* Rename to _handle_worker_progress().
+    #* Rewrite to set the progress bar's current percentage to this percentage.
+    #  In theory, actually, this might be sufficiently simplistic as to permit
+    #  us to directly connect the "worker.signals.progress" signal above to a
+    #  hypothetical slot on the progress bar setting progress to a passed
+    #  perentage integer. Which probably doesn't exist. If it does, though, we
+    #  would then be able to eliminate this slot entirely.
     @Slot(int)
-    def progress_fn(self, n):
-        print("%d%% done" % n)
+    def progress_fn(self, progress_percentage: int) -> None:
 
-    @Slot()
-    def thread_complete(self):
-        print("THREAD COMPLETE!")
+        logs.log_debug('%d%% done', progress_percentage)
 
-    @Slot(object)
-    def print_output(self, s):
-        print(s)
+
+    #FIXME: Awful slot name and implementation, obviously. Refactor as follows:
+    #* Rename to _handle_worker_completion().
+    #* Rewrite to at least:
+    #  * Toggle the play button such that the play icon is now visible.
+    #  * Disable the stop button.
+    #  * Probably ensure that the worker queue is empty.
+    #Improving this slot should probably be our highest priority.
+    @Slot(bool)
+    def thread_complete(self, is_success: bool) -> None:
+
+        logs.log_debug("THREAD COMPLETE!")
 
     # ..................{ UPDATERS                           }..................
     def _update_widgets(self) -> None:

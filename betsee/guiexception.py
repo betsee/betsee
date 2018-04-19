@@ -20,7 +20,7 @@ Application-specific exception hierarchy.
 from PySide2.QtCore import QCoreApplication
 from abc import ABCMeta
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ EXCEPTIONS ~ superclass            }....................
 #FIXME: Introduce into the "betse.exceptions" submodule as a new
 #"BetseVerboseException" base class from which all other exception classes
 #defined by that submodule should eventually subclass.
@@ -195,7 +195,7 @@ class BetseePySideThreadWorkerException(BetseePySideThreadException):
     @property
     def _title_default(self) -> str:
         return QCoreApplication.translate(
-            'BetseePySideThreadException', 'Thread Worker Error'),
+            'BetseePySideThreadWorkerException', 'Thread Worker Error'),
 
 
 class BetseePySideThreadWorkerStopException(BetseePySideThreadWorkerException):
@@ -327,7 +327,7 @@ class BetseePySideEditWidgetException(BetseePySideException):
         return QCoreApplication.translate(
             'BetseePySideEditWidgetException', 'Editable Widget Error')
 
-# ....................{ EXCEPTIONS ~ sim                   }....................
+# ....................{ EXCEPTIONS ~ simmer                }....................
 class BetseeSimmerException(BetseePySideException):
     '''
     General-purpose exception applicable to the **simulator** (i.e.,
@@ -339,3 +339,15 @@ class BetseeSimmerException(BetseePySideException):
     def _title_default(self) -> str:
         return QCoreApplication.translate(
             'BetseeSimmerException', 'Simulator Error')
+
+
+class BetseeSimmerBetseException(BetseeSimmerException):
+    '''
+    General-purpose exception intended to encapsulate *all* low-level exceptions
+    raised by BETSE simulations (e.g., computational instabilities).
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseeSimmerBetseException', 'BETSE Error')
