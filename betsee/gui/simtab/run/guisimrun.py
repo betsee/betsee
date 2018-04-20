@@ -216,10 +216,15 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     Attributes (Private: Widgets)
     ----------
-    _action_toggle_playing : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle` action.
-    _action_halt_playing : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_halt` action.
+    _action_sim_run_start_or_resume : QAction
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_start_or_resume`
+        action.
+    _action_pause : QAction
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_pause` action.
+    _action_stop : QAction
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop` action.
+    _player_progress : QProgressBar
+        Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
     _player_toolbar : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_toolbar_frame`
         frame containing only the :class:`QToolBar` controlling this simulation.
@@ -238,17 +243,16 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         super().__init__(*args, **kwargs)
 
         # Nullify all remaining instance variables for safety.
-        self._action_toggle_playing = None
-        self._action_halt_playing = None
+        self._action_sim_run_start_or_resume = None
+        self._action_pause = None
+        self._action_stop = None
+        self._player_progress = None
         self._player_toolbar = None
         self._worker_queue = None
         self._status = None
 
         # Initialize all phases of this simulator.
         self._init_phases()
-
-        # Initialize this simulator's thread and all workers of this thread.
-        self._init_thread()
 
 
     def _init_phases(self) -> None:
@@ -277,71 +281,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Sequence of all simulator phases. For sanity (e.g., during iteration),
         # these phases are intentionally listed in simulation order.
         self._phases = (self._phase_seed, self._phase_init, self._phase_sim)
-
-
-    #FIXME: Excise this method entirely, which is no longer needed.
-    def _init_thread(self) -> None:
-        '''
-        Initialize this simulator's thread and all workers of this thread.
-        '''
-
-        #FIXME: Excise us up.
-        #FIXME: Excise all documentation for these variables above.
-        # # Simulator thread workers.
-        # self._worker_seed = QBetseeSimmerWorkerSeed(self)
-        #
-        # # Immutable set of all simulator thread workers.
-        # self._workers = frozenset({self._worker_seed,})
-
-        #FIXME: This thread object probably needs to be parented. Consider
-        #reverting the commented-out line, please.
-
-        # Simulator thread controller.
-        # self._thread = QBetseeWorkerThread(self)
-        # self._thread = QBetseeWorkerThread()
-
-        # Set the name of the OS-level process associated with this thread to
-        # the same name of the OS-level process associated with the main thread
-        # appended by a unique arbitrary suffix *BEFORE* starting this thread.
-        # After this thread is started, setting this name reduces to a noop.
-        # self._thread.process_name = SCRIPT_BASENAME + '_simmer'
-
-        #FIXME: We *REALLY* need to do something resembling the following here:
-        #
-        #   gui_app.aboutToQuit.connect(self._thread.halt)
-        #
-        #Untested, of course. Why do this? Because Qt does *NOT* implicitly
-        #attempt to gracefully halt running threads on application shutdown,
-        #resulting in the following ugly error message on quitting BETSEE:
-        #
-        #    QThread: Destroyed while thread is still running
-        #
-        #Of course, the above signal connection would only be appropriate if
-        #self._thread.halt():
-        #
-        #* Were a slot -- which it currently isn't. (Trivial, of course.)
-        #* Iteratively signalled the stop() slots of all adopted workers. This
-        #  in turns implies that the QBetseeWorkerThread class needs to:
-        #  * Define a new "_workers_stop_signal" list of the "stop_signal"
-        #    attributes of all adopted workers. Naturally, the
-        #    the QBetseeWorkerThread.adopt_worker() method needs to append these
-        #    attributes of the passed workers to this list.
-        #  * Define a new unadopt_worker() method undoing everything done by
-        #    the adopt_worker() method, including removing items from the
-        #    "_workers_stop_signal" list corresponding to the passed workers.
-
-        #FIXME: Excise us up.
-        # Adopt these workers into this thread.
-        # self._thread.adopt_worker(*self._workers)
-
-        # Start this thread and hence this thread's event loop. This does *NOT*
-        # start any workers adopted into this thread; this only permits slots
-        # for these workers to begin receiving signals.
-        # self._thread.start()
-
-        # from PySide2.QtCore import QThreadPool
-        # self.threadpool = QThreadPool()
-        pass
 
 
     @type_check
@@ -395,10 +334,13 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         logs.log_debug('Sanitizing simulator state...')
 
         # Classify variables of this main window required by this simulator.
-        self._action_toggle_playing = main_window.action_sim_run_toggle
-        self._action_halt_playing   = main_window.action_sim_run_halt
-        self._player_toolbar = main_window.sim_run_player_toolbar_frame
-        self._status = main_window.sim_run_player_status
+        self._action_sim_run_start_or_resume = (
+            main_window.action_sim_run_start_or_resume)
+        self._action_pause    = main_window.action_sim_run_pause
+        self._action_stop     = main_window.action_sim_run_stop
+        self._player_progress = main_window.sim_run_player_progress
+        self._player_toolbar  = main_window.sim_run_player_toolbar_frame
+        self._status          = main_window.sim_run_player_status
 
         #FIXME: Non-ideal. Ideally, this simulator would only retain
         #fine-grained references to specific attributes of this simulation
@@ -420,8 +362,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #FIXME: Re-enable after implementing queueing properly.
         main_window.sim_run_queue_group.setEnabled(False)
 
-        #FIXME: Unhide after implementing progress bar updating properly.
-        main_window.sim_run_player_progress.hide()
+        #FIXME: Re-enable after implementing progress bar updates properly.
+        self._player_progress.hide()
 
 
     @type_check
@@ -439,8 +381,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Connect each such action to this object's corresponding slot.
-        self._action_toggle_playing.toggled.connect(self._toggle_playing)
-        self._action_halt_playing.triggered.connect(self._halt_playing)
+        self._action_sim_run_start_or_resume.triggered.connect(
+            self._start_or_resume_phase)
+        self._action_pause.triggered.connect(self._pause_phase)
+        self._action_stop.triggered.connect(self._stop_phase)
 
         # For each possible phase...
         for phase in self._phases:
@@ -476,9 +420,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # simulator is running. Specifically:
         #
         # * This queue defaults to "None".
-        # * The _toggle_playing() slot instantiates this queue on first running
+        # * The _start_or_resume_phase() slot instantiates this queue on first running
         #   a new queue of simulator phases.
-        # * The _halt_playing() slot reverts this queue back to "None".
+        # * The _stop_phase() slot reverts this queue back to "None".
         #
         # For efficiency, return this queue reduced to a boolean -- equivalent
         # to this less efficient (but more readable) pair of tests:
@@ -511,7 +455,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # If *NO* simulator phase is currently running, raise an exception.
-        self._die_unless_running()
+        self._die_unless_working()
 
         # Return true only if one or more phases are queued.
         return self._worker_queue[0]
@@ -592,8 +536,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Set the state of this simulator to the same state.
         # self.state = state
 
-    # ..................{ EXCEPTIONS ~ running               }..................
-    def _die_if_running(self) -> None:
+    # ..................{ EXCEPTIONS                         }..................
+    def _die_if_working(self) -> None:
         '''
         Raise an exception if some queued simulator phase is currently
         **running** (i.e., either being modelled or exported by this simulator).
@@ -609,7 +553,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
                 'QBetseeSimmer', 'Simulator currently running.'))
 
 
-    def _die_unless_running(self) -> None:
+    def _die_unless_working(self) -> None:
         '''
         Raise an exception unless some queued simulator phase is currently
         **running** (i.e., either being modelled or exported by this simulator).
@@ -631,78 +575,85 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     # Slots connected to signals emitted by "QAction" objects specific to the
     # currently running simulator worker if any.
 
+    #FIXME: Rewrite documentation to note the considerably changed behaviour.
     @Slot(bool)
-    def _toggle_playing(self, is_playing: bool) -> None:
+    def _start_or_resume_phase(self) -> None:
         '''
         Slot signalled on either the user interactively *or* the codebase
         programmatically toggling the checkable :class:`QPushButton` widget
-        corresponding to the :attr:`_action_toggle_playing` variable.
+        corresponding to the :attr:`_action_start_or_resume_phase` variable.
 
-        Specifically, if:
+        This slot runs the currently queued phase by either:
 
-        * This button is checked, this slot runs the currently queued phase
-          by either:
-          * If this phase was paused, resuming this phase.
-          * Else, starting this phase.
-        * This button is unchecked, this slot pauses this phase.
-
-        Parameters
-        ----------
-        is_playing : bool
-            ``True`` only if this :class:`QPushButton` is currently checked, in
-            which case this slot plays (i.e., either starts or resumes) this
-            phase.
+        * If this phase is currently paused, resuming this phase.
+        * Else, starting this phase.
         '''
 
-        # If now running the currently queued phase...
-        if is_playing:
-            #FIXME: Implement us up, please.
-            # If some simulator phase was previously running before being
-            # paused, resume this phase.
-            if self._is_working:
-                pass
-            # Else, no simulator phase was previously running. In this case,
-            # start the first queued phase.
-            else:
-                # Initialize the queue of simulator phases to be run.
-                self.enqueue_running()
+        #FIXME: Raise an exception if either:
+        #
+        #* No phase is currently queued.
+        #* A phase is currently working. Sadly, the _die_if_working() method
+        #  doesn't quite appear to correspond to that condition and hence should
+        #  probably be renamed to _die_if_working_or_paused(). We need a more
+        #  specific _die_if_working() validator.
 
-                # Iteratively run each such phase.
-                self.run_enqueued()
+        # If a simulator phase is currently working, raise an exception.
+        # self._die_if_working()
 
-            #FIXME: Set the state of both this simulator *AND* the currently
-            #running phase *AFTER* successfully running this phase above.
-        # Else, pause this subcommand.
+        #FIXME: Implement us up, please.
+        # If some simulator phase was previously running before being
+        # paused, resume this phase.
+        if self._is_working:
+            pass
+        # Else, no simulator phase was previously running. In this case,
+        # start the first queued phase.
         else:
-            #FIXME: Actually pause the currently running phase here.
+            # Initialize the queue of simulator phases to be run.
+            self.enqueue_running()
 
-            # Set this simulator and the previously running phase to the paused
-            # state *AFTER* successfully pausing this phase.
-            self._phase_working_state = SimmerState.PAUSED
+            # Iteratively run each such phase.
+            self.run_enqueued()
 
-        logs.log_debug('Returning from _toggle_playing...')
+        #FIXME: Set the state of both this simulator *AND* the currently
+        #running phase *AFTER* successfully running this phase above.
+        # self._phase_working_state = SimmerState.MODELLING
+        # self._phase_working_state = SimmerState.EXPORTING
 
 
     @Slot()
-    def _halt_playing(self) -> None:
+    def _pause_phase(self) -> None:
         '''
         Slot signalled on the user interactively (but *not* the codebase
-        programmatically) clicking the :class:`QPushButton` widget
-        corresponding to the :attr:`_action_halt_playing` variable.
+        programmatically) clicking the :class:`QPushButton` widget associated
+        with the :attr:`_action_pause` action.
         '''
 
-        # If *NO* simulator phase is currently running, raise an exception.
-        self._die_unless_running()
+        # If no simulator phase is currently working, raise an exception.
+        self._die_unless_working()
+
+        #FIXME: Actually pause the running subcommand here, please.
+
+        # Set this simulator and the previously running phase to the paused
+        # state *AFTER* successfully pausing this phase.
+        self._phase_working_state = SimmerState.PAUSED
+
+
+    @Slot()
+    def _stop_phase(self) -> None:
+        '''
+        Slot signalled on the user interactively (but *not* the codebase
+        programmatically) clicking the :class:`QPushButton` widget associated
+        with the :attr:`_action_stop` action.
+        '''
+
+        # If no simulator phase is currently working, raise an exception.
+        self._die_unless_working()
 
         #FIXME: Actually halt the running subcommand here, please.
 
         # Uninitialize the queue of simulator phases to be run *AFTER*
         # successfully halting this phase.
         self.dequeue_running()
-
-        # Set this simulator and the previously running phase to the halted
-        # state *AFTER* successfully halting this phase.
-        self._phase_working_state = SimmerState.HALTED
 
     # ..................{ SLOTS ~ action : queue             }..................
     # Slots connected to signals emitted by "QAction" objects specific to the
@@ -754,6 +705,67 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             # Update the state of simulator widgets *AFTER* setting this state.
             self._update_widgets()
 
+    # ..................{ UPDATERS                           }..................
+    def _update_widgets(self) -> None:
+
+        # Enable (in arbitrary order):
+        #
+        # * All widgets controlling the currently queued phase only if one or
+        #   more phases are currently queued.
+        # * All widgets halting the currently running phase only if one or more
+        #   phases are currently running.
+        #
+        # To reduce the likelihood of accidental interaction with widgets
+        # intended to be disabled, do so *BEFORE* subsequent slot logic.
+        self._player_toolbar.setEnabled(self.is_queued)
+
+        #FIXME: Replace this line after implementing the _pause_phase() method
+        #with something suitable and sane.
+        self._action_pause.setEnabled(False)
+
+        #FIXME: Uncomment this line and comment the following after implementing
+        #the _stop_phase() method.
+        # self._action_stop.setEnabled(self._is_working)
+        self._action_stop.setEnabled(False)
+
+        # Update the verbose status of this simulator.
+        self._update_status()
+
+
+    def _update_status(self) -> None:
+        '''
+        Update the text displayed by the :attr:`_status` label, verbosely
+        synopsizing the current state of this simulator.
+        '''
+
+        # Unformatted template synopsizing the current state of this simulator.
+        status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[self.state]
+
+        #FIXME: Actually set this text to the prior word (e.g., "seed",
+        #"initialization"). We'll probably need to get our queue up and running.
+
+        # Text signifying the type of currently running simulator phase if any
+        # *OR* an arbitrary placeholder otherwise. In the latter case, this
+        # text is guaranteed to *NOT* be interpolated into this template and is
+        # thus safely ignorable.
+        phase_type = 'Hunters sustained by the dream gain strength from blood echoes.'
+
+        # Text synopsizing the prior state of this simulator. To permit this
+        # text to be interpolated into the middle of arbitrary sentences, the
+        # first character of this text is lowercased.
+        status_prior_text = strs.lowercase_char_first(self._status.text())
+
+        # Unconditionally format this text with *ALL* possible format specifiers
+        # interpolated into *ALL* possible instances of this text. By design,
+        # format specifiers *NOT* interpolated into this text will be ignored.
+        status_text = status_text_template.format(
+            phase_type=phase_type,
+            status_prior=status_prior_text,
+        )
+
+        # Set the text of the label displaying this synopsis to this text.
+        self._status.setText(status_text)
+
     # ..................{ SLOTS ~ worker                     }..................
     # Slots connected to signals emitted by "QRunnable" workers.
 
@@ -780,25 +792,47 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             Unconditionally encapsulates the passed exception.
         '''
 
-        # Human-readable translated synopsis of this exception.
-        synopsis = None
-
-        # If this exception signifies an instability, synopsize this exception.
-        # This type of fatal error is sufficiently common to warrant special
-        # handling improving the user experience (UX).
+        # If this exception signifies an instability, raise a human-readable
+        # translated exception synopsizing this fact. This error is sufficiently
+        # common to warrant a special case improving the user experience (UX).
         if isinstance(exception, BetseSimUnstableException):
-            synopsis = QCoreApplication.translate(
-                'QBetseeSimmer',
-                'Simulation halted prematurely '
-                'due to computational instability.')
-        # Else, the type of error is unclear. Fallback to a generic synopsis.
+            raise BetseeSimmerBetseException(
+                synopsis=QCoreApplication.translate(
+                    'QBetseeSimmer',
+                    'Simulation halted prematurely '
+                    'due to computational instability.'),
+            ) from exception
+        # Else, fallback to raising a human-readable translated exception
+        # synopsizing an unrecognized fatal error.
+        #
+        # Note that this case embeds an exegesis (i.e., detailed message) *NOT*
+        # embedded in the prior case and hence requires unique handling.
         else:
-            synopsis = QCoreApplication.translate(
-                'QBetseeSimmer',
-                'Simulation halted prematurely with unexpected error.')
+            raise BetseeSimmerBetseException(
+                synopsis=QCoreApplication.translate(
+                    'QBetseeSimmer',
+                    'Simulation halted prematurely with unexpected error:'),
+                exegesis=str(exception),
+            ) from exception
 
-        # Just do it, Johnny!
-        raise BetseeSimmerBetseException(synopsis=synopsis) from exception
+
+    #FIXME: Awful slot name and implementation, obviously. Refactor as follows:
+    #* Rename to _handle_worker_completion().
+    #* Rewrite to at least:
+    #  * Toggle the play button such that the play icon is now visible. The
+    #    optimal means of implementing this and the following item might be to:
+    #    set the state of the simulator to stopped by calling the
+    #    _set_phase_state(). Since that internally calls the
+    #    _update_widgets() method, that might suffice. (It's been some time.)
+    #  * Disable the stop button.
+    #  * Probably ensure that the worker queue is empty.
+    #Improving this slot should probably be our highest priority.
+    @Slot(bool)
+    def _handle_worker_completion(self, is_success: bool) -> None:
+
+        # Set this simulator and the previously running phase to the halted
+        # state *AFTER* successfully halting this phase.
+        self._phase_working_state = SimmerState.HALTED
 
     # ..................{ QUEUERS                            }..................
     def enqueue_running(self) -> None:
@@ -827,7 +861,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         super().enqueue_running()
 
         # If some simulator phase is currently running, raise an exception.
-        self._die_if_running()
+        self._die_if_working()
 
         # Initialize this queue to the empty double-ended queue (i.e., deque).
         self._worker_queue = deque()
@@ -879,7 +913,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         #FIXME: *OMFG.* This was it. The GIL ensured that only the _work()
         #method of this worker had access to the time slice, thus preventing
-        #this method and hence the parent _toggle_playing() slot from returning
+        #this method and hence the parent _start_or_resume_phase() slot from returning
         #and hence returning control to the main event loop. Absolute insanity,
         #which I only realized after reading the following astute logic:
         #
@@ -969,8 +1003,12 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Connects signals emitted by this worker to slots on this simulator.
         worker.signals.failed.connect(self._handle_worker_exception)
-        worker.signals.progressed.connect(self.progress_fn)
-        worker.signals.finished.connect(self.thread_complete)
+        worker.signals.finished.connect(self._handle_worker_completion)
+
+        # Connects progress signals emitted by this worker to slots on this
+        # simulator's progress bar.
+        worker.signals.progress_ranged.connect(self._player_progress.setRange)
+        worker.signals.progressed.connect(self._player_progress.setValue)
 
         #FIXME: *CRITICAL*: we're currently ignoring exceptions raised by this
         #worker. To handle these exceptions, we'll need to:
@@ -984,123 +1022,3 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #    implement as a first-draft approach.)
         #* Connect this slot to the "worker.signals.failed" signal above.
         guipoolthread.run_worker(worker)
-
-
-    #FIXME: Awful slot name and implementation, obviously. Refactor as follows:
-    #* Rename to _handle_worker_progress().
-    #* Rewrite to set the progress bar's current percentage to this percentage.
-    #  In theory, actually, this might be sufficiently simplistic as to permit
-    #  us to directly connect the "worker.signals.progress" signal above to a
-    #  hypothetical slot on the progress bar setting progress to a passed
-    #  perentage integer. Which probably doesn't exist. If it does, though, we
-    #  would then be able to eliminate this slot entirely.
-    @Slot(int)
-    def progress_fn(self, progress_percentage: int) -> None:
-
-        logs.log_debug('%d%% done', progress_percentage)
-
-
-    #FIXME: Awful slot name and implementation, obviously. Refactor as follows:
-    #* Rename to _handle_worker_completion().
-    #* Rewrite to at least:
-    #  * Toggle the play button such that the play icon is now visible.
-    #  * Disable the stop button.
-    #  * Probably ensure that the worker queue is empty.
-    #Improving this slot should probably be our highest priority.
-    @Slot(bool)
-    def thread_complete(self, is_success: bool) -> None:
-
-        logs.log_debug("THREAD COMPLETE!")
-
-    # ..................{ UPDATERS                           }..................
-    def _update_widgets(self) -> None:
-
-        # Enable (in arbitrary order):
-        #
-        # * All widgets controlling the currently queued phase only if one or
-        #   more phases are currently queued.
-        # * All widgets halting the currently running phase only if one or more
-        #   phases are currently running.
-        #
-        # To reduce the likelihood of accidental interaction with widgets
-        # intended to be disabled, do so *BEFORE* subsequent slot logic.
-        self._player_toolbar.setEnabled(self.is_queued)
-
-        #FIXME: Uncomment this line and comment the following after implementing
-        #the _halt_playing() method.
-        # self._action_halt_playing.setEnabled(self._is_working)
-        self._action_halt_playing.setEnabled(False)
-
-        # Update the verbose status of this simulator.
-        self._update_status()
-
-
-    def _update_status(self) -> None:
-        '''
-        Update the text displayed by the :attr:`_status` label, verbosely
-        synopsizing the current state of this simulator.
-        '''
-
-        # Unformatted template synopsizing the current state of this simulator.
-        status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[self.state]
-
-        #FIXME: Actually set this text to the prior word (e.g., "seed",
-        #"initialization"). We'll probably need to get our queue up and running.
-
-        # Text signifying the type of currently running simulator phase if any
-        # *OR* an arbitrary placeholder otherwise. In the latter case, this
-        # text is guaranteed to *NOT* be interpolated into this template and is
-        # thus safely ignorable.
-        phase_type = 'Hunters sustained by the dream gain strength from blood echoes.'
-
-        # Text synopsizing the prior state of this simulator. To permit this
-        # text to be interpolated into the middle of arbitrary sentences, the
-        # first character of this text is lowercased.
-        status_prior_text = strs.lowercase_char_first(self._status.text())
-
-        # Unconditionally format this text with *ALL* possible format specifiers
-        # interpolated into *ALL* possible instances of this text. By design,
-        # format specifiers *NOT* interpolated into this text will be ignored.
-        status_text = status_text_template.format(
-            phase_type=phase_type,
-            status_prior=status_prior_text,
-        )
-
-        # Set the text of the label displaying this synopsis to this text.
-        self._status.setText(status_text)
-
-# ....................{ RUNNERS                            }....................
-def _run_all_subcommands(conf_filename):
-
-    # Isolate importation statements to this worker.
-    from betse.science.parameters import Parameters
-    from betse.science.simrunner import SimRunner
-
-    # Simulation configuration deserialized from this file.
-    p = Parameters().load(conf_filename)
-
-    # Disable all simulation configuration options either requiring
-    # interactive user input *OR* displaying graphical output intended for
-    # interactive user consumption (e.g., plots, animations).
-    p.anim.is_after_sim_show = False
-    p.anim.is_while_sim_show = False
-    p.plot.is_after_sim_show = False
-
-    # Enable all simulation configuration options exporting to disk.
-    p.anim.is_after_sim_save = True
-    p.anim.is_while_sim_save = True
-    p.plot.is_after_sim_save = True
-
-    # Reserialize these changes back to this file.
-    p.save_inplace()
-
-    #FIXME: Uncomment the plot_seed() call after pipelining that subcommand.
-
-    # Run all simulation subcommands.
-    sim_runner = SimRunner(conf_filename=conf_filename)
-    sim_runner.seed()
-    sim_runner.init()
-    sim_runner.sim()
-    # sim_runner.plot_seed()
-    sim_runner.plot_init()
-    sim_runner.plot_sim()

@@ -10,15 +10,13 @@ dedicated thread by a parent :class:`QThreadPool` container) classes.
 '''
 
 # ....................{ IMPORTS                            }....................
-# import traceback, sys
 from PySide2.QtCore import (
+    # QCoreApplication,
     QMutex,
     QMutexLocker,
-    QObject,
     QRunnable,
     QWaitCondition,
-    Signal,
-)  # QCoreApplication,
+)
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.call.memoizers import property_cached
@@ -35,6 +33,8 @@ from betsee.guiexception import (
 )
 from betsee.util.thread import guithread
 from betsee.util.thread.guithreadenum import ThreadWorkerState
+from betsee.util.thread.pool.guipoolworkersignal import (
+    QBetseeThreadPoolWorkerSignals)
 
 # ..................{ GLOBALS                            }..................
 _worker_id_next = 0
@@ -54,95 +54,6 @@ this primitive should be encapsulated by instantiating a one-off exception-safe
 that the context provided by the :class:QMutexLocker` class is *not* safely
 reusable and hence *must* be re-instantiated in each ``with`` context.
 '''
-
-# ....................{ SUPERCLASSES ~ worker : signal     }....................
-class QBetseeThreadPoolWorkerSignals(QObject):
-    '''
-    Low-level collection of all **pooled worker signals** (i.e., :class:`Signal`
-    instances thread-safely emittable by the :meth:`QBetseeThreadPoolWorker.run`
-    method from an arbitrary pooled thread possibly running *no* Qt event loop).
-
-    Each instance of this class is owned by a pooled worker (i.e.,
-    :class:`QBetseeThreadPoolWorker` instance), whose :meth:`run` method emits
-    signals defined by this class typically connected to slots defined by
-    objects residing in the original thread in which this worker was
-    instantiated (e.g., the main event thread).
-
-    Thread Affinity
-    ----------
-    Each instance of this class resides in the original thread in which this
-    worker was instantiated and resides. Hence, neither this class nor any
-    subclass of this class should define slots. Why? Qt would execute these
-    slots in that original thread rather than the thread running this worker.
-    '''
-
-    # ..................{ SIGNALS                            }..................
-    started = Signal()
-    '''
-    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method immediately
-    before running the :meth:`QBetseeThreadPoolWorker._work` method performing
-    all subclass-specific business logic.
-    '''
-
-    # ..................{ SIGNALS ~ finished                 }..................
-    failed = Signal(Exception)
-    '''
-    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method on catching
-    a fatal exception raised by the subclass-specific
-    :meth:`QBetseeThreadPoolWorker._work` method, passed this exception as is.
-
-    Usage
-    ----------
-    Since this is Python 3.x rather than Python 2.x, slots connected to this
-    signal may trivially reraise this exception from any other thread (complete
-    with a contextual traceback specific to the stack for this thread) via the
-    usual ``from`` clause of a ``raise`` statement.
-
-    For this reason, this signal was intentionally designed *not* to emit the
-    3-tuple returned by the standard :func:`sys.exc_info` function -- as would
-    be required under Python 2.x to properly reraise this exception. Note that a
-    little-known alternative to the ``from`` clause of a ``raise`` statement
-    does technically exist: the :meth:`Exception.with_traceback` method. By
-    explicitly calling this method on a newly instantiated exception passed
-    `sys.exc_info()[2]`` (e.g., as
-    ``raise MyNewException('wat?').with_traceback(sys.exc_info()[2])``), a
-    similar effect is achievable. Since this is substantially less trivial,
-    however, the prior approach is currently preferred.
-    '''
-
-
-
-    finished = Signal(bool)
-    '''
-    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method immediately
-    before returning from that method, passed either ``True`` if that method
-    successfully performed all worker-specific business logic (i.e., if the
-    :meth:`_work` method successfully returned *without* raising exceptions)
-    *or* ``False`` otherwise.
-
-    For finer-grained control over worker results, connect to:
-
-    * The :attr:`failed` signal to obtain exceptions raised by this worker.
-    * The :attr:`succeeded` signal to obtain objects returned by this worker.
-    '''
-
-
-    progressed = Signal(int)
-    '''
-    Signal repeatedly emitted by the :meth:`QBetseeThreadPoolWorker.run` method,
-    passed the **progress percentage** (i.e., non-negative integer in the
-    range ``[0, 100]``) of work currently completed by this worker.
-    '''
-
-
-    succeeded = Signal(object)
-    '''
-    Signal emitted by the :meth:`QBetseeThreadPoolWorker.run` method on
-    successfully completing this worker, passed the arbitrary value returned by
-    the subclass-specific :meth:`QBetseeThreadPoolWorker._work` method if that
-    method returned a value *or* ``None`` otherwise (i.e., in the case that
-    method returned no value).
-    '''
 
 # ....................{ SUPERCLASSES                       }....................
 class QBetseeThreadPoolWorker(QRunnable):
@@ -400,16 +311,6 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         * :attr:`signals.started` immediately *before* this method performs any
           subclass work.
-        * :attr:`signals.progressed` at arbitrary intervals while performing
-          subclass work. This signal is guaranteed to be emitted only at the
-          following progress percentages; all other emissions of this signal are
-          subclass-specific:
-
-          * **0%,** immediately *after* this method emits the
-            :attr:`signals.started` signal.
-          * **100%,** immediately *before* this method emits the
-            :attr:`signals.finished` signal.
-
         * :attr:`signals.failed` immediately *after* this method erroneously
           raises an unexpected exception while performing subclass work but
           *before* the :attr:`signals.finished` signal is emitted.
@@ -459,11 +360,6 @@ class QBetseeThreadPoolWorker(QRunnable):
 
             # Notify external subscribers *BEFORE* beginning subclass work.
             self.signals.started.emit()
-
-            # Notify external subscribers of the first progress percentage
-            # *BEFORE* beginning subclass work but *AFTER* emitting the
-            # "started" signal.
-            self.signals.progressed.emit(0)
 
             # If this worker or this worker's thread has been externally
             # requested to halt immediately after being requested to start,
@@ -524,11 +420,6 @@ class QBetseeThreadPoolWorker(QRunnable):
                 # (i.e., non-working) state.
                 if self._state is ThreadWorkerState.WORKING:
                     self._state = ThreadWorkerState.IDLE
-
-            # Emit the last progress percentage to external subscribers *AFTER*
-            # completing subclass work but *BEFORE* emitting the "finished"
-            # signal.
-            self.signals.progressed.emit(100)
 
             # Emit this completion status to external subscribers.
             self.signals.finished.emit(is_success)
@@ -798,10 +689,9 @@ class QBetseeThreadPoolWorker(QRunnable):
         Indefinitely block all subclass-specific business logic performed by
         this worker.
 
-        This method waits for an external call in another thread to a worker
+        This method waits for an external call from another thread to a worker
         pseudo-slot (e.g., the :meth:`resume` method), all of which internally
-        call the :meth:`_unblock_work` method to request this worker safely
-        resume work.
+        call the :meth:`_unblock_work` method to safely resume work.
 
         Caveats
         ----------
@@ -819,6 +709,10 @@ class QBetseeThreadPoolWorker(QRunnable):
         logs.log_debug(
             'Pausing thread "%d" worker "%d"...',
             guithread.get_current_thread_id(), self._worker_id)
+
+        # Notify callers that this worker is now paused immediately *BEFORE*
+        # blocking this worker.
+        self.signals.paused.emit()
 
         # Indefinitely wait for an external call to the resume() method from
         # another thread to request this worker to resume work.  This has
@@ -840,6 +734,10 @@ class QBetseeThreadPoolWorker(QRunnable):
         # lock management with "QMutex"-style explicit lock control, doing so
         # here is the simplest, sanest, and safest approach.
         self._state_unpaused.wait(self._state_lock)
+
+        # Notify callers that this worker is now resumed immediately *AFTER*
+        # unblocking this worker.
+        self.signals.resumed.emit()
 
 
     def _unblock_work(self) -> None:

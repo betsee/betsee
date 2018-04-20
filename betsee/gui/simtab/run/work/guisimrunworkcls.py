@@ -43,32 +43,81 @@ equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 #  ever do is call the self._halt_work_if_requested() method. When we require
 #  additional subcommand-specific callbacks (and we will), those will need to be
 #  passed as optional subcommand-specific method arguments. Yeah!
-#  *WAIT.* We had it right the second-to-last time, actually. Since one
-#  "SimRunner" object is shared amongst multiple workers, a single callback
-#  property fails to suffice. Instead, here's *EXACTLY* what we want to do:
-#  * Refactor each simulation subcommand (e.g., the SimRunner.seed() method) to
-#    accept an optional "periodic_callback" argument. Each such subcommand will
-#    then be expected to:
-#    * Routinely this callback (e.g., on every sampled time step, on every
-#      animation frame, after writing every CSV file or plotted image).
-#    * Pass this callback an arbitrary number of simple pure-Python scalar
-#      objects (e.g., booleans, integers, strings) specific to the current
-#      subcommand. In particular:
-#      * The seed() subcommand should pass periodic_callback() (in non-keyworded
-#        and hence positional order):
-#        1. A raw, unformatted, untranslated string as a single human-readable
-#           sentence (e.g., "Optimizing mesh step {0}..."). Non-ideal, but
-#           unavoidable for now.
-#        2. Zero or more format objects to be interpolated into this sentence.
-#      * The init() and sim() subcommands should pass periodic_callback() (in
-#        keyworded and hence arbitrary order):
-#        * "step_curr", the current sampled time step.
-#        * "step_total", the total number of sampled time steps.
-#      Note that periodic_callback() should *NEVER* be passed anything other
-#      than simple pure-Python scalars. When this fails to suffice (as it
-#      certainly will for displaying animation frames), a second
-#      subcommand-specific callback performing higher-order logic should be
-#      passed. For now, periodic_callback() suffices.
+#FIXME: *WAIT.* We had it right the second-to-last time, actually. Since one
+#"SimRunner" object is shared amongst multiple workers, a single callback
+#property fails to suffice. Instead, here's *EXACTLY* what we want to do:
+#
+#* Refactor each simulation subcommand (e.g., the SimRunner.seed() method) to
+#  accept an optional "periodic_callback" argument. Each such subcommand will
+#  then be expected to:
+#  * Routinely call this callback (e.g., on every sampled time step, on every
+#    animation frame, after writing every CSV file or plotted image).
+#  * Pass this callback an arbitrary number of simple pure-Python scalar
+#    objects (e.g., booleans, integers, strings) specific to the current
+#    subcommand. In particular:
+#    * The seed() subcommand should pass periodic_callback() (in non-keyworded
+#      and hence positional order):
+#      1. A raw, unformatted, untranslated string as a single human-readable
+#         sentence (e.g., "Optimizing mesh step {0}..."). Non-ideal, but
+#         unavoidable for now.
+#      2. Zero or more format objects to be interpolated into this sentence.
+#    * The init() and sim() subcommands should pass periodic_callback() (in
+#      keyworded and hence arbitrary order):
+#      * "step_curr", the current sampled time step.
+#      * "step_total", the total number of sampled time steps.
+#    Note that periodic_callback() should *NEVER* be passed anything other
+#    than simple pure-Python scalars. When this fails to suffice (as it
+#    certainly will for displaying animation frames), a second
+#    subcommand-specific callback performing higher-order logic should be
+#    passed. For now, periodic_callback() suffices.
+#FIXME: *WAIT.* The above has largely been obsoleted by the passage of time,
+#now. We now require at least two distinct callbacks:
+#
+#* A once-only callback emitting the
+#  "QBetseeThreadPoolWorkerSignals.progress_ranged" signal with a pair of
+#  integers.
+#* A periodic callback emitting a variety of signals on each sampled time step,
+#  including:
+#  * The "QBetseeThreadPoolWorkerSignals.progressed" signal with an integer.
+#  * Presumably other signals to handle human-readable synopsis strings, as
+#    detailed by the prior "FIXME:".
+#
+#To accomodate this complexity, consider generalizing the above into a proper
+#class hierarchy as follows:
+#
+#* Define a new "betse.science.simulate.simcallabc" submodule.
+#* Define a new "SimCallbackABC" abstract base class in this submodule.
+#* Define the following public abstract methods in this superclass:
+#  * progress_ranged(), passed a pair of integers.
+#  * progressed(), passed a single integer.
+#  * Presumably other methods to handle human-readable synopsis strings. For
+#    now, these are entirely ignorable.
+#* Define a new "SimCallbackSignaller" subclass of this superclass in this
+#  submodule (for now, anyway).
+#* Define the SimCallbackSignaller.__init__() method to accept a mandatory
+#  "QBetseeThreadPoolWorkerSignals" instance as a passed parameter, which should
+#  be classified into a "_signals" instance variable.
+#* Redefine the public abstract methods define above to emit signals on this
+#  "_signals" variable. Since the exact same signals are connected to elsewhere
+#  in the codebase, this should suffice.
+#* Define a new "_signaller" instance variable instantiating this subclass in
+#  the QBetseeSimmerWorkerABC.__init__() method like so:
+#    self._signaller = SimCallbackSignaller(signals=self.signals)
+#  Sweet, eh?
+#* Augmenting the "SimRunner" class with a new public settable
+#  "callback" property, whose value is required to be a "SimCallbackABC" object.
+#* Each "SimRunner" subcommand will then be expected to periodically call the
+#  various methods of this callback.
+#* To avoid cumbersome if statements throughout the BETSE codebase, define a
+#  trivial "SimCallbackNoop" subclass of "SimCallbackABC" in
+#  "betse.science.simulate.simcallabc", redefining these public abstract methods
+#  to simply "pass".
+#* Define a new "SimRunner._callback" instance variable in the
+#  SimRunner.__init__() method defaulting to an instance of the
+#  "SimCallbackNoop" fallback.
+#
+#O.K.; that's pretty awesome. We're fairly certain that's a sane first-draft API
+#for general-purpose simulation callbacks, which is quite exciting.
 
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
