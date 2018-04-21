@@ -4,16 +4,17 @@
 # See "LICENSE" for further details.
 
 '''
-Low-level **pooled worker** (i.e., thread-safe object implementing generically
-startable, pausable, resumable, and stoppable business logic isolated to a
-dedicated thread by a parent :class:`QThreadPool` container) classes.
+Low-level **pooled worker signals** (i.e., collection of all :class:`Signal`
+instances thread-safely emittable by the :meth:`QBetseeThreadPoolWorker.run`
+method from an arbitrary pooled thread possibly running *no* Qt event loop)
+classes.
 '''
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QObject, Signal
 # from betse.exceptions import BetseMethodUnimplementedException
 # from betse.util.io.log import logs
-from betse.util.type.types import type_check
+# from betse.util.type.types import type_check
 
 #FIXME: To avoid thread and widget (de)synchronization issues, we should also
 #connect the "paused" and "resumed" signals defined below to corresponding slots
@@ -22,7 +23,7 @@ from betse.util.type.types import type_check
 # ....................{ SUPERCLASSES                       }....................
 class QBetseeThreadPoolWorkerSignals(QObject):
     '''
-    Low-level collection of all **pooled worker signals** (i.e., :class:`Signal`
+    Low-level **pooled worker signals** (i.e., collection of all :class:`Signal`
     instances thread-safely emittable by the :meth:`QBetseeThreadPoolWorker.run`
     method from an arbitrary pooled thread possibly running *no* Qt event loop).
 
@@ -54,7 +55,7 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     Signal optionally emitted by the subclass-specific
     :meth:`QBetseeThreadPoolWorker._work` method, passed the pair of integers
     ``progress_min`` and ``progress_max`` signifying the minimum and maximum
-    values of **progress steps** (i.e., integers subsequently emitted by the
+    **progress values** (i.e., integers subsequently emitted by the
     :attr:`progressed` signal) for this worker.
 
     Caveats
@@ -71,7 +72,7 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     '''
     Signal optionally and repeatedly emitted by the subclass-specific
     :meth:`QBetseeThreadPoolWorker._work` method, passed an integer signifying
-    the progress step of work currently completed by this worker.
+    the current progress of work completed by this worker.
 
     This integer is assumed to be in the range ``[progress_min, progress_max]``,
     where ``progress_min`` and ``progress_max`` are the pair of integers

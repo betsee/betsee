@@ -15,7 +15,7 @@ from PySide2.QtCore import QThreadPool
 from betse.util.type.types import type_check
 # from betsee.guiexception import BetseePySideThreadException
 from betsee.util.type.guitype import QThreadPoolOrNoneTypes
-from betsee.util.thread.pool.guipoolworker import QBetseeThreadPoolWorker
+from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
 
 # ....................{ TESTERS                            }....................
 @type_check

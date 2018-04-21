@@ -125,14 +125,14 @@ from betse.science.parameters import Parameters
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
-from betse.util.type.decorator.deccls import abstractproperty
+# from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.types import type_check
 # from betsee.guiexception import BetseeSimmerException
 # from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
     SimmerWorkerPhaseSubkind)
-from betsee.util.thread.pool.guipoolworker import QBetseeThreadPoolWorker
+from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
 
 # ....................{ SUPERCLASSES                       }....................
 class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):

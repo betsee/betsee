@@ -38,7 +38,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
     Caveats
     ----------
     This obsolete superclass has been superceded by the superior
-    :class:`betse.util.thread.pool.guipoolworker.QBetseeThreadPoolWorker`
+    :class:`betse.util.thread.pool.guipoolwork.QBetseeThreadPoolWorker`
     superclass, whose :class:`QRunnable`-based API requires substantially less
     boilerplate.
 

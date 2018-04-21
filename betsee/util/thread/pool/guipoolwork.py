@@ -33,7 +33,7 @@ from betsee.guiexception import (
 )
 from betsee.util.thread import guithread
 from betsee.util.thread.guithreadenum import ThreadWorkerState
-from betsee.util.thread.pool.guipoolworkersignal import (
+from betsee.util.thread.pool.guipoolworksig import (
     QBetseeThreadPoolWorkerSignals)
 
 # ..................{ GLOBALS                            }..................

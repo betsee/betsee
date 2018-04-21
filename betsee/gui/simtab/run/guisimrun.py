@@ -145,7 +145,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.util.thread import guithread
 from betsee.util.thread.pool import guipoolthread
-from betsee.gui.simtab.run.work.guisimrunworkcls import (
+from betsee.gui.simtab.run.work.guisimrunwork import (
     QBetseeSimmerWorkerSeed,
 )
 from collections import deque
