@@ -190,7 +190,7 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
 
         # Simulation configuration newly deserialized from the passed original
         # Simulation configuration.
-        self._p = Parameters().load(p.conf_filename)
+        self._p = Parameters.make(p.conf_filename)
 
         # Disable all simulation configuration options either requiring
         # interactive user input *OR* displaying graphical output intended for
@@ -203,14 +203,6 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         self._p.anim.is_after_sim_save = True
         self._p.anim.is_while_sim_save = True
         self._p.plot.is_after_sim_save = True
-
-        #FIXME: This must go. The above changes must absolutely *NOT* be
-        #reserialized back to disk, as doing so now desynchronizes the already
-        #deserialized "main_window.sim_conf.p" object from these changes. See
-        #the QBetseeSimmerWorkerSeed._work() method for the full commentary.
-
-        # Reserialize these changes back to this file.
-        self._p.save_inplace()
 
     # ..................{ PROPERTIES ~ abstract              }..................
     # Read-only abstract properties required to be overridden by subclasses.
@@ -276,7 +268,7 @@ class QBetseeSimmerWorkerSeed(QBetseeSimmerWorkerABC):
 
         # Run all simulation subcommands. Well, that was easy. (No, it really
         # wasn't.)
-        sim_runner = SimRunner(conf_filename=self._p.conf_filename)
+        sim_runner = SimRunner(p=self._p)
         sim_runner.seed()
         sim_runner.init()
         sim_runner.sim()
