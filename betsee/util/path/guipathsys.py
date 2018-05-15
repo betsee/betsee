@@ -20,7 +20,7 @@ See Also
 from PySide2.QtCore import QStandardPaths
 from betse.util.io.log import logs
 from betse.util.os.shell import shelldir
-from betse.util.type.call.memoizers import callable_cached
+from betse.util.type.decorator.decmemo import func_cached
 from betse.util.type.types import type_check
 
 # ....................{ GETTERS ~ dir                      }....................
@@ -64,7 +64,7 @@ def get_path_dialog_init_pathname() -> str:
     return get_user_docs_dirname()
 
 # ....................{ GETTERS ~ dir : cached             }....................
-@callable_cached
+@func_cached
 def get_user_docs_dirname() -> str:
     '''
     Absolute pathname of the platform- and typically user-specific directory

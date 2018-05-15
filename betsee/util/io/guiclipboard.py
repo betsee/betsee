@@ -11,7 +11,7 @@ which arbitrary strings may be copied and cut to and pasted from) functionality.
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtGui import QClipboard, QGuiApplication
-from betse.util.type.call.memoizers import callable_cached
+from betse.util.type.decorator.decmemo import func_cached
 from betsee.guiexception import BetseePySideClipboardException
 
 # ....................{ EXCEPTIONS                         }....................
@@ -51,7 +51,7 @@ def is_clipboard_text() -> bool:
     return not not get_clipboard().text()
 
 # ....................{ GETTERS                            }....................
-@callable_cached
+@func_cached
 def get_clipboard() -> QClipboard:
     '''
     System clipboard.

@@ -46,11 +46,11 @@ See Also
 
 from betse import pathtree as betse_pathtree
 from betse.util.path import dirs, files, pathnames
-from betse.util.type.call.memoizers import callable_cached
+from betse.util.type.decorator.decmemo import func_cached
 from betsee import guimetadata
 
 # ....................{ GETTERS ~ dir : data               }....................
-@callable_cached
+@func_cached
 def get_data_dirname() -> str:
     '''
     Absolute path of this application's top-level data directory if found *or*
@@ -73,7 +73,7 @@ def get_data_dirname() -> str:
     return data_dirname
 
 
-@callable_cached
+@func_cached
 def get_data_py_dirname() -> str:
     '''
     Absolute path of this application's data subdirectory containing
@@ -86,7 +86,7 @@ def get_data_py_dirname() -> str:
     return dirs.join_and_die_unless_dir(get_data_dirname(), 'py')
 
 
-@callable_cached
+@func_cached
 def get_data_qrc_dirname() -> str:
     '''
     Absolute path of this application's data subdirectory containing
@@ -100,7 +100,7 @@ def get_data_qrc_dirname() -> str:
     return dirs.join_and_die_unless_dir(get_data_dirname(), 'qrc')
 
 
-@callable_cached
+@func_cached
 def get_data_ui_dirname() -> str:
     '''
     Absolute path of this application's data subdirectory containing
@@ -113,7 +113,7 @@ def get_data_ui_dirname() -> str:
     return dirs.join_and_die_unless_dir(get_data_dirname(), 'ui')
 
 # ....................{ GETTERS ~ dir : dot                }....................
-@callable_cached
+@func_cached
 def get_dot_dirname() -> str:
     '''
     Absolute path of this application's top-level dot directory in the home
@@ -133,7 +133,7 @@ def get_dot_dirname() -> str:
         betse_pathtree.get_dot_dirname(), guimetadata.SCRIPT_BASENAME)
 
 # ....................{ GETTERS ~ file : data              }....................
-@callable_cached
+@func_cached
 def get_data_qrc_filename() -> str:
     '''
     Absolute path of the XML-formatted Qt resource collection (QRC) file
@@ -151,7 +151,7 @@ def get_data_qrc_filename() -> str:
         get_data_qrc_dirname(), guimetadata.SCRIPT_BASENAME + '.qrc')
 
 
-@callable_cached
+@func_cached
 def get_data_ui_filename() -> str:
     '''
     Absolute path of the XML-formatted user interface (UI) file exported by the
@@ -165,7 +165,7 @@ def get_data_ui_filename() -> str:
         get_data_ui_dirname(), guimetadata.SCRIPT_BASENAME + '.ui')
 
 # ....................{ GETTERS ~ file : data              }....................
-@callable_cached
+@func_cached
 def get_data_py_qrc_filename() -> str:
     '''
     Absolute path of the pure-Python module generated from the XML-formatted Qt
@@ -197,7 +197,7 @@ def get_data_py_qrc_filename() -> str:
         get_data_py_dirname(), guimetadata.MAIN_WINDOW_QRC_MODULE_NAME + '.py')
 
 
-@callable_cached
+@func_cached
 def get_data_py_ui_filename() -> str:
     '''
     Absolute path of the pure-Python module generated from the XML-formatted

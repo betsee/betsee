@@ -10,12 +10,12 @@
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import QCoreApplication
 from PySide2.QtGui import QImageReader
-from betse.util.type.call.memoizers import callable_cached
+from betse.util.type.decorator.decmemo import func_cached
 # from betse.util.io.log import logs
 from betse.util.type.types import SetType  # type_check,
 
 # ....................{ SELECTORS ~ read                   }....................
-@callable_cached
+@func_cached
 def get_image_read_filetypes() -> SetType:
     '''
     Set of all image filetypes readable by the low-level :class:`QImageReader`
