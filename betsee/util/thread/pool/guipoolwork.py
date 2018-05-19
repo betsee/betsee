@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -9,7 +9,7 @@ startable, pausable, resumable, and stoppable business logic isolated to a
 dedicated thread by a parent :class:`QThreadPool` container) classes.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import (
     # QCoreApplication,
     QMutex,
@@ -36,7 +36,7 @@ from betsee.util.thread.guithreadenum import ThreadWorkerState
 from betsee.util.thread.pool.guipoolworksig import (
     QBetseeThreadPoolWorkerSignals)
 
-# ..................{ GLOBALS                            }..................
+# ....................{ GLOBALS                           }....................
 _worker_id_next = 0
 '''
 Non-thread-safe 0-based integer uniquely identifying the next **pooled worker**
@@ -55,7 +55,7 @@ that the context provided by the :class:QMutexLocker` class is *not* safely
 reusable and hence *must* be re-instantiated in each ``with`` context.
 '''
 
-# ....................{ SUPERCLASSES                       }....................
+# ....................{ SUPERCLASSES                      }....................
 class QBetseeThreadPoolWorker(QRunnable):
     '''
     Low-level **pooled worker** (i.e., thread-safe object implementing
@@ -71,20 +71,21 @@ class QBetseeThreadPoolWorker(QRunnable):
     Thread Affinity
     ----------
     All attributes of instances of this class reside in the original thread in
-    which this worker was instantiated *except* the following, which reside in a
-    dedicated thread of a parent :class:`QThreadPool` container and hence are
+    which this worker was instantiated *except* the following, which reside in
+    a dedicated thread of a parent :class:`QThreadPool` container and hence are
     guaranteed to be thread-safe by definition:
 
     * The :meth:`run` method.
     * All local objects instantiated by the :meth:`run` method.
 
-    All other attributes guaranteed to *not* initially be thread-safe. These
-    attributes may nonetheless be rendered thread-safe as follows; either:
+    All other attributes should be assumed to *not* be thread-safe. These
+    attributes may nonetheless be rendered thread-safe by either:
 
-    * Define these attributes to be Qt-specific atomic types (e.g.,
-      :class:`QAtomicInt`).
-    * Lock access to these attributes behind Qt-specific mutual exclusion
+    * Locking access to these attributes behind Qt-specific mutual exclusion
       primitives and context managers (e.g., :class:`QMutexLocker`).
+    * Defining these attributes to be Qt-specific atomic types (e.g.,
+      :class:`QAtomicInt`). Since no Python Qt frameworks expose these types,
+      this approach applies *only* to C++-based Qt applications.
 
     Signal-slot Connections
     ----------
@@ -107,14 +108,16 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     * Define each such slot as a simple method of this subclass. Since this
       method will be run from the other thread in which the object calling this
-      method resides rather than the pooled thread in which this worker resides,
-      care should be taken within the body of this method to protectively guard
-      access to instance variables with Qt-specific mutual exclusion primitives.
-      While numerous primitives exist, the following maximize thread-safety in
-      common edge cases (e.g., exceptions) and hence are strongly preferred:
+      method resides rather than the pooled thread in which this worker
+      resides, care should be taken within the body of this method to
+      protectively guard access to instance variables with Qt-specific mutual
+      exclusion primitives.  While numerous primitives exist, the following
+      maximize thread-safety in common edge cases (e.g., exceptions) and hence
+      are strongly preferred:
 
       * :class:`QReadLocker` and :class:`QWriteLocker`, context managers
-        suitable for general-purpose use in guarding access to variables safely:
+        suitable for general-purpose use in guarding access to variables
+        safely:
 
         * Readable from multiple concurrent threads.
         * Writable from only a single thread at a time.
@@ -124,11 +127,11 @@ class QBetseeThreadPoolWorker(QRunnable):
         only a single thread at a time.
 
     Lastly, note that Qt defines numerous atomic types publicly accessible to
-    C++ but *not* Python applications (e.g., :class:`QtCore::QAtomicInt`).
-    In theory, these types could be leveraged as an efficient alternative to the
-    primitives listed above. In practice, these types have yet to be exposed via
-    any Python Qt framework (PyQt5, PySide2, or otherwise) and hence remain a
-    pipe dream at best.
+    C++ but *not* Python applications (e.g., :class:`QtCore::QAtomicInt`).  In
+    theory, these types could be leveraged as an efficient alternative to the
+    primitives listed above. In practice, these types have yet to be exposed
+    via any Python Qt framework (PyQt5, PySide2, or otherwise) and hence remain
+    a pipe dream at best.
 
     Versus QtConcurrent
     ----------
@@ -142,15 +145,15 @@ class QBetseeThreadPoolWorker(QRunnable):
     official documentation publicly admits the uselessness of this function:
 
         Note that the :class:`PySide2.QtCore.QFuture` returned by
-        :func:`PySide2.QtConcurrent.run` does not support canceling, pausing, or
-        progress reporting. The :class:`PySide2.QtCore.QFuture` returned can
+        :func:`PySide2.QtConcurrent.run` does not support canceling, pausing,
+        or progress reporting. The :class:`PySide2.QtCore.QFuture` returned can
         only be used to query for the running/finished status and the return
         value of the function.
 
-    One enterprising StackOverflower `circumvented this constraint`_ by defining
-    a robust C++ :class:`PySide2.QtCore.QFuture` analogue supporting canceling,
-    pausing, and progress reporting. Sadly, this analogue requires C++-specific
-    facilities unavailable under Python, including:
+    One enterprising StackOverflower `circumvented this constraint`_ by
+    defining a robust C++ :class:`PySide2.QtCore.QFuture` analogue supporting
+    canceling, pausing, and progress reporting. Sadly, this analogue requires
+    C++-specific facilities unavailable under Python, including:
 
     * **Templating.** Since the :class:`PySide2.QtCore.QFuture` API is
       templated, all analogues of that API are also necessarily templated.
@@ -177,8 +180,8 @@ class QBetseeThreadPoolWorker(QRunnable):
     * Move these workers into this thread via the :class:`QObject.moveToThread`
       method.
     * Start this thread by calling the :class:`QThread.start` method.
-    * Start, pause, resume, cancel, and restart these workers thread by emitting
-      signals connected to slots defined on these workers.
+    * Start, pause, resume, cancel, and restart these workers thread by
+      emitting signals connected to slots defined on these workers.
 
     As with the aforementioned QtConcurrent framework, this approach
     fundamentally works in C++ but fails in Python. For unknown reasons, the
@@ -196,22 +199,22 @@ class QBetseeThreadPoolWorker(QRunnable):
         0-based integer uniquely identifying this worker. This worker is
         guaranteed to be the *only* instance of this class assigned this
         integer for the lifetime of the current process. For disambiguity with
-        the :func:`id` builtin, this variable is explicitly *not* named ``_id``.
+        the :func:`id` builtin, this variable is *not* named ``_id``.
 
     Attributes (Private: State)
     ----------
-    _state : ThreadWorkerState:
+    _state : ThreadWorkerState
         Non-thread-safe current execution state of this worker. This state is
-        non-thread-safe and hence should *never* be accessed by any callable
-        except the thread-safe :meth:`state` property guarding this state with
-        mutual exclusion primitives.
+        non-thread-safe and hence should *only* be accessed by instantiating an
+        exception-safe :class:QMutexLocker` context manager nonce passed the
+        :attr:`_state_lock` primitive as the target of a ``with`` context.
     _state_lock : QMutex
         Non-exception-safe mutual exclusion primitive rendering the
-        :meth:`state` property thread-safe. This primitive is non-exception-safe
-        and hence should *never* be accessed directly. Each access to this
-        primitive should be encapsulated by instantiating a one-off
-        exception-safe :class:QMutexLocker` context manager as the target of a
-        `with` context. Note that the context provided by the
+        :meth:`state` property thread-safe. This primitive is
+        non-exception-safe and hence should *never* be accessed directly. Each
+        access to this primitive should be encapsulated by instantiating an
+        exception-safe :class:QMutexLocker` context manager nonce as the
+        target of a ``with`` context. Note that the context provided by the
         :class:QMutexLocker` class is *not* safely reusable and hence *must* be
         re-instantiated in each ``with`` context.
     _state_unpaused : QWaitCondition
@@ -229,7 +232,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         StackOverflow answer strongly inspiring this implementation.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self) -> None:
         '''
@@ -249,7 +252,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         # Default this worker's initial state to the idle state.
         self._state = ThreadWorkerState.IDLE
 
-    # ..................{ PROPERTIES                         }..................
+    # ..................{ PROPERTIES                        }..................
     @property_cached
     def signals(self) -> QBetseeThreadPoolWorkerSignals:
         '''
@@ -259,15 +262,15 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Design
         ----------
-        This instance variable is intentionally implemented as a cached property
-        to permit subclasses to expose subclass-specific signals (e.g., by
-        trivially redefining this property to return a
+        This instance variable is intentionally implemented as a cached
+        property to permit subclasses to expose subclass-specific signals
+        (e.g., by trivially redefining this property to return a
         subclass-specific :class:`QBetseeThreadPoolWorkerSignals` instance).
         '''
 
         return QBetseeThreadPoolWorkerSignals()
 
-    # ..................{ SLOTS                              }..................
+    # ..................{ SLOTS                             }..................
     #FIXME: It would be great to additionally set the object name of (and hence
     #the name of the process associated with) the parent thread of this worker
     #to a human-readable name based on the subclass of this worker. For similar
@@ -290,9 +293,9 @@ class QBetseeThreadPoolWorker(QRunnable):
         the subclass :meth:`_work` method.
 
         If this worker is in the :attr:`ThreadWorkerState.PAUSED` state, this
-        method interprets this signal as a request to resume the work presumably
-        previously performed by this worker by a prior signalling of this method.
-        To avoid reentrancy issues, this method changes to the
+        method interprets this signal as a request to resume the work
+        presumably previously performed by this worker by a prior signalling of
+        this method.  To avoid reentrancy issues, this method changes to the
         :attr:`ThreadWorkerState.WORKING` state and immediately returns.
         Assuming that a prior call to this method is still executing, that call
         will internally detect this change and resume working as expected.
@@ -331,9 +334,9 @@ class QBetseeThreadPoolWorker(QRunnable):
         # (i.e., *WITHOUT* raising exceptions). Defaults to False for safety.
         is_success = False
 
-        # To ensure that callers receive notification of *ALL* exceptions raised
-        # by this method, the remainder of this method *MUST* be embedded within
-        # an exception handler.
+        # To ensure that callers receive notification of *ALL* exceptions
+        # raised by this method, the remainder of this method *MUST* be
+        # embedded within an exception handler.
         try:
             # Log this run.
             logs.log_debug(
@@ -370,7 +373,7 @@ class QBetseeThreadPoolWorker(QRunnable):
             # Retain this purely for exception testing purposes.
             # raise ValueError('wat?')
 
-            # Value returned by performing all subclass-specific business logic.
+            # Value returned by performing subclass-specific business logic.
             return_value = self._work()
         # If a periodic call to the _halt_work_if_requested() method performed
         # within the above call detects either this worker or this worker's
@@ -391,8 +394,8 @@ class QBetseeThreadPoolWorker(QRunnable):
             self.signals.failed.emit(exception)
         # Else, this worker raised no exception. In this case...
         else:
-            # Note the _work() method called above to have returned successfully
-            # (i.e., *WITHOUT* raising exceptions).
+            # Note the _work() method called above to have returned
+            # successfully (i.e., *WITHOUT* raising exceptions).
             is_success = True
 
             # Log this success.
@@ -408,7 +411,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         finally:
             # Log this completion.
             logs.log_debug(
-                'Finishing thread "%d" worker "%d" with success status "%r"...',
+                'Finishing thread "%d" worker "%d" with exit status "%r"...',
                 guithread.get_current_thread_id(),
                 self._worker_id,
                 is_success)
@@ -424,7 +427,7 @@ class QBetseeThreadPoolWorker(QRunnable):
             # Emit this completion status to external subscribers.
             self.signals.finished.emit(is_success)
 
-    # ..................{ PSEUDO-SLOTS                       }..................
+    # ..................{ PSEUDO-SLOTS                      }..................
     def stop(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
@@ -441,9 +444,9 @@ class QBetseeThreadPoolWorker(QRunnable):
         ----------
         Regardless of the current state of this worker, this method halts work
         by changing this state to :attr:`ThreadWorkerState.IDLE`. The
-        :meth:`_halt_work_if_requested` method in the thread running this worker
-        then detects this state change and responds by raising an exception
-        internally caught by the parent :meth:`run` method.
+        :meth:`_halt_work_if_requested` method in the thread running this
+        worker then detects this state change and responds by raising an
+        exception internally caught by the parent :meth:`run` method.
         '''
 
         # Log this action.
@@ -462,12 +465,12 @@ class QBetseeThreadPoolWorker(QRunnable):
             # Deadlocks are unlikely but feasible in edge cases unless this
             # method is unconditionally called here.
             #
-            # Note that, as the prior logic is sufficiently simplistic to ensure
-            # *NO* exception to be raised, this call need not be embedded in a
-            # try-finally block for safety.
+            # Note that, as the prior logic is sufficiently simplistic to
+            # ensure *NO* exception to be raised, this call need not be
+            # embedded in a try-finally block for safety.
             self._unblock_work()
 
-    # ..................{ SLOTS ~ pause                      }..................
+    # ..................{ SLOTS ~ pause                     }..................
     def pause(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
@@ -517,7 +520,8 @@ class QBetseeThreadPoolWorker(QRunnable):
     def resume(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe, push-based action of a genuine slot) unpausing this worker.
+        thread-safe, push-based action of a genuine slot) unpausing this
+        worker.
 
         This method resumes work in a thread-safe manner safely re-pausable at
         any time by re-calling the :meth:`pause` method.
@@ -562,12 +566,12 @@ class QBetseeThreadPoolWorker(QRunnable):
                 self._state = ThreadWorkerState.WORKING
             # Regardless of whether doing so raised an exception or not...
             finally:
-                # Unblock the parent thread of this worker if currently blocked.
-                # Deadlocks are unlikely but feasible in edge cases unless this
-                # method is unconditionally called here.
+                # Unblock the parent thread of this worker if currently
+                # blocked.  Deadlocks are unlikely but feasible in edge cases
+                # unless this method is unconditionally called here.
                 self._unblock_work()
 
-    # ..................{ WORKERS ~ abstract                 }..................
+    # ..................{ WORKERS ~ abstract                }..................
     # Abstract methods required to be redefined by subclasses.
 
     def _work(self) -> None:
@@ -575,19 +579,20 @@ class QBetseeThreadPoolWorker(QRunnable):
         Perform *all* subclass-specific business logic for this worker.
 
         The superclass :meth:`start` slot internally calls this method in a
-        thread-safe manner safely pausable *and* stoppable at any time (e.g., by
-        emitting a signal connected to the :meth:`pause` or :meth:`stop` slots).
+        thread-safe manner safely pausable *and* stoppable at any time (e.g.,
+        by emitting a signal connected to the :meth:`pause` or :meth:`stop`
+        slots).
 
         Design
         ----------
-        Subclasses are required to redefine this method to perform this logic in
-        an iterative manner periodically calling the
+        Subclasses are required to redefine this method to perform this logic
+        in an iterative manner periodically calling the
         :meth:`_halt_work_if_requested` method.
 
         If either:
 
-        * This worker has been externally signalled to stop (e.g., by emitting a
-          signal connected to the :meth:`stop` slot).
+        * This worker has been externally signalled to stop (e.g., by emitting
+          a signal connected to the :meth:`stop` slot).
         * The thread of execution currently running this worker has been
           externally requested to stop (e.g., by calling the
           :func:`guithread.halt_thread_work` function).
@@ -596,15 +601,15 @@ class QBetseeThreadPoolWorker(QRunnable):
         will raise an exception caught by the parent :meth:`start` slot,
         signalling that slot to immediately terminate this worker. Ergo, that
         method should be called *only* when the subclass is in an
-        **interruptible state** (i.e., a self-consistent internal state in which
-        this subclass is fully prepared to be immediately terminated).
+        **interruptible state** (i.e., a self-consistent internal state in
+        which this subclass is fully prepared to be immediately terminated).
         '''
 
         # The next best thing to a properly abstract method, given "QObject"
         # constraints against declaring an "ABCMeta" metaclass. *shrug*
         raise BetseMethodUnimplementedException()
 
-    # ..................{ WORKERS ~ concrete                 }..................
+    # ..................{ WORKERS ~ concrete                }..................
     # Concrete methods intended to be called but *NOT* overriden by subclasses.
 
     def _halt_work_if_requested(self) -> None:
@@ -631,9 +636,9 @@ class QBetseeThreadPoolWorker(QRunnable):
         ----------
         This method imposes minor computational overhead and hence should be
         called intermittently (rather than overly frequently). Notably, each
-        call to this method processes *all* pending events currently queued with
-        this worker's thread -- including those queued for all other workers
-        currently running in this thread.
+        call to this method processes *all* pending events currently queued
+        with this worker's thread -- including those queued for all other
+        workers currently running in this thread.
 
         Raises
         ----------
@@ -664,14 +669,14 @@ class QBetseeThreadPoolWorker(QRunnable):
             if self._state is ThreadWorkerState.PAUSED:
                 self._block_work()
 
-    # ..................{ STOPPERS                           }..................
+    # ..................{ STOPPERS                          }..................
     def _stop_work(self) -> None:
         '''
         Gracefully terminate all subclass-specific business logic performed by
         this worker.
 
-        This method raises an internal exception expected to be caught *only* by
-        the parent :meth:`run` method, as a crude form of coordinating
+        This method raises an internal exception expected to be caught *only*
+        by the parent :meth:`run` method, as a crude form of coordinating
         signalling between this and that method.
         '''
 
@@ -683,7 +688,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         # Instruct the parent run() method to stop.
         raise BetseePySideThreadWorkerStopException('So say we all.')
 
-    # ..................{ (UN)BLOCKERS                       }..................
+    # ..................{ (UN)BLOCKERS                      }..................
     def _block_work(self) -> None:
         '''
         Indefinitely block all subclass-specific business logic performed by
@@ -696,10 +701,10 @@ class QBetseeThreadPoolWorker(QRunnable):
         Caveats
         ----------
         The :attr:`_state_lock` primitive *must* be acquired (i.e., locked)
-        before this method is called. To guarantee this, the call to this method
-        should typically be embedded in a context manager of the form ``with
-        QMutexLocker(self._state_lock):``, which thread- and exception-safely
-        synchronizes access across multiple threads.
+        before this method is called. To guarantee this, the call to this
+        method should typically be embedded in a context manager of the form
+        ``with QMutexLocker(self._state_lock):``, which thread- and
+        exception-safely synchronizes access across multiple threads.
 
         If this is *not* the case, the behaviour of this method is undefined.
         Presumably, that's bad.
@@ -719,20 +724,20 @@ class QBetseeThreadPoolWorker(QRunnable):
         # several consequences, including (in temporal order):
         #
         # 1. The "_state_lock" *MUST* be acquired (i.e., locked) before calling
-        #    the QWaitCondition.wait() method on this lock. This is the caller's
-        #    responsibility, sadly.
+        #    the QWaitCondition.wait() method on this lock. This is the
+        #    caller's responsibility, sadly.
         # 2. The QWaitCondition.wait() method immediately releases (i.e.,
         #    unlocks) this lock.
         # 3. The QWaitCondition.wait() method blocks indefinitely until the
-        #    QWaitCondition.wakeOne() or wakeAll() methods are called -- in this
-        #    case, by a call to our resume() method.
+        #    QWaitCondition.wakeOne() or wakeAll() methods are called -- in
+        #    this case, by a call to our resume() method.
         # 4. The QWaitCondition.wait() method immediately re-acquires (i.e.,
         #    relocks) this lock.
         # 5. The QWaitCondition.wait() method returns.
         #
-        # While it is typically inadvisable to mix "QMutexLocker"-style implicit
-        # lock management with "QMutex"-style explicit lock control, doing so
-        # here is the simplest, sanest, and safest approach.
+        # While it is typically inadvisable to mix "QMutexLocker"-style
+        # implicit lock management with "QMutex"-style explicit lock control,
+        # doing so here is the simplest, sanest, and safest approach.
         self._state_unpaused.wait(self._state_lock)
 
         # Notify callers that this worker is now resumed immediately *AFTER*
@@ -747,8 +752,8 @@ class QBetseeThreadPoolWorker(QRunnable):
         This method wakes up the parent thread of this worker and hence this
         worker *after* the :meth:`_halt_work_if_requested` called the
         :meth:`_block_work` method to indefinitely block that thread. Moreover,
-        this method is typically called by an external call in another thread to
-        a worker pseudo-slot (e.g., the :meth:`resume` method), all of which
+        this method is typically called by an external call in another thread
+        to a worker pseudo-slot (e.g., the :meth:`resume` method), all of which
         internally call this method to request this worker safely resume work.
 
         If the parent thread of this worker is *NOT* currently blocked, this
@@ -768,7 +773,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         # Wake up the parent thread of this worker if currently blocking.
         self._state_unpaused.wakeOne()
 
-# ....................{ SUPERCLASSES ~ callable            }....................
+# ....................{ SUPERCLASSES ~ callable           }....................
 class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):
     '''
     Low-level **callable-defined pooled worker** (i.e., pooled worker whose
@@ -776,10 +781,10 @@ class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):
     initialization time).
 
     This superclass is a convenience wrapper for the
-    :class:`QBetseeThreadPoolWorker` superclass, simplifying usage in the common
-    case of business logic definable by a single callable. Under the more
-    general-purpose :class:`QBetseeThreadPoolWorker` API, each novel type of
-    business logic must be implemented as a distinct subclass overriding the
+    :class:`QBetseeThreadPoolWorker` superclass, simplifying usage in the
+    common case of business logic definable by a single callable. Under the
+    more general-purpose :class:`QBetseeThreadPoolWorker` API, each novel type
+    of business logic must be implemented as a distinct subclass overriding the
     :meth:`_work` method to perform that specific logic. Under the less
     general-purpose API provided by this superclass, each such type of business
     logic is instead implemented as a simple callable (e.g., function, lambda)
@@ -799,7 +804,7 @@ class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):
         callable when subsequently called.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(
         self,
@@ -846,7 +851,7 @@ class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):
         self._func_args = func_args
         self._func_kwargs = func_kwargs
 
-    # ..................{ WORKERS                            }..................
+    # ..................{ WORKERS                           }..................
     def _work(self) -> object:
 
         # Call this callable with these positional and keyword arguments and
@@ -854,7 +859,7 @@ class QBetseeThreadPoolWorkerCallable(QBetseeThreadPoolWorker):
         # method will emit to slots connected to the "succeeded" signal.
         return self._func(*self._func_args, **self._func_kwargs)
 
-# ..................{ GETTERS                            }..................
+# ....................{ GETTERS                           }....................
 def _get_worker_id_next() -> int:
     '''
     Thread-safe 0-based integer uniquely identifying the next **pooled worker**
