@@ -362,9 +362,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #FIXME: Re-enable after implementing queueing properly.
         main_window.sim_run_queue_group.setEnabled(False)
 
-        #FIXME: Re-enable after implementing progress bar updates properly.
-        self._player_progress.hide()
-
 
     @type_check
     def _init_connections(self, main_window: QBetseeMainWindow) -> None:
@@ -928,31 +925,19 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             'Spawning simulator worker thread from main thread "%d"...',
             guithread.get_current_thread_id())
 
-        # Simulator worker.
-        #
-        # Note that the simulation configuration passed to this worker is
-        # deep-copied and hence *NOT* changed by this worker, preserving
-        # thread-safety and preventing object desynchronization.
-        worker = QBetseeSimmerWorkerSeed(p=self._sim_conf.p)
+        # Simulator worker simulating one or more simulation phases of the
+        # currently loaded simulation defined by this configuration file.
+        worker = QBetseeSimmerWorkerSeed(
+            conf_filename=self._sim_conf.p.conf_filename)
 
-        # Connects signals emitted by this worker to slots on this simulator.
+        # Connect signals emitted by this worker to slots on this simulator.
         worker.signals.failed.connect(self._handle_worker_exception)
         worker.signals.finished.connect(self._handle_worker_completion)
 
-        # Connects progress signals emitted by this worker to slots on this
+        # Connect progress signals emitted by this worker to slots on this
         # simulator's progress bar.
         worker.signals.progress_ranged.connect(self._player_progress.setRange)
         worker.signals.progressed.connect(self._player_progress.setValue)
 
-        #FIXME: *CRITICAL*: we're currently ignoring exceptions raised by this
-        #worker. To handle these exceptions, we'll need to:
-        #
-        #* Define a new _catch_exception(tuple) slot of this class, presumably
-        #  by either:
-        #  * Re-raising the exception described by the passed tuple. (Unclear if
-        #    this is feasible. If it is, this might be the ideal solution.)
-        #  * Directly call a method displaying the exception described by the
-        #    passed tuple. (Less ideal, but probably *MUCH* simpler to
-        #    implement as a first-draft approach.)
-        #* Connect this slot to the "worker.signals.failed" signal above.
+        # Run this worker and thus this simulation phase.
         guipoolthread.run_worker(worker)

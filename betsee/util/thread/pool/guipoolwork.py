@@ -268,7 +268,8 @@ class QBetseeThreadPoolWorker(QRunnable):
         subclass-specific :class:`QBetseeThreadPoolWorkerSignals` instance).
         '''
 
-        return QBetseeThreadPoolWorkerSignals()
+        return QBetseeThreadPoolWorkerSignals(
+            halt_work_if_requested=self._halt_work_if_requested)
 
     # ..................{ SLOTS                             }..................
     #FIXME: It would be great to additionally set the object name of (and hence

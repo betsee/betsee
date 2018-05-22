@@ -8,6 +8,16 @@ Low-level **simulator worker** (i.e., :mod:`PySide2`-based thread performing the
 equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 '''
 
+#FIXME: Wire up the "self._signals.progress_ranged" and
+#"self._signals.progressed" signals to the corresponding slots of the
+#simulator progress bar. Perhaps a new
+#"SimCallbacksSignaller.init(main_window: QMainWindow)" method may be defined?
+#FIXME: Err, probably not, actually. Instances of this class are only locally
+#defined to preserve thread affinity; ergo, the parent
+#"QBetseeSimmerWorkerABC" class will need to establish these signal-slot
+#connections that in a new
+#"QBetseeSimmerWorkerABC.init(main_window: QMainWindow)" method, probably.
+
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
 from betse.science.parameters import Parameters
@@ -40,30 +50,23 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
     '''
 
     # ..................{ INITIALIZERS                       }..................
-    #FIXME: Refactor to simply accept a "conf_filename: str" parameter rather
-    #than a full-blown "p: Parameters" parameter.
     @type_check
-    def __init__(self, p: Parameters) -> None:
+    def __init__(self, conf_filename: str) -> None:
         '''
         Initialize this simulator worker.
 
         Attributes
         ----------
-        p : Parameters
-            Simulation configuration to be run by this simulator worker. For
-            thread-safety, this worker internally retains only a deep copy of
-            rather than shallow reference to this object; ergo, the original
-            simulation configuration passed by the caller is guaranteed to
-            remain unchanged by this worker. This object bridges the critical
-            gap between the low-level CLI-based simulator and this high-level
-            GUI, making this the most important attribute in either codebase.
+        conf_filename : str
+            Absolute path of the YAML-formatted simulation configuration file
+            defining the simulation to be run by this worker.
         '''
 
         # Initialize our superclass with all passed parameters.
         super().__init__()
 
         # Classify all passed parameters.
-        self._conf_filename = p.conf_filename
+        self._conf_filename = conf_filename
 
     # ..................{ PROPERTIES ~ abstract             }..................
     def _make_sim_runner(self) -> SimRunner:

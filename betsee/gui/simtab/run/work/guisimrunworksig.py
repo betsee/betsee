@@ -8,16 +8,6 @@ Low-level **signals-based simulation phase callbacks** (i.e., collection of all
 simulation phase callbacks whose methods emit queued Qt signals) classes.
 '''
 
-#FIXME: Wire up the "self._signals.progress_ranged" and
-#"self._signals.progressed" signals to the corresponding slots of the
-#simulator progress bar. Perhaps a new
-#"SimCallbacksSignaller.init(main_window: QMainWindow)" method may be defined?
-#FIXME: Err, probably not, actually. Instances of this class are only locally
-#defined to preserve thread affinity; ergo, the parent
-#"QBetseeSimmerWorkerABC" class will need to establish these signal-slot
-#connections that in a new
-#"QBetseeSimmerWorkerABC.init(main_window: QMainWindow)" method, probably.
-
 # ....................{ IMPORTS                            }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
 from betse.science.phase.phasecallbacks import SimCallbacksABC
@@ -73,39 +63,8 @@ class SimCallbacksSignaller(SimCallbacksABC):
             progress_min=progress_min, progress_max=progress_max)
 
         # Forward these callback parameters to the corresponding worker signal.
-        self._signals.progress_ranged.emit(progress_min, progress_max)
-
-        #FIXME: This requires that this object maintain at least a weak
-        #reference to the parent worker, Alternately, for generality, that
-        #reference could instead be passed to the
-        #QBetseeThreadPoolWorkerSignals.__init__() method and then classified
-        #as a public "worker" weak reference. The latter probably makes more
-        #sense, actually, as *ALL* "QBetseeThreadPoolWorkerSignals" instances
-        #will need to call the self._worker._halt_work_if_requested() in every
-        #callback. Either way, the end result is the same, of course.
-        #FIXME: Since *ALL* "QBetseeThreadPoolWorkerSignals" instances will
-        #need to call the self._worker._halt_work_if_requested() in every
-        #callback, we'd might as well codify that by defining helper methods in
-        #the "QBetseeThreadPoolWorkerSignals" class resembling:
-        #
-        #    @type_check
-        #    def emit_progress_ranged(progress_min: int, progress_max: int) -> None:
-        #
-        #        # Signal all slots connected to this signal with these parameters.
-        #        self.progress_ranged.emit(progress_min, progress_max)
-        #
-        #        Temporarily or permanently halt all worker-specific business logic
-        #        when requested to do so by external callers in other threads.
-        #        self._worker._halt_work_if_requested()
-        #
-        #It's better to centralize that boilerplate rather than distribute it
-        #throughout the codebase.
-
-        #FIXME: Perform similar logic in the progressed() callback.
-
-        # Temporarily or permanently halt all worker-specific business logic
-        # when requested to do so by external callers in other threads.
-        # self._worker._halt_work_if_requested()
+        self._signals.emit_progress_range(
+            progress_min=progress_min, progress_max=progress_max)
 
 
     @type_check
@@ -115,4 +74,4 @@ class SimCallbacksSignaller(SimCallbacksABC):
         super().progressed(progress=progress)
 
         # Forward these callback parameters to the corresponding worker signal.
-        self._signals.progressed.emit(progress)
+        self._signals.emit_progress(progress=progress)
