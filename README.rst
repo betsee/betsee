@@ -78,7 +78,7 @@ BETSEE is installable as follows:
    #. Install Qt_ `5.9 <Qt 5.9_>`__. [#pyside2_install]_
    #. Install the `stable 5.9 branch <_PySide2 5.9>`__ of PySide2_.
       [#pyside2_install]_
-   A. Open a **terminal.** [#terminal]_
+   #. Open a **terminal.** [#terminal]_
    #. Clone the ``master`` branch of this repository.
 
       .. code:: bash
@@ -144,23 +144,33 @@ BETSEE is open-source software `released <LICENSE>`__ under the permissive `BSD
 * All `Noun Project icons`_ `distributed with BETSEE <BETSEE Noun Project
   icons_>`__, `kindly released <Noun Project license_>`__ under the permissive
   `CC BY 3.0 license`_ by various authors, including:
-  * `Maxim Kulikov`_.
+
+  * `Maxim Kulikov`_, author of the `salubrious bovine <Cows collection_>`__
+    prominently displayed on this `project page <project_>`__.
+
 * All `Open Iconic icons`_ `distributed with BETSEE <BETSEE Open Iconic
   icons_>`__, `kindly released <Open Iconic license_>`__ under the permissive
   `MIT license`_.
 
-Lastly, the logo prominently displayed on this `project page <project_>`__ is a
-flat `Noun Project`_ icon entitled `"Cow," <Cows collection_>`__ `kindly
-released <Noun Project license_>`__ by `Maxim Kulikov`_.
-
-Reference
+Citation
 =========
 
-When leveraging BETSEE in your own work, consider citing our `introductory
-paper`_:
+BETSE_ is formally described in our `introductory paper <2016 article_>`__.
+Third-party papers, theses, and other texts leveraging BETSEE (and hence BETSE_)
+should ideally cite the following:
 
-    `Pietak, Alexis`_ and `Levin, Michael`_ (\ *2016*\ ). |article name|_
-    |journal name|_ 4, 55. ``doi:10.3389/fbioe.2016.00055``
+    `Alexis Pietak`_ and `Michael Levin`_, 2016. |2016 article name|_
+    |2016 article supplement|_ [#supplement]_ |2016 journal name|_ *4*\ (55).
+    :sup:`https://doi.org/10.3389/fbioe.2016.00055`
+
+See also `this list of BETSE-centric papers <BETSE citation_>`__ for
+further supporting material.
+
+.. [#supplement]
+   This article's supplement extends the cursory theory presented by this
+   article with a rigorous treatment of the mathematics, formalisms, and
+   abstractions required to fully reproduce this work. If theoretical questions
+   remain after completing the main article, please consult this supplement.
 
 Authors
 =======
@@ -174,6 +184,8 @@ biologically misaligned, and simply unusable.
 .. # ------------------( LINKS ~ betse                      )------------------
 .. _BETSE:
    https://gitlab.com/betse/betse
+.. _BETSE citation:
+   https://gitlab.com/betse/betse#citation
 .. _BETSE live:
    https://gitlab.com/betse/betse#advanced
 
@@ -186,6 +198,8 @@ biologically misaligned, and simply unusable.
    https://gitlab.com/betse/betsee/graphs/master
 .. _dependencies:
    doc/md/INSTALL.md
+.. _project:
+   https://gitlab.com/betse/betsee
 .. _testing:
    https://gitlab.com/betse/betsee/pipelines
 .. _tarballs:
@@ -194,8 +208,10 @@ biologically misaligned, and simply unusable.
    https://gitlab.com/betse/betsee/blob/master/bin/install/linux/betsee_ubuntu_16_04.bash
 
 .. # ------------------( LINKS ~ academia                   )------------------
+.. _Alexis Pietak:
 .. _Pietak, Alexis:
    https://www.researchgate.net/profile/Alexis_Pietak
+.. _Michael Levin:
 .. _Levin, Michael:
    https://ase.tufts.edu/biology/labs/levin
 .. _Paul Allen Discovery Center:
@@ -207,19 +223,24 @@ biologically misaligned, and simply unusable.
 .. _Tufts University:
    https://www.tufts.edu
 
-.. # ------------------( LINKS ~ citation                   )------------------
-.. _introductory paper:
+.. # ------------------( LINKS ~ paper : 2016               )------------------
+.. _2016 article:
    http://journal.frontiersin.org/article/10.3389/fbioe.2016.00055/abstract
 
-.. |article name| replace::
-   **Exploring Instructive Physiological Signaling with the Bioelectric Tissue
-   Simulation Engine (BETSE).**
-.. _article name:
+.. |2016 article name| replace::
+   **Exploring instructive physiological signaling with the bioelectric tissue
+   simulation engine (BETSE).**
+.. _2016 article name:
    http://journal.frontiersin.org/article/10.3389/fbioe.2016.00055/abstract
 
-.. |journal name| replace::
-   *Frontiers in Bioengineering and Biotechnology.*
-.. _journal name:
+.. |2016 article supplement| replace::
+   **(**\ Supplement\ **).**
+.. _2016 article supplement:
+   https://www.frontiersin.org/articles/file/downloadfile/203679_supplementary-materials_datasheets_1_pdf/octet-stream/Data%20Sheet%201.PDF/1/203679
+
+.. |2016 journal name| replace::
+   *Frontiers in Bioengineering and Biotechnology,*
+.. _2016 journal name:
    http://journal.frontiersin.org/journal/bioengineering-and-biotechnology
 
 .. # ------------------( LINKS ~ science                    )------------------
@@ -300,6 +321,7 @@ biologically misaligned, and simply unusable.
 .. _Maxim Kulikov:
    https://thenounproject.com/maxim221
 .. _Noun Project:
+.. _Noun Project icons:
    https://thenounproject.com
 .. _Noun Project license:
    https://thenounproject.com/legal
@@ -344,6 +366,8 @@ biologically misaligned, and simply unusable.
    https://en.wikipedia.org/wiki/License_compatibility#Compatibility_of_FOSS_licenses
 .. _BSD 2-clause license:
    https://opensource.org/licenses/BSD-2-Clause
+.. _CC BY 3.0 license:
+   https://creativecommons.org/licenses/by/3.0
 .. _CC BY-SA 4.0 license:
    https://creativecommons.org/licenses/by-sa/4.0
 .. _Entypo+ license:

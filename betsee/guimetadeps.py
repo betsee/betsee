@@ -27,7 +27,7 @@ Metadata constants synopsizing high-level application dependencies.
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-BETSE_VERSION_REQUIRED_MIN = '0.7.1'
+BETSE_VERSION_REQUIRED_MIN = '0.8.1'
 '''
 Minimum version of BETSE, the low-level CLI underlying this high-level GUI,
 required by this application as a human-readable ``.``-delimited string.
