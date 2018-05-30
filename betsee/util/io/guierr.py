@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -12,23 +12,24 @@ See Also
     Error-agnostic :class:`QMessageBox` facilities.
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the
 # top-level of this module may import *ONLY* from submodules guaranteed to:
-# * Exist, including standard Python and BETSEE modules. This does *NOT* include
-#   BETSE modules, which are *NOT* guaranteed to exist at this point. For
-#   simplicity, however, all core PySide2 submodules are assumed to exist.
+# * Exist, including standard Python and BETSEE modules. This does *NOT*
+#   include BETSE modules, which are *NOT* guaranteed to exist at this point.
+#   For simplicity, however, all core PySide2 submodules are assumed to exist.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import re, sys, traceback
 from PySide2.QtWidgets import QMessageBox
+from betsee.util.app import guiapp
 
-# ....................{ INSTALLERS                         }....................
+# ....................{ INSTALLERS                        }....................
 def install_exception_hook() -> None:
     '''
-    Install a global exception hook overriding :mod:`PySide2`\ 's default insane
+    Install a global exception hook overriding :mod:`PySide2`'s default insane
     exception handling behaviour with sane exception handling.
 
     By default, :mod:`PySide2`:
@@ -36,8 +37,9 @@ def install_exception_hook() -> None:
     #. Catches **uncaught exceptions** (i.e., exceptions automatically
        propagated up the call stack without being caught) raised during the
        GUI's event loop processing.
-    #. Prints the tracebacks for these exceptions to stderr.
-    #. Ignores these exceptions by silently returning to GUI processing.
+    #. Prints the tracebacks for these exceptions to standard error.
+    #. Ignores these exceptions by silently returning control back to the main
+       event handling loop.
 
     This behaviour is entirely invisible to end users and hence insane. This
     function addresses this by installing a new handler both interactively
@@ -90,7 +92,7 @@ def install_exception_hook() -> None:
     # Replace the default global exception hook with this handler.
     sys.excepthook = exception_hook
 
-# ....................{ SHOWERS                            }....................
+# ....................{ SHOWERS                           }....................
 def show_error(
     # Mandatory parameters.
     title: str,
@@ -102,8 +104,16 @@ def show_error(
 ) -> None:
     '''
     Display the passed error message(s) as a :mod:`QMessageBox`-driven modal
-    message box in the current application widget, creating this widget if
-    necessary.
+    message box of the :class:`QApplication` singleton for this application.
+
+    Caveats
+    ----------
+    This function necessarily instantiates and initializes this singleton if
+    needed. Doing so commonly invites chicken-and-egg issues between the
+    :func:`init` and :func:`betse.lib.libs.reinit` methods and hence is
+    inadvisable; in this case, however, the need to instantiate this singleton
+    to display critical errors subsumes the need to instantiate this singleton
+    in a more controlled manner.
 
     Parameters
     ----------
@@ -126,6 +136,15 @@ def show_error(
     # Type check manually.
     assert isinstance(title,    str), '"{}" not a string.'.format(title)
     assert isinstance(synopsis, str), '"{}" not a string.'.format(synopsis)
+
+    # Instantiate and initialize the "QApplication" singleton for this
+    # application if needed *BEFORE* creating children widgets of this
+    # singleton. Failure to do so typically results in non-human-readable
+    # segmentation faults from Qt itself resembling:
+    #
+    #    QWidget: Must construct a QApplication before a QWidget
+    #    [1]    30475 abort      betsee -v
+    guiapp.init()
 
     # Message box displaying this error.
     error_box = QMessageBox()
@@ -164,14 +183,9 @@ def show_exception(exception: Exception) -> None:
     assert isinstance(exception, Exception), (
         '"{}" not an exception.'.format(exception))
 
-    # Implicitly create the root Qt widget containing the message box to be
-    # subsequently displayed, if needed.
-    from betsee.util.app import guiapp
-    if False: guiapp  # squelch IDE warnings
-
     # Human-readable synopsis and exegesis of this exception if defined (e.g.,
-    # if this exception is an instance of the "BetseeException" superclass) *OR*
-    # this exception message and None otherwise.
+    # if this exception is an instance of the "BetseeException" superclass)
+    # *OR* this exception message and None otherwise.
     exception_synopsis = getattr(exception, 'synopsis', str(exception))
     exception_exegesis = getattr(exception, 'exegesis', None)
 
@@ -185,8 +199,8 @@ def show_exception(exception: Exception) -> None:
 
         # Human-readable title of this exception, synthesized from this
         # machine-readable class name by inserting spaces between all
-        # boundaries between non-capitalized and capitalized letters (e.g., from
-        # "ValueError" to "Value Error").
+        # boundaries between non-capitalized and capitalized letters (e.g.,
+        # from "ValueError" to "Value Error").
         exception_title = re.sub(
             r'([a-z])([A-Z])', r'\1 \2', exception_classname,)
 

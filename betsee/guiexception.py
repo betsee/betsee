@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,20 +7,20 @@
 Application-specific exception hierarchy.
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the
 # top-level of this module may import *ONLY* from submodules guaranteed to:
-# * Exist, including standard Python and BETSEE modules. This does *NOT* include
-#   BETSE modules, which are *NOT* guaranteed to exist at this point. For
-#   simplicity, however, all core PySide2 submodules are assumed to exist.
+# * Exist, including standard Python and BETSEE modules. This does *NOT*
+#   include BETSE modules, which are *NOT* guaranteed to exist at this point.
+#   For simplicity, however, all core PySide2 submodules are assumed to exist.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from PySide2.QtCore import QCoreApplication
 from abc import ABCMeta
 
-# ....................{ EXCEPTIONS ~ superclass            }....................
+# ....................{ EXCEPTIONS ~ superclass           }....................
 #FIXME: Introduce into the "betse.exceptions" submodule as a new
 #"BetseVerboseException" base class from which all other exception classes
 #defined by that submodule should eventually subclass.
@@ -42,7 +42,7 @@ class BetseeException(Exception, metaclass=ABCMeta):
         if no such explanation is defined).
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(
         self,
         synopsis: str,
@@ -55,17 +55,17 @@ class BetseeException(Exception, metaclass=ABCMeta):
         Parameters
         ----------
         synopsis : str
-            Human-readable synopsis tersely describing this exception, typically
-            constrained to a single sentence.
+            Human-readable synopsis tersely describing this exception,
+            typically constrained to a single sentence.
         title : optional[str]
             Human-readable title associated with this exception, typically
             constrained to at most two to three words. Defaults to ``None``, in
             which case the title defaults to the translated string returned by
             the :meth:`_title_default` property.
         exegesis : optional[str]
-            Human-readable explanation fully detailing this exception, typically
-            spanning multiple sentences. Defaults to ``None``, in which case no
-            such explanation is defined.
+            Human-readable explanation fully detailing this exception,
+            typically spanning multiple sentences. Defaults to ``None``, in
+            which case no such explanation is defined.
         '''
 
         # Since the @type_check decorator is unavailable at this early point in
@@ -92,7 +92,7 @@ class BetseeException(Exception, metaclass=ABCMeta):
         self.synopsis = synopsis
         self.exegesis = exegesis
 
-    # ..................{ PROPERTIES                         }..................
+    # ..................{ PROPERTIES                        }..................
     @property
     def _title_default(self) -> str:
         '''
@@ -102,7 +102,7 @@ class BetseeException(Exception, metaclass=ABCMeta):
 
         return QCoreApplication.translate('BetseeException', 'Horrible Error')
 
-# ....................{ EXCEPTIONS ~ general               }....................
+# ....................{ EXCEPTIONS ~ general              }....................
 class BetseeCacheException(BetseeException):
     '''
     General-purpose exception applicable to user-specific caching, including
@@ -111,7 +111,8 @@ class BetseeCacheException(BetseeException):
 
     @property
     def _title_default(self) -> str:
-        return QCoreApplication.translate('BetseeCacheException', 'Cache Error')
+        return QCoreApplication.translate(
+            'BetseeCacheException', 'Cache Error')
 
 
 class BetseeLibException(BetseeException):
@@ -137,7 +138,7 @@ class BetseeSimConfException(BetseeException):
         return QCoreApplication.translate(
             'BetseeSimConfException', 'Simulation Configuration Error')
 
-# ....................{ EXCEPTIONS ~ psd                   }....................
+# ....................{ EXCEPTIONS ~ psd                  }....................
 class BetseePySideException(BetseeLibException):
     '''
     General-purpose exception applicable to :mod:`PySide2`, this application's
@@ -164,8 +165,8 @@ class BetseePySideClipboardException(BetseePySideException):
 
 class BetseePySideFocusException(BetseePySideException):
     '''
-    General-purpose exception applicable to all handling of interactive keyboard
-    input focus for widgets.
+    General-purpose exception applicable to all handling of interactive
+    keyboard input focus for widgets.
     '''
 
     @property
@@ -173,7 +174,7 @@ class BetseePySideFocusException(BetseePySideException):
         return QCoreApplication.translate(
             'BetseePySideFocusException', 'Widget Focus Error')
 
-# ....................{ EXCEPTIONS ~ psd : thread          }....................
+# ....................{ EXCEPTIONS ~ psd : thread         }....................
 class BetseePySideThreadException(BetseePySideException):
     '''
     :class:`PySide2.QtCore.QThread`-specific exception.
@@ -184,7 +185,7 @@ class BetseePySideThreadException(BetseePySideException):
         return QCoreApplication.translate(
             'BetseePySideThreadException', 'Thread Error'),
 
-# ....................{ EXCEPTIONS ~ psd : thread : worker }....................
+# ....................{ EXCEPTIONS ~ psd : thread: worker }....................
 class BetseePySideThreadWorkerException(BetseePySideThreadException):
     '''
     Multithreaded worker object-specific exception, where "worker" implies any
@@ -204,14 +205,14 @@ class BetseePySideThreadWorkerStopException(BetseePySideThreadWorkerException):
     ``_halt_work_if_requested`` methods and caught by the ``start`` methods
     defined on these objects.
 
-    This exception is intended exclusively for private use by the aforementioned
-    methods as a crude (albeit sufficient) means of facilitating
+    This exception is intended exclusively for private use by the
+    aforementioned methods as a crude (albeit sufficient) means of facilitating
     superclass-subclass intercommunication.
     '''
 
     pass
 
-# ....................{ EXCEPTIONS ~ psd : widget          }....................
+# ....................{ EXCEPTIONS ~ psd : widget         }....................
 class BetseePySideWidgetException(BetseePySideException):
     '''
     General-purpose exception applicable to :mod:`PySide2` widgets.
@@ -221,6 +222,18 @@ class BetseePySideWidgetException(BetseePySideException):
     def _title_default(self) -> str:
         return QCoreApplication.translate(
             'BetseePySideWidgetException', 'Widget Error')
+
+
+class BetseePySideApplicationException(BetseePySideWidgetException):
+    '''
+    :class:`PySide2.QtWidgets.QApplication`-specific exception pertaining to
+    the application singleton for this... application.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+        return QCoreApplication.translate(
+            'BetseePySideApplicationException', 'Singleton Error'),
 
 
 class BetseePySideMenuException(BetseePySideWidgetException):
@@ -279,7 +292,7 @@ class BetseePySideWindowException(BetseePySideWidgetException):
         return QCoreApplication.translate(
             'BetseePySideWindowException', 'Window Error')
 
-# ....................{ EXCEPTIONS ~ psd : widget : enum   }....................
+# ....................{ EXCEPTIONS ~ psd : widget : enum  }....................
 #FIXME: Rename to "BetseePySideEnumWidgetException" for orthogonality.
 class BetseePySideWidgetEnumException(BetseePySideWidgetException):
     '''
@@ -314,7 +327,7 @@ class BetseePySideRadioButtonException(BetseePySideWidgetEnumException):
         return QCoreApplication.translate(
             'BetseePySideRadioButtonException', 'Radio Button Error')
 
-# ....................{ EXCEPTIONS ~ psd : widget : betsee }....................
+# ....................{ EXCEPTIONS ~ psd : widget: betsee }....................
 class BetseePySideEditWidgetException(BetseePySideException):
     '''
     General-purpose exception applicable to application-specific editable
@@ -327,7 +340,7 @@ class BetseePySideEditWidgetException(BetseePySideException):
         return QCoreApplication.translate(
             'BetseePySideEditWidgetException', 'Editable Widget Error')
 
-# ....................{ EXCEPTIONS ~ simmer                }....................
+# ....................{ EXCEPTIONS ~ simmer               }....................
 class BetseeSimmerException(BetseePySideException):
     '''
     General-purpose exception applicable to the **simulator** (i.e.,

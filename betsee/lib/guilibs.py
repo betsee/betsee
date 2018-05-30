@@ -22,6 +22,7 @@ such dependencies.
 
 from betse.lib import libs as betse_libs
 from betse.util.io.log import logs
+from betse.util.type.mapping import mappings
 from betse.util.type.types import type_check
 from betsee import guimetadata, guimetadeps
 
@@ -44,8 +45,29 @@ def die_unless_runtime_mandatory_all() -> None:
         Further details.
     '''
 
-    betse_libs.die_unless_requirements_dict(
-        guimetadeps.RUNTIME_MANDATORY)
+    # Ideally, this function would reduce to the following one-liner:
+    #    betse_libs.die_unless_requirements_dict(guimetadeps.RUNTIME_MANDATORY)
+    #
+    # Sadly, doing so invites subtle setuptools issues for developers and
+    # contributers installing BETSE via "python3 setup.py develop". In that
+    # case, the setuptools-specific version of BETSE is effectively frozen at
+    # installation time. Since this version rapidly becomes desynchronized from
+    # the physical version of BETSE in development (i.e., the
+    # "betse.__version__" attribute), the setuptools-specific version of BETSE
+    # must be ignored for validation purposes. Note, however, that the initial
+    # "betsee.__main__" submodule has already guaranteed BETSE to both be
+    # importable and of a sufficient version; ergo, re-validating BETSE here
+    # would be entirely superfluous.
+    #
+    # Instead, this function removes BETSE from the set of all setuptools
+    # requirements to be validated *BEFORE* validating those requirements.
+
+    # Deep copy of these requirements excluding BETSE.
+    RUNTIME_MANDATORY_SANS_BETSE = mappings.copy_map_sans_key(
+        mapping=guimetadeps.RUNTIME_MANDATORY, key='BETSE')
+
+    # Validate these requirements.
+    betse_libs.die_unless_requirements_dict(RUNTIME_MANDATORY_SANS_BETSE)
 
 
 @type_check

@@ -128,8 +128,8 @@ def _die_unless_betse() -> None:
     # Else, BETSE is importable.
 
     # Minimum version of BETSE required by this application as a
-    # machine-readable tuple of integers. Since this tuple is only required once
-    # (namely, here), this tuple is *NOT* persisted as a "metadata" global.
+    # machine-readable tuple of integers. This tuple is only required once
+    # (i.e., here) and hence *NOT* persisted as a "guimetadata" global.
     BETSE_VERSION_REQUIRED_MIN_PARTS = (
         guimetadata._convert_version_str_to_tuple(BETSE_VERSION_REQUIRED_MIN))
 
@@ -158,7 +158,7 @@ def _show_betse_exception(exception: _BetseNotFoundException) -> int:
 
     Parameters
     ----------
-    exception : BetseeException
+    exception : _BetseNotFoundException
         Exception to be displayed.
 
     Returns
@@ -168,10 +168,10 @@ def _show_betse_exception(exception: _BetseNotFoundException) -> int:
     '''
 
     assert isinstance(exception, _BetseNotFoundException), (
-        '"{}" not a BETSE not found exception.'.format(exception))
+        '"{}" not a BETSE-not-found exception.'.format(exception))
 
     # Always redirect this exception message to the standard error file handle
-    # for the terminal running this CLI command if any.
+    # for the terminal running this CLI command (if any).
     print(str(exception), file=sys.stderr)
 
     # Additionally attempt to...
