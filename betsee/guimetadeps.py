@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,16 +7,18 @@
 Metadata constants synopsizing high-level application dependencies.
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid race conditions during setuptools-based installation, this
 # module may import *ONLY* from modules guaranteed to exist at the start of
 # installation. This includes all standard Python and application modules but
 # *NOT* third-party dependencies, which if currently uninstalled will only be
 # installed at some later time in the installation.
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-# ....................{ LIBS ~ runtime : mandatory         }....................
+from betsee.guimetadata import VERSION
+
+# ....................{ LIBS ~ runtime : mandatory        }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: Changes to this subsection *MUST* be synchronized with:
 # * Front-facing documentation (e.g., "doc/md/INSTALL.md").
@@ -25,9 +27,10 @@ Metadata constants synopsizing high-level application dependencies.
 #   and the Python-specific module names imported by this application.
 # * Gitlab-CI configuration (e.g., the top-level "requirements-conda.txt" file).
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-BETSE_VERSION_REQUIRED_MIN = '0.8.2'
+# See the "Design" section below for commentary.
+BETSE_VERSION_REQUIRED_MIN = VERSION[:VERSION.rindex('.')]
 '''
 Minimum version of BETSE, the low-level CLI underlying this high-level GUI,
 required by this application as a human-readable ``.``-delimited string.
@@ -37,6 +40,14 @@ application are specified as key-value pairs of various dictionary globals of
 this submodule, this minimum version is specified as an independent global --
 simplifying inspection and validation of this version elsewhere (e.g., in the
 :func:`betsee.__main__.die_unless_betse` function).
+
+Design
+----------
+By design, the current version of BETSEE requires at least the same version
+of BETSE ignoring the trailing component of the former -- a BETSEE-specific
+patch number enabling each version of BETSE to satisfy multiple versions of
+BETSEE. As example, BETSE 0.8.1 satisfies both BETSEE 0.8.1.0 *and*
+BETSEE 0.8.1.1.
 '''
 
 
@@ -69,7 +80,7 @@ See Also
     Human-readable list of these dependencies.
 '''
 
-# ....................{ LIBS ~ runtime : optional          }....................
+# ....................{ LIBS ~ runtime : optional         }....................
 #FIXME: Should these dependencies also be added to our "setup.py" metadata,
 #perhaps as so-called "extras"? Contemplate. Consider. Devise.
 RUNTIME_OPTIONAL = {
@@ -95,12 +106,12 @@ See Also
     Human-readable list of these dependencies.
 '''
 
-# ....................{ LIBS ~ testing : mandatory         }....................
+# ....................{ LIBS ~ testing : mandatory        }....................
 TESTING_MANDATORY = {
-    # For simplicity, py.test should remain the only hard dependency for testing
-    # on local machines. While our setuptools-driven testing regime optionally
-    # leverages third-party py.test plugins (e.g., "pytest-xdist"), these
-    # plugins are *NOT* required for simple testing.
+    # For simplicity, py.test should remain the only hard dependency for
+    # testing on local machines. While our setuptools-driven testing regime
+    # optionally leverages third-party py.test plugins (e.g., "pytest-xdist"),
+    # these plugins are *NOT* required for simple testing.
     'pytest': '>= 2.5.0',
 }
 '''
@@ -116,7 +127,7 @@ See Also
     Human-readable list of these dependencies.
 '''
 
-# ....................{ GETTERS                            }....................
+# ....................{ GETTERS                           }....................
 def get_runtime_mandatory_tuple() -> tuple:
     '''
     Tuple listing the :mod:`setuptools`-specific requirement string containing

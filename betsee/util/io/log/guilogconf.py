@@ -7,6 +7,13 @@
 Low-level :mod:`PySide2`-specific logging configuration.
 '''
 
+#FIXME: Install a new PySide2.QtCore.qInstallMessageHandler() redirecting all
+#Qt-specific messages to the standard Python-specific logging API. When we do,
+#post the resulting solution to *BOTH* of the following:
+#
+#    https://stackoverflow.com/questions/35894171/redirect-qdebug-output-to-file-with-pyqt5
+#    https://forum.qt.io/topic/84022/code-for-qinstallmessagehandler/8
+
 #FIXME: Consider colourizing redirected log records. Doing so will be slightly
 #non-trivial, however, as we would then need to use a rich text edit widget
 #rather than a plain text edit widget.

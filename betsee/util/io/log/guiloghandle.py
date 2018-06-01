@@ -24,7 +24,7 @@ class LogHandlerSignal(Handler):
     Parameters
     ----------
     _signal : Signal
-        Signal to redirect log records with.
+        Signal to redirect log records to.
     '''
 
     # ..................{ INITIALIZERS                       }..................
@@ -36,7 +36,7 @@ class LogHandlerSignal(Handler):
         Parameters
         ----------
         signal : Signal
-            Signal to redirect log records with.
+            Signal to redirect log records to.
 
         All remaining parameters are passed as is to our superclass method.
         '''

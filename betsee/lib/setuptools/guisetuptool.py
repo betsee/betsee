@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -10,7 +10,7 @@ dependency simplifying inspection of application dependencies.
 Caveats
 ----------
 This submodule partially duplicates the existing
-:betse:`betse.lib.setuptools.setuptool` submodule -- specifically, those
+:mod:`betse.lib.setuptools.setuptool` submodule -- specifically, those
 functions of that submodule required by the top-level installation-time
 ``setup.py`` script. Since BETSE is a third-party mandatory dependency of this
 application, the :betse:`betse.lib.setuptools.setuptool` submodule provided by
@@ -23,19 +23,19 @@ implemented by the BETSE-specific :meth:`betse.util.type.types.type_check`
 decorator.
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid race conditions during setuptools-based installation, this
 # module may import *ONLY* from modules guaranteed to exist at the start of
 # installation. This includes all standard Python and application modules but
 # *NOT* third-party dependencies, which if currently uninstalled will only be
 # installed at some later time in the installation.
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betsee.guiexception import BetseeLibException
 from collections.abc import Mapping
 
-# ....................{ CONVERTERS ~ dict-to-tuple         }....................
+# ....................{ CONVERTERS ~ dict-to-tuple        }....................
 def convert_requirements_dict_to_tuple(requirements_dict: Mapping) -> tuple:
     '''
     Convert the passed dictionary of :mod:`setuptools`-specific requirements
@@ -83,7 +83,8 @@ def convert_requirements_dict_keys_to_tuple(
     Returns
     ----------
     tuple
-        Tuple of :mod:`setuptools`-specific requirements strings in the above format.
+        Tuple of :mod:`setuptools`-specific requirements strings in the above
+        format.
 
     Raises
     ----------
@@ -97,7 +98,8 @@ def convert_requirements_dict_keys_to_tuple(
     '''
 
     return tuple(
-        convert_requirements_dict_key_to_str(requirements_dict, requirement_name)
+        convert_requirements_dict_key_to_str(
+            requirements_dict, requirement_name)
         for requirement_name in requirement_names
     )
 

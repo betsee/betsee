@@ -6,6 +6,18 @@
 Root-level classes defining this application's graphical user interface (GUI).
 '''
 
+#FIXME: Shutdown gracefully. Currently, shutting the application down tends to
+#yield non-deterministic segfaults. Note that properly implementing a graceful
+#shutdown procedure is surprisingly non-trivial. As a useful starting point,
+#consider the shutdown() and _shutdown() methods of the following submodule:
+#    https://github.com/qutebrowser/qutebrowser/blob/master/qutebrowser/app.py
+#
+#In particular, note the need to:
+#
+#* Uninstall all event filters and message handlers (i.e., reset these
+#  callbacks to their defaults).
+#* Use one-shot timers to increase the likelihood of a graceful shutdown.
+
 #FIXME: Dynamically validate the importability of *ALL* PySide2 C extensions
 #required by this application. Currently, we do so with simplistic exception
 #handling. However, upstream recently noted that:

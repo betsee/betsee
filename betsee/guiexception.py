@@ -13,11 +13,9 @@ Application-specific exception hierarchy.
 # top-level of this module may import *ONLY* from submodules guaranteed to:
 # * Exist, including standard Python and BETSEE modules. This does *NOT*
 #   include BETSE modules, which are *NOT* guaranteed to exist at this point.
-#   For simplicity, however, all core PySide2 submodules are assumed to exist.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from PySide2.QtCore import QCoreApplication
 from abc import ABCMeta
 
 # ....................{ EXCEPTIONS ~ superclass           }....................
@@ -82,10 +80,17 @@ class BetseeException(Exception, metaclass=ABCMeta):
         super().__init__(
             synopsis + (' ' + exegesis if exegesis is not None else ''))
 
-        # If no title was explicitly passed, fallback to the default title
-        # defined by this exception subclass.
+        # If no title was explicitly passed...
         if title is None:
-            title = self._title_default
+            # Attempt to fallback to the default title defined by this
+            # exception subclass.
+            try:
+                title = self._title_default
+            # If doing so fails due to PySide2 being unimportable and hence
+            # uninstalled, fallback to an untranslated placeholder. Since
+            # PySide2 is unavailable, this placeholder should never be used.
+            except ImportError as exception:
+                title = str(exception)
 
         # Classify all passed parameters.
         self.title = title
@@ -100,6 +105,10 @@ class BetseeException(Exception, metaclass=ABCMeta):
         type for which no ``title`` parameter is passed at instantiation time.
         '''
 
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate('BetseeException', 'Horrible Error')
 
 # ....................{ EXCEPTIONS ~ general              }....................
@@ -111,6 +120,11 @@ class BetseeCacheException(BetseeException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseeCacheException', 'Cache Error')
 
@@ -123,6 +137,11 @@ class BetseeLibException(BetseeException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideException', 'Dependency Error')
 
@@ -135,6 +154,11 @@ class BetseeSimConfException(BetseeException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseeSimConfException', 'Simulation Configuration Error')
 
@@ -147,6 +171,11 @@ class BetseePySideException(BetseeLibException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideException', 'PySide2 Error')
 
@@ -159,6 +188,11 @@ class BetseePySideClipboardException(BetseePySideException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideClipboardException', 'Clipboard Error'),
 
@@ -171,6 +205,11 @@ class BetseePySideFocusException(BetseePySideException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideFocusException', 'Widget Focus Error')
 
@@ -182,8 +221,13 @@ class BetseePySideThreadException(BetseePySideException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
-            'BetseePySideThreadException', 'Thread Error'),
+            'BetseePySideThreadException', 'Thread Error')
 
 # ....................{ EXCEPTIONS ~ psd : thread: worker }....................
 class BetseePySideThreadWorkerException(BetseePySideThreadException):
@@ -195,8 +239,13 @@ class BetseePySideThreadWorkerException(BetseePySideThreadException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
-            'BetseePySideThreadWorkerException', 'Thread Worker Error'),
+            'BetseePySideThreadWorkerException', 'Thread Worker Error')
 
 
 class BetseePySideThreadWorkerStopException(BetseePySideThreadWorkerException):
@@ -220,6 +269,11 @@ class BetseePySideWidgetException(BetseePySideException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideWidgetException', 'Widget Error')
 
@@ -232,8 +286,13 @@ class BetseePySideApplicationException(BetseePySideWidgetException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
-            'BetseePySideApplicationException', 'Singleton Error'),
+            'BetseePySideApplicationException', 'Singleton Error')
 
 
 class BetseePySideMenuException(BetseePySideWidgetException):
@@ -243,6 +302,11 @@ class BetseePySideMenuException(BetseePySideWidgetException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideMenuException', 'Menu Error')
 
@@ -254,6 +318,11 @@ class BetseePySideMessageBoxException(BetseePySideWidgetException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideMessageBoxException', 'Message Box Error')
 
@@ -267,6 +336,11 @@ class BetseePySideSpinBoxException(BetseePySideWidgetException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideSpinBoxException', 'Spin Box Error')
 
@@ -278,6 +352,11 @@ class BetseePySideTreeWidgetException(BetseePySideWidgetException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideTreeWidgetException', 'Tree Widget Error')
 
@@ -289,6 +368,11 @@ class BetseePySideWindowException(BetseePySideWidgetException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideWindowException', 'Window Error')
 
@@ -302,6 +386,11 @@ class BetseePySideWidgetEnumException(BetseePySideWidgetException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideWidgetEnumException', 'Enumerable Widget Error')
 
@@ -313,6 +402,11 @@ class BetseePySideComboBoxException(BetseePySideWidgetEnumException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideComboBoxException', 'Combo Box Error')
 
@@ -324,6 +418,11 @@ class BetseePySideRadioButtonException(BetseePySideWidgetEnumException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideRadioButtonException', 'Radio Button Error')
 
@@ -337,6 +436,11 @@ class BetseePySideEditWidgetException(BetseePySideException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideEditWidgetException', 'Editable Widget Error')
 
@@ -350,17 +454,27 @@ class BetseeSimmerException(BetseePySideException):
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseeSimmerException', 'Simulator Error')
 
 
 class BetseeSimmerBetseException(BetseeSimmerException):
     '''
-    General-purpose exception intended to encapsulate *all* low-level exceptions
-    raised by BETSE simulations (e.g., computational instabilities).
+    General-purpose exception intended to encapsulate *all* low-level
+    exceptions raised by BETSE simulations (e.g., computational instabilities).
     '''
 
     @property
     def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
         return QCoreApplication.translate(
             'BetseeSimmerBetseException', 'BETSE Error')
