@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,20 +8,21 @@ Low-level **simulator worker enumeration** (e.g., :class:`enum.Enum` subclass
 describing different types of simulator work) functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from enum import Enum
 
-# ....................{ ENUMERATIONS                       }....................
-class SimmerWorkerPhaseSubkind(Enum):
+# ....................{ ENUMERATIONS                      }....................
+class SimmerSubcommandWorkerKind(Enum):
     '''
-    Enumeration of each type of **simulator worker phase state** (i.e., type of
-    work performed within a given simulation phase by a given simulator worker).
+    Enumeration of each kind of **simulator subcommand worker** (i.e., type of
+    work performed within a given simulation phase by a given simulator
+    worker).
 
-    This child enumeration is the proper subset of the parent
-    :class:`SimmerState` enumeration, needed to differentiate simulator workers
-    from one another *and* conveniently set the state of each simulator phase
-    acted upon by each such worker.
+    This child enumeration is a proper subset of the parent
+    :class:`SimmerState` enumeration differentiating simulator workers from one
+    another in a convenient manner permitting the state of each simulator phase
+    acted upon by each such worker to be trivially set.
 
     Attributes
     ----------
@@ -39,13 +40,15 @@ class SimmerWorkerPhaseSubkind(Enum):
 
         >>> from betsee.gui.simtab.run.guisimrunstate import SimmerState
         >>> from betsee.gui.simtab.run.work.guisimrunworkenum import (
-        ...     SimmerWorkerPhaseSubkind)
-        >>> SimmerWorkerPhaseSubkind.MODELLING.value == SimmerState.MODELLING.value
+        ...     SimmerSubcommandWorkerKind)
+        >>> SimmerSubcommandWorkerKind.MODELLING.value == (
+        ...     SimmerState.MODELLING.value)
         True
-        >>> SimmerWorkerPhaseSubkind.EXPORTING.value == SimmerState.EXPORTING.value
+        >>> SimmerSubcommandWorkerKind.EXPORTING.value == (
+        ...     SimmerState.EXPORTING.value)
         True
     '''
 
-    #
+    # For simplicity elsewhere, reuse existing enumeration values.
     MODELLING = SimmerState.MODELLING.value
     EXPORTING = SimmerState.EXPORTING.value

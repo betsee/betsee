@@ -9,7 +9,7 @@ Core :mod:`PySide2`-specific **type** (i.e., class) functionality.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import QAbstractEventDispatcher, QThread, QThreadPool
-from PySide2.QtWidgets import QWidget
+from PySide2.QtWidgets import QProgressBar, QWidget
 from betse.util.type.types import NoneType
 
 # ....................{ TYPES                              }....................
@@ -21,7 +21,7 @@ This type is synonymous with the stock :class:`QWidget` class and is provided
 merely as a caller convenience.
 '''
 
-# ....................{ TUPLES : none                      }....................
+# ....................{ TUPLES ~ none                      }....................
 # Tuples of types containing at least the type of the singleton "None" object.
 
 QAbstractEventDispatcherOrNoneTypes = (QAbstractEventDispatcher, NoneType)
@@ -30,7 +30,7 @@ Tuple of both the :mod:`PySide2`-based event dispatcher type *and* the type of
 the singleton ``None`` object.
 '''
 
-
+# ....................{ TUPLES ~ none : thread             }....................
 QThreadOrNoneTypes = (QThread, NoneType)
 '''
 Tuple of both the :mod:`PySide2`-based thread type *and* the type of the
@@ -41,6 +41,13 @@ singleton ``None`` object.
 QThreadPoolOrNoneTypes = (QThreadPool, NoneType)
 '''
 Tuple of both the :mod:`PySide2`-based thread pool type *and* the type of the
+singleton ``None`` object.
+'''
+
+# ....................{ TUPLES ~ none : widget             }....................
+QProgressBarOrNoneTypes = (QProgressBar, NoneType)
+'''
+Tuple of both the :mod:`ProgressBar` widget type *and* the type of the
 singleton ``None`` object.
 '''
 

@@ -35,6 +35,7 @@ from betsee.util.thread import guithread
 from betsee.util.thread.guithreadenum import ThreadWorkerState
 from betsee.util.thread.pool.guipoolworksig import (
     QBetseeThreadPoolWorkerSignals)
+from betsee.util.type.guitype import QProgressBarOrNoneTypes
 
 # ....................{ GLOBALS                           }....................
 _worker_id_next = 0
@@ -251,6 +252,30 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Default this worker's initial state to the idle state.
         self._state = ThreadWorkerState.IDLE
+
+
+    @type_check
+    def init(self, progress_bar: QProgressBarOrNoneTypes = None) -> None:
+        '''
+        Finalize this pooled worker's initialization with the passed widgets.
+
+        To avoid circular references, this method is guaranteed to *not* retain
+        references to this main window on returning. References to child
+        widgets (e.g., actions) of this window may be retained, however.
+
+        Parameters
+        ----------
+        progress_bar : QProgressBarOrNoneTypes
+            Progress bar to connect to progress signals emitted by this worker.
+            Defaults to ``None``, in which case the caller is expected to
+            manually connect these signals to appropriate widget slots.
+        '''
+
+        # If passed a progress bar, connect progress signals emitted by this
+        # worker to the corresponding slots of this progress bar.
+        if progress_bar is not None:
+            self.signals.progress_ranged.connect(progress_bar.setRange)
+            self.signals.progressed     .connect(progress_bar.setValue)
 
     # ..................{ PROPERTIES                        }..................
     @property_cached

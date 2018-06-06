@@ -1,46 +1,34 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
-Low-level **simulator worker** (i.e., :mod:`PySide2`-based thread performing the
-equivalent of a simulation subcommand in a Qt-aware manner) functionality.
+Low-level **simulator worker** (i.e., :mod:`PySide2`-based thread performing
+the equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 '''
 
-#FIXME: Wire up the "self._signals.progress_ranged" and
-#"self._signals.progressed" signals to the corresponding slots of the
-#simulator progress bar. Perhaps a new
-#"SimCallbacksSignaller.init(main_window: QMainWindow)" method may be defined?
-#FIXME: Err, probably not, actually. Instances of this class are only locally
-#defined to preserve thread affinity; ergo, the parent
-#"QBetseeSimmerWorkerABC" class will need to establish these signal-slot
-#connections that in a new
-#"QBetseeSimmerWorkerABC.init(main_window: QMainWindow)" method, probably.
-
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
 from betse.science.parameters import Parameters
-from betse.science.phase.phaseenum import SimPhaseKind
+# from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
-# from betse.util.type.decorator.deccls import abstractproperty
-from betse.util.type.types import type_check
-# from betsee.guiexception import BetseeSimmerException
+from betse.util.type.decorator.deccls import abstractproperty
+from betse.util.type.types import type_check, CallableTypes
 # from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
-from betsee.gui.simtab.run.work.guisimrunworkenum import (
-    SimmerWorkerPhaseSubkind)
+# from betsee.gui.simtab.run.work.guisimrunworkenum import (
+#     SimmerWorkerPhaseSubkind)
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
+# from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
 
-# ....................{ SUPERCLASSES                       }....................
+# ....................{ SUPERCLASSES                      }....................
 class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
     '''
-    Abstract base class of all low-level **simulator worker** (i.e., thread-safe
-    object running a single startable, pausable, resumable, and haltable
-    simulation subcommand in a multithreaded manner intended to be run by an
-    arbitrary thread from a :class:`QThreadPool` container) subclasses.
+    Abstract base class of all low-level **simulator worker** (i.e.,
+    worker running one or more arbitrary simulation operations) subclasses.
 
     Attributes
     ----------
@@ -49,7 +37,7 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         defining the simulation to be run by this worker.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self, conf_filename: str) -> None:
         '''
@@ -68,7 +56,7 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         # Classify all passed parameters.
         self._conf_filename = conf_filename
 
-    # ..................{ PROPERTIES ~ abstract             }..................
+    # ..................{ MAKERS                            }..................
     def _make_sim_runner(self) -> SimRunner:
         '''
         Create and return a new **simulation phase runner** (i.e., high-level
@@ -155,41 +143,63 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         # Return this configuration.
         return p
 
+# ....................{ SUPERCLASSES ~ subcommand         }....................
+class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
+    '''
+    Abstract base class of all low-level **simulator subcommand worker** (i.e.,
+    simulator worker running an arbitrary simulation subcommand) subclasses.
+    '''
+
     # ..................{ PROPERTIES ~ abstract             }..................
     # Read-only abstract properties required to be overridden by subclasses.
 
-    #FIXME: Uncomment the following @abstractproperty decorators *AFTER*
-    #properly disaggregating the "QBetseeSimmerWorkerSeed" subclass into
-    #separate subclass implementations.
-
-    # @abstractproperty
-    def phase_kind(self) -> SimPhaseKind:
+    @abstractproperty
+    def _sim_runner_subcommand(self) -> CallableTypes:
         '''
-        Type of simulation phase run by this simulator worker.
-        '''
+        **Simulation subcommand** (i.e., public method of the
+        :class:`SimRunner` class) to be run by this worker.
 
-        pass
-
-
-    # @abstractproperty
-    def phase_subkind(self) -> SimmerWorkerPhaseSubkind:
-        '''
-        Type of work performed within the type of simulation phase run by this
-        simulator worker.
+        The :meth:`_work` method internally invokes this subcommand with the
+        local :class:`SimRunner` instance created and returned by the
+        :meth:`_make_sim_runner` method.
         '''
 
         pass
+
+
+    #FIXME: Either uncomment if actually desirable or excise entirely. We
+    #suspect the latter, as workers are now only locally instantiated.
+
+    # @abstractproperty
+    # def phase_kind(self) -> SimPhaseKind:
+    #     '''
+    #     Type of simulation phase run by this simulator worker.
+    #     '''
+    #
+    #     pass
+    #
+    #
+    # @abstractproperty
+    # def phase_subkind(self) -> SimmerWorkerPhaseSubkind:
+    #     '''
+    #     Type of work performed within the type of simulation phase run by this
+    #     simulator worker.
+    #     '''
+    #
+    #     pass
+
+    # ..................{ WORKERS                           }..................
+    def _work(self) -> None:
+
+        # Simulation phase runner whose thread affinity is that of the caller.
+        sim_runner = self._make_sim_runner()
+
+        # Run the subclass-specific simulation subcommand.
+        self._sim_runner_subcommand(sim_runner)
 
 # ....................{ SUBCLASSES                        }....................
-#FIXME: Define *NO* additional subclasses until this subclass has been shown to
-#behave as expected. Why? Because copying-and-pasting says, "Do a right thing."
-class QBetseeSimmerWorkerSeed(QBetseeSimmerWorkerABC):
-    '''
-    Low-level **seed-specific simulator worker** (i.e., thread-safe object
-    running a single startable, pausable, resumable, and haltable "seed"
-    simulation subcommand in a multithreaded manner intended to be run by an
-    arbitrary thread from a :class:`QThreadPool` container).
-    '''
+#FIXME: Excise after all other fine-grained worker classes are defined below.
+class QBetseeSimmerWorkerAll(QBetseeSimmerWorkerABC):
 
     # ..................{ WORKERS                           }..................
     def _work(self) -> None:
@@ -207,3 +217,24 @@ class QBetseeSimmerWorkerSeed(QBetseeSimmerWorkerABC):
         # sim_runner.plot_seed()
         sim_runner.plot_init()
         sim_runner.plot_sim()
+
+# ....................{ SUBCLASSES ~ subcommand : model   }....................
+class QBetseeSimmerSubcommandWorkerModelSeed(QBetseeSimmerSubcommandWorkerABC):
+    '''
+    Low-level simulator worker simulating the seed phase.
+    '''
+
+    def _sim_runner_subcommand(self) -> CallableTypes:
+        return SimRunner.seed
+
+# ....................{ SUBCLASSES ~ subcommand : export  }....................
+#FIXME: Actually use this subclass elsewhere after pipelining the
+#"betse plot seed" subcommand.
+class QBetseeSimmerSubcommandWorkerExportSeed(
+    QBetseeSimmerSubcommandWorkerABC):
+    '''
+    Low-level simulator worker exporting the seed phase.
+    '''
+
+    def _sim_runner_subcommand(self) -> CallableTypes:
+        return SimRunner.plot_seed
