@@ -13,7 +13,7 @@ from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from enum import Enum
 
 # ....................{ ENUMERATIONS                      }....................
-class SimmerSubcommandWorkerKind(Enum):
+class SimmerPhaseSubkind(Enum):
     '''
     Enumeration of each kind of **simulator subcommand worker** (i.e., type of
     work performed within a given simulation phase by a given simulator
@@ -40,11 +40,11 @@ class SimmerSubcommandWorkerKind(Enum):
 
         >>> from betsee.gui.simtab.run.guisimrunstate import SimmerState
         >>> from betsee.gui.simtab.run.work.guisimrunworkenum import (
-        ...     SimmerSubcommandWorkerKind)
-        >>> SimmerSubcommandWorkerKind.MODELLING.value == (
+        ...     SimmerPhaseSubkind)
+        >>> SimmerPhaseSubkind.MODELLING.value == (
         ...     SimmerState.MODELLING.value)
         True
-        >>> SimmerSubcommandWorkerKind.EXPORTING.value == (
+        >>> SimmerPhaseSubkind.EXPORTING.value == (
         ...     SimmerState.EXPORTING.value)
         True
     '''

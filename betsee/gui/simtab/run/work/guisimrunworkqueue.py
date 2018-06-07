@@ -10,20 +10,6 @@ the equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 
 #FIXME: Implement the following:
 #
-#* A private "_PHASE_KIND_TO_SIMMER_STATE_TO_WORKER" dictionary-of-dictionaries
-#  mapping each "SimPhaseKind" member to *ONLY* the "SimmerState.MODELLING" and
-#  "SimmerState.EXPORTING" members (yes, slightly janky -- but should
-#  substantially save us time and effort, given that doing so should
-#  substantially simplify the setting of simulator phase state from the
-#  simulator) to the corresponding "QBetseeSimmerWorkerABC" subclass (e.g.,
-#  "QBetseeSimmerWorkerSeed"). For example:
-#
-#     _PHASE_KIND_TO_SIMMER_STATE_TO_WORKER = {
-#         SimPhaseKind.SEED: {
-#             SimmerState.MODELLING: QBetseeSimmerWorkerSeed, ...
-#         }, ...
-#     }
-#
 #* A public "def make_queue(phases: SequenceTypes) -> deque" function accepting
 #  the sequence of all possible phases (e.g., "self._phases" in the simulator)
 #  and returning a "deque" of all "QBetseeSimmerWorkerABC" instances required
@@ -40,7 +26,7 @@ from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.guiexception import BetseeSimmerException
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
-    SimmerSubcommandWorkerKind)
+    SimmerPhaseSubkind)
 from betsee.gui.simtab.run.work.guisimrunwork import (
     QBetseeSimmerSubcommandWorkerModelSeed,
     QBetseeSimmerSubcommandWorkerExportSeed,
@@ -51,9 +37,9 @@ from collections import deque
 _PHASE_KIND_TO_SUBKIND_TO_WORKER_SUBCLASS = {
     #FIXME: Define all additional phases *AFTER* validating this to work.
     SimPhaseKind.SEED: {
-        SimmerSubcommandWorkerKind.MODELLING:
+        SimmerPhaseSubkind.MODELLING:
             QBetseeSimmerSubcommandWorkerModelSeed,
-        SimmerSubcommandWorkerKind.EXPORTING:
+        SimmerPhaseSubkind.EXPORTING:
             QBetseeSimmerSubcommandWorkerExportSeed,
     },
 }

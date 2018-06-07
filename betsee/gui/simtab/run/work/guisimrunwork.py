@@ -11,15 +11,15 @@ the equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
 from betse.science.parameters import Parameters
-# from betse.science.phase.phaseenum import SimPhaseKind
+from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
 from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.types import type_check, CallableTypes
 # from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
-# from betsee.gui.simtab.run.work.guisimrunworkenum import (
-#     SimmerWorkerPhaseSubkind)
+from betsee.gui.simtab.run.work.guisimrunworkenum import (
+    SimmerPhaseSubkind)
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
 # from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
@@ -166,27 +166,24 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
 
         pass
 
+    # ..................{ PROPERTIES ~ abstract : phase     }..................
+    @abstractproperty
+    def phase_kind(self) -> SimPhaseKind:
+        '''
+        Type of simulation phase run by this simulator worker.
+        '''
 
-    #FIXME: Either uncomment if actually desirable or excise entirely. We
-    #suspect the latter, as workers are now only locally instantiated.
+        pass
 
-    # @abstractproperty
-    # def phase_kind(self) -> SimPhaseKind:
-    #     '''
-    #     Type of simulation phase run by this simulator worker.
-    #     '''
-    #
-    #     pass
-    #
-    #
-    # @abstractproperty
-    # def phase_subkind(self) -> SimmerWorkerPhaseSubkind:
-    #     '''
-    #     Type of work performed within the type of simulation phase run by this
-    #     simulator worker.
-    #     '''
-    #
-    #     pass
+
+    @abstractproperty
+    def phase_subkind(self) -> SimmerPhaseSubkind:
+        '''
+        Type of work performed within the type of simulation phase run by this
+        simulator worker.
+        '''
+
+        pass
 
     # ..................{ WORKERS                           }..................
     def _work(self) -> None:

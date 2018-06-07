@@ -42,7 +42,7 @@ from abc import abstractmethod
 from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.guiexception import BetseeSimmerException
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
+# from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
@@ -98,6 +98,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
 
 
     @state.setter
+    @type_check
     def state(self, state: SimmerState) -> None:
         '''
         Set the current state of this simulator controller to the passed state
