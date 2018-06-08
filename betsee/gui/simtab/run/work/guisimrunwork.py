@@ -167,6 +167,9 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
         pass
 
     # ..................{ PROPERTIES ~ abstract : phase     }..................
+    #FIXME: These properties should probably be refactored into abstract class
+    #methods, which may then be accessed from the enqueued worker classes as is
+    #without needing to first instantiate these classes.
     @abstractproperty
     def phase_kind(self) -> SimPhaseKind:
         '''
@@ -198,7 +201,6 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
 #FIXME: Excise after all other fine-grained worker classes are defined below.
 class QBetseeSimmerWorkerAll(QBetseeSimmerWorkerABC):
 
-    # ..................{ WORKERS                           }..................
     def _work(self) -> None:
 
         # Simulation phase runner whose thread affinity is that of the caller.

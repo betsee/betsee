@@ -10,7 +10,6 @@ and/or exporting by this simulator) functionality.
 
 # ....................{ IMPORTS                            }....................
 from PySide2.QtCore import Slot  # QCoreApplication, Signal,
-# from betse.science.export.expenum import SimExportType
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
@@ -57,7 +56,8 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         Type of simulation phase controlled by this controller.
     _name : str
         Machine-readable alphabetic lowercase name of the type of simulation
-        phase controlled by this controller (e.g., ``seed``, ``init``, ``sim``).
+        phase controlled by this controller (e.g., ``seed``, ``init``,
+        ``sim``).
 
     Attributes (Private: Widgets)
     ----------
@@ -204,28 +204,30 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
     @property
     def is_queued(self) -> bool:
         '''
-        ``True`` only if this simulator phase is currently queued for modelling
-        and/or exporting.
+        ``True`` only if this simulator phase is currently queued (i.e., for
+        modelling and/or exporting).
         '''
 
-        return self._is_queued_modelling or self._is_queued_exporting
+        return self.is_queued_modelling or self.is_queued_exporting
 
-    # ..................{ PROPERTIES ~ bool : private        }..................
+
     # This trivial getter exists only for orthogonality with the corresponding
-    # non-trivial _is_queued_exporting() getter.
+    # non-trivial is_queued_exporting() getter.
     @property
-    def _is_queued_modelling(self) -> bool:
+    def is_queued_modelling(self) -> bool:
         '''
-        ``True`` only if this simulator phase is currently queued for modelling.
+        ``True`` only if this simulator phase is currently queued for
+        modelling.
         '''
 
         return self._queue_modelling.isChecked()
 
 
     @property
-    def _is_queued_exporting(self) -> bool:
+    def is_queued_exporting(self) -> bool:
         '''
-        ``True`` only if this simulator phase is currently queued for exporting.
+        ``True`` only if this simulator phase is currently queued for
+        exporting.
         '''
 
         # Return true only if this phase is both...
@@ -294,6 +296,8 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         self._queue_modelling.setEnabled(not is_unqueueable_model)
 
     # ..................{ QUEUERS                            }..................
+    #FIXME: Entirely obsolete. Excise both this and the superclass method as
+    #soon as (safely) feasible.
     def enqueue_running(self) -> None:
 
         # Enqueue our superclass.
@@ -301,10 +305,12 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
 
         # Enqueue this phase by setting tristate booleans to either "True" or
         # "False" depending on the current state of corresponding checkboxes.
-        self._is_enqueued_modelling = self._is_queued_modelling
-        self._is_enqueued_exporting = self._is_queued_exporting
+        self._is_enqueued_modelling = self.is_queued_modelling
+        self._is_enqueued_exporting = self.is_queued_exporting
 
 
+    #FIXME: Entirely obsolete. Excise both this and the superclass method as
+    #soon as (safely) feasible.
     def dequeue_running(self) -> None:
 
         # Dequeue our superclass.
@@ -315,6 +321,8 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         self._is_enqueued_exporting = None
 
 
+    #FIXME: Entirely obsolete. Excise both this and the superclass method as
+    #soon as (safely) feasible.
     #FIXME: Set the state of this simulator.
     #FIXME: Set the state of the currently running phase.
     def run_enqueued(self) -> None:
