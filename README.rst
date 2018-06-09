@@ -51,59 +51,63 @@ the `Paul G. Allen Frontiers Group`_.
 Installation
 ============
 
-.. Note::
-   BETSEE is pre-release software under active development. No packages
-   automating installation of either BETSEE itself *or* BETSEE dependencies are
-   currently provided. In particular, there currently exist no:
+BETSEE is installable under **Linux**, **macOS**, and **Windows** as follows:
 
-   - Platform-agnostic BETSEE packages (e.g., Anaconda_, PyPI_).
-   - Platform-specific BETSEE packages (e.g., macOS_ Homebrew_, Ubuntu_ PPA_).
+- [\ *Windows*\ ] Emulate **Ubuntu Linux** via the `Windows Subsystem for Linux
+  (WSL) <WSL_>`__. [#windows_not]_
+- Install the **Python 3.x** [#python2_not]_ (e.g., 3.6) variant of Anaconda_.
+  [#anaconda_not]_
+- Open a **Bash terminal.** [#terminal]_
+- Run the following commands.
 
-BETSEE is installable as follows:
+  - Enable conda-forge_.
 
-#. Under `Ubuntu Linux 16.04 (Xenial Xerus)`_ and newer, by downloading and
-   running an `automated command-line installer <Ubuntu 16.04 installer_>`__.
+    .. code:: bash
 
-   A. Open a **terminal.** [#terminal]_
-   #. Download and run the `BETSE[E] installer <Ubuntu 16.04 installer_>`__.
+       conda config --add channels conda-forge
 
-      .. code:: bash
+  - Install **BETSEE.** [#conda_package]_
 
-         wget https://gitlab.com/betse/betsee/raw/master/bin/install/linux/betsee_ubuntu_16_04.bash && source betsee_ubuntu_16_04.bash
+    .. code:: bash
 
-#. Under all other platforms, by manually installing BETSEE and BETSE via your
-   preferred package manager.
+       conda install betsee
 
-   #. Install the `unstable live version <BETSE live_>`__ of BETSE_.
-   #. Install Qt_ `5.9 <Qt 5.9_>`__. [#pyside2_install]_
-   #. Install the `stable 5.9 branch <_PySide2 5.9>`__ of PySide2_.
-      [#pyside2_install]_
-   #. Open a **terminal.** [#terminal]_
-   #. Clone the ``master`` branch of this repository.
+  - [\ *Optional*\ ] Run **BETSEE.**
 
-      .. code:: bash
+    .. code:: bash
 
-         git clone https://gitlab.com/betse/betsee.git
+       betsee
 
-   #. **Install BETSEE.**
+.. [#windows_not]
+   The `Windows Subsystem for Linux (WSL) <WSL_>`__ and – hence BETSEE itself –
+   is *only* installable under **Windows 10.** Under older Windows versions,
+   BETSEE may be installed from a `virtual Linux guest <VirtualBox_>`__.
 
-      .. code:: bash
+.. [#python2_not]
+   Do *not* install the **Python 2.7** variant of Anaconda_. BETSEE requires
+   **Python 3.x.**
 
-         cd betsee
-         sudo python3 setup.py install
-
-Needless to say, `Ubuntu Linux`_ is *strongly* recommended for use of this
-pre-release version.
-
+.. [#anaconda_not]
+   BETSEE is currently *only* installable via Anaconda_, a cross-platform
+   scientific Python distribution simplifying installation of non-Python
+   dependencies (e.g., OpenBLAS_, PySide2_). While a `PyPI package`_ for
+   installing BETSEE under ``pip`` (the standard Python package manager) does
+   exist, `that package <PyPI package_>`__ is currently uninstallable due to
+   a lack of official PySide2_ wheels. Even when official PySide2_ wheels are
+   published, Anaconda_ will remain the official installation path for BETSE_
+   and hence BETSEE. ``pip`` commonly produces a performance-crippled
+   single-core installation of BETSE_. Anaconda_ suffers no such issues and is
+   guaranteed to produce a performance-optimized multicore installation of
+   BETSE_ on *all* supported platforms. We strongly recommend Anaconda_ – even
+   when you think you know better.
 
 .. [#terminal]
    To open a `POSIX`_\ -compatible terminal under:
 
    - **Windows:**
 
-     #. Install `Bash on Ubuntu on Windows`_.
-     #. Open the *Start* menu.
-     #. Open *Bash on Ubuntu on Windows*.
+     #. Install **Ubuntu Linux** via the `Windows Subsystem for Linux (WSL) <WSL_>`__.
+     #. Open an *Ubuntu Linux terminal.*
 
    - **macOS:**
 
@@ -116,20 +120,14 @@ pre-release version.
 
      #. Type ``Ctrl``\ +\ ``Alt``\ +\ ``t``.
 
-.. [#pyside2_install]
-   Like BETSEE, PySide2_ is pre-release software under active development.
-   Unlike BETSEE, packages automating installation of both PySide2_ itself and
-   PySide2_ dependencies (e.g., Qt_) *are* available for various platforms –
-   including:
+.. [#conda_package]
 
-   + `Arch Linux`_ via the `official PySide2 installation instructions
-     <PySide2 installation_>`__.
-   + `Gentoo Linux`_ via the `official PySide2 installation instructions
-     <PySide2 installation_>`__.
-   + Most other platforms (e.g., `Ubuntu Linux`_, CentOS_, macOS_, Windows) via
-     the `unofficial PySide2 wheels <PySide2 wheels_>`__.
-   + The platform-agnostic `Anaconda`_ and `Miniconda`_ Python distributions
-     via the `unofficial PySide2 conda-forge feedstock <PySide2 feedstock_>`__.
+   This command installs both the `most recent stable release of BETSEE <conda
+   package_>`__ *and* all mandatory and most optional dependencies of this
+   release. Older stable releases are installable in a similar manner (e.g.,
+   ``conda install betsee=0.8.2`` for BETSEE 0.8.2). All `Anaconda packages`_
+   are kindly hosted by the `non-profit conda-forge organization
+   <conda-forge_>`__.
 
 License
 =======
@@ -164,7 +162,7 @@ should ideally cite the following:
     :sup:`https://doi.org/10.3389/fbioe.2016.00055`
 
 See also `this list of BETSE-centric papers <BETSE citation_>`__ for
-further supporting material.
+additional material.
 
 .. [#supplement]
    This article's supplement extends the cursory theory presented by this
@@ -194,12 +192,16 @@ biologically misaligned, and simply unusable.
    doc/rst/AUTHORS.rst
 .. _codebase:
    https://gitlab.com/betse/betsee/tree/master
+.. _conda package:
+   https://anaconda.org/conda-forge/betsee
 .. _contributors:
    https://gitlab.com/betse/betsee/graphs/master
 .. _dependencies:
    doc/md/INSTALL.md
 .. _project:
    https://gitlab.com/betse/betsee
+.. _PyPI package:
+   https://pypi.org/project/betsee
 .. _testing:
    https://gitlab.com/betse/betsee/pipelines
 .. _tarballs:
@@ -259,9 +261,26 @@ biologically misaligned, and simply unusable.
 .. _voltage-gated ion channels:
    https://en.wikipedia.org/wiki/Voltage-gated_ion_channel
 
+.. # ------------------( LINKS ~ os : linux                 )------------------
+.. _APT:
+   https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
+.. _Arch Linux:
+   https://www.archlinux.org
+.. _CentOS:
+   https://www.centos.org
+.. _Gentoo Linux:
+   https://gentoo.org
+.. _Ubuntu:
+.. _Ubuntu Linux:
+   https://www.ubuntu.com
+.. _Ubuntu Linux 16.04 (Xenial Xerus):
+   http://releases.ubuntu.com/16.04
+
+.. # ------------------( LINKS ~ os : windows               )------------------
+.. _WSL:
+   https://msdn.microsoft.com/en-us/commandline/wsl/install-win10
+
 .. # ------------------( LINKS ~ software                   )------------------
-.. _Anaconda:
-   https://www.continuum.io/downloads
 .. _Appveyor:
    https://ci.appveyor.com/project/betse/betse/branch/master
 .. _Bash on Ubuntu on Windows:
@@ -290,6 +309,8 @@ biologically misaligned, and simply unusable.
    http://www.numpy.org
 .. _MEncoder:
    https://en.wikipedia.org/wiki/MEncoder
+.. _OpenBLAS:
+   https://www.openblas.net
 .. _POSIX:
    https://en.wikipedia.org/wiki/POSIX
 .. _PPA:
@@ -302,8 +323,18 @@ biologically misaligned, and simply unusable.
    http://pytest.org
 .. _SciPy:
    http://www.scipy.org
+.. _VirtualBox:
+   https://www.virtualbox.org
 .. _YAML:
    http://yaml.org
+
+.. # ------------------( LINKS ~ software : conda           )------------------
+.. _Anaconda:
+   https://www.anaconda.com/download
+.. _Anaconda packages:
+   https://anaconda.org
+.. _conda-forge:
+   https://conda-forge.org
 
 .. # ------------------( LINKS ~ software : icon            )------------------
 .. _BETSEE Entypo+ icons:
@@ -327,21 +358,6 @@ biologically misaligned, and simply unusable.
    https://thenounproject.com/legal
 .. _Open Iconic icons:
    https://github.com/iconic/open-iconic
-
-.. # ------------------( LINKS ~ software : linux           )------------------
-.. _APT:
-   https://en.wikipedia.org/wiki/Advanced_Packaging_Tool
-.. _Arch Linux:
-   https://www.archlinux.org
-.. _CentOS:
-   https://www.centos.org
-.. _Gentoo Linux:
-   https://gentoo.org
-.. _Ubuntu:
-.. _Ubuntu Linux:
-   https://www.ubuntu.com
-.. _Ubuntu Linux 16.04 (Xenial Xerus):
-   http://releases.ubuntu.com/16.04
 
 .. # ------------------( LINKS ~ software : pyside2         )------------------
 .. _PySide2:
