@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -35,7 +35,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #Fortunately, Qt's documentation for this API is phenomenal. See the article
 #entitled "The State Machine Framework." It's a surprisingly stunning read.
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
 from abc import abstractmethod
 # from betse.util.io.log import logs
@@ -46,7 +46,7 @@ from betsee.guiexception import BetseeSimmerException
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
-# ....................{ SUPERCLASSES                       }....................
+# ....................{ SUPERCLASSES                      }....................
 class QBetseeSimmerStatefulABC(QBetseeControllerABC):
     '''
     Abstract base class of all **stateful simulator controller** (i.e.,
@@ -61,7 +61,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         should *only* be set by the public :meth:`state` setter.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
         '''
         Initialize this stateful simulator controller.
@@ -76,7 +76,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         # Nullify all remaining instance variables for safety.
         # self._state = None
 
-    # ..................{ PROPERTIES ~ bool                  }..................
+    # ..................{ PROPERTIES ~ bool                 }..................
     @abstractproperty
     def is_queued(self) -> bool:
         '''
@@ -86,7 +86,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
 
         pass
 
-    # ..................{ PROPERTIES ~ state                 }..................
+    # ..................{ PROPERTIES ~ state                }..................
     @property
     def state(self) -> SimmerState:
         '''
@@ -102,8 +102,8 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
     def state(self, state: SimmerState) -> None:
         '''
         Set the current state of this simulator controller to the passed state
-        *and* signal all slots connected to the :attr:`set_state_signal` of this
-        state change.
+        *and* signal all slots connected to the :attr:`set_state_signal` of
+        this state change.
         '''
 
         # Set the current state of this simulator controller to this state.
@@ -112,7 +112,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         # Signal all connected slots *AFTER* setting this state.
         self.set_state_signal.emit(self)
 
-    # ..................{ SIGNALS                            }..................
+    # ..................{ SIGNALS                           }..................
     set_state_signal = Signal(QObject)
     '''
     Signal passed this simulator controller on each change to the current state
@@ -120,7 +120,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
     non-interaction.
     '''
 
-    # ..................{ EXCEPTIONS                         }..................
+    # ..................{ EXCEPTIONS                        }..................
     def _die_unless_queued(self) -> None:
         '''
         Raise an exception unless this stateful simulator controller is
@@ -138,27 +138,29 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
 
         if not self.is_queued:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer', 'Simulator currently running.'))
+                'QBetseeSimmerStatefulABC',
+                'Simulator controller not queued.'))
 
-    # ..................{ SLOTS                              }..................
+    # ..................{ SLOTS                             }..................
     @Slot()
     def update_state(self) -> None:
         '''
         Slot signalled on either the user interactively *or* the codebase
         programmatically interacting with any widget relevant to the current
         state of this stateful simulator controller, including phase-specific
-        checkboxes queueing that simulator phase for modelling and/or exporting.
+        checkboxes queueing that simulator phase for modelling and/or
+        exporting.
         '''
 
         # Update the state of this controller to reflect these changes.
         self._update_state()
 
         # Update the state of controller widgets to reflect these changes
-        # *AFTER* updating the state of this controller, as the latter typically
-        # depends upon the former.
+        # *AFTER* updating the state of this controller, as the latter
+        # typically depends upon the former.
         self._update_widgets()
 
-    # ..................{ SLOTS ~ updaters                   }..................
+    # ..................{ SLOTS ~ updaters                  }..................
     def _update_state(self) -> None:
         '''
         Update the current public state of this stateful simulator controller
@@ -178,11 +180,12 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
 
         pass
 
-    # ..................{ QUEUERS                            }..................
+    # ..................{ QUEUERS                           }..................
     def enqueue_running(self) -> None:
         '''
-        Enqueue (i.e., append onto this controller's internal queue) all actions
-        performed by a subsequent call to the :meth:`run_enqueued` method.
+        Enqueue (i.e., append onto this controller's internal queue) all
+        actions performed by a subsequent call to the :meth:`run_enqueued`
+        method.
 
         Raises
         ----------

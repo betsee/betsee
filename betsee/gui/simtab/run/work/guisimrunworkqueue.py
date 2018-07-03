@@ -14,7 +14,7 @@ from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.type import iterables
 from betse.util.type.types import type_check, QueueType, SequenceTypes
 from betsee.guiexception import BetseeSimmerException
-from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
+from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhaseABC
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
     SimmerPhaseSubkind)
 from betsee.gui.simtab.run.work.guisimrunwork import (
@@ -100,7 +100,7 @@ def make_queue(phases: SequenceTypes) -> QueueType:
 
     # If any sequence item is *NOT* a simulator phase, raise an exception.
     iterables.die_unless_items_instance_of(
-        iterable=phases, cls=QBetseeSimmerPhase)
+        iterable=phases, cls=QBetseeSimmerPhaseABC)
 
     # Simulator worker queue to be returned.
     worker_queue = deque()

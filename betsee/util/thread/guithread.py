@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -23,40 +23,41 @@ Python's restrictive Global Interpreter Lock (GIL)) facilities.
 #* Redefine the get_current_event_dispatcher() to return an instance of the
 #  "ThreadEventDispatcherWrapper" class.
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import (
     QAbstractEventDispatcher, QCoreApplication, QEventLoop, QThread)
-# from betse.util.io.log import logs
+from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideThreadException
 from betsee.util.type.guitype import (
     QAbstractEventDispatcherOrNoneTypes, QThreadOrNoneTypes)
 
-# ....................{ TESTERS                            }....................
+# ....................{ TESTERS                           }....................
 @type_check
 def should_halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     '''
     ``True`` only if some object has requested that the passed thread of
     execution voluntarily halt *all* tasks (e.g., overriden :meth:`QThread.run`
-    method) and workers (e.g., subclassed :class:`QBetseeThreadWorkerABC` object)
-    currently running in this thread.
+    method) and workers (e.g., subclassed :class:`QBetseeThreadWorkerABC`
+    object) currently running in this thread.
 
     This function is intended to be voluntarily called by tasks and workers.
 
     Caveats
     ----------
-    One parent thread may run an arbitrary number of child workers. However, the
-    request to halt tested by this function is a low-level condition applying to
-    a single thread rather than a single worker. Hence, if this function returns
-    ``False``, *all* tasks and workers currently running in this thread are
-    expected to gracefully halt all work being performed and then terminate.
+    One parent thread may run an arbitrary number of child workers. However,
+    the request to halt tested by this function is a low-level condition
+    applying to a single thread rather than a single worker. Hence, if this
+    function returns ``False``, *all* tasks and workers currently running in
+    this thread are expected to gracefully halt all work being performed and
+    then terminate.
 
     For fine-grained control over worker lifecycles, external callers are
     strongly advised to signal each such worker to gracefully halt (e.g., by
-    emitting a signal connected to the :meth:`QBetseeThreadWorkerABC.stop` slot)
-    rather than requesting that the thread running those workers halt (e.g., by
-    calling the :meth:`QThread.requestInterruption` method). Nonetheless,
-    workers are expected to respect both types of requests.
+    emitting a signal connected to the :meth:`QBetseeThreadWorkerABC.stop`
+    slot) rather than requesting that the thread running those workers halt
+    (e.g., by calling the :meth:`QThread.requestInterruption` method).
+    Nonetheless, workers are expected to respect both types of requests.
 
     For convenience, note that the
     :meth:`QBetseeThreadWorkerABC._halt_work_if_requested` method implicitly
@@ -89,7 +90,7 @@ def should_halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     # Return true only if this thread has been requested to be halted.
     return thread.isInterruptionRequested()
 
-# ....................{ GETTERS                            }....................
+# ....................{ GETTERS                           }....................
 #FIXME: *NO*. This function is fundamentally broken, as some combination of
 #PySide2 and/or Qt erroneously garbage collect event dispatchers unless the
 #threads owning those dispatchers are also in scope. See the above "FIXME".
@@ -100,7 +101,8 @@ def get_event_dispatcher(
     Wrapper encapsulating the **event dispatcher** (i.e., Qt-specific
     object propagating events received from the underlying window system to the
     passed thread of execution) if this thread has an event dispatcher *or*
-    raise an exception otherwise (i.e., if this thread has no event dispatcher).
+    raise an exception otherwise (i.e., if this thread has no event
+    dispatcher).
 
     Parameters
     ----------
@@ -139,7 +141,7 @@ def get_event_dispatcher(
     # Return this event dispatcher.
     return event_dispatcher
 
-# ....................{ GETTERS ~ current : thread         }....................
+# ....................{ GETTERS ~ current : thread        }....................
 def get_current_thread() -> QThread:
     '''
     Wrapper encapsulating the **current thread** (i.e., Qt-specific thread of
@@ -151,8 +153,15 @@ def get_current_thread() -> QThread:
 
 def get_current_thread_id() -> int:
     '''
-    Arbitrary Qt-specific integer uniquely identifying the current thread within
-    the active Python interpreter.
+    Arbitrary Qt-specific integer uniquely identifying the current thread in
+    the active Python interpreter if the currently installed version of PySide2
+    exposes the :meth:`QThread.currentThreadId` method yielding this integer
+    *or* the Python-specific ID of this thread's object wrapper instead.
+
+    Caveats
+    ----------
+    This integer is non-portable and hence should *only* be embedded in
+    low-level debugging messages.
 
     See Also
     ----------
@@ -160,7 +169,20 @@ def get_current_thread_id() -> int:
         Further details.
     '''
 
-    return QThread.currentThreadId()
+    # Attempt to defer to the QThread.currentThreadId() class method if this
+    # version of PySide2 exposes this method. (Although Qt guarantees this
+    # method to exist, PySide2 bindings sadly make no such guarantees.)
+    try:
+        return QThread.currentThreadId()
+    # If PySide2 fails to expose this method, fallback to...
+    except AttributeError:
+        # Logging a non-fatal warning.
+        logs.log_warning(
+            'QThread.currentThreadId() method not found; '
+            'falling back to this thread\'s Python-specific ID.')
+
+        # Returning the Python-specific ID of this thread's object wrapper.
+        return id(get_current_thread())
 
 
 def get_current_thread_process_name() -> str:
@@ -180,7 +202,7 @@ def get_current_thread_process_name() -> str:
     # Return this thread's process name.
     return thread.objectName()
 
-# ....................{ GETTERS ~ current : event          }....................
+# ....................{ GETTERS ~ current : event         }....................
 def get_current_event_dispatcher() -> QAbstractEventDispatcher:
     '''
     Wrapper encapsulating the event dispatcher for the current thread of
@@ -209,7 +231,7 @@ def get_current_event_dispatcher() -> QAbstractEventDispatcher:
     # Return the event dispatcher for this thread.
     return get_event_dispatcher(thread)
 
-# ....................{ HALTERS                            }....................
+# ....................{ HALTERS                           }....................
 @type_check
 def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     '''
@@ -224,20 +246,21 @@ def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     After this function is called, this request will be unconditionally
     preserved in this thread until this thread is manually halted and restarted
     (e.g., by calling the :meth:`QBetseeWorkerThread.halt` and
-    :meth:`QBetseeWorkerThread.start` methods in that order). However, doing so:
+    :meth:`QBetseeWorkerThread.start` methods in that order). However, doing
+    so:
 
     * Terminates all tasks and workers currently running in this thread,
       typically in a non-graceful manner resulting in in-memory or on-disk data
       corruption.
-    * Discards all pending events currently queued with this thread -- including
-      both outgoing signals emitted by *and* incoming slots signalled on any
-      workers still running in this thread.
+    * Discards all pending events currently queued with this thread --
+      including both outgoing signals emitted by *and* incoming slots signalled
+      on any workers still running in this thread.
 
     Hence, due to long-standing deficiencies in the Qt API, this request
-    *cannot* be gracefully "undone." Attempting to do so *always* runs a risk of
-    non-gracefully terminating running and pending work. The only alternative to
-    this extremely concerning caveat is to signal each such worker to gracefully
-    halt (e.g., by emitting a signal connected to the
+    *cannot* be gracefully "undone." Attempting to do so *always* runs a risk
+    of non-gracefully terminating running and pending work. The only
+    alternative to this extremely concerning caveat is to signal each such
+    worker to gracefully halt (e.g., by emitting a signal connected to the
     :meth:`QBetseeThreadWorkerABC.stop` slot) rather than calling this method.
 
     **You have been warned.** There be vicious vipers scuttling about here.
@@ -263,7 +286,7 @@ def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     # Request this thread's work to be halted.
     return thread.requestInterruption()
 
-# ....................{ PROCESSORS                         }....................
+# ....................{ PROCESSORS                        }....................
 #FIXME: This and the function below require fundamental refactoring. Why? It
 #appears infeasible to pass arbitrary "event_dispatcher" objects around. For
 #unknown reasons, Python and/or Qt aggressively garbage collect these objects in
@@ -287,18 +310,18 @@ def process_events(
     Avoid manually calling the static :func:`QCoreApplication.processEvents`
     function to process events for the current thread of execution. If this
     thread has *no* event dispatcher, this function silently and hence unsafely
-    ignores all pending :class:`DeferredDelete` events currently queued for this
-    thread. Since numerous standard widgets (e.g., :class:`QToolTip`) require
-    these events to be processed in a timely manner, ignoring these events
-    fundamentally disrupts all widget functionality.
+    ignores all pending :class:`DeferredDelete` events currently queued for
+    this thread. Since numerous standard widgets (e.g., :class:`QToolTip`)
+    require these events to be processed in a timely manner, ignoring these
+    events fundamentally disrupts all widget functionality.
 
     Parameters
     ----------
     event_dispatcher : QAbstractEventDispatcherOrNoneTypes
         Event dispatcher to process events for. Defaults to ``None``, in which
         case either:
-        * If the current thread of execution has an event dispatcher, events are
-          processed for this dispatcher.
+        * If the current thread of execution has an event dispatcher, events
+          are processed for this dispatcher.
         * Else, an exception is raised.
     '''
 
@@ -358,8 +381,8 @@ def wait_for_events_if_none(
     event_dispatcher : QAbstractEventDispatcherOrNoneTypes
         Event dispatcher to process events for. Defaults to ``None``, in which
         case either:
-        * If the current thread of execution has an event dispatcher, events are
-          processed for this dispatcher.
+        * If the current thread of execution has an event dispatcher, events
+          are processed for this dispatcher.
         * Else, an exception is raised.
     '''
 

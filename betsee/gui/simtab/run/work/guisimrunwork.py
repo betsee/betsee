@@ -16,7 +16,6 @@ from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
 from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.types import type_check, CallableTypes
-# from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
     SimmerPhaseSubkind)

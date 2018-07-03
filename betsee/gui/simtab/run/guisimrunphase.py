@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,11 +8,13 @@ Low-level **simulator phase** (i.e., simulation phase to be queued for modelling
 and/or exporting by this simulator) functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Slot  # QCoreApplication, Signal,
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
+from betse.util.type.decorator.deccls import abstractproperty
+from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 # from betsee.guiexception import BetseePySideWindowException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
@@ -23,15 +25,15 @@ from betsee.gui.simtab.run.guisimrunstate import (
     SIMMER_STATES_FLUID,
 )
 
-# ....................{ SUBCLASSES                         }....................
-class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
+# ....................{ SUPERCLASSES                      }....................
+class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
     '''
-    Low-level **simulator phase** (i.e., :mod:`PySide2`-based object wrapping a
-    simulation phase to be queued for modelling and/or exporting by this
-    simulator).
+    Abstract base class of all **simulator phase controller** (i.e.,
+    :mod:`PySide2`-based object wrapping a simulation phase to be queued for
+    modelling and/or exporting by this simulator) subclasses.
 
     This simulator phase maintains all state required to interactively manage
-    this simulation phase, including:
+    this simulation phase.
 
     Attributes (Private: Non-widgets)
     ----------
@@ -45,19 +47,13 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
          :meth:`enqueue_running` method).
        * ``True`` if this phase is currently **enqueued** (i.e., if the
          :meth:`enqueue_running` method has been called more recently than the
-         :meth:`dequeue_running` method) *and* this simulator phase was enqueued
-         for modelling at that time.
+         :meth:`dequeue_running` method) *and* this simulator phase was
+         enqueued for modelling at that time.
        * ``False`` if this phase is currently enqueued *and* this simulator
          phase was enqueued for exporting at that time.
     _is_enqueued_exporting : BoolOrNoneTypes
        Tristate boolean signifying whether this phase has been enqueued for
        modelling or not. See the :attr:`_is_enqueued_modelling` boolean.
-    _kind : SimPhaseKind
-        Type of simulation phase controlled by this controller.
-    _name : str
-        Machine-readable alphabetic lowercase name of the type of simulation
-        phase controlled by this controller (e.g., ``seed``, ``init``,
-        ``sim``).
 
     Attributes (Private: Widgets)
     ----------
@@ -73,7 +69,7 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         Label synopsizing the current state of this phase.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
         '''
         Initialize this simulator phase.
@@ -89,16 +85,14 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         self._queue_modelling_lock = None
         self._queue_modelling = None
         self._queue_exporting = None
-        self._kind = None
-        self._name = None
         self._status = None
 
 
     @type_check
     def init(self, main_window: QBetseeMainWindow) -> None:
         '''
-        Finalize this simulator phase's initialization, owned by the passed main
-        window widget.
+        Finalize the initialization of this simulator phase, owned by the
+        passed main window widget.
 
         This method connects all relevant signals and slots of *all* widgets
         (including the main window, top-level widgets of that window, and leaf
@@ -106,8 +100,8 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         pertains to the high-level state of this simulator.
 
         To avoid circular references, this method is guaranteed to *not* retain
-        references to this main window on returning. References to child widgets
-        (e.g., actions) of this window may be retained, however.
+        references to this main window on returning. References to child
+        widgets (e.g., actions) of this window may be retained, however.
 
         Parameters
         ----------
@@ -137,22 +131,21 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         Parameters
         ----------
         main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
+            Initialized application-specific parent :class:`QMainWindow`
+            widget.
         '''
 
         # Log this initialization.
         logs.log_debug(
-            'Sanitizing simulator phase "%s" state...', self._name)
+            'Sanitizing simulator phase "%s" state...', self.name)
 
         # Names of all instance variables of this main window yielding widgets
         # specific to this simulator phase.
         is_unqueueable_model_name = 'sim_run_queue_{}_model_lock'.format(
-            self._name)
-        is_queued_model_name = 'sim_run_queue_{}_model'.format(
-            self._name)
-        is_queued_export_name = 'sim_run_queue_{}_export'.format(
-            self._name)
-        status_name = 'sim_run_queue_{}_status'.format(self._name)
+            self.name)
+        is_queued_model_name  = 'sim_run_queue_{}_model' .format(self.name)
+        is_queued_export_name = 'sim_run_queue_{}_export'.format(self.name)
+        status_name           = 'sim_run_queue_{}_status'.format(self.name)
 
         # Classify mandatory widgets unconditionally defined for *ALL* phases.
         self._queue_modelling_lock = main_window.get_widget(
@@ -178,7 +171,8 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         Parameters
         ----------
         main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
+            Initialized application-specific parent :class:`QMainWindow`
+            widget.
         '''
 
         # Connect signals emitted by the checkbox queueing this phase for
@@ -200,7 +194,20 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         # connecting all signals emitted by this checkbox above.
         self._queue_modelling.setChecked(True)
 
-    # ..................{ PROPERTIES ~ bool                  }..................
+    # ..................{ PROPERTIES ~ abstract             }..................
+    # Subclasses are required to implement the following abstract properties.
+
+    @abstractproperty
+    def kind(self) -> SimPhaseKind:
+        '''
+        Type of simulation phase controlled by this controller.
+        '''
+
+        pass
+
+    # ..................{ PROPERTIES ~ bool                 }..................
+    # Read-only boolean properties.
+
     @property
     def is_queued(self) -> bool:
         '''
@@ -238,39 +245,19 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
             self._queue_exporting.isChecked()
         )
 
-    # ..................{ PROPERTIES ~ kind                  }..................
-    @property
-    def kind(self) -> SimPhaseKind:
-        '''
-        Type of simulation phase controlled by this controller.
-        '''
+    # ..................{ PROPERTIES ~ non-bool             }..................
+    # Read-only non-boolean properties.
 
-        return self._kind
-
-
-    @kind.setter
-    def kind(self, kind: SimPhaseKind) -> None:
-        '''
-        Set the type of simulation phase controlled by this controller to the
-        passed type.
-        '''
-
-        # Set this type and all variables directly dependent upon this type.
-        self._kind = kind
-        self._name = enums.get_member_name_lowercase(kind)
-
-    # ..................{ PROPERTIES ~ name                  }..................
-    # Read-only property.
-    @property
+    @property_cached
     def name(self) -> str:
         '''
         Machine-readable alphabetic lowercase name of the type of simulation
-        phase controlled by this controller (e.g., ``seed``, ``init``, ``sim``).
+        phase controlled by this controller (e.g., ``seed``, ``init``).
         '''
 
-        return self._name
+        return enums.get_member_name_lowercase(self.kind)
 
-    # ..................{ SLOTS ~ bool                       }..................
+    # ..................{ SLOTS ~ bool                      }..................
     @Slot(bool)
     def _toggle_queue_modelling_lock(self, is_unqueueable_model: bool) -> None:
         '''
@@ -292,10 +279,10 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
             ``True`` only if this :class:`QToolButton` is currently checked.
         '''
 
-        # One-liners for the greater glory of godly efficiency.
+        # One-liners for the greater glory of god-like efficiency.
         self._queue_modelling.setEnabled(not is_unqueueable_model)
 
-    # ..................{ QUEUERS                            }..................
+    # ..................{ QUEUERS                           }..................
     #FIXME: Entirely obsolete. Excise both this and the superclass method as
     #soon as (safely) feasible.
     def enqueue_running(self) -> None:
@@ -337,7 +324,7 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         if self._is_enqueued_exporting:
             pass
 
-    # ..................{ UPDATERS                           }..................
+    # ..................{ UPDATERS                          }..................
     def _update_state(self) -> None:
 
         # If the current state of this phase is fluid (i.e., freely replaceable
@@ -347,7 +334,8 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
             self.state = (
                 SimmerState.QUEUED if self.is_queued else SimmerState.UNQUEUED)
         # Else, the current state of this phase is fixed and hence *NOT*
-        # replaceable with any other state. For safety, this state is preserved.
+        # replaceable with any other state. For safety, this state is
+        # preserved as is.
 
 
     def _update_widgets(self) -> None:
@@ -358,3 +346,42 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
 
         # Set the text of the label displaying this synopsis to this text.
         self._status.setText(status_text)
+
+# ....................{ SUBCLASSES                        }....................
+class QBetseeSimmerPhaseSeed(QBetseeSimmerPhaseABC):
+    '''
+    **Seed simulator phase controller** (i.e., :mod:`PySide2`-based object
+    wrapping the seed simulation phase to be queued for modelling and/or
+    exporting by this simulator).
+    '''
+
+    # ..................{ PROPERTIES                        }..................
+    @property
+    def kind(self) -> SimPhaseKind:
+        return SimPhaseKind.SEED
+
+
+class QBetseeSimmerPhaseInit(QBetseeSimmerPhaseABC):
+    '''
+    **Initialization simulator phase controller** (i.e., :mod:`PySide2`-based
+    object wrapping the initialization simulation phase to be queued for
+    modelling and/or exporting by this simulator).
+    '''
+
+    # ..................{ PROPERTIES                        }..................
+    @property
+    def kind(self) -> SimPhaseKind:
+        return SimPhaseKind.INIT
+
+
+class QBetseeSimmerPhaseSim(QBetseeSimmerPhaseABC):
+    '''
+    **Simulation simulator phase controller** (i.e., :mod:`PySide2`-based
+    object wrapping the simulation simulation phase to be queued for modelling
+    and/or exporting by this simulator).
+    '''
+
+    # ..................{ PROPERTIES                        }..................
+    @property
+    def kind(self) -> SimPhaseKind:
+        return SimPhaseKind.SIM
