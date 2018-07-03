@@ -62,19 +62,19 @@ BETSEE is installable under **Linux**, **macOS**, and **Windows** as follows:
 
   - Enable conda-forge_.
 
-    .. code:: bash
+    .. code-block:: console
 
        conda config --add channels conda-forge
 
   - Install **BETSEE.** [#conda_package]_
 
-    .. code:: bash
+    .. code-block:: console
 
        conda install betsee
 
   - [\ *Optional*\ ] Run **BETSEE.**
 
-    .. code:: bash
+    .. code-block:: console
 
        betsee
 
