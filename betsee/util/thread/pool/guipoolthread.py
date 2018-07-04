@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -9,7 +9,7 @@ Low-level **worker thread pool** (i.e., platform-portable, pure-Qt,
 exactly one :class:`QRunnable`-based worker at a given time) classes.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QThreadPool
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
@@ -17,7 +17,7 @@ from betse.util.type.types import type_check
 from betsee.util.type.guitype import QThreadPoolOrNoneTypes
 from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
 
-# ....................{ TESTERS                            }....................
+# ....................{ TESTERS                           }....................
 @type_check
 def is_worker(thread_pool: QThreadPoolOrNoneTypes = None) -> bool:
     '''
@@ -39,7 +39,7 @@ def is_worker(thread_pool: QThreadPoolOrNoneTypes = None) -> bool:
     # Return true only if this thread pool has at least one non-idle thread.
     return thread_pool.activeThreadCount() > 0
 
-# ....................{ GETTERS                            }....................
+# ....................{ GETTERS                           }....................
 def get_thread_pool() -> QThreadPool:
     '''
     Singleton **worker thread pool** (i.e., platform-portable, pure-Qt,
@@ -51,7 +51,7 @@ def get_thread_pool() -> QThreadPool:
 
     return QThreadPool.globalInstance()
 
-# ....................{ RUNNERS                            }....................
+# ....................{ RUNNERS                           }....................
 @type_check
 def run_worker(
     worker: QBetseeThreadPoolWorker,

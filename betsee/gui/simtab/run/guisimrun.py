@@ -12,14 +12,6 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #
 #* Preserve most existing attributes and properties of the "QBetseeSimmer"
 #  class. That said...
-#* Remove the three methods in the "QUEUERS" subsection from *ALL* submodules,
-#  possibly excluding the _start_worker_queued_next() method -- which we might
-#  want to preserve *ONLY* in this submodule. Even then, that method should
-#  still be removed from all other submodules.
-#* Rename the "self._PHASES" sequence to "self._PHASES".
-#* Refactor the "_worker_queue" variable from a deque of phases to a deque of
-#  simulator workers produced by the work.guisimrunworkqueue.make_queue()
-#  factory function.
 #* In the __init__() method:
 #  * Define a new "_PHASE_KIND_TO_PHASE" dictionary mapping from phase types to
 #    simulator phases: e.g.,
@@ -69,9 +61,12 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #FIXME: Gracefully terminate worker threads that are still running at
 #application shutdown. Ideally, this should reduce to simply:
 #
-#* We'll need to preserve a (hopefully!) weak reference to the currently
-#  running worker -- perhaps as a new "_worker_current" instance variable of
-#  the "QBetseeSimmer" class.
+#* Preserving a reference to the currently running worker -- perhaps as a new
+#  "_worker_current" instance variable of the "QBetseeSimmer" class. Ideally,
+#  we would simply obtain this worker as the current head of the
+#  "_worker_queue". Since doing so would require mutating that queue during
+#  iteration, however, creating a "_worker_current" instance variable is the
+#  only sane solution.
 #* Defining a new "QBetseeSimmer" slot whose corresponding signal is emitted at
 #  application shutdown.
 #* Connect this slot to that signal in QBetseeSimmer._init_connections().
@@ -614,10 +609,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # start the first queued phase.
         else:
             # Initialize the queue of simulator phases to be run.
-            self.enqueue_running()
+            self._enqueue_workers()
 
             # Iteratively run each such phase.
-            self.run_enqueued()
+            self._start_workers()
 
         #FIXME: Set the state of both this simulator *AND* the currently
         #running phase *AFTER* successfully running this phase above.
@@ -658,7 +653,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Uninitialize the queue of simulator phases to be run *AFTER*
         # successfully halting this phase.
-        self.dequeue_running()
+        self._dequeue_workers()
 
     # ..................{ SLOTS ~ action : queue            }..................
     # Slots connected to signals emitted by "QAction" objects specific to the
@@ -679,8 +674,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Log this slot.
         logs.log_debug(
             'Simulator phase "%s" state updated to "%s"...',
-            phase.name,
-            enums.get_member_name_lowercase(phase.state))
+            phase.name, enums.get_member_name_lowercase(phase.state))
 
         # If the current state of either:
         #
@@ -843,11 +837,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._phase_working_state = SimmerState.HALTED
 
     # ..................{ QUEUERS                           }..................
-    #FIXME: Rename this to something sane.
-    def enqueue_running(self) -> None:
+    def _enqueue_workers(self) -> None:
         '''
-        Define the :attr:`_worker_queue` queue of all simulator phases to be
-        subsequently run.
+        Define the :attr:`_worker_queue` of all simulator workers to be run.
 
         This method enqueues (i.e., pushes onto this queue) all simulator
         phases for which the end user interactively checked at least one of the
@@ -876,33 +868,26 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._worker_queue = guisimrunworkqueue.make_queue(phases=self._PHASES)
 
 
-    def dequeue_running(self) -> None:
+    #FIXME: In theory, this still seems useful. Consider calling this method
+    #somewhere appropriate (e.g., from the simulator stop slot). If we actually
+    #do so, augment this method's implementation to do something useful.
+    def _dequeue_workers(self) -> None:
         '''
-        Revert the :attr:`_worker_queue` queue to ``None``, effectively
-        dequeueing (i.e., popping from this queue) all previously queued
-        simulator phases.
+        Revert the :attr:`_worker_queue` to ``None``, effectively dequeueing
+        (i.e., popping) all previously queued simulator workers.
         '''
-
-        # Dequeue our superclass.
-        super().dequeue_running()
 
         # Uninitialize this queue.
         self._worker_queue = None
 
-        # For each possible phase, forget which actions this phase was queued
-        # for (if any). While technically optional, doing so should preserve
-        # sanity by assisting in debugging.
-        for phase in self._PHASES:
-            phase.dequeue_running()
-
 
     #FIXME: Refactor this method to leverage the "_worker_queue" deque.
     #See the "FIXME" above for exhaustive details.
-    def run_enqueued(self) -> None:
+    def _start_workers(self) -> None:
         '''
         Iteratively run each simulator phase enqueued (i.e., appended to the
         :attr:`_worker_queue` queue of such phases) by a prior call to the
-        :meth:`enqueue_running` method.
+        :meth:`_enqueue_workers` method.
         '''
 
         # Log this attempt.
@@ -918,7 +903,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         #
         #     # Run all actions previously enqueued for this phase (e.g.,
         #     # modelling, exporting).
-        #     phase_queued.run_enqueued()
+        #     phase_queued._start_workers()
         #
         #     # Dequeue this phase *AFTER* successfully running these actions.
         #     self._worker_queue.pop()

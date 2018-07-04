@@ -4,8 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-Low-level **simulator phase** (i.e., simulation phase to be queued for modelling
-and/or exporting by this simulator) functionality.
+Low-level **simulator phase** (i.e., simulation phase to be queued for
+modelling and/or exporting by this simulator) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -37,23 +37,6 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
 
     Attributes (Private: Non-widgets)
     ----------
-    _is_enqueued_modelling : BoolOrNoneTypes
-       Tristate boolean signifying whether this phase has been enqueued for
-       modelling or not, effectively acting as a substitute for a full-blown
-       internal queue of all actions specific to this phase to be performed.
-       Specifically, either:
-       * ``None`` if this phase is currently **dequeued** (i.e., if the
-         :meth:`dequeue_running` method has been called more recently than the
-         :meth:`enqueue_running` method).
-       * ``True`` if this phase is currently **enqueued** (i.e., if the
-         :meth:`enqueue_running` method has been called more recently than the
-         :meth:`dequeue_running` method) *and* this simulator phase was
-         enqueued for modelling at that time.
-       * ``False`` if this phase is currently enqueued *and* this simulator
-         phase was enqueued for exporting at that time.
-    _is_enqueued_exporting : BoolOrNoneTypes
-       Tristate boolean signifying whether this phase has been enqueued for
-       modelling or not. See the :attr:`_is_enqueued_modelling` boolean.
 
     Attributes (Private: Widgets)
     ----------
@@ -77,9 +60,6 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
-
-        # Dequeue this phase, thus setting instance variables to sane defaults.
-        self.dequeue_running()
 
         # Nullify all remaining instance variables for safety.
         self._queue_modelling_lock = None
@@ -281,48 +261,6 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
 
         # One-liners for the greater glory of god-like efficiency.
         self._queue_modelling.setEnabled(not is_unqueueable_model)
-
-    # ..................{ QUEUERS                           }..................
-    #FIXME: Entirely obsolete. Excise both this and the superclass method as
-    #soon as (safely) feasible.
-    def enqueue_running(self) -> None:
-
-        # Enqueue our superclass.
-        super().enqueue_running()
-
-        # Enqueue this phase by setting tristate booleans to either "True" or
-        # "False" depending on the current state of corresponding checkboxes.
-        self._is_enqueued_modelling = self.is_queued_modelling
-        self._is_enqueued_exporting = self.is_queued_exporting
-
-
-    #FIXME: Entirely obsolete. Excise both this and the superclass method as
-    #soon as (safely) feasible.
-    def dequeue_running(self) -> None:
-
-        # Dequeue our superclass.
-        super().dequeue_running()
-
-        # Dequeue this phase by resetting tristate booleans to sane defaults.
-        self._is_enqueued_modelling = None
-        self._is_enqueued_exporting = None
-
-
-    #FIXME: Entirely obsolete. Excise both this and the superclass method as
-    #soon as (safely) feasible.
-    #FIXME: Set the state of this simulator.
-    #FIXME: Set the state of the currently running phase.
-    def run_enqueued(self) -> None:
-
-        #FIXME: Actually implement this condition.
-
-        # If this phase is enqueued for modelling...
-        if self._is_enqueued_modelling:
-            pass
-
-        # If this phase is enqueued for exporting...
-        if self._is_enqueued_exporting:
-            pass
 
     # ..................{ UPDATERS                          }..................
     def _update_state(self) -> None:

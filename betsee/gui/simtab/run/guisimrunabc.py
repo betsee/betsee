@@ -179,39 +179,3 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         '''
 
         pass
-
-    # ..................{ QUEUERS                           }..................
-    def enqueue_running(self) -> None:
-        '''
-        Enqueue (i.e., append onto this controller's internal queue) all
-        actions performed by a subsequent call to the :meth:`run_enqueued`
-        method.
-
-        Raises
-        ----------
-        BetseeSimmerException
-            If this controller is *not* currently queued.
-        '''
-
-        # If this controller is *NOT* currently queued, raise an exception.
-        self._die_unless_queued()
-
-
-    def dequeue_running(self) -> None:
-        '''
-        Dequeue (i.e., remove from this controller's internal queue) all actions
-        enqueued by a prior call to the :meth:`enqueue_running` method.
-        '''
-
-        pass
-
-
-    @abstractmethod
-    def run_enqueued(self) -> None:
-        '''
-        Perform each action enqueued by a prior call to the
-        :meth:`enqueue_running` method (in the order in which these actions were
-        enqueued).
-        '''
-
-        pass

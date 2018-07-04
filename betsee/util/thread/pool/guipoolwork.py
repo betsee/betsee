@@ -49,11 +49,11 @@ _worker_id_lock = QMutex()
 '''
 Non-exception-safe mutual exclusion primitive rendering the
 :func:`_get_worker_id_next` function thread-safe. This primitive is
-non-exception-safe and hence should *never* be accessed directly. Each access to
-this primitive should be encapsulated by instantiating a one-off exception-safe
-:class:QMutexLocker` context manager as the target of a `with` context. Note
-that the context provided by the :class:QMutexLocker` class is *not* safely
-reusable and hence *must* be re-instantiated in each ``with`` context.
+non-exception-safe and hence should *never* be accessed directly. Each access
+to this primitive should be encapsulated by instantiating an exception-safe
+one-off :class:QMutexLocker` context manager as the target of a `with` context.
+Note that the context provided by the :class:QMutexLocker` class is *not*
+safely reusable and hence *must* be re-instantiated in each ``with`` context.
 '''
 
 # ....................{ SUPERCLASSES                      }....................
@@ -85,8 +85,10 @@ class QBetseeThreadPoolWorker(QRunnable):
     * Locking access to these attributes behind Qt-specific mutual exclusion
       primitives and context managers (e.g., :class:`QMutexLocker`).
     * Defining these attributes to be Qt-specific atomic types (e.g.,
-      :class:`QAtomicInt`). Since no Python Qt frameworks expose these types,
-      this approach applies *only* to C++-based Qt applications.
+      :class:`QAtomicInt`). Since no Python-based Qt framework (including
+      PySide2) exposes these types, this approach applies *only* to C++-based
+      Qt applications. Ergo, atomic types are currently inapplicable. See below
+      for further details.
 
     Signal-slot Connections
     ----------
@@ -94,7 +96,7 @@ class QBetseeThreadPoolWorker(QRunnable):
     standard :class:`QObject` base class. This has various real-world
     implications. In particular, subclasses of this class *cannot* directly
     participate in standard queued signal-slot connections and hence should
-    define neither signals *nor* slots.
+    define neither signals nor slots.
 
     Instead, to emit signals from this worker to slots on objects residing in
     other threads:
@@ -110,11 +112,10 @@ class QBetseeThreadPoolWorker(QRunnable):
     * Define each such slot as a simple method of this subclass. Since this
       method will be run from the other thread in which the object calling this
       method resides rather than the pooled thread in which this worker
-      resides, care should be taken within the body of this method to
-      protectively guard access to instance variables with Qt-specific mutual
-      exclusion primitives.  While numerous primitives exist, the following
-      maximize thread-safety in common edge cases (e.g., exceptions) and hence
-      are strongly preferred:
+      resides, this method's body *must* protectively guard access to instance
+      variables via Qt-specific mutual exclusion primitives. While numerous
+      primitives exist, the following maximize thread-safety in common edge
+      cases (e.g., exceptions) and hence are strongly preferred:
 
       * :class:`QReadLocker` and :class:`QWriteLocker`, context managers
         suitable for general-purpose use in guarding access to variables
@@ -128,7 +129,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         only a single thread at a time.
 
     Lastly, note that Qt defines numerous atomic types publicly accessible to
-    C++ but *not* Python applications (e.g., :class:`QtCore::QAtomicInt`).  In
+    C++ but *not* Python applications (e.g., :class:`QtCore::QAtomicInt`). In
     theory, these types could be leveraged as an efficient alternative to the
     primitives listed above. In practice, these types have yet to be exposed
     via any Python Qt framework (PyQt5, PySide2, or otherwise) and hence remain
