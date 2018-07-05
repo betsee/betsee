@@ -286,10 +286,8 @@ class QBetseeThreadPoolWorker(QRunnable):
         the :meth:`run` method from within an arbitrary pooled thread possibly
         running *no* Qt event loop.
 
-        Design
-        ----------
         This instance variable is intentionally implemented as a cached
-        property to permit subclasses to expose subclass-specific signals
+        property, enabling subclasses to expose subclass-specific signals
         (e.g., by trivially redefining this property to return a
         subclass-specific :class:`QBetseeThreadPoolWorkerSignals` instance).
         '''
@@ -352,7 +350,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Caveats
         ----------
-        Subclasses must override the :meth:`_work` method rather than this
+        Subclasses should override the :meth:`_work` method rather than this
         method to perform subclass-specific business logic. This method is
         neither intended nor designed to be redefined by subclasses.
         '''
@@ -489,12 +487,12 @@ class QBetseeThreadPoolWorker(QRunnable):
             self._state = ThreadWorkerState.IDLE
 
             # Unblock the parent thread of this worker if currently blocked.
-            # Deadlocks are unlikely but feasible in edge cases unless this
+            # Deadlocks are unlikely but possible in edge cases unless this
             # method is unconditionally called here.
             #
             # Note that, as the prior logic is sufficiently simplistic to
             # ensure *NO* exception to be raised, this call need not be
-            # embedded in a try-finally block for safety.
+            # embedded in a "try-finally" block. Ergo, it isn't.
             self._unblock_work()
 
     # ..................{ SLOTS ~ pause                     }..................
@@ -679,8 +677,8 @@ class QBetseeThreadPoolWorker(QRunnable):
         with QMutexLocker(self._state_lock):
             # If either:
             if (
-                # If an external call to the stop() method has requested
-                # This worker has been externally signalled to stop...
+                # If an external call to the stop() method has requested that
+                # this worker be stopped...
                 self._state is ThreadWorkerState.IDLE or
                 # This worker's thread has been externally requested to stop...
                 guithread.should_halt_thread_work()
@@ -730,11 +728,12 @@ class QBetseeThreadPoolWorker(QRunnable):
         The :attr:`_state_lock` primitive *must* be acquired (i.e., locked)
         before this method is called. To guarantee this, the call to this
         method should typically be embedded in a context manager of the form
-        ``with QMutexLocker(self._state_lock):``, which thread- and
-        exception-safely synchronizes access across multiple threads.
+        ``with QMutexLocker(self._state_lock):``.
 
-        If this is *not* the case, the behaviour of this method is undefined.
-        Presumably, that's bad.
+        If this is *not* the case, the behaviour of this method is undefined;
+        doing so may violate thread- and exception-safety in a
+        non-deterministic manner inducing non-human-readable segmentation
+        faults. (Presumably, that's bad.)
         '''
 
         # Log this blocking behaviour.
@@ -747,7 +746,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         self.signals.paused.emit()
 
         # Indefinitely wait for an external call to the resume() method from
-        # another thread to request this worker to resume work.  This has
+        # another thread to request this worker to resume work. This has
         # several consequences, including (in temporal order):
         #
         # 1. The "_state_lock" *MUST* be acquired (i.e., locked) before calling
@@ -777,11 +776,12 @@ class QBetseeThreadPoolWorker(QRunnable):
         Unblock all subclass-specific business logic performed by this worker.
 
         This method wakes up the parent thread of this worker and hence this
-        worker *after* the :meth:`_halt_work_if_requested` called the
-        :meth:`_block_work` method to indefinitely block that thread. Moreover,
-        this method is typically called by an external call in another thread
-        to a worker pseudo-slot (e.g., the :meth:`resume` method), all of which
-        internally call this method to request this worker safely resume work.
+        worker *after* the :meth:`_halt_work_if_requested` previously called
+        the :meth:`_block_work` method to indefinitely block that thread.
+        Moreover, this method is typically called by an external call in
+        another thread to a worker pseudo-slot (e.g., the :meth:`resume`
+        method), all of which internally call this method to request that this
+        worker safely resume work.
 
         If the parent thread of this worker is *NOT* currently blocked, this
         method silently reduces to a noop.

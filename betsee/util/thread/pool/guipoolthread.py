@@ -53,12 +53,12 @@ def get_thread_pool() -> QThreadPool:
 
 # ....................{ RUNNERS                           }....................
 @type_check
-def run_worker(
+def start_worker(
     worker: QBetseeThreadPoolWorker,
     thread_pool: QThreadPoolOrNoneTypes = None,
 ) -> None:
     '''
-    Run the passed thread pool worker in the passed thread pool.
+    Start the passed thread pool worker in the passed thread pool.
 
     Specifically, this function:
 
@@ -73,10 +73,10 @@ def run_worker(
     Parameters
     ----------
     worker : QBetseeThreadPoolWorker
-        Worker to be run in this thread pool.
+        Worker to be started in this thread pool.
     thread_pool : QThreadPoolOrNoneTypes
-        Thread pool to run this worker in. Defaults to ``None``, in which case
-        the singleton thread pool returned by the :func:`get_thread_pool`
+        Thread pool to start this worker in. Defaults to ``None``, in which
+        case the singleton thread pool returned by the :func:`get_thread_pool`
         function is defaulted to.
     '''
 

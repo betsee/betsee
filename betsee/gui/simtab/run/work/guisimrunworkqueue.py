@@ -58,13 +58,19 @@ simulation phase and hence is categorized within this dictionary as such.
 '''
 
 # ....................{ MAKERS                            }....................
-def make_queue(phases: SequenceTypes) -> QueueType:
+def enqueue_worker_types(phases: SequenceTypes) -> QueueType:
     '''
-    Create and return a **simulator worker queue** (i.e., double-ended queue of
-    all simulator worker classes to be subsequently instantiated and run in a
-    multithreaded manner by the simulator such that each worker performs a
-    simulation subcommand whose corresponding checkbox is currently checked as
-    specified by the passed sequence of all simulator phases).
+    Create and return a **simulator worker subclass queue** (i.e., double-ended
+    queue of all simulator worker subclasses to be subsequently instantiated
+    and run in a multithreaded manner by the simulator, such that each worker
+    performs a simulation subcommand whose corresponding checkbox is currently
+    checked) as specified by the passed sequence of all simulator phases.
+
+    This function returns a double- rather than single-ended queue as the
+    Python stdlib only provides the former. Since the former generalizes the
+    latter, however, leveraging the former in a single-ended manner replicates
+    the behaviour of the latter. Ergo, a double-ended queue remains the most
+    space- and time-efficient data structure for doing so.
 
     Ordering
     ----------
