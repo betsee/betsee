@@ -15,6 +15,8 @@ from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
 from betse.util.type.decorator.deccls import abstractproperty
+from betse.util.type.descriptor.descs import (
+    abstractclassproperty_readonly, classproperty_readonly)
 from betse.util.type.types import type_check, CallableTypes
 # from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
@@ -149,6 +151,28 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
     simulator worker running an arbitrary simulation subcommand) subclasses.
     '''
 
+    # ..................{ CLASS ~ abstract                  }..................
+    # Read-only abstract class methods required to be overridden by subclasses.
+
+    #FIXME: Uncomment and implement properly in all subclasses.
+    # @abstractclassproperty_readonly
+    # def phase_kind(cls) -> SimPhaseKind:
+    #     '''
+    #     Type of simulation phase run by this simulator worker.
+    #     '''
+    #
+    #     pass
+    #
+    #
+    # @abstractclassproperty_readonly
+    # def phase_subkind(cls) -> SimmerPhaseSubkind:
+    #     '''
+    #     Type of work performed within the type of simulation phase run by this
+    #     simulator worker.
+    #     '''
+    #
+    #     pass
+
     # ..................{ PROPERTIES ~ abstract             }..................
     # Read-only abstract properties required to be overridden by subclasses.
 
@@ -161,28 +185,6 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
         The :meth:`_work` method internally invokes this subcommand with the
         local :class:`SimRunner` instance created and returned by the
         :meth:`_make_sim_runner` method.
-        '''
-
-        pass
-
-    # ..................{ PROPERTIES ~ abstract : phase     }..................
-    #FIXME: These properties should probably be refactored into abstract class
-    #methods, which may then be accessed from the enqueued worker classes as is
-    #without needing to first instantiate these classes.
-    @abstractproperty
-    def phase_kind(self) -> SimPhaseKind:
-        '''
-        Type of simulation phase run by this simulator worker.
-        '''
-
-        pass
-
-
-    @abstractproperty
-    def phase_subkind(self) -> SimmerPhaseSubkind:
-        '''
-        Type of work performed within the type of simulation phase run by this
-        simulator worker.
         '''
 
         pass

@@ -10,20 +10,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 
 #FIXME: Refactor to leverage threading via the new "work" subpackage as follows:
 #
-#* Preserve most existing attributes and properties of the "QBetseeSimmer"
-#  class. That said...
-#* In the __init__() method:
-#  * Define a new "_PHASE_KIND_TO_PHASE" dictionary mapping from phase types to
-#    simulator phases: e.g.,
-#
-#      self._PHASE_KIND_TO_PHASE = {
-#          SimPhaseKind.SEED: self._phase_seed, ...
-#      }
-#
-#* Refactor the critical _phase_working() property to:
-#  * Get the "phase_kind" property of the leading worker in "_worker_type_queue".
-#  * Map this property to the corresponding phase via "_PHASE_KIND_TO_PHASE".
-#* Refactor the _startworker_type_queued_next() method as follows:
+#* Refactor the _start_worker_type_queued_next() method as follows:
 #  * For the first worker in "_worker_type_queue":
 #    * Emit a signal connected to the start() slot of that worker. (Probably
 #      just a signal of that same worker named "start_signal", for brevity.)
@@ -33,7 +20,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #  * Validate that the leading item of "_worker_type_queue" is the passed worker.
 #  * Pop this worker from "_worker_type_queue".
 #  * If "_worker_type_queue" is non-empty, then:
-#    * Call the _startworker_type_queued_next() method.
+#    * Call the _start_worker_type_queued_next() method.
 #* In the _init_connections() method:
 #  * Iterate over each possible worker (e.g., "_worker_seed"). This may merit a
 #    new "_WORKERS" sequence or possibly even "_PHASE_KIND_TO_WORKER" map.
@@ -136,7 +123,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QObject, Slot  #, Signal
 from betse.exceptions import BetseSimUnstableException
-# from betse.science.phase.phaseenum import SimPhaseKind
+from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.py import pyref
 from betse.util.type import enums
@@ -197,6 +184,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         sanity, these phases are ordered is simulation order such that:
         * The seed phase is listed *before* the initialization phase.
         * The initialization phase is listed *before* the simulation phase.
+    _PHASE_KIND_TO_PHASE : MappingType
+        Dictionary mapping from phase type to simulator phase.
     _phase_seed : QBetseeSimmerPhaseSeed
         Controller for all simulator widgets pertaining to the seed phase.
     _phase_init : QBetseeSimmerPhaseInit
@@ -277,6 +266,13 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._phase_seed = QBetseeSimmerPhaseSeed(self)
         self._phase_init = QBetseeSimmerPhaseInit(self)
         self._phase_sim  = QBetseeSimmerPhaseSim(self)
+
+        # Dictionary mapping from phase type to simulator phase.
+        self._PHASE_KIND_TO_PHASE = {
+            SimPhaseKind.SEED: self._phase_seed,
+            SimPhaseKind.INIT: self._phase_init,
+            SimPhaseKind.SIM:  self._phase_sim,
+        }
 
         # Sequence of all simulator phases. For iterability, these phases are
         # intentionally listed in simulation order.
@@ -484,11 +480,22 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             :attr:`_worker_type_queue` is either ``None`` or empty).
         '''
 
-        # If *NO* simulator phase is currently running, raise an exception.
+        # If *NO* simulator worker is currently working, raise an exception.
         self._die_unless_working()
 
-        # Return true only if one or more phases are queued.
-        return self._worker_type_queue[0]
+        # Subclass of the currently working simulator worker. Note that,
+        # although the "_worker_current" variable yields this worker, there
+        # exists a brief window of time during which this variable is None
+        # despite the "_worker_type_queue" variable being non-None. Ergo, the
+        # latter offers more deterministic outcomes.
+        worker_type_current = self._worker_type_queue[0]
+
+        # Simulation and simulator phase acted upon by this worker.
+        phase_kind = worker_type_current.get_phase_kind()
+        phase = self._PHASE_KIND_TO_PHASE[phase_kind]
+
+        # Return this simulator phase.
+        return phase
 
     # ..................{ PROPERTIES ~ phase : state        }..................
     # This trivial property getter exists only so that the corresponding
@@ -939,6 +946,13 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     #
     #        # Current simulator worker subclass to be instantiated.
     #        worker_type = self._worker_type_queue[0]
+    #
+    #        #FIXME: Set the state of both this simulator *AND* the currently
+    #        #running phase *AFTER* successfully running this phase above. To
+    #        #implement this sanely, we'll probably want to add a worker class
+    #        #property (e.g., "worker_type.).
+    #        # self._phase_working_state = SimmerState.MODELLING
+    #        # self._phase_working_state = SimmerState.EXPORTING
     #
     #        # Current simulator worker to be run, simulating a phase of the
     #        # currently loaded simulation defined by this configuration file.
