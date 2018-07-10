@@ -10,12 +10,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 
 #FIXME: Refactor to leverage threading via the new "work" subpackage as follows:
 #
-#* Refactor the _start_worker_type_queued_next() method as follows:
-#  * For the first worker in "_worker_type_queue":
-#    * Emit a signal connected to the start() slot of that worker. (Probably
-#      just a signal of that same worker named "start_signal", for brevity.)
-#  * ...that's it. Crazy, eh?
-#* Define a new private _handle_worker_finished() slot of this simulator. This
+#* Define a new private _handle_worker_completed() slot of this simulator. This
 #  slot should receive a "QBetseeSimmerWorkerABC" instance as follows:
 #  * Validate that the leading item of "_worker_type_queue" is the passed worker.
 #  * Pop this worker from "_worker_type_queue".
@@ -94,7 +89,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #     terminate. If this worker fails to do so, more drastic measures may be
 #     necessary. (Gulp.)
 #3. If any threads are currently running (e.g., as testable via the
-#   guithreadpool.is_worker() tester), these threads should be terminated as
+#   guithreadpool.is_working() tester), these threads should be terminated as
 #   gracefully as feasible.
 #
 #Note the QThreadPool.waitForDone(), which may assist us. If we do call that
@@ -127,6 +122,7 @@ from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.py import pyref
 from betse.util.type import enums
+from betse.util.type.cls import classes
 from betse.util.type.text import strs
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.guiexception import (
@@ -148,7 +144,6 @@ from betsee.gui.simtab.run.guisimrunstate import (
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
-from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerWorkerAll
 from betsee.gui.simtab.run.work import guisimrunworkqueue
 from betsee.util.thread import guithread
 from betsee.util.thread.pool import guipoolthread
@@ -356,9 +351,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # status in a sane manner.
         main_window.sim_run_player_substatus_group.hide()
 
-        #FIXME: Re-enable after implementing queueing properly.
-        main_window.sim_run_queue_group.setEnabled(False)
-
 
     @type_check
     def _init_connections(self, main_window: QBetseeMainWindow) -> None:
@@ -383,8 +375,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # For each possible phase...
         for phase in self._PHASES:
-            # Connect this phase's signals to this object's corresponding
-            # slots.
+            # Connect this phase's signals to this object's equivalent slots.
             phase.set_state_signal.connect(self._set_phase_state)
 
             # Initialize the state of this phase *AFTER* connecting these
@@ -768,7 +759,125 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Set the text of the label displaying this synopsis to this text.
         self._status.setText(status_text)
 
-    # ..................{ SLOTS ~ worker                    }..................
+    # ..................{ QUEUERS                           }..................
+    def _enqueue_worker_types(self) -> None:
+        '''
+        Define the :attr:`_worker_type_queue` of all simulator workers to be run.
+
+        This method enqueues (i.e., pushes onto this queue) all simulator
+        phases for which the end user interactively checked at least one of the
+        corresponding modelling and exporting checkboxes. For sanity, phases
+        are enqueued in simulation order such that:
+
+        * The seed phase is enqueued *before* the initialization phase.
+        * The initialization phase is enqueued *before* the simulation phase.
+
+        Raises
+        ----------
+        BetseeSimmerException
+            If either:
+            * No simulator phase is currently queued.
+            * Some simulator phase is currently running (i.e.,
+              :attr:`_worker_type_queue` is already defined to be non-``None``).
+        '''
+
+        # If this controller is *NOT* currently queued, raise an exception.
+        self._die_unless_queued()
+
+        # If some simulator phase is currently running, raise an exception.
+        self._die_if_working()
+
+        # Create this simulator worker queue.
+        self._worker_type_queue = guisimrunworkqueue.enqueue_worker_types(
+            phases=self._PHASES)
+
+
+    #FIXME: In theory, this still seems useful. Consider calling this method
+    #somewhere appropriate (e.g., from the simulator stop slot). If we actually
+    #do so, augment this method's implementation to do something useful.
+    def _dequeue_workers(self) -> None:
+        '''
+        Revert the :attr:`_worker_type_queue` to ``None``, effectively dequeueing
+        (i.e., popping) all previously queued simulator workers.
+        '''
+
+        # Uninitialize this queue.
+        self._worker_type_queue = None
+
+    # ..................{ WORKERS ~ start                   }..................
+    def _start_workers(self) -> None:
+        '''
+        Iteratively start each simulator worker enqueued by a prior call to the
+        :meth:`_enqueue_worker_types` method.
+        '''
+
+        # If one or more workers are already working, raise an exception.
+        guipoolthread.die_if_working()
+
+        # Initiate iteration by starting the first enqueued worker and
+        # connecting the stop signal emitted by that worker to a slot
+        # iteratively repeating this process.
+        self._start_worker_next_or_noop()
+
+
+    def _start_worker_next_or_noop(self) -> None:
+        '''
+        Iteratively start the next simulator worker (i.e., head item of the
+        :attr:`_worker_type_queue`) enqueued by a prior call to the
+        :meth:`_enqueue_worker_types` method if this queue is non-empty *or*
+        reduce to a noop otherwise (i.e., if this queue is empty).
+        '''
+
+        # If no workers remain to be run...
+        if not self._is_working:
+            # Log this completion.
+            logs.log_debug(
+                'Stopping simulator work from main thread "%d"...',
+                guithread.get_current_thread_id())
+
+            # Reduce to a noop.
+            return
+        # Else, one or more workers remain to be run.
+
+        # Current simulator worker subclass to be instantiated. By the above
+        # conditional, this worker subclass is guaranteed to exist.
+        worker_type = self._worker_type_queue[0]
+
+        # Log this start.
+        logs.log_debug(
+            'Spawning simulator worker thread type "%s" '
+            'from main thread "%d"...',
+            classes.get_name(worker_type), guithread.get_current_thread_id())
+
+        # Current simulator worker to be run, simulating a phase of the
+        # currently loaded simulation defined by this configuration file.
+        worker = worker_type(conf_filename=self._sim_conf.p.conf_filename)
+
+        # Finalize this worker's initialization.
+        worker.init(progress_bar=self._player_progress)
+
+        # Preserve a weak reference to this worker *AFTER* finalizing this
+        # worker's initialization but *BEFORE* performing any subsequent
+        # logic possibly assuming this reference to exist (e.g., slots).
+        self._worker_current = pyref.proxy_weak(worker)
+
+        # Connect signals emitted by this worker to slots on this simulator.
+        worker.signals.failed.connect(self._handle_worker_exception)
+        worker.signals.finished.connect(self._handle_worker_completion)
+
+        # Start this worker.
+        guipoolthread.start_worker(worker)
+
+        #FIXME: For safety, relegate this to a new slot of this object
+        #connected to the started() signal of this worker. After all, this
+        #should only be performed if this worker is indeed successfully started
+        #within this thread -- which we have no way of guaranteeing here.
+
+        # Set the state of both this simulator *AND* the currently
+        # running phase *AFTER* successfully starting this worker.
+        self._phase_working_state = worker_type.phase_subkind
+
+    # ..................{ WORKERS ~ slot                    }..................
     # Slots connected to signals emitted by "QRunnable" workers.
 
     @Slot(Exception)
@@ -820,240 +929,76 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             ) from exception
 
 
-    #FIXME: Awful slot name and implementation, obviously. Refactor as follows:
-    #* Rename to _handle_worker_completion().
-    #* Rewrite to at least:
-    #  * Toggle the play button such that the play icon is now visible. The
-    #    optimal means of implementing this and the following item might be to:
-    #    set the state of the simulator to stopped by calling the
-    #    _set_phase_state(). Since that internally calls the
-    #    _update_widgets() method, that might suffice. (It's been some time.)
-    #  * Disable the stop button.
-    #  * Probably ensure that the worker queue is empty.
-    #Improving this slot should probably be our highest priority.
+    #FIXME: Probably insufficient as is, sadly. Consider improving as follows:
+    #
+    #* Toggle the play button such that the play icon is now visible. The
+    #  optimal means of implementing this and the following item might be to:
+    #  set the state of the simulator to stopped by calling the
+    #  _set_phase_state(). Since that internally calls the
+    #  _update_widgets() method, that might suffice. (It's been some time.)
+    #  * Actually, doesn't setting the "_phase_working_state" property to
+    #    "HALTED" already satisfy this here?
+    #* Disable the stop button.
+    #* Probably ensure that the worker queue is empty.
     @Slot(bool)
     def _handle_worker_completion(self, is_success: bool) -> None:
+        '''
+        Handle the completion of the most recently working simulator worker.
 
-        # Set this simulator and the previously running phase to the halted
-        # state *AFTER* successfully halting this phase.
+        Specifically, this method:
+
+        * Sets the state of the corresponding simulator phase to stopped.
+        * Pops this worker from the :attr:`_worker_type_queue`.
+        * If this queue is non-empty, starts the next enqueued worker.
+
+        Caveats
+        ----------
+        While this worker is guaranteed to have completed its worker at the
+        time of this slot call, the parent thread pool of this worker is *not*
+        guaranteed to have already deleted this worker and hence disconnected
+        all signal-slot connections connected to this worker. In edge cases,
+        this may result in two workers being concurrently instantiated and
+        connected to -- one of which is guaranteed to be completed and hence no
+        longer emitting signals and the other of which is starting and hence
+        starting to emit signals.
+
+        This is somewhat non-ideal. This method calls the
+        :meth:`_start_worker_next_or_noop` method, which internally
+        instantiates a new worker and connects pertinent worker signals and
+        slots. To avoid conflict with the exact same signals and slots
+        connected to this recently deleted worker, we would ideally maintain
+        the contractual guarantee that at most one worker be instantiated and
+        connected to at any given time.
+
+        Sadly, doing so is infeasible. Workers are :attr:`QRunnable` rather
+        than :attr:`QObject` instances; since only the latter provide the
+        destroyed() signal, deciding exactly when any given worker is deleted
+        is infeasible. Ergo, calling this method only *after* this worker's
+        thread pool is guaranteed to have deleted this worker is infeasible.
+
+        Nonetheless, note that this worker *is* typically deleted at the time
+        of this call. The last logic performed by the
+        :meth:`QBetseeThreadPoolWorker.run` method is to emit the
+        :attr:`QBetseeThreadPoolWorkerSignals.finished` signal connected to the
+        parent slot calling this method. Immediately after emitting that
+        signal and returning, the parent thread pool of this worker is
+        guaranteed to delete this worker. Ergo, exactly two workers are only
+        ever instantiated and connected to for a negligible amount of time.
+        '''
+
+        # If no worker was working, raise an exception.
+        self._die_unless_working()
+
+        # Set this simulator and the previously working phase to halted.
         self._phase_working_state = SimmerState.HALTED
 
-    # ..................{ QUEUERS                           }..................
-    def _enqueue_worker_types(self) -> None:
-        '''
-        Define the :attr:`_worker_type_queue` of all simulator workers to be run.
+        # Forget the weak reference to this worker for safety.
+        self._worker_current = None
 
-        This method enqueues (i.e., pushes onto this queue) all simulator
-        phases for which the end user interactively checked at least one of the
-        corresponding modelling and exporting checkboxes. For sanity, phases
-        are enqueued in simulation order such that:
+        # Dequeue this worker (i.e., remove this worker's subclass from
+        # the queue of worker subclasses to be instantiated and run).
+        self._worker_type_queue.pop()
 
-        * The seed phase is enqueued *before* the initialization phase.
-        * The initialization phase is enqueued *before* the simulation phase.
-
-        Raises
-        ----------
-        BetseeSimmerException
-            If either:
-            * No simulator phase is currently queued.
-            * Some simulator phase is currently running (i.e.,
-              :attr:`_worker_type_queue` is already defined to be non-``None``).
-        '''
-
-        # If this controller is *NOT* currently queued, raise an exception.
-        self._die_unless_queued()
-
-        # If some simulator phase is currently running, raise an exception.
-        self._die_if_working()
-
-        # Create this simulator worker queue.
-        self._worker_type_queue = guisimrunworkqueue.enqueue_worker_types(
-            phases=self._PHASES)
-
-
-    #FIXME: In theory, this still seems useful. Consider calling this method
-    #somewhere appropriate (e.g., from the simulator stop slot). If we actually
-    #do so, augment this method's implementation to do something useful.
-    def _dequeue_workers(self) -> None:
-        '''
-        Revert the :attr:`_worker_type_queue` to ``None``, effectively dequeueing
-        (i.e., popping) all previously queued simulator workers.
-        '''
-
-        # Uninitialize this queue.
-        self._worker_type_queue = None
-
-
-    #FIXME: Refactor this method to leverage the "_worker_type_queue" deque.
-    #See the "FIXME" above for exhaustive details. An implementation might
-    #resemble:
-    #
-    # # While one or more enqueued phases have yet to be run...
-    # while self._is_working:
-    #     # Current simulator worker subclass to be instantiated.
-    #     worker_type = self._worker_type_queue[0]
-    #
-    #     # Current simulator worker to be run, simulating a phase of the
-    #     # currently loaded simulation defined by this configuration file.
-    #     worker = worker_type(conf_filename=self._sim_conf.p.conf_filename)
-    #
-    #     # Finalize this worker's initialization.
-    #     worker.init(progress_bar=self._player_progress)
-    #
-    #     # Preserve a weak reference to this worker *AFTER* finalizing this
-    #     # worker's initialization but *BEFORE* performing any subsequent
-    #     # logic possibly assuming this reference to exist.
-    #     self._worker_current = pyref.proxy_weak(worker)
-    #
-    #     # Connect signals emitted by this worker to slots on this simulator.
-    #     worker.signals.failed.connect(self._handle_worker_exception)
-    #     worker.signals.finished.connect(self._handle_worker_completion)
-    #
-    #     # Run this worker and thus this simulation phase.
-    #     guipoolthread.start_worker(worker)
-    #
-    #     #FIXME: Indefinitely block here until this worker emits the
-    #     #"stopped" signal. Err... no, clearly that would be awful. To
-    #     #avoid blocking, we'll need to unflatten this entire loop across
-    #     #multiple slot calls. Let's give this another try, shall we?
-    #
-    #     # Forget the weak reference to this worker for safety.
-    #     self._worker_current = None
-    #
-    #     # Dequeue this worker *AFTER* successfully running this worker.
-    #     self._worker_type_queue.pop()
-    #FIXME: Actually, to avoid blocking, we need to unflatten the above
-    #loop across multiple slot calls. Here's a first-draft design at that:
-    #
-    #    def _start_workers(self) -> None:
-    #        self._start_worker_next_or_noop()
-    #
-    #
-    #    def _start_worker_next_or_noop(self) -> None:
-    #        '''
-    #        Start the next worker in the current queue of workers to be run
-    #        if any *or* reduce to a noop otherwise.
-    #        '''
-    #
-    #        # If no workers remain to be run, silently reduce to a noop.
-    #        if not self._is_working:
-    #            return
-    #
-    #        # Log this attempt.
-    #        logs.log_debug(
-    #            'Spawning simulator worker thread from main thread "%d"...',
-    #            guithread.get_current_thread_id())
-    #
-    #        # Current simulator worker subclass to be instantiated.
-    #        worker_type = self._worker_type_queue[0]
-    #
-    #        #FIXME: Set the state of both this simulator *AND* the currently
-    #        #running phase *AFTER* successfully running this phase above. To
-    #        #implement this sanely, we'll probably want to add a worker class
-    #        #property (e.g., "worker_type.).
-    #        # self._phase_working_state = SimmerState.MODELLING
-    #        # self._phase_working_state = SimmerState.EXPORTING
-    #
-    #        # Current simulator worker to be run, simulating a phase of the
-    #        # currently loaded simulation defined by this configuration file.
-    #        worker = worker_type(conf_filename=self._sim_conf.p.conf_filename)
-    #
-    #        # Finalize this worker's initialization.
-    #        worker.init(progress_bar=self._player_progress)
-    #
-    #        # Preserve a weak reference to this worker *AFTER* finalizing this
-    #        # worker's initialization but *BEFORE* performing any subsequent
-    #        # logic possibly assuming this reference to exist (e.g., slots).
-    #        self._worker_current = pyref.proxy_weak(worker)
-    #
-    #        # Connect signals emitted by this worker to slots on this simulator.
-    #        worker.signals.failed.connect(self._handle_worker_exception)
-    #        worker.signals.finished.connect(self._handle_worker_completion)
-    #
-    #        # Start this worker.
-    #        guipoolthread.start_worker(worker)
-    #
-    #
-    #    #FIXME: For generality and hence safety, should this instead handle
-    #    #the *DELETION* rather than merely *COMPLETION* of this worker? While
-    #    #both signals should be emitted in the event of catastrophic worker
-    #    #failure, the former signal will be signalled *AFTER* the deletion of
-    #    #this worker by its parent thread parent, whereas the latter signal
-    #    #will be signalled *BEFORE* this deletion. Does this matter?
-    #    #
-    #    #The #answer is: almost certainly. This method calls the
-    #    #self._start_worker_next_or_noop(), which internally instantiates a
-    #    #new worker and connects pertinent worker signals and slots. To avoid
-    #    #conflict with the exact same signals and slots connected to this
-    #    #recently deleted worker, we *MUST* maintain the contractual guarantee
-    #    #that at most one worker be instantiated and connected to at any given
-    #    #time.
-    #    #
-    #    #According to "QObject" documention: "When an object is deleted, it
-    #    #emits a destroyed() signal." Ergo, revising the
-    #    #_start_worker_next_or_noop() method to connect to that rather than
-    #    #the... Oh, bloody heck. The "QRunnable" superclass and hence our
-    #    #worker subclasses provide no destroyed() signal to connect to,
-    #    #implying that we actually have no means of deciding exactly when any
-    #    #worker is deleted. Instead, we'll just have to preserve the existing
-    #    #approach of connecting to the finished() signal and hoping for the
-    #    #best. Since the last logic performed by the
-    #    #QBetseeThreadPoolWorker.run() method is indeed to emit the finished()
-    #    #signal, this should be quite saf. In truth, we can't conceive of any
-    #    #edge cases that might trip us up; hopefully, that intuition will
-    #    #actually hold here.
-    #
-    #    @Slot(bool)
-    #    def _handle_worker_completion(self, is_success: bool) -> None:
-    #        '''
-    #        Handle the deletion and hence completion of the most recently
-    #        working simulator worker.
-    #
-    #        The parent thread pool of this worker is guaranteed to have already
-    #        deleted this worker (and hence disconnected all signal-slot
-    #        connections connected to this worker) at the time of this slot call.
-    #        '''
-    #
-    #        # If no worker was working, raise an exception.
-    #        self._die_unless_working()
-    #
-    #        # Set both this simulator and the previously working phase to the
-    #        # halted state.
-    #        self._phase_working_state = SimmerState.HALTED
-    #
-    #        # Forget the weak reference to this worker for safety.
-    #        self._worker_current = None
-    #
-    #        # Dequeue this worker (i.e., remove this worker's subclass from
-    #        # the queue of worker subclasses to be instantiated and run).
-    #        self._worker_type_queue.pop()
-    #
-    #        # Start the next worker in the current queue of workers to be run
-    #        # if any or reduce to a noop otherwise.
-    #        self._start_worker_next_or_noop()
-    def start_workers(self) -> None:
-        '''
-        Iteratively run each simulator phase enqueued (i.e., appended to the
-        :attr:`_worker_type_queue` queue of such phases) by a prior call to the
-        :meth:`_enqueue_worker_types` method.
-        '''
-
-        # Log this attempt.
-        logs.log_debug(
-            'Spawning simulator worker thread from main thread "%d"...',
-            guithread.get_current_thread_id())
-
-        # Simulator worker simulating one or more simulation phases of the
-        # currently loaded simulation defined by this configuration file.
-        worker = QBetseeSimmerWorkerAll(
-            conf_filename=self._sim_conf.p.conf_filename)
-
-        # Finalize this worker's initialization.
-        worker.init(progress_bar=self._player_progress)
-
-        # Connect signals emitted by this worker to slots on this simulator.
-        worker.signals.failed.connect(self._handle_worker_exception)
-        worker.signals.finished.connect(self._handle_worker_completion)
-
-        # Run this worker and thus this simulation phase.
-        guipoolthread.start_worker(worker)
+        # Start the next worker in the current queue of workers to be run
+        # if any or reduce to a noop otherwise.
+        self._start_worker_next_or_noop()
