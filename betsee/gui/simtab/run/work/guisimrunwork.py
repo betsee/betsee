@@ -14,13 +14,13 @@ from betse.science.parameters import Parameters
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
-from betse.util.type.decorator.deccls import abstractproperty
+from betse.util.type import enums
+# from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.descriptor.descs import (
     abstractclassproperty_readonly, classproperty_readonly)
 from betse.util.type.types import type_check, CallableTypes
-# from betsee.gui.simtab.run.guisimrunstate import SimmerState
-from betsee.gui.simtab.run.work.guisimrunworkenum import (
-    SimmerPhaseSubkind)
+from betsee.gui.simtab.run.guisimrunstate import SimmerState
+from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
 # from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
@@ -150,6 +150,21 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
     Abstract base class of all low-level **simulator subcommand worker** (i.e.,
     simulator worker running an arbitrary simulation subcommand) subclasses.
     '''
+
+    # ..................{ PROPERTIES                        }..................
+    # Read-only concrete class methods.
+
+    @classproperty_readonly
+    def simmer_state(cls) -> SimmerState:
+        '''
+        Type of simulation phase run by this simulator worker.
+        Type of work performed within the type of simulation phase run by this
+        simulator worker as an equivalent member of the :class:`SimmerState`
+        rather than :class:`SimmerPhaseSubkind` enumeration.
+        '''
+
+        return enums.get_member_from_value(
+            enum_type=SimmerState, enum_member_value=cls.phase_subkind.value)
 
     # ..................{ PROPERTIES ~ abstract             }..................
     # Read-only abstract class methods required to be overridden by subclasses.

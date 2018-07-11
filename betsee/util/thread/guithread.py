@@ -178,8 +178,8 @@ def get_current_thread_id() -> int:
     except AttributeError:
         # Logging a non-fatal warning.
         logs.log_warning(
-            'QThread.currentThreadId() method not found; '
-            'falling back to this thread\'s Python-specific ID.')
+            'QThread.currentThreadId() undefined; '
+            'falling back to thread wrapper ID.')
 
         # Returning the Python-specific ID of this thread's object wrapper.
         return id(get_current_thread())

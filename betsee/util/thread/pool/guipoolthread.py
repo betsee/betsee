@@ -19,7 +19,7 @@ from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
 
 # ....................{ EXCEPTIONS                        }....................
 @type_check
-def die_if_working(thread_pool: QThreadPoolOrNoneTypes = None) -> bool:
+def die_if_working(thread_pool: QThreadPoolOrNoneTypes = None) -> None:
     '''
     Raise an exception if one or more workers are currently working in one or
     more non-idle threads of the passed thread pool.

@@ -60,7 +60,7 @@ DONE : enum
 '''
 
 # ....................{ GLOBALS ~ set                      }....................
-SIMMER_STATES_RUNNING = {
+SIMMER_STATES_WORKING = {
     SimmerState.MODELLING,
     SimmerState.EXPORTING,
 }
