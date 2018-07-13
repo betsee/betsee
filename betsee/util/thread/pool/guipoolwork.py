@@ -275,6 +275,15 @@ class QBetseeThreadPoolWorker(QRunnable):
         # If passed a progress bar, connect progress signals emitted by this
         # worker to the corresponding slots of this progress bar.
         if progress_bar is not None:
+            #FIXME: Insufficient. The setRange() slot fails to set the current
+            #progress value to the minimum progress value passed to that slot.
+            #Ergo, we need to:
+            #
+            #* Define a new slot in our "QProgressBar" subclass properly
+            #  setting this range -- say, set_range_and_value_min(). *shrug*
+            #* Connect to this slot below rather than to the setRange() slot.
+            #* Type-check the passed "progress_bar" above to be of our
+            #  "QProgressBar" subclass rather than a generic "QProgressBar".
             self.signals.progress_ranged.connect(progress_bar.setRange)
             self.signals.progressed     .connect(progress_bar.setValue)
 

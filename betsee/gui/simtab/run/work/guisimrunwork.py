@@ -19,7 +19,8 @@ from betse.util.type import enums
 from betse.util.type.descriptor.descs import (
     abstractclassproperty_readonly, classproperty_readonly)
 from betse.util.type.types import type_check, CallableTypes
-from betsee.gui.simtab.run.guisimrunstate import SimmerState
+from betsee.gui.simtab.run.guisimrunstate import (
+    SimmerState, SIM_PHASE_KIND_TO_NAME)
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
 # from betsee.gui.window.guimainwindow import QBetseeMainWindow
@@ -154,10 +155,15 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
     # ..................{ PROPERTIES                        }..................
     # Read-only concrete class methods.
 
+    #FIXME: Cache the following class method(s), which remain constant
+    #throughout the lifecycle of this application. To do so, we'll need to
+    #implement a new
+    #"betse.util.type.decorator.decmemo.classproperty_readonly_cached"
+    #decorator -- which currently exceeds our budget for both time and sanity..
+
     @classproperty_readonly
     def simmer_state(cls) -> SimmerState:
         '''
-        Type of simulation phase run by this simulator worker.
         Type of work performed within the type of simulation phase run by this
         simulator worker as an equivalent member of the :class:`SimmerState`
         rather than :class:`SimmerPhaseSubkind` enumeration.

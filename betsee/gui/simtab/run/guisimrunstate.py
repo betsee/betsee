@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,14 +8,14 @@ Low-level **simulator state** (i.e., abstract node in the finite state automata
 corresponding to this simulator) functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
 from betse.science.export.expenum import SimExportType
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.type.enums import make_enum
 # from betse.util.type.types import type_check  #, StrOrNoneTypes
 
-# ....................{ ENUMERATIONS                       }....................
+# ....................{ ENUMERATIONS                      }....................
 SimmerState = make_enum(
     class_name='SimmerState',
     member_names=(
@@ -59,18 +59,32 @@ DONE : enum
     completion.
 '''
 
-# ....................{ GLOBALS ~ set                      }....................
+# ....................{ GLOBALS ~ dict                    }....................
+SIM_PHASE_KIND_TO_NAME = {
+    SimPhaseKind.SEED: QCoreApplication.translate(
+        'guisimrunstate', 'seed'),
+    SimPhaseKind.INIT: QCoreApplication.translate(
+        'guisimrunstate', 'initialization'),
+    SimPhaseKind.SIM: QCoreApplication.translate(
+        'guisimrunstate', 'simulation'),
+}
+'''
+Dictionary mapping from each type of simulation phase to the human-readable
+translated name of that phase.
+'''
+
+# ....................{ GLOBALS ~ set                     }....................
 SIMMER_STATES_WORKING = {
     SimmerState.MODELLING,
     SimmerState.EXPORTING,
 }
 '''
 Set of all **running simulator states** (i.e., states implying one or more
-queued subcommands to be currently running and hence neither paused, halted, nor
-done).
+queued subcommands to be currently running and hence neither paused, halted,
+nor done).
 '''
 
-# ....................{ GLOBALS ~ set : (fluid|fixed)      }....................
+# ....................{ GLOBALS ~ set : (fluid|fixed)     }....................
 SIMMER_STATES_FLUID = {
     SimmerState.UNQUEUED,
     SimmerState.QUEUED,
@@ -85,9 +99,9 @@ Specifically, the states:
 
 * Contained in this set are all low priority and hence may be flexibly replaced
   at simulator runtime with any other state.
-* Excluded by this set are all high priority and hence *must* be preserved as is
-  until completed -- possibly by manual user intervention (e.g., toggling the
-  start and pause buttons).
+* Excluded by this set are all high priority and hence *must* be preserved as
+  is until completed -- possibly by manual user intervention (e.g., toggling
+  the start and pause buttons).
 
 Caveats
 ----------
@@ -121,7 +135,7 @@ See Also
     Negation of this set.
 '''
 
-# ....................{ GLOBALS ~ dict : status            }....................
+# ....................{ GLOBALS ~ dict : status           }....................
 SIMMER_STATE_TO_STATUS_TERSE = {
     SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Unqueued'),
@@ -179,7 +193,7 @@ Dictionary mapping from each type of simulator state to a human-readable,
 translated, unformatted string templating a verbose (i.e., single sentence)
 synopsis of the action being performed in that state.
 
-Most such strings contain *no* format specifiers and are thus displayable as is.
+Most such strings contain no format specifiers and are thus displayable as is.
 Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
 and are thus displayable *only* after interpolating the corresponding values.
 
@@ -187,22 +201,23 @@ Format specifiers embedded in these strings include:
 
 * ``{phase_type}``, a word signifying the type of currently running simulator
   phase if any (e.g., "seed," "initialization").
-* ``{status_prior}``, text previously formatted from a string of this dictionary
-  synopsizing the prior state of this simulator. Since this text is interpolated
-  into the middle of arbitrary sentences, the first character of this text
-  *must* be lowercase.
+* ``{status_prior}``, text previously formatted from a string of this
+  dictionary synopsizing the prior state of this simulator. Since this text is
+  interpolated into the middle of arbitrary sentences, the first character of
+  this text *must* be lowercase.
 '''
 
-# ....................{ GLOBALS ~ dict : status : details  }....................
+# ....................{ GLOBALS ~ dict : status : details }....................
 MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS = {
-    # Note that low-level details for the "SimPhaseKind.SEED" phase are specific
-    # to the current action being performed and hence defined in the lower-level
-    # BETSE codebase rather than here.
-
+    # Note that low-level details for the "SimPhaseKind.SEED" phase are
+    # specific to the current action being performed and hence defined in the
+    # lower-level BETSE codebase rather than here.
     SimPhaseKind.INIT: QCoreApplication.translate(
-        'guisimrunstate', 'Initializing {time_curr} <i>of</i> {time_total}...'),
+        'guisimrunstate',
+        'Initializing {time_curr} <i>of</i> {time_total}...'),
     SimPhaseKind.SIM: QCoreApplication.translate(
-        'guisimrunstate', 'Simulating {time_curr} <i>of</i> {time_total}...'),
+        'guisimrunstate',
+        'Simulating {time_curr} <i>of</i> {time_total}...'),
 }
 '''
 Dictionary mapping from the initialization and simulation phases to a

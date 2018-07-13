@@ -86,6 +86,7 @@ from betsee.gui.simtab.run.guisimrunphase import (
 )
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
+    SIM_PHASE_KIND_TO_NAME,
     SIMMER_STATE_TO_STATUS_VERBOSE,
     SIMMER_STATES_FIXED,
     SIMMER_STATES_FLUID,
@@ -530,12 +531,11 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # self._die_if_working()
 
         #FIXME: Implement us up, please.
-        # If some simulator phase was previously running before being
-        # paused, resume this phase.
+        # If some simulator worker was previously working before being paused,
+        # resume this worker.
         if self._is_working:
             pass
-        # Else, no simulator phase was previously running. In this case,
-        # start the first queued phase.
+        # Else, no simulator worker was previously working. In this case...
         else:
             # Initialize the queue of simulator phases to be run.
             self._enqueue_worker_types()
@@ -670,14 +670,14 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Unformatted template synopsizing the current state of this simulator.
         status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[self.state]
 
-        #FIXME: Actually set this text to the proper word (e.g., "seed",
-        #"initialization"). We'll probably need to get our queue up and running.
-
-        # Text signifying the type of currently running simulator phase if any
-        # *OR* an arbitrary placeholder otherwise. In the latter case, this
-        # text is guaranteed to *NOT* be interpolated into this template and is
-        # thus safely ignorable.
-        phase_type = 'the nameless that shall not be named'
+        # Text synopsizing the type of simulation phase run by the current
+        # simulator worker if any *OR* an arbitrary placeholder otherwise. In
+        # the latter case, this text is guaranteed to *NOT* be interpolated by
+        # this template and is thus safely ignorable.
+        phase_type_name = (
+            SIM_PHASE_KIND_TO_NAME[self._worker.phase_kind]
+            if self._is_working else
+            'the nameless that shall not be named')
 
         # Text synopsizing the prior state of this simulator. To permit this
         # text to be interpolated into the middle of arbitrary sentences, the
@@ -688,7 +688,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # interpolated into *ALL* possible instances of this text. By design,
         # format specifiers *NOT* interpolated into this text will be ignored.
         status_text = status_text_template.format(
-            phase_type=phase_type,
+            phase_type=phase_type_name,
             status_prior=status_prior_text,
         )
 

@@ -100,11 +100,11 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     :meth:`QBetseeThreadPoolWorker._work` method, passed an integer signifying
     the current progress of work completed by the parent worker.
 
-    This integer is assumed to be in the range ``[progress_min,
-    progress_max]``, where ``progress_min`` and ``progress_max`` are the pair
-    of integers previously emitted from the :attr:`progress_ranged` signal
-    (assuming the :meth:`QBetseeThreadPoolWorker._work` method previously did
-    so).
+    This integer is assumed to be in the range
+    ``[progress_min, progress_max]``, where ``progress_min`` and
+    ``progress_max`` are the pair of integers previously emitted from the
+    :attr:`progress_ranged` signal (assuming the
+    :meth:`QBetseeThreadPoolWorker._work` method previously did so).
 
     Caveats
     ----------
