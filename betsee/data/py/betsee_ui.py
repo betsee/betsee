@@ -2008,7 +2008,7 @@ class Ui_main_window(object):
         self.sim_run_player.setObjectName("sim_run_player")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.sim_run_player)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.sim_run_player_progress = QtWidgets.QProgressBar(self.sim_run_player)
+        self.sim_run_player_progress = QBetseeProgressBar(self.sim_run_player)
         self.sim_run_player_progress.setAlignment(QtCore.Qt.AlignCenter)
         self.sim_run_player_progress.setObjectName("sim_run_player_progress")
         self.verticalLayout.addWidget(self.sim_run_player_progress)
@@ -2110,8 +2110,8 @@ class Ui_main_window(object):
         self.sim_run_queue_sim_model_lock = QtWidgets.QToolButton(self.sim_run_queue_sim_model_cell)
         self.sim_run_queue_sim_model_lock.setText("")
         icon18 = QtGui.QIcon()
-        icon18.addFile(":/icon/open_iconic/lock-unlocked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon18.addFile(":/icon/open_iconic/lock-locked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon18.addFile(":/icon/open_iconic/lock-unlocked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.sim_run_queue_sim_model_lock.setIcon(icon18)
         self.sim_run_queue_sim_model_lock.setCheckable(True)
         self.sim_run_queue_sim_model_lock.setAutoRaise(True)
@@ -2506,28 +2506,21 @@ class Ui_main_window(object):
         icon28.addFile(":/icon/open_iconic/minus.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action_sim_conf_tree_item_remove.setIcon(icon28)
         self.action_sim_conf_tree_item_remove.setObjectName("action_sim_conf_tree_item_remove")
-        self.action_sim_run_start_or_resume = QtWidgets.QAction(main_window)
-        icon29 = QtGui.QIcon()
-        icon29.addFile(":/icon/open_iconic/media-play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon29.addFile(":/icon/open_iconic/media-play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.action_sim_run_start_or_resume.setIcon(icon29)
-        self.action_sim_run_start_or_resume.setObjectName("action_sim_run_start_or_resume")
         self.action_sim_run_stop = QtWidgets.QAction(main_window)
-        icon30 = QtGui.QIcon()
-        icon30.addFile(":/icon/open_iconic/media-stop.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.action_sim_run_stop.setIcon(icon30)
+        icon29 = QtGui.QIcon()
+        icon29.addFile(":/icon/open_iconic/media-stop.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_sim_run_stop.setIcon(icon29)
         self.action_sim_run_stop.setObjectName("action_sim_run_stop")
-        self.action_sim_run_pause = QtWidgets.QAction(main_window)
-        self.action_sim_run_pause.setCheckable(True)
-        icon31 = QtGui.QIcon()
-        icon31.addFile(":/icon/open_iconic/media-pause.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon31.addFile(":/icon/open_iconic/media-pause.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.action_sim_run_pause.setIcon(icon31)
-        self.action_sim_run_pause.setObjectName("action_sim_run_pause")
+        self.action_sim_run_work = QtWidgets.QAction(main_window)
+        self.action_sim_run_work.setCheckable(True)
+        icon30 = QtGui.QIcon()
+        icon30.addFile(":/icon/open_iconic/media-pause.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon30.addFile(":/icon/open_iconic/media-play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.action_sim_run_work.setIcon(icon30)
+        self.action_sim_run_work.setObjectName("action_sim_run_work")
         self.sim_conf_tree_toolbar.addAction(self.action_sim_conf_tree_item_append)
         self.sim_conf_tree_toolbar.addAction(self.action_sim_conf_tree_item_remove)
-        self.sim_run_player_toolbar .addAction(self.action_sim_run_start_or_resume)
-        self.sim_run_player_toolbar .addAction(self.action_sim_run_pause)
+        self.sim_run_player_toolbar .addAction(self.action_sim_run_work)
         self.sim_run_player_toolbar .addAction(self.action_sim_run_stop)
         self.menu_file.addAction(self.action_make_sim)
         self.menu_file.addAction(self.action_open_sim)
@@ -3000,22 +2993,21 @@ class Ui_main_window(object):
         self.action_sim_conf_tree_item_append.setToolTip(QtWidgets.QApplication.translate("main_window", "Append a new item to the current list.", None, -1))
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
         self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
-        self.action_sim_run_start_or_resume.setText(QtWidgets.QApplication.translate("main_window", "Run", None, -1))
-        self.action_sim_run_start_or_resume.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Run the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li></ul><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Resumes (i.e., unpauses) this phase if currently paused.</li></ul></body></html>", None, -1))
         self.action_sim_run_stop.setText(QtWidgets.QApplication.translate("main_window", "Stop", None, -1))
         self.action_sim_run_stop.setToolTip(QtWidgets.QApplication.translate("main_window", "Prematurely halt the currently running simulation phase. Once stopped, rerunning this phase necessarily restarts this phase from the beginning (e.g., first sampled time step).", None, -1))
-        self.action_sim_run_pause.setText(QtWidgets.QApplication.translate("main_window", "Pause", None, -1))
-        self.action_sim_run_pause.setToolTip(QtWidgets.QApplication.translate("main_window", "Temporarily halt the currently queued simulation phase. Once paused, rerunning this phase safely resumes this phase from its current position (e.g., sampled time step).", None, -1))
+        self.action_sim_run_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
+        self.action_sim_run_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

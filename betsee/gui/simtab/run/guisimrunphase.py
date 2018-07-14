@@ -293,7 +293,6 @@ class QBetseeSimmerPhaseSeed(QBetseeSimmerPhaseABC):
     exporting by this simulator).
     '''
 
-    # ..................{ PROPERTIES                        }..................
     @property
     def kind(self) -> SimPhaseKind:
         return SimPhaseKind.SEED
@@ -306,7 +305,6 @@ class QBetseeSimmerPhaseInit(QBetseeSimmerPhaseABC):
     modelling and/or exporting by this simulator).
     '''
 
-    # ..................{ PROPERTIES                        }..................
     @property
     def kind(self) -> SimPhaseKind:
         return SimPhaseKind.INIT
@@ -319,7 +317,6 @@ class QBetseeSimmerPhaseSim(QBetseeSimmerPhaseABC):
     and/or exporting by this simulator).
     '''
 
-    # ..................{ PROPERTIES                        }..................
     @property
     def kind(self) -> SimPhaseKind:
         return SimPhaseKind.SIM

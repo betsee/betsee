@@ -11,6 +11,7 @@ Core :mod:`PySide2`-specific **type** (i.e., class) functionality.
 from PySide2.QtCore import QAbstractEventDispatcher, QThread, QThreadPool
 from PySide2.QtWidgets import QProgressBar, QWidget
 from betse.util.type.types import NoneType
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
 
 # ....................{ TYPES                              }....................
 QWidgetType = QWidget
@@ -47,7 +48,7 @@ singleton ``None`` object.
 # ....................{ TUPLES ~ none : widget             }....................
 QProgressBarOrNoneTypes = (QProgressBar, NoneType)
 '''
-Tuple of both the :mod:`ProgressBar` widget type *and* the type of the
+Tuple of both the :mod:`QProgressBar` widget type *and* the type of the
 singleton ``None`` object.
 '''
 
@@ -55,5 +56,12 @@ singleton ``None`` object.
 QWidgetOrNoneTypes = (QWidgetType, NoneType)
 '''
 Tuple of both the root :mod:`PySide2`-based widget type *and* the type of the
+singleton ``None`` object.
+'''
+
+# ....................{ TUPLES ~ none : widget : betsee    }....................
+QBetseeProgressBarOrNoneTypes = (QBetseeProgressBar, NoneType)
+'''
+Tuple of both the :mod:`QBetseeProgressBar` widget type *and* the type of the
 singleton ``None`` object.
 '''

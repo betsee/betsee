@@ -159,7 +159,7 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
     #throughout the lifecycle of this application. To do so, we'll need to
     #implement a new
     #"betse.util.type.decorator.decmemo.classproperty_readonly_cached"
-    #decorator -- which currently exceeds our budget for both time and sanity..
+    #decorator -- which sadly exceeds our time and sanity budget at the moment.
 
     @classproperty_readonly
     def simmer_state(cls) -> SimmerState:

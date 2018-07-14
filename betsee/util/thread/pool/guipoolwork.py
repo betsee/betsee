@@ -35,7 +35,7 @@ from betsee.util.thread import guithread
 from betsee.util.thread.guithreadenum import ThreadWorkerState
 from betsee.util.thread.pool.guipoolworksig import (
     QBetseeThreadPoolWorkerSignals)
-from betsee.util.type.guitype import QProgressBarOrNoneTypes
+from betsee.util.type.guitype import QBetseeProgressBarOrNoneTypes
 
 # ....................{ GLOBALS                           }....................
 _worker_id_next = 0
@@ -256,7 +256,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
 
     @type_check
-    def init(self, progress_bar: QProgressBarOrNoneTypes = None) -> None:
+    def init(self, progress_bar: QBetseeProgressBarOrNoneTypes = None) -> None:
         '''
         Finalize this pooled worker's initialization with the passed widgets.
 
@@ -266,7 +266,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Parameters
         ----------
-        progress_bar : QProgressBarOrNoneTypes
+        progress_bar : QBetseeProgressBarOrNoneTypes
             Progress bar to connect to progress signals emitted by this worker.
             Defaults to ``None``, in which case the caller is expected to
             manually connect these signals to appropriate widget slots.
@@ -275,17 +275,12 @@ class QBetseeThreadPoolWorker(QRunnable):
         # If passed a progress bar, connect progress signals emitted by this
         # worker to the corresponding slots of this progress bar.
         if progress_bar is not None:
-            #FIXME: Insufficient. The setRange() slot fails to set the current
-            #progress value to the minimum progress value passed to that slot.
-            #Ergo, we need to:
-            #
-            #* Define a new slot in our "QProgressBar" subclass properly
-            #  setting this range -- say, set_range_and_value_min(). *shrug*
-            #* Connect to this slot below rather than to the setRange() slot.
-            #* Type-check the passed "progress_bar" above to be of our
-            #  "QProgressBar" subclass rather than a generic "QProgressBar".
-            self.signals.progress_ranged.connect(progress_bar.setRange)
-            self.signals.progressed     .connect(progress_bar.setValue)
+            # Connect the ranged signal to the custom set_range_and_value_min()
+            # slot rather than the stock setRange() slot, which fails to set
+            # this progress bar's value to the minimum value of this range.
+            self.signals.progress_ranged.connect(
+                progress_bar.set_range_and_value_minimum)
+            self.signals.progressed.connect(progress_bar.setValue)
 
     # ..................{ PROPERTIES                        }..................
     @property_cached
