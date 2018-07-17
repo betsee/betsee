@@ -4484,8 +4484,8 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                    <height>32</height>
                   </size>
                  </property>
-                 <addaction name="action_sim_run_work"/>
-                 <addaction name="action_sim_run_stop"/>
+                 <addaction name="action_sim_run_toggle_work"/>
+                 <addaction name="action_sim_run_stop_work"/>
                 </widget>
                </item>
               </layout>
@@ -5552,7 +5552,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>Remove the current item from the current list.</string>
    </property>
   </action>
-  <action name="action_sim_run_stop">
+  <action name="action_sim_run_stop_work">
    <property name="icon">
     <iconset resource="../qrc/betsee.qrc">
      <normaloff>:/icon/open_iconic/media-stop.svg</normaloff>:/icon/open_iconic/media-stop.svg</iconset>
@@ -5564,7 +5564,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>Prematurely halt the currently running simulation phase. Once stopped, rerunning this phase necessarily restarts this phase from the beginning (e.g., first sampled time step).</string>
    </property>
   </action>
-  <action name="action_sim_run_work">
+  <action name="action_sim_run_toggle_work">
    <property name="checkable">
     <bool>true</bool>
    </property>

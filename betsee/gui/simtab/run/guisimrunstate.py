@@ -74,14 +74,14 @@ translated name of that phase.
 '''
 
 # ....................{ GLOBALS ~ set                     }....................
-SIMMER_STATES_WORKING = {
+SIMMER_STATES_RUNNING = {
     SimmerState.MODELLING,
     SimmerState.EXPORTING,
 }
 '''
 Set of all **running simulator states** (i.e., states implying one or more
-queued subcommands to be currently running and hence neither paused, halted,
-nor done).
+queued subcommands to be currently running and hence neither paused, stopped,
+nor finished).
 '''
 
 # ....................{ GLOBALS ~ set : (fluid|fixed)     }....................

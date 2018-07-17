@@ -354,6 +354,11 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Caveats
         ----------
+        This method is *not* intended to be called directly. Only the parent
+        thread pool of this worker is intended to call this method. External
+        callers are advised to call the :func:`guipoolthread.start_worker`
+        function instead.
+
         Subclasses should override the :meth:`_work` method rather than this
         method to perform subclass-specific business logic. This method is
         neither intended nor designed to be redefined by subclasses.
@@ -460,7 +465,7 @@ class QBetseeThreadPoolWorker(QRunnable):
     def stop(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe, push-based action of a genuine slot) gracefully and
+        thread-safe push-based action of a genuine slot) gracefully and
         permanently halting all work performed by this worker.
 
         By :class:`QRunnable` design, this worker is *not* safely restartable
@@ -503,7 +508,7 @@ class QBetseeThreadPoolWorker(QRunnable):
     def pause(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe, push-based action of a genuine slot) pausing all work
+        thread-safe push-based action of a genuine slot) pausing all work
         performed by this worker.
 
         This slot temporarily halts this work in a thread-safe manner safely
@@ -549,8 +554,7 @@ class QBetseeThreadPoolWorker(QRunnable):
     def resume(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe, push-based action of a genuine slot) unpausing this
-        worker.
+        thread-safe push-based action of a genuine slot) unpausing this worker.
 
         This method resumes work in a thread-safe manner safely re-pausable at
         any time by re-calling the :meth:`pause` method.
