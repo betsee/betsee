@@ -19,8 +19,7 @@ from betse.util.type import enums
 from betse.util.type.descriptor.descs import (
     abstractclassproperty_readonly, classproperty_readonly)
 from betse.util.type.types import type_check, CallableTypes
-from betsee.gui.simtab.run.guisimrunstate import (
-    SimmerState, SIM_PHASE_KIND_TO_NAME)
+from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
 # from betsee.gui.window.guimainwindow import QBetseeMainWindow

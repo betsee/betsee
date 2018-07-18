@@ -65,9 +65,57 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     Lifecycle
     ----------
-    By default, workers are **non-recyclable** (i.e., implicitly garbage
-    collected by their parent :class:`QThreadPool` container immediately on
-    returning from the :meth:`run` method).
+    The caller remains responsible for the lifecycle of this worker, an
+    intentional design decision with several notable implications:
+
+    * The caller *must* preserve a reference to this worker for the duration of
+      the work performed by this worker (i.e., the :meth:`run` method), ideally
+      as an instance variable of the class calling the
+      :func:`guipoolthread.start_worker` function directing this work.
+      Conversely, a local variable fails to satisfy this requirement. Lastly,
+      note that preserving a reference to this reference is effectively
+      mandatory for other unrelated reasons: notably, pausing, resuming, and
+      stopping work by calling those methods on the reference to this worker.
+    * If this is a **one-shot worker** (i.e., run only once by a single thread)
+      rather than **recyclable worker** (i.e., run multiple times by multiple
+      threads), the caller should connect the :attr:`signals.finished` signal
+      of this worker to a slot nullifying the aforementioned reference to this
+      worker. Failure to do so will result in a minor memory leak.
+
+    By Qt default, workers are implicitly deleted by their parent
+    :class:`QThreadPool` container immediately on returning from the
+    :meth:`run` method. Although a sensible default for C++-based workers for
+    whom lifecycle management is a non-trivial concern, Python-based workers
+    suffer no such constraints and introduces numerous issues; in particular,
+    allowing Qt to implicitly delete workers on worker completion:
+
+    * Prevents callers from optionally recycling otherwise recyclable workers.
+    * Introduces race conditions between the continued usage of these workers
+      from Python callables from differing threads (e.g., slots, event
+      handlers) and the deletion of these workers by Qt itself from the worker
+      thread. As :class:`QRunnable` instances, workers provide *no* equivalent
+      to the :attr:`QObject.destroyed` signal for deterministically responding
+      to worker deletion. The closest equivalents are:
+
+      * The custom :attr:`signals.finished` signal, which typically (but *not*
+        necessarily) coincides with worker deletion.
+      * The Python-specific ``__del__`` special method, which typically (but
+        *not* necessarily) coincides with worker deletion. Additionally, this
+        method imposes unreasonable implementation constraints (notably, the
+        inability to propagate or handle exceptions raised by this method).
+
+      In either case, there would exist a slice of time in which Qt has
+      implicitly deleted a worker but Python has yet to be notified of that
+      implicit deletion and hence continue to operate under the inappropriate
+      assumption of that worker's continued existence. Race conditions ensue.
+      Technically, these conditions could be obviated by:
+
+      * Explicitly creating weak rather than strong references to workers.
+      * Wrapping each access to such a weak reference in a
+        ``try: ... except ReferenceError: ...`` block handling this race.
+
+      In practice, however, the maintenance burden of doing so substantially
+      exceeds the negligible benefit of permitting Qt to delete workers.
 
     Thread Affinity
     ----------
@@ -243,6 +291,11 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Initialize our superclass.
         super().__init__()
+
+        # Prevent Qt from implicitly deleting this worker on completion, as is
+        # the C++-centric default. See the "Lifecycle" section of the above
+        # docstring for further commentary.
+        self.setAutoDelete(False)
 
         # 0-based integer uniquely identifying this worker.
         self._worker_id = _get_worker_id_next()
