@@ -15,10 +15,13 @@ from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
 from betse.util.type import enums
-# from betse.util.type.decorator.deccls import abstractproperty
-from betse.util.type.descriptor.descs import (
-    abstractclassproperty_readonly, classproperty_readonly)
+from betse.util.type.decorator.deccls import abstractmethod, abstractproperty
+from betse.util.type.decorator.decmemo import property_cached
+# from betse.util.type.descriptor.descs import (
+#     abstractclassproperty_readonly, classproperty_readonly)
+from betse.util.type.obj import objects
 from betse.util.type.types import type_check, CallableTypes
+from betsee.guiexception import BetseePySideThreadWorkerException
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
@@ -33,29 +36,65 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
 
     Attributes
     ----------
-    _conf_filename : str
-        Absolute path of the YAML-formatted simulation configuration file
-        defining the simulation to be run by this worker.
+    _conf_filename : StrOrNoneTypes
+        Absolute filename of the YAML-formatted simulation configuration file
+        defining the simulation to be run by this worker if the :meth:`init`
+        method of this worker has been called *or* ``None`` otherwise.
     '''
 
     # ..................{ INITIALIZERS                      }..................
-    @type_check
-    def __init__(self, conf_filename: str) -> None:
+    def __init__(self) -> None:
         '''
         Initialize this simulator worker.
-
-        Attributes
-        ----------
-        conf_filename : str
-            Absolute path of the YAML-formatted simulation configuration file
-            defining the simulation to be run by this worker.
         '''
 
         # Initialize our superclass with all passed parameters.
         super().__init__()
 
+        # Nullify all instance variables for safety.
+        self._conf_filename = None
+
+
+    @type_check
+    def init(self, conf_filename: str, *args, **kwargs) -> None:
+        '''
+        Finalize the initialization of this simulator worker.
+
+        Parameters
+        ----------
+        conf_filename : str
+            Absolute filename of the YAML-formatted simulation configuration
+            file defining the simulation to be run by this worker.
+
+        All remaining parameters are passed as is to the superclass
+        :meth:`init` method.
+        '''
+
+        # Finalize our superclass initialization with all passed parameters.
+        super().init(*args, **kwargs)
+
         # Classify all passed parameters.
         self._conf_filename = conf_filename
+
+    # ..................{ EXCEPTIONS                        }..................
+    def _die_unless_initted(self) -> None:
+        '''
+        Raise an exception unless the :meth:`init` method has been called.
+
+        Raises
+        ----------
+        BetseePySideThreadWorkerException
+            If the :attr:`_conf_filename` instance variable is ``None``,
+            in which case the :meth:`init` method has yet to be called.
+        '''
+
+        # If the filename of this worker's simulation configuration file has
+        # yet to be set, the init() method has yet to be called. In this case,
+        # raise an exception.
+        if self._conf_filename is None:
+            raise BetseePySideThreadWorkerException(
+                '"{}" uninitialized (i.e., init() method not called).'.format(
+                    objects.get_class_name(self)))
 
     # ..................{ MAKERS                            }..................
     def _make_sim_runner(self) -> SimRunner:
@@ -77,6 +116,9 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         this superclass (e.g., ``self._sim_runner``), the thread affinity of
         this runner would erroneously be that of the main event thread.
         '''
+
+        # Raise an exception unless the :meth:`init` method has been called.
+        self._die_unless_initted()
 
         # Simulation configuration whose thread affinity is that of the caller.
         p = self._make_p()
@@ -145,23 +187,17 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         return p
 
 # ....................{ SUPERCLASSES ~ subcommand         }....................
-class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
+class QBetseeSimmerSubcmdWorkerABC(QBetseeSimmerWorkerABC):
     '''
     Abstract base class of all low-level **simulator subcommand worker** (i.e.,
     simulator worker running an arbitrary simulation subcommand) subclasses.
     '''
 
     # ..................{ PROPERTIES                        }..................
-    # Read-only concrete class methods.
+    # Read-only concrete properties.
 
-    #FIXME: Cache the following class method(s), which remain constant
-    #throughout the lifecycle of this application. To do so, we'll need to
-    #implement a new
-    #"betse.util.type.decorator.decmemo.classproperty_readonly_cached"
-    #decorator -- which sadly exceeds our time and sanity budget at the moment.
-
-    @classproperty_readonly
-    def simmer_state(cls) -> SimmerState:
+    @property_cached
+    def simmer_state(self) -> SimmerState:
         '''
         Type of work performed within the type of simulation phase run by this
         simulator worker as an equivalent member of the :class:`SimmerState`
@@ -169,13 +205,13 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
         '''
 
         return enums.get_member_from_value(
-            enum_type=SimmerState, enum_member_value=cls.phase_subkind.value)
+            enum_type=SimmerState, enum_member_value=self.phase_subkind.value)
 
     # ..................{ PROPERTIES ~ abstract             }..................
-    # Read-only abstract class methods required to be overridden by subclasses.
+    # Read-only abstract properties required to be overridden by subclasses.
 
-    @abstractclassproperty_readonly
-    def phase_kind(cls) -> SimPhaseKind:
+    @abstractproperty
+    def phase_kind(self) -> SimPhaseKind:
         '''
         Type of simulation phase run by this simulator worker.
         '''
@@ -183,8 +219,8 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
         pass
 
 
-    @abstractclassproperty_readonly
-    def phase_subkind(cls) -> SimmerPhaseSubkind:
+    @abstractproperty
+    def phase_subkind(self) -> SimmerPhaseSubkind:
         '''
         Type of work performed within the type of simulation phase run by this
         simulator worker.
@@ -192,16 +228,26 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
 
         pass
 
-    # ..................{ PROPERTIES ~ abstract : private   }..................
-    @abstractclassproperty_readonly
-    def _sim_runner_subcommand(cls) -> CallableTypes:
+    # ..................{ GETTERS ~ abstract                }..................
+    # Abstract getter methods required to be overridden by subclasses.
+
+    @abstractmethod
+    def _get_sim_runner_subcommand(self) -> CallableTypes:
         '''
         **Simulation subcommand** (i.e., public method of the
-        :class:`SimRunner` class) to be run by this worker.
+        :class:`SimRunner` class) run by this worker's :meth:`work` method.
 
         The :meth:`_work` method internally invokes this subcommand with the
         local :class:`SimRunner` instance created and returned by the
         :meth:`_make_sim_runner` method.
+
+        Design
+        ----------
+        This callable is intentionally implemented as an abstract getter rather
+        than abstract property. Although properties have largely obsoleted
+        getters, refactoring this getter into a property introduces awkward
+        implicit calling semantics which invite spurious linter errors. Ergo,
+        explicit is better than implicit in this edge case.
         '''
 
         pass
@@ -212,65 +258,65 @@ class QBetseeSimmerSubcommandWorkerABC(QBetseeSimmerWorkerABC):
         # Simulation phase runner whose thread affinity is that of the caller.
         sim_runner = self._make_sim_runner()
 
-        # Run the subclass-specific simulation subcommand.
-        self._sim_runner_subcommand(sim_runner)
+        # Simulation subcommand to be run by this worker.
+        sim_runner_subcommand = self._get_sim_runner_subcommand()
 
+        # Run this subcommand on this runner.
+        sim_runner_subcommand(sim_runner)
 
-class QBetseeSimmerSubcommandWorkerModelABC(QBetseeSimmerSubcommandWorkerABC):
+# ....................{ SUPERCLASSES ~ subcommand : phase }....................
+class QBetseeSimmerSeedWorkerABC(QBetseeSimmerSubcmdWorkerABC):
     '''
-    Abstract base class of all low-level **modelling simulator subcommand
-    worker** (i.e., simulator worker running a simulation subcommand modelling
-    rather than exporting a simulation phase) subclasses.
+    Abstract base class of all low-level **simulator seed subcommand worker**
+    (i.e., worker running the seed simulation subcommand) subclasses.
     '''
 
-    # ..................{ PROPERTIES ~ superclass           }..................
-    @classproperty_readonly
-    def phase_subkind(cls) -> SimmerPhaseSubkind:
+    # ..................{ SUPERCLASS                        }..................
+    @property
+    def phase_kind(self) -> SimPhaseKind:
+        return SimPhaseKind.SEED
+
+    def _get_sim_runner_subcommand(self) -> CallableTypes:
+        return SimRunner.seed
+
+# ....................{ MIXINS ~ subkind                  }....................
+class QBetseeSimmerModelWorkerMixin(object):
+    '''
+    Mixin of all low-level **modelling simulator subcommand worker** (i.e.,
+    worker modelling rather than exporting a simulation phase) subclasses.
+    '''
+
+    # ..................{ SUPERCLASS                        }..................
+    @property
+    def phase_subkind(self) -> SimmerPhaseSubkind:
         return SimmerPhaseSubkind.MODELLING
 
 
-class QBetseeSimmerSubcommandWorkerExportABC(QBetseeSimmerSubcommandWorkerABC):
+class QBetseeSimmerExportWorkerMixin(object):
     '''
-    Abstract base class of all low-level **exporting simulator subcommand
-    worker** (i.e., simulator worker running a simulation subcommand exporting
-    rather than modelling a simulation phase) subclasses.
+    Mixin of all low-level **exporting simulator subcommand worker** (i.e.,
+    worker exporting rather than modelling a simulation phase) subclasses.
     '''
 
-    # ..................{ PROPERTIES ~ superclass           }..................
-    @classproperty_readonly
-    def phase_subkind(cls) -> SimmerPhaseSubkind:
+    # ..................{ SUPERCLASS                        }..................
+    @property
+    def phase_subkind(self) -> SimmerPhaseSubkind:
         return SimmerPhaseSubkind.EXPORTING
 
-# ....................{ SUBCLASSES ~ subcommand : model   }....................
-class QBetseeSimmerSubcommandWorkerModelSeed(
-    QBetseeSimmerSubcommandWorkerModelABC):
+# ....................{ SUBCLASSES ~ model                }....................
+class QBetseeSimmerSeedModelWorker(
+    QBetseeSimmerModelWorkerMixin, QBetseeSimmerSeedWorkerABC):
     '''
     Low-level simulator worker simulating the seed phase.
     '''
 
-    # ..................{ PROPERTIES                        }..................
-    @classproperty_readonly
-    def phase_kind(cls) -> SimPhaseKind:
-        return SimPhaseKind.SEED
-
-    @classproperty_readonly
-    def _sim_runner_subcommand(cls) -> CallableTypes:
-        return SimRunner.seed
+    pass
 
 # ....................{ SUBCLASSES ~ subcommand : export  }....................
-#FIXME: Actually use this subclass elsewhere after pipelining the
-#"betse plot seed" subcommand.
-class QBetseeSimmerSubcommandWorkerExportSeed(
-    QBetseeSimmerSubcommandWorkerABC):
+class QBetseeSimmerSeedExportWorker(
+    QBetseeSimmerExportWorkerMixin, QBetseeSimmerSeedWorkerABC):
     '''
     Low-level simulator worker exporting the seed phase.
     '''
 
-    # ..................{ PROPERTIES                        }..................
-    @classproperty_readonly
-    def phase_kind(cls) -> SimPhaseKind:
-        return SimPhaseKind.SEED
-
-    @classproperty_readonly
-    def _sim_runner_subcommand(cls) -> CallableTypes:
-        return SimRunner.plot_seed
+    pass

@@ -8,29 +8,6 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 *and* controlling the execution of simulation phases) functionality.
 '''
 
-#FIXME: Wrest control over worker lifecycles from Qt. The current approach
-#invites impossible-to-debug race conditions on worker destruction. To do so,
-#refactor this submodule as follows:
-#
-#* Rename the low-level "_worker" reference to "_worker_ref".
-#* Define a new high-level "_worker" property that:
-#  * If "_worker_ref" is non-None, returns "_worker_ref".
-#  * Else, raises a human-readable exception.
-#  Note that, because of the GIL, the exception should *NEVER* be raised. Since
-#  we're controlling worker lifecycles from Python now *AND* since Python is
-#  inherently non-multi-threadable, we are now guaranteed of this worker
-#  remaining alive for the duration of each slot call in this submodule. We
-#  should probably explicitly note that this requires the GIL. Obviously, if we
-#  ever move to a GIL-less interpreter (e.g., Super-Hyper-PyPy), then all
-#  worker access would need to be explicitly locked behind a mutual exclusion
-#  primitive. In any case, simple is the way to go for the moment.
-#* Revise the "_worker_ref" docstring accordingly.
-#* Globally change most references to "_worker_ref" to "_worker" instead.
-#FIXME: After implementing the above, we'd might as well go the whole nine
-#yards and also refactor our queue from a container of worker classes to a
-#container of worker instances. Using classes appears to gain us nothing, while
-#introducing a great deal of perverse complexity. (Which is bad.)
-
 #FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
 #with unsaved changes), the GUI should prompt the user as to whether or not
 #they would like to save those changes *BEFORE* running the simulation. In
@@ -93,9 +70,9 @@ from betse.exceptions import BetseSimUnstableException
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
-from betse.util.type.cls import classes
+from betse.util.type.obj import objects
 from betse.util.type.text import strs
-from betse.util.type.types import type_check, WeakRefProxyTypes
+from betse.util.type.types import type_check
 from betsee.guiexception import (
     BetseeSimmerException, BetseeSimmerBetseException)
 # from betsee.guimetadata import SCRIPT_BASENAME
@@ -118,6 +95,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.work import guisimrunworkqueue
+from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerWorkerABC
 from betsee.util.thread import guithread
 from betsee.util.thread.pool import guipoolthread
 
@@ -138,6 +116,15 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
       * Textual status describing this step in human-readable language.
       * Numeric progress as a relative function of the total number of steps
         required by this subcommand.
+
+    Caveats
+    ----------
+    For simplicity, this simulator internally assumes the active Python
+    interpreter to prohibit Python-based multithreading via a Global
+    Interpreter Lock (GIL). Specifically, the :attr:`_worker` and
+    :attr:`_worker_phase` properties are assumed to be synchronized to the same
+    worker despite access to these properties *not* being explicitly locked
+    behind a Qt-based mutual exclusion primitive.
 
     Attributes (Private: Non-widgets)
     ----------
@@ -172,38 +159,25 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     Attributes (Private: Thread: Worker)
     ----------
-    _worker : {WeakRefProxyTypes(QBetseeSimmerWorkerABC), NoneType}
-        Weak reference to the current working simulator worker if any *or*
-        ``None`` otherwise (i.e., if no worker is currently working), allowing
-        this worker to be gracefully halted on application shutdown. Note that
-        this worker's thread pool owns this worker and therefore fully manages
-        this worker's lifecycle. Preserving a strong (i.e., standard) rather
-        than weak reference to this worker would induce a subtle race condition
-        between Qt's explicit deletion and Python's implicit garbage collection
-        of this worker on completion. Note this reference may raise a
-        :data:`ReferenceError` exception for the window of time immediately
-        *after* this worker's completion and subsequent deletion by its thread
-        pool but *before* the corresponding :meth:`_handle_worker_completion`
-        slot handles this event.
     _worker_phase : {QBetseeSimmerPhaseABC, NoneType}
         **Currently working simulator phase** (i.e., phase that is being
         modelled or exported by the currently working simulator worker) if any
         *or* ``None`` otherwise (i.e., if no worker is currently working).
-    _workers_cls : {QueueType, NoneType}
-        **Simulator worker subclass queue** (i.e., double-ended queue of all
-        simulator worker subclasses to be subsequently instantiated and run in
-        a multithreaded manner by this simulator, such that each worker runs a
-        simulation subcommand whose corresponding checkbox is checked) if this
-        simulator has started one or more such workers *or* ``None`` otherwise
-        (i.e., if no such workers have been started).
+    _workers_queued : {QueueType, NoneType}
+        **Simulator worker queue** (i.e., double-ended queue of all simulator
+        workers to be subsequently run in a multithreaded manner by this
+        simulator, such that each worker runs a simulation subcommand whose
+        corresponding checkbox is checked) if this simulator has started one or
+        more such workers *or* ``None`` otherwise (i.e., if no such workers
+        have been started).
 
     Attributes (Private: Widgets)
     ----------
     _action_toggle_work : QAction
         Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle_work`
         action.
-    _action_stop_work : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_work` action.
+    _action_stop_worker : QAction
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_worker` action.
     _player_progress : QProgressBar
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
     _player_toolbar : QFrame
@@ -226,11 +200,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Nullify all remaining instance variables for safety.
         self._action_toggle_work = None
-        self._action_stop_work = None
+        self._action_stop_worker = None
         self._player_toolbar = None
-        self._worker = None
         self._worker_phase = None
-        self._workers_cls = None
+        self._workers_queued = None
         self._status = None
 
         #FIXME: Unconvinced we still require this attribute. Consider removal.
@@ -315,7 +288,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Classify variables of this main window required by this simulator.
         self._action_toggle_work     = main_window.action_sim_run_toggle_work
-        self._action_stop_work     = main_window.action_sim_run_stop_work
+        self._action_stop_worker     = main_window.action_sim_run_stop_work
         self._player_progress = main_window.sim_run_player_progress
         self._player_toolbar  = main_window.sim_run_player_toolbar_frame
         self._status          = main_window.sim_run_player_status
@@ -360,7 +333,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Connect each such action to this object's corresponding slot.
         self._action_toggle_work.triggered.connect(self._toggle_work)
-        self._action_stop_work.triggered.connect(self._stop_work)
+        self._action_stop_worker.triggered.connect(self._stop_worker)
 
         # For each possible phase...
         for phase in self._PHASES:
@@ -403,7 +376,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Return true only if a simulator worker is currently working.
-        return self._worker is not None
+        return self._worker_phase is not None
 
     # ..................{ PROPERTIES ~ bool : state         }..................
     @property
@@ -414,11 +387,12 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         and hence is neither paused nor finished).
         '''
 
-        # If no worker was working, raise an exception.
-        self._die_unless_working()
-
-        # Return true only if this worker is currently running.
-        return self._worker_phase.state in SIMMER_STATES_RUNNING
+        # Return true only if...
+        return (
+            # Some worker is currently working.
+            self._is_working and
+            # This worker is currently running.
+            self._worker_phase.state in SIMMER_STATES_RUNNING)
 
 
     @property
@@ -429,11 +403,33 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         queued simulation phase and hence is neither running nor finished).
         '''
 
-        # If no worker was working, raise an exception.
+        # Return true only if...
+        return (
+            # Some worker is currently working.
+            self._is_working and
+            # This worker is currently paused.
+            self._worker_phase.state is SimmerState.PAUSED)
+
+    # ..................{ PROPERTIES ~ worker               }..................
+    @property
+    def _worker(self) -> QBetseeSimmerWorkerABC:
+        '''
+        **Currently working worker** (i.e., :class:`QRunnable` instance
+        currently modelling or exporting a previously queued simulation phase
+        in another thread) if any *or* raise an exception otherwise (i.e., if
+        no workers are currently working).
+
+        Raises
+        ----------
+        BetseeSimmerException
+            If no worker is currently working.
+        '''
+
+        # If no worker is working, raise an exception.
         self._die_unless_working()
 
-        # Return true only if this worker is currently paused.
-        return self._worker_phase.state is SimmerState.PAUSED
+        # Return the head worker of the worker queue.
+        return self._workers_queued[0]
 
     # ..................{ EXCEPTIONS                        }..................
     def _die_unless_workable(self) -> None:
@@ -527,7 +523,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         if self._is_working:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer', 'Simulation currently running.'))
+                'QBetseeSimmer', 'Simulation currently working.'))
 
 
     def _die_unless_working(self) -> None:
@@ -547,7 +543,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         if not self._is_working:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer', 'No simulation currently running.'))
+                'QBetseeSimmer', 'No simulation currently working.'))
 
     # ..................{ SLOTS ~ action : work             }..................
     # Slots connected to signals emitted by "QAction" objects specific to the
@@ -585,20 +581,32 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             # previously working before being paused by a prior call to this
             # slot. In this case, resume this worker.
             if self._is_working:
-                self._resume_work()
+                self._resume_worker()
             # Else, the simulator is *NOT* currently working. In this case,
             # enqueue all currently queued simulation phases as simulator
             # workers and start the first such worker.
             else:
-                self._start_work()
+                self._start_workers()
         # Else, the user requested the simulator be paused. Do so.
         else:
-            self._pause_work()
+            self._pause_worker()
 
 
-    #FIXME: Implement us up, please.
-    #FIXME: Docstring us up, please.
-    def _start_work(self) -> None:
+    def _start_workers(self) -> None:
+        '''
+        Enqueue one simulator worker for each simulation subcommand whose
+        corresponding checkbox in a simulator phase is currently checked *and*
+        iteratively start each such worker in a thread-safe manner.
+
+        Raises
+        ----------
+        BetseeSimmerException
+            If either:
+
+            * No simulator phase is currently queued (i.e., no such checkboxes
+              are currently checked).
+            * One or more workers are already working.
+        '''
 
         # Log this attempt.
         logs.log_debug('Starting queued simulator phase(s)...')
@@ -606,26 +614,25 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # If no simulator phase is currently queued, raise an exception.
         self._die_unless_queued()
 
+        # If one or more workers are already working, raise an exception.
+        guipoolthread.die_if_working()
+
         # Initialize the queue of simulator phases to be run.
-        self._enqueue_worker_types()
+        self._enqueue_workers()
 
-        # Iteratively run each such phase.
-        self._start_workers()
-
-        #FIXME: Does _start_workers() already set this state?
-        #FIXME: Set the state of both this simulator *AND* the currently
-        #running phase *AFTER* successfully running this phase above.
-        # self._worker_phase.state = SimmerState.MODELLING
-        # self._worker_phase.state = SimmerState.EXPORTING
+        # Initiate iteration by starting the first enqueued worker and
+        # connecting the stop signal emitted by that worker to a slot
+        # iteratively repeating this process.
+        self._loop_worker()
 
 
-    def _pause_work(self) -> None:
+    def _pause_worker(self) -> None:
         '''
         Pause the currently running simulator.
 
         This method temporarily pauses the current simulator worker in a
         thread-safe manner safely resumable at any time by calling the
-        :meth:`_resume_work` method.
+        :meth:`_resume_worker` method.
 
         Raises
         ----------
@@ -650,13 +657,13 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._worker_phase.state = SimmerState.PAUSED
 
 
-    def _resume_work(self) -> None:
+    def _resume_worker(self) -> None:
         '''
         Resume the currently paused simulator.
 
         This method resumes the current simulator worker in a thread-safe
         manner after having been previously paused by a call to the
-        :meth:`_pause_work` method.
+        :meth:`_pause_worker` method.
 
         Raises
         ----------
@@ -683,21 +690,29 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     # ..................{ SLOTS ~ action : stop             }..................
     @Slot()
-    def _stop_work(self) -> None:
+    def _stop_worker(self) -> None:
         '''
         Slot signalled on the user interactively (but *not* the codebase
         programmatically) clicking the :class:`QPushButton` widget associated
-        with the :attr:`_action_stop_work` action.
+        with the :attr:`_action_stop_worker` action.
         '''
 
-        # If no simulator phase is currently working, raise an exception.
-        self._die_unless_working()
+        # If the simulator is *not* currently running, raise an exception.
+        self._die_unless_running()
 
-        #FIXME: Actually halt the running subcommand here, please.
+        # Stop the currently running simulator worker.
+        self._worker.stop()
 
-        # Uninitialize the queue of simulator phases to be run *AFTER*
-        # successfully halting this phase.
+        # Uninitialize the queue of simulator workers to be run *AFTER*
+        # successfully halting this worker.
         self._dequeue_workers()
+
+        #FIXME: For safety, relegate this to a new slot of this object
+        #connected to the stopped() signal of this worker.
+
+        # Set this simulator and the currently running phase to the stopped
+        # state *AFTER* successfully stopping this worker.
+        self._worker_phase.state = SimmerState.STOPPED
 
     # ..................{ SLOTS ~ action : queue            }..................
     # Slots connected to signals emitted by "QAction" objects specific to the
@@ -780,7 +795,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._action_toggle_work.setEnabled(self._is_workable)
 
         # Enable simulator stopping only if the simulator is currently working.
-        self._action_stop_work.setEnabled(self._is_working)
+        self._action_stop_worker.setEnabled(self._is_working)
 
         # Update the verbose status of this simulator.
         self._update_status()
@@ -821,9 +836,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._status.setText(status_text)
 
     # ..................{ QUEUERS                           }..................
-    def _enqueue_worker_types(self) -> None:
+    def _enqueue_workers(self) -> None:
         '''
-        Define the :attr:`_workers_cls` of all simulator workers to be run.
+        Define the :attr:`_workers_queued` of all simulator workers to be run.
 
         This method enqueues (i.e., pushes onto this queue) all simulator
         phases for which the end user interactively checked at least one of the
@@ -840,7 +855,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
             * No simulator phase is currently queued.
             * Some simulator phase is currently running (i.e.,
-              :attr:`_workers_cls` is already defined to be non-``None``).
+              :attr:`_workers_queued` is already defined to be non-``None``).
         '''
 
         # If this controller is *NOT* currently queued, raise an exception.
@@ -850,39 +865,25 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._die_if_working()
 
         # Create this simulator worker queue.
-        self._workers_cls = guisimrunworkqueue.enqueue_worker_types(
+        self._workers_queued = guisimrunworkqueue.enqueue_workers(
             phases=self._PHASES)
 
 
     def _dequeue_workers(self) -> None:
         '''
-        Revert the :attr:`_workers_cls` to ``None``, effectively dequeueing
+        Revert the :attr:`_workers_queued` to ``None``, effectively dequeueing
         (i.e., popping) all previously queued simulator workers.
         '''
 
         # If no simulator worker is currently working, raise an exception.
         self._die_unless_working()
 
-        # Uninitialize this queue.
-        self._workers_cls = None
+        # Clear this queue, implicitly scheduling all previously queued workers
+        # for garbage collection.
+        self._workers_queued = None
 
-    # ..................{ WORKERS ~ start                   }..................
-    def _start_workers(self) -> None:
-        '''
-        Iteratively start each simulator worker enqueued by a prior call to the
-        :meth:`_enqueue_worker_types` method.
-        '''
-
-        # If one or more workers are already working, raise an exception.
-        guipoolthread.die_if_working()
-
-        # Initiate iteration by starting the first enqueued worker and
-        # connecting the stop signal emitted by that worker to a slot
-        # iteratively repeating this process.
-        self._loop_work()
-
-
-    def _loop_work(self) -> None:
+    # ..................{ WORKERS ~ loop                    }..................
+    def _loop_worker(self) -> None:
         '''
         Iteratively run the next enqueued simulator worker if any *or* cleanup
         after this iteration otherwise (i.e., if no workers remain to be run).
@@ -890,8 +891,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         This method perform the equivalent of the body of the abstract loop
         iteratively starting and running all enqueued simulator workers.
         Specifically, this method iteratively starts the next simulator worker
-        (i.e., head item of the :attr:`_workers_cls`) enqueued by a prior call
-        to the :meth:`_enqueue_worker_types` method if this queue is non-empty
+        (i.e., head item of the :attr:`_workers_queued`) enqueued by a prior call
+        to the :meth:`_enqueue_workers` method if this queue is non-empty
         *or* garbage-collects this queue otherwise (i.e., if already empty).
 
         Design
@@ -910,7 +911,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # If no workers remain to be run...
-        if not self._workers_cls:
+        if not self._workers_queued:
             # Log this completion.
             logs.log_debug(
                 'Stopping simulator work from main thread "%d"...',
@@ -920,32 +921,31 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             self._dequeue_workers()
         # Else, one or more workers remain to be run.
 
-        # Current simulator worker subclass to be instantiated. By the above
-        # conditional, this worker subclass is guaranteed to exist.
-        worker_type = self._workers_cls[0]
+        # Next worker to be run.
+        worker = self._workers_queued[0]
 
-        # Log this start.
+        # Log this work attempt.
         logs.log_debug(
             'Spawning simulator worker "%s" from main thread "%d"...',
-            classes.get_name(worker_type), guithread.get_current_thread_id())
-
-        # Current simulator worker to be run, simulating a phase of the
-        # currently loaded simulation defined by this configuration file.
-        self._worker = worker_type(
-            conf_filename=self._sim_conf.p.conf_filename)
-
-        # Finalize this worker's initialization.
-        self._worker.init(progress_bar=self._player_progress)
+            objects.get_class_name(worker), guithread.get_current_thread_id())
 
         # Simulator phase acted upon by this worker.
-        self._worker_phase = self._PHASE_KIND_TO_PHASE[worker_type.phase_kind]
+        self._worker_phase = self._PHASE_KIND_TO_PHASE[worker.phase_kind]
 
-        # Connect signals emitted by this worker to slots on this simulator.
-        self._worker.signals.failed.connect(self._handle_worker_exception)
-        self._worker.signals.finished.connect(self._handle_worker_completion)
+        # Finalize this worker's initialization.
+        worker.init(
+            conf_filename=self._sim_conf.p.conf_filename,
+            progress_bar=self._player_progress,
+        )
 
-        # Start this worker.
-        guipoolthread.start_worker(self._worker)
+        # Connect signals emitted by this worker to slots on this simulator
+        # *AFTER* classifying the "_worker_phase" variable, which these slots
+        # could possibly reference.
+        worker.signals.failed.connect(self._handle_worker_exception)
+        worker.signals.finished.connect(self._handle_worker_completion)
+
+        # Start this worker *AFTER* establishing all signal-slot connections.
+        guipoolthread.start_worker(worker)
 
         #FIXME: For safety, relegate this to a new slot of this object
         #connected to the started() signal of this worker. After all, this
@@ -954,7 +954,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Set the state of both this simulator *AND* the currently
         # running phase *AFTER* successfully starting this worker.
-        self._worker_phase.state = worker_type.simmer_state
+        self._worker_phase.state = worker.simmer_state
 
     # ..................{ WORKERS ~ slot                    }..................
     # Slots connected to signals emitted by "QRunnable" workers.
@@ -1007,6 +1007,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
                 exegesis=str(exception),
             ) from exception
 
+
     #FIXME: Revise the "Caveats" section of the docstring below, which (sadly,
     #given how decently it was written), no longer applies at all. Perhaps at
     #least some of this section can be shifted into the "Lifecycle" section of
@@ -1031,7 +1032,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         Specifically, this method:
 
         * Sets the state of the corresponding simulator phase to stopped.
-        * Pops this worker from the :attr:`_workers_cls`.
+        * Pops this worker from the :attr:`_workers_queued`.
         * If this queue is non-empty, starts the next enqueued worker.
 
         Caveats
@@ -1046,7 +1047,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         starting to emit signals.
 
         This is somewhat non-ideal. This method calls the
-        :meth:`_loop_work` method, which internally
+        :meth:`_loop_worker` method, which internally
         instantiates a new worker and connects pertinent worker signals and
         slots. To avoid conflict with the exact same signals and slots
         connected to this recently deleted worker, we would ideally maintain
@@ -1090,28 +1091,31 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # If no worker was working, raise an exception.
         self._die_unless_working()
 
-        # Schedule this worker's signals for immediately deletion and hence
+        # Schedule this worker's signals for immediate deletion and hence
         # disconnection from all slots they're currently connected to.
-        # Technically, doing so is unnecessary; the subsequent nullification of
-        # the "_worker" owning these signals should implicitly signal the same
-        # deletion; nonetheless, since doing so has no harmful side effects and
-        # can only assist code sanity, we do so regardless.
-        self._worker.signals.deleteLater()
+        #
+        # Technically, doing so is unnecessary. The subsequent nullification of
+        # the worker owning these signals already signals this deletion. As
+        # doing so has no harmful side effects, however, do so regardless.
+        self._worker.delete_later()
 
-        # Set this simulator and the previously working phase to halted
-        # *BEFORE* nullifying all references to this worker.
-        self._worker_phase.state = SimmerState.HALTED
+        # If this worker was *NOT* stopped by the user and hence finished
+        # successfully, set the state of both this simulator *AND* the
+        # previously running phase to finished *BEFORE* nullifying this phase.
+        # This conditional ensures that the user-driven stopped state takes
+        # precedence over the worker-driven finished state.
+        if self._worker_phase.state is not SimmerState.STOPPED:
+            self._worker_phase.state = SimmerState.FINISHED
 
         # Nullify all references to this worker for safety. Note that this
         # worker is a "QRunnable" rather than "QObject" and hence provides no
         # deleteLater() method. (Nullifying this worker is the best we can do.)
         self._worker_phase = None
-        self._worker = None
 
         # Dequeue this worker (i.e., remove this worker's subclass from
         # the queue of worker subclasses to be instantiated and run).
-        self._workers_cls.pop()
+        self._workers_queued.popleft()
 
         # Start the next worker in the current queue of workers to be run
         # if any or reduce to a noop otherwise.
-        self._loop_work()
+        self._loop_worker()

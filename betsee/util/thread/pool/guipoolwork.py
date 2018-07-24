@@ -19,7 +19,7 @@ from PySide2.QtCore import (
 )
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
-from betse.util.type.decorator.decmemo import property_cached
+# from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.types import (
     type_check,
     CallableTypes,
@@ -245,6 +245,13 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     Attributes (Public)
     ----------
+    signals : QBetseeThreadPoolWorkerSignals
+        Low-level collection of all public signals thread-safely emittable by
+        the :meth:`run` method from within an arbitrary pooled thread possibly
+        running *no* Qt event loop.
+
+    Attributes (Private)
+    ----------
     _worker_id : int
         0-based integer uniquely identifying this worker. This worker is
         guaranteed to be the *only* instance of this class assigned this
@@ -300,12 +307,17 @@ class QBetseeThreadPoolWorker(QRunnable):
         # 0-based integer uniquely identifying this worker.
         self._worker_id = _get_worker_id_next()
 
-        # Classify all mutual exclusion objects.
+        # Mutual exclusion objects safeguarding this worker.
         self._state_lock = QMutex()
         self._state_unpaused = QWaitCondition()
 
         # Default this worker's initial state to the idle state.
         self._state = ThreadWorkerState.IDLE
+
+        # Collection of all public signals emittable by this worker, classified
+        # *AFTER* all other instance variables above to enable subclass methods
+        # to safely reference these variables.
+        self.signals = self._make_signals()
 
 
     @type_check
@@ -335,23 +347,6 @@ class QBetseeThreadPoolWorker(QRunnable):
                 progress_bar.set_range_and_value_minimum)
             self.signals.progressed.connect(progress_bar.setValue)
 
-    # ..................{ PROPERTIES                        }..................
-    @property_cached
-    def signals(self) -> QBetseeThreadPoolWorkerSignals:
-        '''
-        Low-level collection of all public signals thread-safely emittable by
-        the :meth:`run` method from within an arbitrary pooled thread possibly
-        running *no* Qt event loop.
-
-        This instance variable is intentionally implemented as a cached
-        property, enabling subclasses to expose subclass-specific signals
-        (e.g., by trivially redefining this property to return a
-        subclass-specific :class:`QBetseeThreadPoolWorkerSignals` instance).
-        '''
-
-        return QBetseeThreadPoolWorkerSignals(
-            halt_work_if_requested=self._halt_work_if_requested)
-
     # ..................{ SLOTS                             }..................
     #FIXME: It would be great to additionally set the object name of (and hence
     #the name of the process associated with) the parent thread of this worker
@@ -371,18 +366,18 @@ class QBetseeThreadPoolWorker(QRunnable):
         States
         ----------
         If this worker is in the :attr:`ThreadWorkerState.IDLE` state, this
-        method changes to the :attr:`ThreadWorkerState.WORKING` state and calls
+        method changes to the :attr:`ThreadWorkerState.RUNNING` state and calls
         the subclass :meth:`_work` method.
 
         If this worker is in the :attr:`ThreadWorkerState.PAUSED` state, this
         method interprets this signal as a request to resume the work
         presumably previously performed by this worker by a prior signalling of
         this method.  To avoid reentrancy issues, this method changes to the
-        :attr:`ThreadWorkerState.WORKING` state and immediately returns.
+        :attr:`ThreadWorkerState.RUNNING` state and immediately returns.
         Assuming that a prior call to this method is still executing, that call
         will internally detect this change and resume working as expected.
 
-        If this worker is in the :attr:`ThreadWorkerState.WORKING` state, this
+        If this worker is in the :attr:`ThreadWorkerState.RUNNING` state, this
         method interprets this signal as an accidental attempt by an external
         caller to re-perform the work concurrently being performed by a prior
         call to this method. In that case, this method safely logs a non-fatal
@@ -442,11 +437,13 @@ class QBetseeThreadPoolWorker(QRunnable):
                 # Regardless, this constitutes an error. Raise an exception!
                 if self._state is not ThreadWorkerState.IDLE:
                     raise BetseePySideThreadWorkerException(
-                        'Non-reentrant thread "%d" worker "%d" run() method '
-                        'called reentrantly (i.e., multiple times).')
+                        'Non-reentrant thread "{}" worker "{}" run() method '
+                        'called reentrantly (i.e., multiple times).'.format(
+                            guithread.get_current_thread_id(),
+                            self._worker_id))
 
                 # Change to the working state.
-                self._state = ThreadWorkerState.WORKING
+                self._state = ThreadWorkerState.RUNNING
 
             # Notify external subscribers *BEFORE* beginning subclass work.
             self.signals.started.emit()
@@ -508,7 +505,7 @@ class QBetseeThreadPoolWorker(QRunnable):
             with QMutexLocker(self._state_lock):
                 # If this worker's state is working, set this state to the idle
                 # (i.e., non-working) state.
-                if self._state is ThreadWorkerState.WORKING:
+                if self._state is ThreadWorkerState.RUNNING:
                     self._state = ThreadWorkerState.IDLE
 
             # Emit this completion status to external subscribers.
@@ -557,6 +554,36 @@ class QBetseeThreadPoolWorker(QRunnable):
             # embedded in a "try-finally" block. Ergo, it isn't.
             self._unblock_work()
 
+
+    def delete_later(self) -> None:
+        '''
+        Schedule all :class:`QObject` instances owned by this worker for
+        immediate deletion.
+
+        Specifically, this method schedules all signals owned by this worker
+        for immediate deletion and hence disconnection from all slots they are
+        currently connected to. (Note that doing so is technically unnecessary
+        in most cases. In theory, the subsequent nullification of this worker
+        by the call should suffice to schedule this deletion. As doing so has
+        no harmful side effects, however, this method exists.)
+        '''
+
+        # Log this action.
+        logs.log_debug(
+            'Scheduling worker "%d" for deletion...', self._worker_id)
+
+        # If this worker's signals are still alive...
+        if self.signals is not None:
+            # Schedule these signals for deletion.
+            self.signals.deleteLater()
+
+            # Nullify these signals for safety.
+            self.signals = None
+
+        # Change this worker's state to deleted *AFTER* successfully scheduling
+        # all "QObject" instances owned by this worker.
+        self._state = ThreadWorkerState.DELETED
+
     # ..................{ SLOTS ~ pause                     }..................
     def pause(self) -> None:
         '''
@@ -569,7 +596,7 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         States
         ----------
-        If this worker is in the :attr:`ThreadWorkerState.WORKING` state,
+        If this worker is in the :attr:`ThreadWorkerState.RUNNING` state,
         this method pauses work by changing this state to
         :attr:`ThreadWorkerState.PAUSED`. The :meth:`_halt_work_if_requested`
         method in the thread running this worker then detects this state change
@@ -589,7 +616,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         # access to this state across multiple threads...
         with QMutexLocker(self._state_lock):
             # If this worker is *NOT* currently working...
-            if self._state is not ThreadWorkerState.WORKING:
+            if self._state is not ThreadWorkerState.RUNNING:
                 # Log this attempt.
                 logs.log_debug(
                     'Ignoring attempt to pause idle or already paused '
@@ -616,7 +643,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         ----------
         If this worker is in the :attr:`ThreadWorkerState.PAUSED` state,
         this method resumes work by changing this state to
-        :attr:`ThreadWorkerState.WORKING` and waking up the currently blocked
+        :attr:`ThreadWorkerState.RUNNING` and waking up the currently blocked
         synchronization primitive if any. The :meth:`_halt_work_if_requested`
         method in the thread running this worker then detects this state change
         and responds by unblocking from this primitive and returning to the
@@ -649,13 +676,32 @@ class QBetseeThreadPoolWorker(QRunnable):
                 # Else, this worker is currently paused.
 
                 # Change this worker's state to working, thus unpausing.
-                self._state = ThreadWorkerState.WORKING
+                self._state = ThreadWorkerState.RUNNING
             # Regardless of whether doing so raised an exception or not...
             finally:
                 # Unblock the parent thread of this worker if currently
                 # blocked.  Deadlocks are unlikely but feasible in edge cases
                 # unless this method is unconditionally called here.
                 self._unblock_work()
+
+    # ..................{ MAKERS ~ optional                 }..................
+    # Concrete methods designed to be safely redefinable by subclasses.
+
+    def _make_signals(self) -> QBetseeThreadPoolWorkerSignals:
+        '''
+        Low-level collection of all public signals thread-safely emittable by
+        the :meth:`run` method from within an arbitrary pooled thread possibly
+        running *no* Qt event loop.
+
+        Design
+        ----------
+        Subclasses may optionally expose subclass-specific signals by trivially
+        redefining this method to return a subclass-specific
+        :class:`QBetseeThreadPoolWorkerSignals` instance.
+        '''
+
+        return QBetseeThreadPoolWorkerSignals(
+            halt_work_if_requested=self._halt_work_if_requested)
 
     # ..................{ WORKERS ~ abstract                }..................
     # Abstract methods required to be redefined by subclasses.

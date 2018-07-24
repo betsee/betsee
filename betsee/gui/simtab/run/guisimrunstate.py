@@ -24,8 +24,8 @@ SimmerState = make_enum(
         'MODELLING',
         'EXPORTING',
         'PAUSED',
-        'HALTED',
-        'DONE',
+        'STOPPED',
+        'FINISHED',
     ))
 '''
 Enumeration of all supported types of **simulator state** (i.e., mutually
@@ -51,10 +51,10 @@ EXPORTING : enum
 PAUSED : enum
     Paused state, implying one or more queued subcommands to have been run but
     paused before completion.
-HALTED : enum
+STOPPED : enum
     Halted state, implying one or more queued subcommands to have been run but
     halted before completion.
-DONE : enum
+FINISHED : enum
     Completion state, implying all queued subcommands to have been run to
     completion.
 '''
@@ -88,8 +88,8 @@ nor finished).
 SIMMER_STATES_FLUID = {
     SimmerState.UNQUEUED,
     SimmerState.QUEUED,
-    SimmerState.HALTED,
-    SimmerState.DONE,
+    SimmerState.STOPPED,
+    SimmerState.FINISHED,
 }
 '''
 Set of all **fluid simulator states** (i.e., states the simulator may freely
@@ -147,9 +147,9 @@ SIMMER_STATE_TO_STATUS_TERSE = {
         'guisimrunstate', 'Exporting'),
     SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused'),
-    SimmerState.HALTED: QCoreApplication.translate(
+    SimmerState.STOPPED: QCoreApplication.translate(
         'guisimrunstate', 'Stopped'),
-    SimmerState.DONE: QCoreApplication.translate(
+    SimmerState.FINISHED: QCoreApplication.translate(
         'guisimrunstate', 'Finished'),
 }
 '''
@@ -183,9 +183,9 @@ SIMMER_STATE_TO_STATUS_VERBOSE = {
         #   '<i>of</i> {step_total}:'),
     SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused {status_prior}'),
-    SimmerState.HALTED: QCoreApplication.translate(
+    SimmerState.STOPPED: QCoreApplication.translate(
         'guisimrunstate', 'Stopped {status_prior}'),
-    SimmerState.DONE: QCoreApplication.translate(
+    SimmerState.FINISHED: QCoreApplication.translate(
         'guisimrunstate', 'Finished {status_prior}'),
 }
 '''
