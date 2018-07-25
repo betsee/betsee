@@ -76,16 +76,6 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         # Nullify all remaining instance variables for safety.
         # self._state = None
 
-    # ..................{ PROPERTIES ~ bool                 }..................
-    @abstractproperty
-    def is_queued(self) -> bool:
-        '''
-        ``True`` only if this stateful simulator controller is currently queued
-        for modelling and/or exporting one or more simulator phases.
-        '''
-
-        pass
-
     # ..................{ PROPERTIES ~ state                }..................
     @property
     def state(self) -> SimmerState:
@@ -109,7 +99,11 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         # Set the current state of this simulator controller to this state.
         self._state = state
 
-        # Signal all connected slots *AFTER* setting this state.
+        # Update the current state of both this simulator controller and
+        # widgets controlled by this controller given this state.
+        self._update_state()
+
+        # Signal all connected slots *AFTER* internally updating this state.
         self.set_state_signal.emit(self)
 
     # ..................{ SIGNALS                           }..................
@@ -141,41 +135,43 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
                 'QBetseeSimmerStatefulABC',
                 'Simulator controller not queued.'))
 
-    # ..................{ SLOTS                             }..................
-    @Slot()
-    def update_state(self) -> None:
-        '''
-        Slot signalled on either the user interactively *or* the codebase
-        programmatically interacting with any widget relevant to the current
-        state of this stateful simulator controller, including phase-specific
-        checkboxes queueing that simulator phase for modelling and/or
-        exporting.
-        '''
+    # ..................{ SUBCLASS ~ properties             }..................
+    # Abstract read-only properties required to be overridden by subclasses.
 
-        # Update the state of this controller to reflect these changes.
-        self._update_state()
-
-        # Update the state of controller widgets to reflect these changes
-        # *AFTER* updating the state of this controller, as the latter
-        # typically depends upon the former.
-        self._update_widgets()
-
-    # ..................{ SLOTS ~ updaters                  }..................
-    def _update_state(self) -> None:
+    @abstractproperty
+    def is_queued(self) -> bool:
         '''
-        Update the current public state of this stateful simulator controller
-        (i.e., the :meth:`state` property) to reflect its current private state
-        (e.g., child objects, widgets, and data structures).
+        ``True`` only if this stateful simulator controller is currently queued
+        for modelling and/or exporting one or more simulator phases.
         '''
 
         pass
 
+    # ..................{ SUBCLASS ~ methods                }..................
+    # Concrete methods intended (but *NOT* required) to be overridden by
+    # subclasses.
 
-    @abstractmethod
-    def _update_widgets(self) -> None:
+    def _update_state(self) -> None:
         '''
-        Update the contents of all widgets controlled by this stateful simulator
-        controller to reflect this state.
+        Update the internal state of this stateful simulator controller and the
+        contents of widgets controlled by this controller to reflect the
+        current external state of this controller.
+
+        The :meth:`state` setter property method internally calls this method
+        to perform subclass-specific business logic on either the user
+        interactively *or* the codebase programmatically interacting with any
+        widget relevant to the current state of this controller (e.g., a
+        checkbox queueing a simulation phase for exporting).
+
+        Design
+        ----------
+        The default implementation of this method reduces to a noop and is thus
+        intended (but *not* required) to be overridden by subclasses requiring
+        subclass-specific business logic to be performed when this controller's
+        :meth:`state` property is set. Overriding setter property methods in a
+        manner internally calling the superclass method is highly non-trivial;
+        hence, the :meth:`state` setter property method internally calls this
+        method instead.
         '''
 
         pass

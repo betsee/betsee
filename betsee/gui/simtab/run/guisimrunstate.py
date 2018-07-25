@@ -163,7 +163,7 @@ SIMMER_STATE_TO_STATUS_VERBOSE = {
     SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Waiting for phase(s) to be queued...'),
     SimmerState.QUEUED: QCoreApplication.translate(
-        'guisimrunstate', 'Waiting for queued phase(s) to be run...'),
+        'guisimrunstate', 'Waiting for queued phase(s) to be started...'),
     SimmerState.MODELLING: QCoreApplication.translate(
         'guisimrunstate',
         #FIXME: Replace this coarse-grained string with the following

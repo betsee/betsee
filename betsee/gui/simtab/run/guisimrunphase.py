@@ -156,14 +156,14 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
         '''
 
         # Connect signals emitted by the checkbox queueing this phase for
-        # modelling to corresponding slots, thus synchronizing the state of this
-        # checkbox with both this phase and this phase's parent simulator.
-        self._queue_modelling.toggled.connect(self.update_state)
+        # modelling to corresponding slots, thus synchronizing the state of
+        # this checkbox with both this phase and this phase's parent simulator.
+        self._queue_modelling.toggled.connect(self._toggle_queue_subkind)
 
         # If this phase is exportable, connect signals emitted by the checkbox
         # queueing this phase for exporting to corresponding slots as above.
         if self._queue_exporting is not None:
-            self._queue_exporting.toggled.connect(self.update_state)
+            self._queue_exporting.toggled.connect(self._toggle_queue_subkind)
 
         # Connect signals emitted by widgets owned by this phase to slots
         # defined by this phase.
@@ -173,17 +173,6 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
         # Queue this phase to be modelled but *NOT* exported by default *AFTER*
         # connecting all signals emitted by this checkbox above.
         self._queue_modelling.setChecked(True)
-
-    # ..................{ PROPERTIES ~ abstract             }..................
-    # Subclasses are required to implement the following abstract properties.
-
-    @abstractproperty
-    def kind(self) -> SimPhaseKind:
-        '''
-        Type of simulation phase controlled by this controller.
-        '''
-
-        pass
 
     # ..................{ PROPERTIES ~ bool                 }..................
     # Read-only boolean properties.
@@ -225,6 +214,17 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
             self._queue_exporting.isChecked()
         )
 
+    # ..................{ PROPERTIES ~ abstract             }..................
+    # Subclasses are required to implement the following abstract properties.
+
+    @abstractproperty
+    def kind(self) -> SimPhaseKind:
+        '''
+        Type of simulation phase controlled by this controller.
+        '''
+
+        pass
+
     # ..................{ PROPERTIES ~ non-bool             }..................
     # Read-only non-boolean properties.
 
@@ -237,7 +237,31 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
 
         return enums.get_member_name_lowercase(self.kind)
 
-    # ..................{ SLOTS ~ bool                      }..................
+    # ..................{ SLOTS                             }..................
+    @Slot(bool)
+    def _toggle_queue_subkind(self, is_queued: bool) -> None:
+        '''
+        Slot signalled on either the user interactively *or* the codebase
+        programmatically toggling the :class:`QCheckBox` widget corresponding
+        to either the :attr:`_queue_modelling` *or* :attr:`_queue_exporting`
+        variables.
+        '''
+
+        # If the current state of this phase is fluid (i.e., freely replaceable
+        # with any other state), reduce this state to whether this phase is
+        # currently queued or not.
+        if self.state in SIMMER_STATES_FLUID:
+            self.state = (
+                SimmerState.QUEUED if self.is_queued else SimmerState.UNQUEUED)
+        # Else, this state is fixed and hence *NOT* replaceable with any other
+        # state. For safety, preserve this state as is.
+        #
+        # Note that setting the "state" property above implicitly calls the
+        # _update_state() method, which thus need (and indeed should) *NOT* be
+        # explicitly recalled here. While technically safe, doing so would
+        # nonetheless incur a senseless performance penalty.
+
+
     @Slot(bool)
     def _toggle_queue_modelling_lock(self, is_unqueueable_model: bool) -> None:
         '''
@@ -265,19 +289,6 @@ class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):
     # ..................{ UPDATERS                          }..................
     def _update_state(self) -> None:
 
-        # If the current state of this phase is fluid (i.e., freely replaceable
-        # with any other state), set this state to whether or not this phase is
-        # currently queued.
-        if self.state in SIMMER_STATES_FLUID:
-            self.state = (
-                SimmerState.QUEUED if self.is_queued else SimmerState.UNQUEUED)
-        # Else, the current state of this phase is fixed and hence *NOT*
-        # replaceable with any other state. For safety, this state is
-        # preserved as is.
-
-
-    def _update_widgets(self) -> None:
-
         # Text synopsizing the action being performed in this state *AFTER*
         # possibly setting this state above.
         status_text = SIMMER_STATE_TO_STATUS_TERSE[self.state]
@@ -293,6 +304,7 @@ class QBetseeSimmerPhaseSeed(QBetseeSimmerPhaseABC):
     exporting by this simulator).
     '''
 
+    # ..................{ PROPERTIES                        }..................
     @property
     def kind(self) -> SimPhaseKind:
         return SimPhaseKind.SEED
@@ -305,6 +317,7 @@ class QBetseeSimmerPhaseInit(QBetseeSimmerPhaseABC):
     modelling and/or exporting by this simulator).
     '''
 
+    # ..................{ PROPERTIES                        }..................
     @property
     def kind(self) -> SimPhaseKind:
         return SimPhaseKind.INIT
@@ -317,6 +330,7 @@ class QBetseeSimmerPhaseSim(QBetseeSimmerPhaseABC):
     and/or exporting by this simulator).
     '''
 
+    # ..................{ PROPERTIES                        }..................
     @property
     def kind(self) -> SimPhaseKind:
         return SimPhaseKind.SIM
