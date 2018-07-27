@@ -158,6 +158,7 @@ def get_runtime_mandatory_tuple() -> tuple:
     runtime_mandatory_sans_submodules = {
         # Map this dependency's name to constraints.
         dependency_name: dependency_constraints
+
         # For the name and constraints of each mandatory runtime dependency...
         for dependency_name, dependency_constraints in
             RUNTIME_MANDATORY.items()
@@ -174,6 +175,21 @@ def get_runtime_mandatory_tuple() -> tuple:
     # Return this dictionary converted into a tuple.
     return guisetuptool.convert_requirements_dict_to_tuple(
         runtime_mandatory_sans_submodules)
+
+
+def get_runtime_optional_tuple() -> tuple:
+    '''
+    Tuple listing the :mod:`setuptools`-specific requirement string containing
+    the mandatory name and optional version and extras constraints of each
+    optional runtime dependency for this application, dynamically converted
+    from the :data:`metadata.RUNTIME_OPTIONAL` dictionary.
+    '''
+
+    # Avoid circular import dependencies.
+    from betsee.lib.setuptools import guisetuptool
+
+    # Return this dictionary converted into a tuple.
+    return guisetuptool.convert_requirements_dict_to_tuple(RUNTIME_OPTIONAL)
 
 
 def get_testing_mandatory_tuple() -> tuple:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017 by Alexis Pietak & Cecil Curry
 # See "LICENSE" for further details.
 
@@ -14,25 +14,25 @@ This submodule is a thin wrapper intended to be:
   ``python -m betsee.cli``).
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# WARNING: To raise human-readable exceptions on missing mandatory dependencies,
-# this module may import *ONLY* from standard Python packages and
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# WARNING: To raise human-readable exceptions on missing mandatory
+# dependencies, this module may import *ONLY* from standard Python packages and
 # application-specific packages importing *ONLY* from standard Python packages.
 # By definition, this excludes all third-party packages and most
 # application-specific packages.
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import sys
 from betsee import guimetadata
 from betsee.guimetadata import NAME
 from betsee.guimetadeps import BETSE_VERSION_REQUIRED_MIN
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ EXCEPTIONS                        }....................
 class _BetseNotFoundException(Exception):
     '''
-    Exception raised on detecting BETSE (i.e., this application's core mandatory
-    dependency) to be unimportable under the active Python interpreter.
+    Exception raised on detecting BETSE (i.e., this application's core
+    mandatory dependency) to be unimportable by the active Python interpreter.
 
     Design
     ----------
@@ -47,7 +47,7 @@ class _BetseNotFoundException(Exception):
     that submodule and hence explicitly subclass that superclass.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, title: str, synopsis: str, exegesis: str) -> None:
 
         # Initialize our superclass.
@@ -58,12 +58,12 @@ class _BetseNotFoundException(Exception):
         self.synopsis = synopsis
         self.exegesis = exegesis
 
-# ....................{ MAIN                               }....................
+# ....................{ MAIN                              }....................
 def main(arg_list: list = None) -> int:
     '''
     Run this application's command-line interface (CLI) with the passed
-    arguments if non-``None`` *or* with the arguments passed on the command line
-    (i.e., :attr:`sys.argv`) otherwise.
+    arguments if non-``None`` *or* with the arguments passed on the command
+    line (i.e., :attr:`sys.argv`) otherwise.
 
     This function is provided as a convenience to callers requiring procedural
     functions rather than conventional methods (e.g., :mod:`setuptools`).
@@ -78,8 +78,8 @@ def main(arg_list: list = None) -> int:
     Returns
     ----------
     int
-        Exit status of this interface and hence this process as an unsigned byte
-        (i.e., integer in the range ``[0, 255]``).
+        Exit status of this interface and hence this process as an unsigned
+        byte (i.e., integer in the range ``[0, 255]``).
     '''
 
     # Validate BETSE to be satisfied *BEFORE* attempting to import from this
@@ -97,7 +97,7 @@ def main(arg_list: list = None) -> int:
     # Run this application's CLI and return the exit status of doing so.
     return BetseeCLI().run(arg_list)
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ EXCEPTIONS                        }....................
 def _die_unless_betse() -> None:
     '''
     Raise an exception unless BETSE, the principal mandatory dependency of this
@@ -150,7 +150,7 @@ def _die_unless_betse() -> None:
     #     exegesis='Python package "betse" not importable.',
     # )
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ EXCEPTIONS                        }....................
 def _show_betse_exception(exception: _BetseNotFoundException) -> int:
     '''
     Display the passed exception signifying BETSE to be unsatisfied in an
@@ -190,7 +190,7 @@ def _show_betse_exception(exception: _BetseNotFoundException) -> int:
     # Report failure to our parent process.
     return 1
 
-# ....................{ MAIN                               }....................
+# ....................{ MAIN                              }....................
 # If this module is imported from the command line, run this application's CLI;
 # else, noop. For POSIX compliance, the exit status returned by this function
 # is propagated to the caller as this script's exit status.

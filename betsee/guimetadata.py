@@ -40,14 +40,14 @@ Human-readable name of the license this application is licensed under.
 # submodule's docstring above.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-PYTHON_VERSION_MIN = '3.4.0'
+PYTHON_VERSION_MIN = '3.5.0'
 '''
 Human-readable minimum version of Python required by this application as a
 ``.``-delimited string.
 '''
 
 
-PYTHON_VERSION_MINOR_MAX = 7
+PYTHON_VERSION_MINOR_MAX = 8
 '''
 Maximum minor stable version of this major version of Python currently released
 (e.g., ``5`` if Python 3.5 is the most recent stable version of Python 3.x).
@@ -115,7 +115,7 @@ if sys.version_info[:3] < PYTHON_VERSION_MIN_PARTS:
 
     # Die ignominiously.
     raise RuntimeError(
-        '{} requires at least Python {}, but the active Python interpreter '
+        '{} requires at least Python {}, but the active interpreter '
         'is only Python {}. We feel deep sadness for you.'.format(
             NAME, PYTHON_VERSION_MIN, PYTHON_VERSION))
 

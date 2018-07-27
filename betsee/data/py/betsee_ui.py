@@ -2110,8 +2110,8 @@ class Ui_main_window(object):
         self.sim_run_queue_sim_model_lock = QtWidgets.QToolButton(self.sim_run_queue_sim_model_cell)
         self.sim_run_queue_sim_model_lock.setText("")
         icon18 = QtGui.QIcon()
-        icon18.addFile(":/icon/open_iconic/lock-unlocked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon18.addFile(":/icon/open_iconic/lock-locked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon18.addFile(":/icon/open_iconic/lock-unlocked.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.sim_run_queue_sim_model_lock.setIcon(icon18)
         self.sim_run_queue_sim_model_lock.setCheckable(True)
         self.sim_run_queue_sim_model_lock.setAutoRaise(True)
@@ -2514,8 +2514,8 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work = QtWidgets.QAction(main_window)
         self.action_sim_run_toggle_work.setCheckable(True)
         icon30 = QtGui.QIcon()
-        icon30.addFile(":/icon/open_iconic/media-play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon30.addFile(":/icon/open_iconic/media-pause.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        icon30.addFile(":/icon/open_iconic/media-play.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action_sim_run_toggle_work.setIcon(icon30)
         self.action_sim_run_toggle_work.setObjectName("action_sim_run_toggle_work")
         self.sim_conf_tree_toolbar.addAction(self.action_sim_conf_tree_item_append)
@@ -2998,16 +2998,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit
 from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

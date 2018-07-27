@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -84,14 +84,14 @@ Concrete subclasses defining this application's command line interface (CLI).
 #
 #It's all pretty trivial stuff, frankly. Awesomeness!
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the
 # top-level of this module may import *ONLY* from submodules guaranteed to:
 # * Exist, including standard Python and application modules, including both
 #   BETSEE and BETSE modules.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betse.util.cli.cliabc import CLIABC
 from betse.util.cli.cliopt import CLIOptionArgStr
@@ -100,7 +100,7 @@ from betse.util.type.types import type_check, ModuleType, SequenceTypes
 from betsee import guiignition, guimetadata
 from betsee.lib import guilibs
 
-# ....................{ SUBCLASS                           }....................
+# ....................{ SUBCLASS                          }....................
 class BetseeCLI(CLIABC):
     '''
     Command line interface (CLI) for this application.
@@ -114,7 +114,7 @@ class BetseeCLI(CLIABC):
         options passed by the current user.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self):
 
         # Initialize our superclass.
@@ -123,15 +123,15 @@ class BetseeCLI(CLIABC):
         # Nullify all instance variables for safety.
         self._sim_conf_filename = None
 
-    # ..................{ SUPERCLASS ~ properties : optional }..................
+    # ..................{ SUPERCLASS ~ property : optional  }..................
     # The following properties *MAY* be implemented by subclasses.
 
     @property
     def _is_option_matplotlib_backend(self) -> bool:
         '''
         ``False``, preventing this CLI from exposing the
-        ``--matplotlib-backend`` option and hence permitting users to externally
-        specify an arbitrary matplotlib backend at the command line.
+        ``--matplotlib-backend`` option and hence permitting users to
+        externally specify an arbitrary matplotlib backend at the command line.
 
         Of necessity, this Qt-based application strictly requires a single
         Qt-based matplotlib backend (e.g., ``Qt5Agg``).
@@ -139,7 +139,7 @@ class BetseeCLI(CLIABC):
 
         return False
 
-    # ..................{ SUPERCLASS ~ properties : mandatory}..................
+    # ..................{ SUPERCLASS ~ property : mandatory }..................
     # The following properties *MUST* be implemented by subclasses.
 
     @property
@@ -167,7 +167,7 @@ seed, initialize, and then simulate such a simulation in the current directory:
 
         return guimetadata
 
-    # ..................{ SUPERCLASS ~ igniters              }..................
+    # ..................{ SUPERCLASS ~ igniters             }..................
     def _init_app_libs(self) -> None:
 
         # Initialize all mandatory runtime dependencies of this application,
@@ -181,7 +181,7 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # See the body of the function called here for further details.
         guilibs.reinit()
 
-    # ..................{ SUPERCLASS ~ options               }..................
+    # ..................{ SUPERCLASS ~ options              }..................
     def _make_options_top(self) -> SequenceTypes:
 
         # Sequence of all default top-level options.
@@ -206,12 +206,13 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # Initial simulation configuration file parsed from the passed options.
         self._sim_conf_filename = self._args.sim_conf_filename
 
-    # ..................{ SUPERCLASS ~ methods               }..................
+    # ..................{ SUPERCLASS ~ methods              }..................
     def _do(self) -> object:
         '''
-        Implement this command-line interface (CLI) by running the corresponding
-        graphical user interface (GUI), returning this interface to be memory
-        profiled when the ``--profile-type=size`` CLI option is passed.
+        Implement this command-line interface (CLI) by unconditionally running
+        this application's graphical user interface (GUI), returning this
+        interface to be memory profiled when the ``--profile-type=size`` CLI
+        option is passed.
         '''
 
         # Defer imports *NOT* guaranteed to exist at this module's top-level.

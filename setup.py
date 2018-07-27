@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,38 +8,37 @@
 tasks (e.g., installation, freezing, test running) for this application.
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid race conditions during setuptools-based installation, this
 # module may import *ONLY* from packages guaranteed to exist at the start of
 # installation. This includes all standard Python and application packages but
 # *NOT* third-party dependencies, which if currently uninstalled will only be
 # installed at some later time in the installation.
 #
-# Technically, this script may import from all subpackages and submodules of the
-# this application's eponymous package. By Python mandate, the first element of
-# the "sys.path" list is guaranteed to be the directory containing this script.
-# Python necessarily searches this directory for imports from the local version
-# of this application *BEFORE* any other directories (including system
-# directories containing older versions of this application). To quote:
+# Technically, this script may import from all subpackages and submodules of
+# the this application's eponymous package. By Python mandate, the first
+# element of the "sys.path" list is guaranteed to be the directory containing
+# this script. Python necessarily searches this directory for imports from the
+# local version of this application *BEFORE* any other directories (including
+# system directories containing older versions of this application). To quote:
 #
 #     "As initialized upon program startup, the first item of this list,
 #      path[0], is the directory containing the script that was used to invoke
 #      the Python interpreter."
 #
 # See also: https://stackoverflow.com/a/10097543/2809027
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import setuptools
 from betsee import guimetadata, guimetadeps
-from betsee_setup import betseebuild, betseeutil
+from betsee_setup import beupbuild, beuputil
 
-# ....................{ METADATA                           }....................
+# ....................{ METADATA                          }....................
 # PyPI-specific metadata declared here rather than in the "betsee.metadata"
-# submodule, reducing space and time complexity during application startup. This
-# metadata is relevant only to setuptools. (The main codebase could care less.)
+# submodule, as the main codebase neither requires nor desires this metadata.
 
-# ....................{ METADATA ~ seo                     }....................
+# ....................{ METADATA ~ seo                    }....................
 _KEYWORDS = ['biology', 'multiphysics', 'science', 'simulator',]
 '''
 List of all lowercase alphabetic keywords synopsising this application.
@@ -50,8 +49,8 @@ engine optimization (SEO). In actuality, they do absolutely nothing.
 
 
 # To minimize desynchronization woes, all
-# "Programming Language :: Python :: "-prefixed strings are dynamically appended
-# to this list by the get_classifiers() function called below.
+# "Programming Language :: Python :: "-prefixed strings are dynamically
+# appended to this list by the get_classifiers() function called below.
 _CLASSIFIERS = [
     #FIXME: Replace with the following after the "1.0.0" release:
     #    'Development Status :: 5 - Production/Stable',
@@ -61,7 +60,6 @@ _CLASSIFIERS = [
     'Development Status :: 4 - Beta',
 
     # Sublist of all supported platform-specific CLI and GUI components.
-    'Environment :: Console',
     'Environment :: MacOS X',
     'Environment :: Win32 (MS Windows)',
     'Environment :: X11 Applications',
@@ -74,7 +72,8 @@ _CLASSIFIERS = [
     'Topic :: Scientific/Engineering :: Bio-Informatics',
 ]
 '''
-List of all PyPI-specific trove classifier strings synopsizing this application.
+List of all PyPI-specific trove classifier strings synopsizing this
+application.
 
 Each such string *must* be contain either two or three `` :: `` substrings
 delimiting human-readable capitalized English words formally recognized by the
@@ -86,11 +85,11 @@ https://pypi.python.org/pypi?%3Aaction=list_classifiers
     Plaintext list of all trove classifier strings recognized by PyPI.
 '''
 
-# ....................{ OPTIONS                            }....................
+# ....................{ OPTIONS                           }....................
 # Setuptools-specific options. Keywords not explicitly recognized by either
 # setuptools or distutils must be added to the above dictionary instead.
-_setup_options = {
-    # ..................{ CORE                               }..................
+_SETUP_OPTIONS = {
+    # ..................{ CORE                              }..................
     # Self-explanatory metadata.
     'name':             guimetadata.PACKAGE_NAME,
     'version':          guimetadata.VERSION,
@@ -99,25 +98,19 @@ _setup_options = {
     'maintainer':       guimetadata.AUTHORS,
     'maintainer_email': guimetadata.AUTHOR_EMAIL,
     'description':      guimetadata.SYNOPSIS,
-    'long_description': betseeutil.get_description(),
+    'long_description': beuputil.get_description(),
     'url':              guimetadata.URL_HOMEPAGE,
     'download_url':     guimetadata.URL_DOWNLOAD,
 
-    # ..................{ PYPI                               }..................
+    # ..................{ PYPI                              }..................
     # PyPi-specific metadata.
-    'classifiers': betseeutil.sanitize_classifiers(_CLASSIFIERS),
-    'keywords': _KEYWORDS,
-    'license': guimetadata.LICENSE,
+    'classifiers': beuputil.sanitize_classifiers(_CLASSIFIERS),
+    'keywords':    _KEYWORDS,
+    'license':     guimetadata.LICENSE,
 
-    # ..................{ DEPENDENCIES                       }..................
+    # ..................{ DEPENDENCIES                      }..................
     # Mandatory nuntime dependencies.
     'install_requires': guimetadeps.get_runtime_mandatory_tuple(),
-
-    #FIXME: Uncomment the following block *BEFORE* submitting the initial
-    #version of this application to PyPI. For laziness, this block has been
-    #temporarily disabled. The "betse.libs" submodule cannot be guaranteed to be
-    #available at "setup.py" execution time and hence cannot be imported above.
-    #A safer alternative independent of BETSE must be concocted.
 
     # Optional nuntime dependencies. Whereas mandatory dependencies are defined
     # as sequences, optional dependencies are defined as a dictionary mapping
@@ -127,12 +120,10 @@ _setup_options = {
     # defined below whose value lists the dependencies to be installed (e.g.,
     # "sudo pip3 install betse[all]", installing both the application and all
     # mandatory and optional dependencies required by the application).
-    # 'extras_require': {
-    #     # All optional runtime dependencies. Since the
-    #     # "RUNTIME_OPTIONAL" global is a dictionary rather than a
-    #     # sequence, a function converting this global into a tuple is called.
-    #     'all': guimetadeps.get_runtime_optional_tuple(),
-    # },
+    'extras_require': {
+        # All optional runtime dependencies.
+        'all': guimetadeps.get_runtime_optional_tuple(),
+    },
 
     # Mandatory testing dependencies.
     'tests_require': guimetadeps.get_testing_mandatory_tuple(),
@@ -163,7 +154,7 @@ _setup_options = {
     # Cross-platform script wrappers dynamically created at installation time.
     'entry_points': {
         # GUI-specific scripts.
-        'gui_scripts':  (
+        'gui_scripts': (
             '{} = {}.__main__:main'.format(
                 guimetadata.SCRIPT_BASENAME, guimetadata.PACKAGE_NAME),
         ),
@@ -216,7 +207,7 @@ customize these options (e.g., by defining custom commands).
 # print('extras: {}'.format(setup_options['extras_require']))
 
 
-_setup_options_custom = {
+_SETUP_OPTIONS_CUSTOM = {
     # While currently empty, it's likely we'll want this again... someday.
 }
 '''
@@ -231,8 +222,8 @@ instead.
 
 # ....................{ COMMANDS                           }....................
 # Define all application-specific setuptools commands.
-for setup_module in (betseebuild,):
-    setup_module.add_setup_commands(_setup_options_custom, _setup_options)
+for _setup_module in (beupbuild,):
+    _setup_module.add_setup_commands(_SETUP_OPTIONS_CUSTOM, _SETUP_OPTIONS)
 
 # ....................{ SETUP                              }....................
-setuptools.setup(**_setup_options)
+setuptools.setup(**_SETUP_OPTIONS)

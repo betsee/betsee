@@ -13,13 +13,13 @@ This submodule partially duplicates the existing
 :mod:`betse.lib.setuptools.setuptool` submodule -- specifically, those
 functions of that submodule required by the top-level installation-time
 ``setup.py`` script. Since BETSE is a third-party mandatory dependency of this
-application, the :betse:`betse.lib.setuptools.setuptool` submodule provided by
+application, the :mod:`betse.lib.setuptools.setuptool` submodule provided by
 that dependency is *not* necessarily importable from within this application's
 ``setup.py`` script.
 
 This submodule thus violates the Don't Repeat Yourself (DRY) principle.
 Unfortunately, doing so requires dropping support for type validation
-implemented by the BETSE-specific :meth:`betse.util.type.types.type_check`
+implemented by the BETSE-specific :func:`betse.util.type.types.type_check`
 decorator.
 '''
 
@@ -88,7 +88,7 @@ def convert_requirements_dict_keys_to_tuple(
 
     Raises
     ----------
-    BetseLibException
+    BetseeLibException
         If the passed key is *not* a key of this dictionary.
 
     See Also
@@ -125,7 +125,7 @@ def convert_requirements_dict_key_to_str(
 
     Raises
     ----------
-    BetseLibException
+    BetseeLibException
         If the passed key is *not* a key of this dictionary.
 
     See Also
