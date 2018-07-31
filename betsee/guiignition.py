@@ -27,7 +27,7 @@ def reinit() -> None:
        :func:`betse.ignition.init` function.
     #. Validates but does *not* initialize mandatory third-party dependencies of
        this application, which must be initialized independently by the
-       :func:`betsee.lib.guilibs.init` function.
+       :func:`betsee.lib.guilib.init` function.
     #. Validates that the active Python interpreter supports multithreading.
 
     Design
@@ -52,7 +52,7 @@ def reinit() -> None:
     # Defer heavyweight and possibly circular imports.
     from betse import ignition as betse_ignition
     from betse.util.py import pythread
-    from betsee.lib import guilibs
+    from betsee.lib import guilib
 
     # Initialize all lower-level BETSE logic *BEFORE* any higher-level BETSEE
     # logic requiring the former. See the betse.guicli.BetseCLI._ignite_app()
@@ -63,10 +63,10 @@ def reinit() -> None:
     # Validate mandatory dependencies *AFTER* BETSE is initialized.
     #
     # These dependencies are intentionally *NOT* initialized here (e.g., by
-    # calling guilibs.init()), as doing so requires the logging configuration to
+    # calling guilib.init()), as doing so requires the logging configuration to
     # have been finalized (e.g., by parsing CLI options), which has yet to occur
     # this early in the application lifecycle.
-    guilibs.die_unless_runtime_mandatory_all()
+    guilib.die_unless_runtime_mandatory_all()
 
     # If the active Python interpreter does *NOT* support multithreading, raise
     # an exception *AFTER* BETSE is initialized.

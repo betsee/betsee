@@ -17,13 +17,13 @@ from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 # from betsee.guiexception import BetseePySideWindowException
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
     SIMMER_STATE_TO_STATUS_TERSE,
     SIMMER_STATES_FLUID,
 )
+from betsee.gui.window.guimainwindow import QBetseeMainWindow
 
 # ....................{ SUPERCLASSES                      }....................
 class QBetseeSimmerPhaseABC(QBetseeSimmerStatefulABC):

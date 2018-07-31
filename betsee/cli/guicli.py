@@ -98,7 +98,7 @@ from betse.util.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, ModuleType, SequenceTypes
 from betsee import guiignition, guimetadata
-from betsee.lib import guilibs
+from betsee.lib import guilib
 
 # ....................{ SUBCLASS                          }....................
 class BetseeCLI(CLIABC):
@@ -179,7 +179,7 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # matplotlib complicates the initialization of both.
         #
         # See the body of the function called here for further details.
-        guilibs.reinit()
+        guilib.reinit()
 
     # ..................{ SUPERCLASS ~ options              }..................
     def _make_options_top(self) -> SequenceTypes:

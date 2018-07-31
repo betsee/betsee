@@ -99,10 +99,22 @@ class QBetseeThreadPoolWorker(QRunnable):
 
       * The custom :attr:`signals.finished` signal, which typically (but *not*
         necessarily) coincides with worker deletion.
-      * The Python-specific ``__del__`` special method, which typically (but
-        *not* necessarily) coincides with worker deletion. Additionally, this
-        method imposes unreasonable implementation constraints (notably, the
-        inability to propagate or handle exceptions raised by this method).
+      * The optional Python **finalizer** (i.e., special ``__del__()`` method)
+        and corresponding optional ``callback`` parameter performing similar
+        finalization accepted by the standard :func:`weakref.ref` function,
+        which approximately but *not* exactly coincide with worker deletion and
+        which impose unreasonable constraints on implementation -- notably, the
+        inability to propagate or handle exceptions raised by these callables:
+
+            Exceptions raised by the callback will be noted on the standard
+            error output, but cannot be propagated; they are handled in exactly
+            the same way as exceptions raised from an object’s ``__del__()``
+            method.
+
+        Exception propagation and logging is central to sane and deterministic
+        application behaviour. Any small benefit gained from handling worker
+        deletion via such a callback would surely be dwarfed by the grosser
+        detriment of being unable to properly handle exceptions.
 
       In either case, there would exist a slice of time in which Qt has
       implicitly deleted a worker but Python has yet to be notified of that

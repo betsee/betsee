@@ -43,11 +43,11 @@ simplifying inspection and validation of this version elsewhere (e.g., in the
 
 Design
 ----------
-By design, the current version of BETSEE requires at least the same version
-of BETSE ignoring the trailing component of the former -- a BETSEE-specific
-patch number enabling each version of BETSE to satisfy multiple versions of
-BETSEE. As example, BETSE 0.8.1 satisfies both BETSEE 0.8.1.0 *and*
-BETSEE 0.8.1.1.
+By design, the current version of this application requires at least the same
+version of BETSE ignoring the trailing component of the former -- an
+application-specific patch number allowing each version of BETSE to satisfy
+multiple versions of this application. For example, BETSE 0.8.1 satisfies both
+versions 0.8.1.0 *and* 0.8.1.1 of this application.
 '''
 
 

@@ -12,6 +12,10 @@ submodules (e.g., :mod:`betse.util.cli.cliabc`) *before* attempting to import an
 such dependencies.
 '''
 
+#FIXME: Ideally eliminate the boilerplate repeated across the equivalent of
+#this submodule in BETSE, BETSEE, and now NIMME by generalizing this
+#functionality. To do so, see "nimme.lib.nimlib" for detailed commentary.
+
 # ....................{ IMPORTS                            }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on missing mandatory dependencies,

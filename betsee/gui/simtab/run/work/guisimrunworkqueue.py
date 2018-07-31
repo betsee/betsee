@@ -18,25 +18,33 @@ from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhaseABC
 from betsee.gui.simtab.run.work.guisimrunworkenum import (
     SimmerPhaseSubkind)
 from betsee.gui.simtab.run.work.guisimrunwork import (
-    QBetseeSimmerSeedModelWorker, QBetseeSimmerSeedExportWorker)
+    QBetseeSimmerPhaseModelWorker, QBetseeSimmerPhaseExportWorker)
 from collections import deque
 
 # ....................{ GLOBALS                           }....................
+#FIXME: Dramatically simplify. Now that we have phase-generic rather than
+#subcommand-specific workers, this doubly-nested dictionary can be flattened
+#into a single simple dictionary resembling:
+#
+#    _PHASE_SUBKIND_TO_WORKER_SUBCLASS = {
+#        SimmerPhaseSubkind.MODELLING: QBetseeSimmerPhaseModelWorker,
+#        SimmerPhaseSubkind.EXPORTING: QBetseeSimmerPhaseExportWorker,
+#    }
+#FIXME: Actually, after refactoring the "guisimrunwork" submodule as documented
+#there, it should be feasible to entirely remove this dictionary. Red flagons!
+
 _PHASE_KIND_TO_SUBKIND_TO_WORKER_SUBCLASS = {
     SimPhaseKind.SEED: {
-        SimmerPhaseSubkind.MODELLING: QBetseeSimmerSeedModelWorker,
-        SimmerPhaseSubkind.EXPORTING: QBetseeSimmerSeedExportWorker,
+        SimmerPhaseSubkind.MODELLING: QBetseeSimmerPhaseModelWorker,
+        SimmerPhaseSubkind.EXPORTING: QBetseeSimmerPhaseExportWorker,
     },
-
-    #FIXME: Replace all "Seed" substrings below with the appropriate phase
-    #substrings *AFTER* validating the seed worker to behave as expected.
     SimPhaseKind.INIT: {
-        SimmerPhaseSubkind.MODELLING: QBetseeSimmerSeedModelWorker,
-        SimmerPhaseSubkind.EXPORTING: QBetseeSimmerSeedExportWorker,
+        SimmerPhaseSubkind.MODELLING: QBetseeSimmerPhaseModelWorker,
+        SimmerPhaseSubkind.EXPORTING: QBetseeSimmerPhaseExportWorker,
     },
     SimPhaseKind.SIM: {
-        SimmerPhaseSubkind.MODELLING: QBetseeSimmerSeedModelWorker,
-        SimmerPhaseSubkind.EXPORTING: QBetseeSimmerSeedExportWorker,
+        SimmerPhaseSubkind.MODELLING: QBetseeSimmerPhaseModelWorker,
+        SimmerPhaseSubkind.EXPORTING: QBetseeSimmerPhaseExportWorker,
     },
 }
 '''
@@ -116,7 +124,7 @@ def enqueue_workers(phases: SequenceTypes) -> QueueType:
             # Simulator worker modelling this phase.
             worker_subclass = subkind_to_worker_subclass[
                 SimmerPhaseSubkind.MODELLING]
-            worker = worker_subclass()
+            worker = worker_subclass(phase=phase)
 
             # Enqueue a new instance of this subclass.
             workers_queued.append(worker)
@@ -126,7 +134,7 @@ def enqueue_workers(phases: SequenceTypes) -> QueueType:
             # Simulator worker subclass exporting this phase.
             worker_subclass = subkind_to_worker_subclass[
                 SimmerPhaseSubkind.EXPORTING]
-            worker = worker_subclass()
+            worker = worker_subclass(phase=phase)
 
             # Enqueue a new instance of this subclass.
             workers_queued.append(worker)

@@ -23,7 +23,7 @@ from betse.util.type.text import regexes
 from betse.util.type.types import type_check, MappingType, SequenceTypes
 from betsee import guimetadata
 from betsee.guiexception import BetseeCacheException
-from betsee.lib import guilibs
+from betsee.lib import guilib
 from io import StringIO
 
 # ....................{ GLOBALS                            }....................
@@ -211,7 +211,7 @@ def convert_ui_to_py_file_if_able(
 
     # If the optional third-party dependency required by this function is
     # unavailable, log a non-fatal warning and return.
-    if not guilibs.is_runtime_optional('pyside2uic'):
+    if not guilib.is_runtime_optional('pyside2uic'):
         logs.log_warning(
             'Skipping! Package "pyside2uic" unimportable, '
             'probably due to "pyside2-tools" not being installed.')
@@ -225,7 +225,7 @@ def convert_ui_to_py_file_if_able(
         return
 
     # Optional third-party dependencies required by this function.
-    pyside2uic = guilibs.import_runtime_optional('pyside2uic')
+    pyside2uic = guilib.import_runtime_optional('pyside2uic')
     UICompiler = pyside2uic.Compiler.compiler.UICompiler
 
     # If this input file does *NOT* exist, raise an exception.

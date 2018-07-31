@@ -22,7 +22,7 @@ from betse.util.type.types import type_check, IterableTypes
 from betsee import guipathtree
 from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
     QBetseeSimConfEnumRadioButtonGroup)
-from betsee.lib import guilibs
+from betsee.lib import guilib
 from betsee.util.io.xml import guiqrc, guiui
 
 # ....................{ GLOBALS                            }....................
@@ -169,9 +169,9 @@ def _cache_py_ui_file() -> None:
     ]
 
     # If the optional third-party dependency "pyside2-tools" is installed...
-    if guilibs.is_runtime_optional('pyside2uic'):
+    if guilib.is_runtime_optional('pyside2uic'):
         # Package installed by this dependency.
-        pyside2uic = guilibs.import_runtime_optional('pyside2uic')
+        pyside2uic = guilib.import_runtime_optional('pyside2uic')
 
         # Append this package's directory for testing as well.
         input_pathnames.append(modules.get_dirname(pyside2uic))
