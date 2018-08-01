@@ -68,7 +68,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QObject, Slot  #, Signal
 from betse.exceptions import BetseSimUnstableException
-from betse.science.phase.phaseenum import SimPhaseKind
+# from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
 from betse.util.type.obj import objects
@@ -95,10 +95,11 @@ from betsee.gui.simtab.run.guisimrunstate import (
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
-from betsee.gui.simtab.run.work import guisimrunworkqueue
-from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerWorkerABC
+from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerPhaseWorker
+from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.util.thread import guithread
 from betsee.util.thread.pool import guipoolthread
+from collections import deque
 
 # ....................{ CLASSES                           }....................
 class QBetseeSimmer(QBetseeSimmerStatefulABC):
@@ -160,10 +161,15 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     _workers_queued : {QueueType, NoneType}
         **Simulator worker queue** (i.e., double-ended queue of all simulator
         workers to be subsequently run in a multithreaded manner by this
-        simulator, such that each worker runs a simulation subcommand whose
-        corresponding checkbox is checked) if this simulator has started one or
-        more such workers *or* ``None`` otherwise (i.e., if no such workers
-        have been started).
+        simulator, where each worker runs a simulation subcommand whose
+        corresponding checkbox was checked at the time this queue was
+        instantiated) if this simulator has started one or more such workers
+        *or* ``None`` otherwise (i.e., if no such workers have been started).
+        Note that this queue is double- rather than single-ended only as the
+        Python stdlib fails to provide the latter. Since the former generalizes
+        the latter, however, leveraging the former in a single-ended manner
+        replicates the behaviour of the latter. Ergo, a double-ended queue
+        remains the most space- and time-efficient data structure for doing so.
 
     Attributes (Private: Widgets)
     ----------
@@ -408,7 +414,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     # ..................{ PROPERTIES ~ worker               }..................
     @property
-    def _worker(self) -> QBetseeSimmerWorkerABC:
+    def _worker(self) -> QBetseeSimmerPhaseWorker:
         '''
         **Currently working worker** (i.e., :class:`QRunnable` instance
         currently modelling or exporting a previously queued simulation phase
@@ -843,15 +849,25 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     # ..................{ QUEUERS                           }..................
     def _enqueue_workers(self) -> None:
         '''
-        Define the :attr:`_workers_queued` of all simulator workers to be run.
+        Create the **simulator worker queue** (i.e., :attr:`_workers_queued`
+        variable) as specified by the pair of checkboxes associated with each
+        simulator phase.
 
-        This method enqueues (i.e., pushes onto this queue) all simulator
-        phases for which the end user interactively checked at least one of the
-        corresponding modelling and exporting checkboxes. For sanity, phases
-        are enqueued in simulation order such that:
+        This method enqueues (i.e., pushes onto this queue) workers in
+        simulation phase order, defined as the ordering of the members of the
+        :class:`betse.science.phase.phaseenum.SimPhaseKind` enumeration.
+        Callers may safely run the simulation phases performed by these workers
+        merely by sequentially assigning each worker enqueued in this queue to
+        a thread via the
+        :func:`betsee.util.thread.pool.guipoolthread.start_worker` function.
 
-        * The seed phase is enqueued *before* the initialization phase.
-        * The initialization phase is enqueued *before* the simulation phase.
+        For example:
+
+        #. The :class:`QBetseeSimmerSubcommandWorkerModelSeed` worker (if any)
+           is guaranteed to be queued *before*...
+        #. The :class:`QBetseeSimmerSubcommandWorkerModelInit` worker (if any)
+           is guaranteed to be queued *before*...
+        #. The :class:`QBetseeSimmerSubcommandWorkerModelSim` worker (if any).
 
         Raises
         ----------
@@ -869,9 +885,33 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # If some simulator worker is currently working, raise an exception.
         self._die_if_working()
 
-        # Create this simulator worker queue.
-        self._workers_queued = guisimrunworkqueue.enqueue_workers(
-            phases=self._PHASES)
+        # Simulator worker queue to be classified *AFTER* creating and
+        # enqueuing all workers.
+        workers_queued = deque()
+
+        # For each simulator phase...
+        for phase in self._PHASES:
+            # If this phase is currently queued for modelling...
+            if phase.is_queued_modelling:
+                # Simulator worker modelling this phase.
+                worker = QBetseeSimmerPhaseWorker(
+                    phase=phase, phase_subkind=SimmerPhaseSubkind.MODELLING)
+
+                # Enqueue a new instance of this subclass.
+                workers_queued.append(worker)
+
+            # If this phase is currently queued for exporting...
+            if phase.is_queued_exporting:
+                # Simulator worker subclass exporting this phase.
+                worker = QBetseeSimmerPhaseWorker(
+                    phase=phase, phase_subkind=SimmerPhaseSubkind.EXPORTING)
+
+                # Enqueue a new instance of this subclass.
+                workers_queued.append(worker)
+
+        # Classify this queue *AFTER* successfully creating and enqueuing all
+        # workers, thus reducing the likelihood of desynchronization.
+        self._workers_queued = workers_queued
 
 
     def _dequeue_workers(self) -> None:

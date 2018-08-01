@@ -186,21 +186,27 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         # Return this configuration.
         return p
 
-# ....................{ SUPERCLASSES ~ subcommand         }....................
-class QBetseeSimmerPhaseWorkerABC(QBetseeSimmerWorkerABC):
+# ....................{ SUBCLASSES                        }....................
+class QBetseeSimmerPhaseWorker(QBetseeSimmerWorkerABC):
     '''
-    Abstract base class of all low-level **simulator phase worker** (i.e.,
-    simulator worker running an arbitrary simulation phase) subclasses.
+    Low-level **simulator phase worker** (i.e., simulator worker running an
+    arbitrary simulation phase).
 
     Attributes
     ----------
     _phase : QBetseeSimmerPhaseABC
         Simulator phase run by this worker.
+    _phase_subkind : SimmerPhaseSubkind
+        Type of work performed within this phase by this worker.
     '''
 
     # ..................{ INITIALIZERS                      }..................
     @type_check
-    def __init__(self, phase: QBetseeSimmerPhaseABC) -> None:
+    def __init__(
+        self,
+        phase: QBetseeSimmerPhaseABC,
+        phase_subkind: SimmerPhaseSubkind,
+    ) -> None:
         '''
         Initialize this simulator phase worker.
 
@@ -208,6 +214,8 @@ class QBetseeSimmerPhaseWorkerABC(QBetseeSimmerWorkerABC):
         ----------
         phase : QBetseeSimmerPhaseABC
             Simulator phase run by this worker.
+        phase_subkind : SimmerPhaseSubkind
+            Type of work performed within this phase by this worker.
         '''
 
         # Initialize our superclass.
@@ -215,6 +223,7 @@ class QBetseeSimmerPhaseWorkerABC(QBetseeSimmerWorkerABC):
 
         # Classify all passed parameters.
         self._phase = phase
+        self._phase_subkind = phase_subkind
 
     # ..................{ PROPERTIES                        }..................
     # Read-only concrete properties.
@@ -227,29 +236,25 @@ class QBetseeSimmerPhaseWorkerABC(QBetseeSimmerWorkerABC):
 
         return self._phase
 
+    @property
+    def phase_subkind(self) -> SimmerPhaseSubkind:
+        '''
+        Type of work performed within the simulator phase run by this worker.
+        '''
+
+        return self._phase_subkind
+
 
     @property_cached
     def simmer_state(self) -> SimmerState:
         '''
-        Type of work performed within the type of simulation phase run by this
-        simulator worker as an equivalent member of the :class:`SimmerState`
-        rather than :class:`SimmerPhaseSubkind` enumeration.
+        Type of work performed within the simulator phase run by this worker as
+        a member of the :class:`SimmerState` rather than
+        :class:`SimmerPhaseSubkind` enumeration.
         '''
 
         return enums.get_member_from_value(
             enum_type=SimmerState, enum_member_value=self.phase_subkind.value)
-
-    # ..................{ PROPERTIES ~ abstract             }..................
-    # Read-only abstract properties required to be overridden by subclasses.
-
-    @abstractproperty
-    def phase_subkind(self) -> SimmerPhaseSubkind:
-        '''
-        Type of work performed within the type of simulation phase run by this
-        simulator worker.
-        '''
-
-        pass
 
     # ..................{ GETTERS                           }..................
     def _get_sim_runner_subcommand(self) -> CallableTypes:
@@ -293,35 +298,3 @@ class QBetseeSimmerPhaseWorkerABC(QBetseeSimmerWorkerABC):
 
         # Run this subcommand on this runner.
         sim_runner_subcommand(sim_runner)
-
-# ....................{ SUBCLASSES                        }....................
-#FIXME: Actually, there's no need for these subclasses either. Instead, just:
-#
-#* Refactor the superclass QBetseeSimmerPhaseWorkerABC.__init__() method to
-#  additionally require that a "phase_subkind" parameter be passed.
-#* Do so in the enqueue_workers() function.
-#* Rename the "QBetseeSimmerPhaseWorkerABC" class to simply
-#  "QBetseeSimmerPhaseWorker", which is now fully concrete.
-#* Remove the two subclasses defined below.
-class QBetseeSimmerPhaseModelWorker(QBetseeSimmerPhaseWorkerABC):
-    '''
-    Low-level **modelling simulator phase worker** (i.e., worker modelling
-    rather than exporting a simulation phase).
-    '''
-
-    # ..................{ SUPERCLASS                        }..................
-    @property
-    def phase_subkind(self) -> SimmerPhaseSubkind:
-        return SimmerPhaseSubkind.MODELLING
-
-
-class QBetseeSimmerPhaseExportWorker(QBetseeSimmerPhaseWorkerABC):
-    '''
-    Low-level **exporting simulator phase worker** (i.e., worker exporting
-    rather than modelling a simulation phase).
-    '''
-
-    # ..................{ SUPERCLASS                        }..................
-    @property
-    def phase_subkind(self) -> SimmerPhaseSubkind:
-        return SimmerPhaseSubkind.EXPORTING

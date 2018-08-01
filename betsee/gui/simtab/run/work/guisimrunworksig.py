@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,7 +8,7 @@ Low-level **signals-based simulation phase callbacks** (i.e., collection of all
 simulation phase callbacks whose methods emit queued Qt signals) classes.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
 from betse.science.phase.phasecallbacks import SimCallbacksABC
 # from betse.util.io.log import logs
@@ -16,7 +16,7 @@ from betse.util.type.types import type_check
 from betsee.util.thread.pool.guipoolworksig import (
     QBetseeThreadPoolWorkerSignals)
 
-# ....................{ SUBCLASSES ~ callbacks             }....................
+# ....................{ SUBCLASSES ~ callbacks            }....................
 class SimCallbacksSignaller(SimCallbacksABC):
     '''
     **Signals-based simulation phase callbacks** (i.e., caller-defined object
@@ -35,7 +35,7 @@ class SimCallbacksSignaller(SimCallbacksABC):
         Collection of all signals emittable by simulator workers.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self, signals: QBetseeThreadPoolWorkerSignals) -> None:
         '''
@@ -53,7 +53,7 @@ class SimCallbacksSignaller(SimCallbacksABC):
         # Classify all passed parameters.
         self._signals = signals
 
-    # ..................{ CALLBACKS ~ progress               }..................
+    # ..................{ CALLBACKS ~ progress              }..................
     @type_check
     def progress_ranged(
         self, progress_max: int, progress_min: int = 0) -> None:
