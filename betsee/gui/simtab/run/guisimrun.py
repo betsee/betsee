@@ -372,7 +372,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # * This queue defaults to "None".
         # * The _toggle_work() slot instantiates this queue on first
         #   running a new queue of simulator phases.
-        # * The _stop_work() slot reverts this queue back to "None".
+        # * The _stop_worker() slot reverts this queue back to "None".
         #
         # For efficiency, return this queue reduced to a boolean -- equivalent
         # to this less efficient (but more readable) pair of tests:
@@ -735,8 +735,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             * One or more workers are already working.
         '''
 
-        # Log this attempt.
-        logs.log_debug('Starting queued simulator phase(s)...')
+        # Log this action.
+        logs.log_debug(
+            'Starting simulator work by user request from main thread "%d"...',
+            guithread.get_current_thread_id())
 
         # If no simulator phase is currently queued, raise an exception.
         self._die_unless_queued()
@@ -767,8 +769,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             If the simulator is *not* currently running.
         '''
 
-        # Log this attempt.
-        logs.log_debug('Pausing simulator phase...')
+        # Log this action.
+        logs.log_debug(
+            'Pausing simulator work by user request from main thread "%d"...',
+            guithread.get_current_thread_id())
 
         # If the simulator is *not* currently running, raise an exception.
         self._die_unless_running()
@@ -798,8 +802,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             If the simulator is *not* currently paused.
         '''
 
-        # Log this attempt.
-        logs.log_debug('Resuming simulator phase...')
+        # Log this action.
+        logs.log_debug(
+            'Resuming simulator work by user request from main thread "%d"...',
+            guithread.get_current_thread_id())
 
         # If the simulator is *not* currently paused, raise an exception.
         self._die_unless_paused()
@@ -816,6 +822,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._worker.phase.state = self._worker.simmer_state
 
     # ..................{ SLOTS ~ action : stop             }..................
+    #FIXME: Improve this slot to stop *ALL* workers (e.g., by calling
+    #_dequeue_workers()).
     @Slot()
     def _stop_worker(self) -> None:
         '''
@@ -824,10 +832,15 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         with the :attr:`_action_stop_worker` action.
         '''
 
-        # If the simulator is *not* currently running, raise an exception.
-        self._die_unless_running()
+        # Log this slot.
+        logs.log_debug(
+            'Stopping simulator work by user request from main thread "%d"...',
+            guithread.get_current_thread_id())
 
-        # Currently running simulator worker. For safety, this property is
+        # If no worker is currently working, raise an exception.
+        self._die_unless_working()
+
+        # Currently working simulator worker. For safety, this property is
         # localized *BEFORE* this worker's stop() pseudo-slot (which
         # internally dequeues this worker and hence implicitly modifies the
         # worker returned by the "_worker" property) is called.
@@ -960,7 +973,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         if not self._is_working:
             # Log this completion.
             logs.log_debug(
-                'Stopping simulator work from main thread "%d"...',
+                'Finalizing simulator work from main thread "%d"...',
                 guithread.get_current_thread_id())
 
             # Gracefully halt this iteration.
@@ -1078,16 +1091,16 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         * If this queue is non-empty, starts the next enqueued worker.
         '''
 
-        # If no worker was working, raise an exception.
+        # If no worker is currently working, raise an exception.
         self._die_unless_working()
 
-        # Currently running simulator worker. For safety, this property is
+        # Currently working simulator worker. For safety, this property is
         # localized *BEFORE* this method dequeues this worker and hence
         # implicitly modifies the worker returned by the "_worker" property.
         worker = self._worker
 
-        # Schedule this worker's signals for immediate deletion and hence
-        # disconnection from all slots they're currently connected to.
+        # Schedule this worker for immediate deletion. On doing so, all signals
+        # owned by this worker will be disconnected from connected slots.
         #
         # Technically, doing so is unnecessary. The subsequent nullification of
         # the worker owning these signals already signals this deletion. As
