@@ -70,6 +70,7 @@ from PySide2.QtCore import QCoreApplication, QObject, Slot  #, Signal
 from betse.exceptions import BetseSimUnstableException
 # from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
+from betse.util.py import pythread
 from betse.util.type import enums
 from betse.util.type.obj import objects
 from betse.util.type.text import strs
@@ -128,7 +129,14 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     synchronized despite access to these attributes *not* being explicitly
     locked behind a Qt-based mutual exclusion primitive.
 
-    Yes, this is assuredly a bad idea.
+    GIL-less Python interpreters violate this simplistic assumption. For
+    example, the :meth:`_stop_worker` and
+    :meth:`_handle_worker_completion` slots suffer a variety of obvious (albeit
+    unlikely) race conditions under these interpreters centered around their
+    attempts to competitively delete the same underlying worker in a
+    desynchronized and hence non-deterministic manner... Woops.
+
+    Yes, this is assuredly a bad idea. Yes, this is us nonchalantly shrugging.
 
     Attributes (Private: Non-widgets)
     ----------
@@ -197,6 +205,13 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
+
+        #FIXME: Yeah... Fix this, please. PyPy will probably make the GIL
+        #optionally go away at some point. (At least, it certainly should.)
+
+        # Raise an exception unless the active Python interpreter has a GIL, as
+        # foolishly required by methods defined by this class.
+        pythread.die_unless_gil()
 
         # Nullify all remaining instance variables for safety.
         self._action_toggle_work = None
