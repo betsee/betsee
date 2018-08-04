@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -52,13 +53,13 @@ submodule has locally created and cached that module for the current user.
 #     the window title, if set. This is done by the QPA plugin, so it is shown
 #     to the user, but isn't part of the windowTitle string."
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid circular import dependencies, avoid importing from *ANY*
 # application-specific submodules of this subpackage (i.e.,
 # "betsee.gui.window"). Since those submodules must *ALWAYS* be able to safely
 # import from this submodule, circularities are best avoided here.
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # Accessing attributes of the "PySide2.QtCore.Qt" subpackage requires this
 # subpackage to be imported directly. Attributes are *NOT* importable from this
@@ -68,6 +69,7 @@ from PySide2.QtGui import QCloseEvent
 from PySide2.QtWidgets import QToolButton, QWidget
 from betse.util.io.log import logs
 from betse.util.path import pathnames
+from betse.util.type.obj import objects
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import guimetadata
 from betsee.guiexception import BetseePySideWindowException
@@ -78,7 +80,7 @@ from betsee.util.io.log import guilogconf
 from betsee.util.io.xml import guiui
 from betsee.util.type.guitype import QWidgetOrNoneTypes
 
-# ....................{ GLOBALS                            }....................
+# ....................{ GLOBALS                           }....................
 MAIN_WINDOW_BASE_CLASSES = guiui.get_ui_module_base_classes(
     ui_module_name=guimetadata.MAIN_WINDOW_UI_MODULE_NAME)
 '''
@@ -86,13 +88,13 @@ Sequence of all main window base classes declared by the module whose
 fully-qualified name is given by :attr:`metadata.MAIN_WINDOW_UI_MODULE_NAME`.
 '''
 
-# ....................{ CLASSES                            }....................
-# Subclass all main window base classes declared by the above module (in order).
-# While multiple inheritance typically invites complex complications (e.g.,
-# diamond inheritance problem) and hence is best discouraged, these base classes
-# are guaranteed *NOT* to conflict in this manner. All alternatives to this
-# multiple inheritance design invite worse complications and otherwise avoidable
-# annoyances. In short, this is arguably the best we can do.
+# ....................{ CLASSES                           }....................
+# Subclass all main window base classes declared by the above module (in
+# order).  While multiple inheritance typically invites complex complications
+# (e.g., diamond inheritance problem) and hence is best discouraged, these base
+# classes are guaranteed *NOT* to conflict in this manner. All alternatives to
+# this multiple inheritance design invite worse complications and otherwise
+# avoidable annoyances. In short, this is arguably the best we can do.
 #
 # For further details, see the following classic PyQt treatise:
 #     http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
@@ -106,8 +108,8 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     This class subclasses all main window base classes declared by the module
     whose fully-qualified name is given by
     :attr:`metadata.MAIN_WINDOW_UI_MODULE_NAME`. While multiple inheritance
-    often invites complex complications (e.g., diamond inheritance) and hence is
-    best discouraged, these base classes are guaranteed *not* to conflict in
+    often invites complex complications (e.g., diamond inheritance) and hence
+    is best discouraged, these base classes are guaranteed *not* to conflict in
     this manner. All alternatives to this multiple inheritance design invite
     worse complications and otherwise avoidable annoyances. In short, this is
     arguably the best we can do.
@@ -136,7 +138,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         :mod:`PyQt5`-specific documentation detailing this design.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(
         self,
@@ -211,15 +213,15 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # all physical and abstract widgets of this window .
         self._init_end()
 
-    # ..................{ INITIALIZERS ~ actions             }..................
+    # ..................{ INITIALIZERS ~ actions            }..................
     def _init_actions(self) -> None:
         '''
         Customize all abstract :class:`QAction` widgets of this main window,
-        typically by associating the predefined C-based signals of these widgets
-        with custom pure-Python slot callables.
+        typically by associating the predefined C-based signals of these
+        widgets with custom pure-Python slot callables.
         '''
 
-        # Customize all QAction widgets in the "File", "Edit", and "Help" menus.
+        # Customize all actions in the "File", "Edit", and "Help" menus.
         self._init_actions_file()
         self._init_actions_edit()
         self._init_actions_help()
@@ -244,7 +246,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         Customize all QAction widgets of the top-level ``File`` menu.
         '''
 
-        # Associate QAction signals with Python slots.
+        # Associate action signals with corresponding slots.
         self.action_exit.triggered.connect(self.close)
 
 
@@ -276,7 +278,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
             synopsis='This action is currently unimplemented.',
         )
 
-    # ..................{ INITIALIZERS ~ widgets             }..................
+    # ..................{ INITIALIZERS ~ widgets            }..................
     def _init_widgets(self) -> None:
         '''
         Customize all physical top-level widgets of this main window, thus
@@ -305,18 +307,20 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # Initialize the simulation configuration tree widget.
         self.sim_conf_tree.init(main_window=self)
 
-    # ..................{ INITIALIZERS ~ end                 }..................
+    # ..................{ INITIALIZERS ~ end                }..................
     def _init_end(self) -> None:
         '''
         Finalize the initialization of this main window.
 
-        As this method's name implies, this method is called *after* all widgets
-        of this main window have been initialized. This method then performs all
-        remaining logic assuming these widgets to be initialized -- including:
+        As this method's name implies, this method is called *after* all
+        widgets of this main window have been initialized. This method then
+        performs all remaining logic assuming these widgets to be initialized
+        -- including:
 
-        * **Toolbar button sanitization.** Since widget initialization typically
-          programmatically inserts additional buttons into the toolbar,
-          sanitizing these buttons *must* be deferred until this method.
+        * **Toolbar button sanitization.** Since widget initialization
+          typically programmatically inserts additional buttons into the
+          toolbar, sanitizing these buttons *must* be deferred until this
+          method.
         '''
 
         # Prevent toolbar buttons from receiving the keyboard input focus,
@@ -327,8 +331,9 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         #
         # By default, toolbar buttons are *ALWAYS* permitted to receive focus
         # regardless of whether the toolbar containing these buttons is
-        # permitted to do so (i.e., has a focus policy of "NoFocus") and despite
-        # there being no demonstrable use case for focusing these buttons.
+        # permitted to do so (i.e., has a focus policy of "NoFocus") and
+        # despite there being no demonstrable use case for focusing these
+        # buttons.
         for toolbar_button in self.toolbar.findChildren(QToolButton):
             toolbar_button.setFocusPolicy(Qt.NoFocus)
 
@@ -350,7 +355,46 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         if self._sim_conf_filename is not None:
             self.sim_conf.load(self._sim_conf_filename)
 
-    # ..................{ EVENTS                             }..................
+    # ..................{ TESTERS                           }..................
+    def _is_closable(self) -> bool:
+        '''
+        ``True`` only if this application is **safely closable** (i.e.,
+        closable without incuring possible simulation data loss).
+
+        Depending on the current state of this application, this method may
+        indefinitely block until the user interactively confirms all of the
+        following safety constraints:
+
+        * That all unsaved changes (if any) are to be saved for the currently
+          open simulation (if any).
+        * That the currently running simulation subcommand (if any) is to be
+          prematurely halted.
+
+        Design
+        ----------
+        This method is intentionally implemented as a method rather than
+        property to imply to callers that this method incurs side effects,
+        including indefinitely blocking until receiving user confirmation.
+        '''
+
+        # If this application has yet to be fully initialized, this application
+        # is safely closable. Why? By definition, an application that is only
+        # partially initialized is an application that has yet to be displayed
+        # to the user and hence has yet to open and hence edit a simulation.
+        if objects.get_attr_or_none(obj=self, attr_name='sim_conf') is None:
+            return False
+
+        #FIXME: Also interactively confirm that the currently running
+        #simulation subcommand (if any) is to be prematurely halted.
+
+        # Return true only if the user interactively confirms...
+        return (
+            # That all unsaved changes (if any) are to be saved for the
+            # currently open simulation (if any).
+            self.sim_conf.save_if_dirty()
+        )
+
+    # ..................{ EVENTS                            }..................
     def closeEvent(self, event: QCloseEvent) -> None:
         '''
         Event handler handling the passed close event signifying a user-driven
@@ -359,26 +403,22 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         See Also
         ----------
         :meth:`QObject.destroyed`
-            Slot whose signals are signalled immediately *before* that object
-            and all children objects of that parent object are destroyed.
+            Slot whose signals are signalled immediately *before* this object
+            and all children objects of this object are destroyed.
         :meth:`QGuiApplication::lastWindowClosed`
             Slot whose signals are signalled immediately *before* the last main
-            window (i.e., this singleton) and all children objects of that
+            window (i.e., this singleton) and all children objects of this
             window are destroyed.
         '''
 
-        # Log this closure.
-        logs.log_info('Finalizing PySide2 UI...')
+        # Log this attempt.
+        logs.log_info('Attempting PySide2 UI closure...')
 
-        # If either...
-        if (
-            # This window has yet to be fully initialized.
-            getattr(self, 'sim_conf', None) is None or
-            # This window has been fully initialized *AND* the user
-            # interactively confirmed saving all unsaved changes if any for the
-            # currently open simulation configuration if any.
-            self.sim_conf.save_if_dirty()
-        ):
+        # If this application is safely closable...
+        if self._is_closable():
+            # Log this closure.
+            logs.log_info('Performing PySide2 UI closure...')
+
             # Store application-wide settings *BEFORE* closing this window.
             self.signaler.store_settings_signal.emit()
 
@@ -392,11 +432,15 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
             super().closeEvent(event)
         # Else, refuse this request, preventing this window from being closed.
         # Well, the window manager typically ignores us and closes the window
-        # anyway... but, hey. If it's laptop battery life or us, we've gotta go.
+        # anyway... but hey. If it's battery life or us, we gotta go.
         else:
+            # Log this refusal.
+            logs.log_info('Ignoring PySide2 UI closure...')
+
+            # Refuse this closure request.
             event.ignore()
 
-    # ..................{ SLOTS ~ sim conf                   }..................
+    # ..................{ SLOTS ~ sim conf                  }..................
     @Slot(str)
     def set_sim_conf_filename(self, sim_conf_filename: StrOrNoneTypes) -> None:
         '''
@@ -430,9 +474,9 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     def set_sim_conf_dirty(self, is_sim_conf_dirty: bool) -> None:
         '''
         Slot invoked on the currently open simulation configuration associated
-        with the main window either receiving new unsaved changes (in which case
-        this boolean is ``True``) *or* having just been saved (in which case
-        this boolean is ``False``).
+        with the main window either receiving new unsaved changes (in which
+        case this boolean is ``True``) *or* having just been saved (in which
+        case this boolean is ``False``).
 
         Parameters
         ----------
@@ -442,29 +486,30 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         # Set the modification state of this window to correspond to the
-        # modification state of this simulation configuration, an operation that
-        # has platform-specific effects usually including appending an asterisk
-        # to the current window title.
+        # modification state of this simulation configuration, an operation
+        # that has platform-specific effects usually including appending an
+        # asterisk to the current window title.
         self.setWindowModified(is_sim_conf_dirty)
 
-    # ..................{ GETTERS                            }..................
+    # ..................{ GETTERS                           }..................
     @type_check
     def get_widget(self, widget_name: str) -> QWidget:
         '''
-        Widget with the passed name directly owned by this main window if such a
+        Widget with the passed name directly owned by this main window if this
         widget exists *or* raise an exception otherwise.
 
         The Qt (Creator|Designer)-managed ``.ui`` file underlying this window
-        declares most of this application's widgets as public instance variables
-        of this window, whose variable names are these widget's Qt-specific
-        object names. This function provides dynamica access to these windows in
-        a safe manner raising human-readable exceptions.
+        declares most of this application's widgets as public instance
+        variables of this window, whose variable names are these widget's
+        Qt-specific object names. This function provides dynamica access to
+        these windows in a safe manner raising human-readable exceptions.
 
         Caveats
         ----------
-        This function is principally intended for use cases in which this widget
-        is known only at runtime. Widgets known at development time may instead
-        be statically retrieved as public instance variables of this window.
+        This function is principally intended for use cases in which this
+        widget is known only at runtime. Widgets known at development time may
+        instead be statically retrieved as public instance variables of this
+        window.
 
         Parameters
         ----------
@@ -498,7 +543,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
     @type_check
     def get_widget_or_none(self, widget_name: str) -> QWidgetOrNoneTypes:
         '''
-        Widget with the passed name directly owned by this main window if such a
+        Widget with the passed name directly owned by this main window if this
         widget exists *or* ``None`` otherwise.
 
         Parameters
@@ -520,7 +565,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # All that glitters is not gold.
         return getattr(self, widget_name, None)
 
-    # ..................{ RESIZERS                           }..................
+    # ..................{ RESIZERS                          }..................
     def resize_full(self) -> None:
         '''
         Enable full-screen mode for this main window.

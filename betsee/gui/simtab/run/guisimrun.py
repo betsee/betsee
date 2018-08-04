@@ -8,11 +8,6 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 *and* controlling the execution of simulation phases) functionality.
 '''
 
-#FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
-#with unsaved changes), the GUI should prompt the user as to whether or not
-#they would like to save those changes *BEFORE* running the simulation. In
-#theory, we should be able to reuse existing "sim_conf" functionality to do so.
-
 #FIXME: When the application closure signal is emitted (e.g., from the
 #QApplication.aboutToQuit() signal and/or QMainWindow.closeEvent() handler),
 #the following logic should be performed (in order):
@@ -21,19 +16,19 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #   * When the user attempts to close the application when one or more threads
 #     are currently running, a warning dialog should be displayed to the user
 #     confirming this action.
-#2. If any workers are currently running:
-#   * The stop() signal of each such worker should be emitted.
+#2. If any worker is currently working (i.e., "if self._is_working"):
+#   * The stop() pseudo-slot of this worker should be called.
 #   * The slot handling this application closure event should then block for a
 #     reasonable amount of time (say, 100ms?) for this worker to gracefully
 #     terminate. If this worker fails to do so, more drastic measures may be
 #     necessary. (Gulp.)
 #3. If any threads are currently running (e.g., as testable via the
-#   guithreadpool.is_working() tester), these threads should be terminated as
-#   gracefully as feasible.
+#   guipoolthread.is_working() tester), these threads should be terminated as
+#   gracefully as feasible... somehow. (Reseach us up, please.)
 #
-#Note the QThreadPool.waitForDone(), which may assist us. If we do call that
-#function, we'll absolutely need to pass a reasonable timeout; if this timeout
-#is hit, the thread pool will need to be forcefully terminated. *shrug*
+#Note the static QThreadPool.waitForDone() method, which may assist us. If we
+#do call that function, we'll absolutely need to pass a reasonable timeout; if
+#this timeout is hit, the thread pool will need to be forcefully terminated.
 #FIXME: Gracefully terminate worker threads that are still running at
 #application shutdown. Ideally, this should reduce to simply:
 #
@@ -44,6 +39,11 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #  * If "_worker" is non-None:
 #    * Directly call the _worker.stop() method.
 #    * Wait for this method to emit the "stopped" signal.
+
+#FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
+#with unsaved changes), the GUI should prompt the user as to whether or not
+#they would like to save those changes *BEFORE* running the simulation. In
+#theory, we should be able to reuse existing "sim_conf" functionality to do so.
 
 #FIXME: Improve the underlying exporting simulation subcommands in BETSE (e.g.,
 #"betse plot seed") to perform routine progress callbacks.
@@ -185,7 +185,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle_work`
         action.
     _action_stop_worker : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_worker` action.
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_worker`
+        action.
     _player_progress : QProgressBar
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
     _player_toolbar : QFrame
@@ -385,8 +386,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Specifically:
         #
         # * This queue defaults to "None".
-        # * The _toggle_work() slot instantiates this queue on first
-        #   running a new queue of simulator phases.
+        # * The _toggle_work() slot instantiates this queue on initially
+        #   starting a new queue of simulator workers.
         # * The _stop_worker() slot reverts this queue back to "None".
         #
         # For efficiency, return this queue reduced to a boolean -- equivalent
@@ -837,8 +838,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._worker.phase.state = self._worker.simmer_state
 
     # ..................{ SLOTS ~ action : stop             }..................
-    #FIXME: Improve this slot to stop *ALL* workers (e.g., by calling
-    #_dequeue_workers()).
     @Slot()
     def _stop_worker(self) -> None:
         '''
@@ -861,11 +860,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # worker returned by the "_worker" property) is called.
         worker = self._worker
 
-        # Stop this worker. Note that the _dequeue_workers() method need (and
-        # indeed should) *NOT* be explicitly called here, as calling the stop()
-        # method here implicitly signals the _handle_worker_completion() slot,
-        # which internally calls the _dequeue_workers() method.
-        worker.stop()
+        # Dequeue all currently enqueued simulator workers, including both the
+        # currently working worker and all workers scheduled to work after the
+        # currently working worker.
+        self._dequeue_workers()
 
         #FIXME: For safety, relegate this to a new slot of the corresponding
         #phase connected to the stopped() signal of this worker.
@@ -873,6 +871,12 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Set this simulator and the currently running phase to the stopped
         # state *AFTER* successfully stopping this worker.
         worker.phase.state = SimmerState.STOPPED
+
+        # Stop this worker *AFTER* dequeueing all currently enqueued workers
+        # and setting this simulator state. While feasible, reversing this
+        # order of operations invites subtle race conditions between this slot
+        # and the _handle_worker_completion() slot signalled by this call.
+        worker.stop()
 
     # ..................{ QUEUERS                           }..................
     def _enqueue_workers(self) -> None:
@@ -906,6 +910,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             * Some simulator phase is currently running (i.e.,
               :attr:`_workers_queued` is already defined to be non-``None``).
         '''
+
+        # Log this action.
+        logs.log_debug('Enqueueing simulator workers...')
 
         # If this controller is *NOT* currently queued, raise an exception.
         self._die_unless_queued()
@@ -948,6 +955,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         (i.e., popping) all previously queued simulator workers.
         '''
 
+        # Log this action.
+        logs.log_debug('Dequeueing simulator workers...')
+
         # If no simulator worker is currently working, raise an exception.
         self._die_unless_working()
 
@@ -984,15 +994,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         short, the current approach stands as the most reasonable.
         '''
 
-        # If no workers remain to be run...
+        # If no workers remain to be run, gracefully halt this iteration.
         if not self._is_working:
-            # Log this completion.
-            logs.log_debug(
-                'Finalizing simulator work from main thread "%d"...',
-                guithread.get_current_thread_id())
-
-            # Gracefully halt this iteration.
             self._dequeue_workers()
+            return
         # Else, one or more workers remain to be run.
 
         # Next worker to be run.
@@ -1078,22 +1083,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             ) from exception
 
 
-    #FIXME: Revise the "Caveats" section of the docstring below, which (sadly,
-    #given how decently it was written), no longer applies at all. Perhaps at
-    #least some of this section can be shifted into the "Lifecycle" section of
-    #the class docstring instead?
-    #FIXME: Probably insufficient as is, sadly. Consider improving as follows:
-    #
-    #* Toggle the play button such that the play icon is now visible. The
-    #  optimal means of implementing this and the following item might be to
-    #  set the state of the simulator to stopped by calling the
-    #  _set_phase_state(). Since that internally calls the
-    #  _update_widgets() method, that might suffice. (It's been some time.)
-    #  * Actually, doesn't setting the "self._worker.phase.state" property to
-    #    "HALTED" already satisfy this here?
-    #* Disable the stop button. Actually, shouldn't this already be implicitly
-    #  performed by a call to the _update_widgets() method?
-    #* Probably ensure that the worker queue is empty.
     @Slot(bool)
     def _handle_worker_completion(self, is_success: bool) -> None:
         '''

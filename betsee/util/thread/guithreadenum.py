@@ -28,7 +28,7 @@ IDLE : enum
     paused while working). From this state, this worker may freely transition
     to the working but *not* paused state.
 RUNNING : enum
-    Running state, implying this worker to be **working** (i.e., performing
+    Running state, implying this worker to be **running** (i.e., performing
     subclass-specific business logic, typically expected to be long-running).
     From this state, this worker may freely transition to *any* other state.
 PAUSED : enum
@@ -38,6 +38,7 @@ PAUSED : enum
     this state to the running state is also referred to as "resuming."
 DELETED : enum
     Deleted state, implying this worker to be scheduled for deletion by a
-    recent call to ``delete_later`` method of this worker. From this state,
-    this worker *cannot* freely transition to *any* other state.
+    recent call to a ``delete_later`` method defined on this worker (e.g., the
+    :meth:`QBetseeThreadPoolWorker.delete_later` method). From this state, this
+    worker cannot freely transition to *any* other state.
 '''

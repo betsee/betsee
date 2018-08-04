@@ -151,40 +151,6 @@ def get_current_thread() -> QThread:
     return QThread.currentThread()
 
 
-def get_current_thread_id() -> int:
-    '''
-    Arbitrary Qt-specific integer uniquely identifying the current thread in
-    the active Python interpreter if the currently installed version of PySide2
-    exposes the :meth:`QThread.currentThreadId` method yielding this integer
-    *or* the Python-specific ID of this thread's object wrapper instead.
-
-    Caveats
-    ----------
-    This integer is non-portable and hence should *only* be embedded in
-    low-level debugging messages.
-
-    See Also
-    ----------
-    :func:`get_current_thread`
-        Further details.
-    '''
-
-    # Attempt to defer to the QThread.currentThreadId() class method if this
-    # version of PySide2 exposes this method. (Although Qt guarantees this
-    # method to exist, PySide2 bindings sadly make no such guarantees.)
-    try:
-        return QThread.currentThreadId()
-    # If PySide2 fails to expose this method, fallback to...
-    except AttributeError:
-        # Logging a non-fatal warning.
-        logs.log_warning(
-            'QThread.currentThreadId() undefined; '
-            'falling back to thread wrapper ID.')
-
-        # Returning the Python-specific ID of this thread's object wrapper.
-        return id(get_current_thread())
-
-
 def get_current_thread_process_name() -> str:
     '''
     Name of the OS-level process associated with the current thread, equivalent
@@ -201,6 +167,46 @@ def get_current_thread_process_name() -> str:
 
     # Return this thread's process name.
     return thread.objectName()
+
+# ....................{ GETTERS ~ current : thread : id   }....................
+# Conditionally define the frequently called get_current_thread_id() getter by
+# deciding whether PySide2 provides a binding for the static
+# QThread.currentThreadId() method on the current system and adopting the best
+# implementation available.
+#
+# Although Qt guarantees this method to exist, PySide2 bindings make no such
+# guarantees. For unknown reasons, all recent releases of PySide2 have reliably
+# failed to provide a binding for this method. Yes, this is a bug.
+try:
+    QThread.currentThreadId
+# If PySide2 fails to expose this method, fallback to an implementation
+# returning the Python-specific ID of the object wrapper for this thread.
+except AttributeError:
+    def get_current_thread_id() -> int:
+        return id(get_current_thread())
+# Else, PySide2 exposes this method. In this case, adopt the preferred
+# implementation of simply deferring to this method.
+else:
+    def get_current_thread_id() -> int:
+        return QThread.currentThreadId()
+
+# Unconditionally document this getter regardless of implementation.
+get_current_thread_id.__doc__ = '''
+    Arbitrary Qt-specific integer uniquely identifying the current thread in
+    the active Python interpreter if the currently installed version of PySide2
+    exposes the :meth:`QThread.currentThreadId` method yielding this integer
+    *or* the Python-specific ID of this thread's object wrapper instead.
+
+    Caveats
+    ----------
+    This integer is non-portable and hence should *only* be embedded in
+    low-level debugging messages.
+
+    See Also
+    ----------
+    :func:`get_current_thread`
+        Further details.
+    '''
 
 # ....................{ GETTERS ~ current : event         }....................
 def get_current_event_dispatcher() -> QAbstractEventDispatcher:

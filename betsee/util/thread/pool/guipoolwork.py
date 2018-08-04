@@ -25,7 +25,6 @@ from betse.util.type.types import (
     CallableTypes,
     MappingOrNoneTypes,
     SequenceOrNoneTypes,
-    # StrOrNoneTypes,
 )
 from betsee.guiexception import (
     BetseePySideThreadWorkerException,
@@ -359,6 +358,22 @@ class QBetseeThreadPoolWorker(QRunnable):
                 progress_bar.set_range_and_value_minimum)
             self.signals.progressed.connect(progress_bar.setValue)
 
+    # ..................{ PROPERTIES                        }..................
+    @property
+    def _is_running(self) -> bool:
+        '''
+        ``True`` only if this worker is **running** (i.e., performing
+        subclass-specific business logic, typically long-running).
+
+        Caveats
+        ----------
+        **This private property is non-thread-safe.** The caller *must*
+        explicitly embed each access of this property within a context manager
+        of the form ``with QMutexLocker(self._state_lock):``.
+        '''
+
+        return self._state is ThreadWorkerState.RUNNING
+
     # ..................{ SLOTS                             }..................
     #FIXME: It would be great to additionally set the object name of (and hence
     #the name of the process associated with) the parent thread of this worker
@@ -454,7 +469,7 @@ class QBetseeThreadPoolWorker(QRunnable):
                             guithread.get_current_thread_id(),
                             self._worker_id))
 
-                # Change to the working state.
+                # Change to the running state.
                 self._state = ThreadWorkerState.RUNNING
 
             # Notify external subscribers *BEFORE* beginning subclass work.
@@ -515,86 +530,13 @@ class QBetseeThreadPoolWorker(QRunnable):
             # Within a thread- and exception-safe context manager synchronizing
             # access to this state across multiple threads...
             with QMutexLocker(self._state_lock):
-                # If this worker's state is working, set this state to the idle
-                # (i.e., non-working) state.
-                if self._state is ThreadWorkerState.RUNNING:
+                # If this worker is running, set this worker's state to the
+                # idle (i.e., non-running) state.
+                if self._is_running:
                     self._state = ThreadWorkerState.IDLE
 
             # Emit this completion status to external subscribers.
             self.signals.finished.emit(is_success)
-
-    # ..................{ PSEUDO-SLOTS                      }..................
-    def stop(self) -> None:
-        '''
-        Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe push-based action of a genuine slot) gracefully and
-        permanently halting all work performed by this worker.
-
-        By :class:`QRunnable` design, this worker is *not* safely restartable
-        after finishing -- whether by this method being called, the
-        :meth:`_work` method either raising an exception or returning
-        successfully without doing so, the parent thread running this worker
-        being terminated, or otherwise. Ergo, completion is permanent.
-
-        States
-        ----------
-        Regardless of the current state of this worker, this method halts work
-        by changing this state to :attr:`ThreadWorkerState.IDLE`. The
-        :meth:`_halt_work_if_requested` method in the thread running this
-        worker then detects this state change and responds by raising an
-        exception internally caught by the parent :meth:`run` method.
-        '''
-
-        # Log this action.
-        logs.log_debug(
-            'Requesting thread "%d" worker "%d" to stop...',
-            guithread.get_current_thread_id(), self._worker_id)
-
-        # Within a thread- and exception-safe context manager synchronizing
-        # access to this state across multiple threads...
-        with QMutexLocker(self._state_lock):
-            # Regardless of the current state of this worker, change this
-            # worker's state to idle (i.e., non-working).
-            self._state = ThreadWorkerState.IDLE
-
-            # Unblock the parent thread of this worker if currently blocked.
-            # Deadlocks are unlikely but possible in edge cases unless this
-            # method is unconditionally called here.
-            #
-            # Note that, as the prior logic is sufficiently simplistic to
-            # ensure *NO* exception to be raised, this call need not be
-            # embedded in a "try-finally" block. Ergo, it isn't.
-            self._unblock_work()
-
-
-    def delete_later(self) -> None:
-        '''
-        Schedule all :class:`QObject` instances owned by this worker for
-        immediate deletion.
-
-        Specifically, this method schedules all signals owned by this worker
-        for immediate deletion and hence disconnection from all slots they are
-        currently connected to. (Note that doing so is technically unnecessary
-        in most cases. In theory, the subsequent nullification of this worker
-        by the call should suffice to schedule this deletion. As doing so has
-        no harmful side effects, however, this method exists.)
-        '''
-
-        # Log this action.
-        logs.log_debug(
-            'Scheduling worker "%d" for deletion...', self._worker_id)
-
-        # If this worker's signals are still alive...
-        if self.signals is not None:
-            # Schedule these signals for deletion.
-            self.signals.deleteLater()
-
-            # Nullify these signals for safety.
-            self.signals = None
-
-        # Change this worker's state to deleted *AFTER* successfully scheduling
-        # all "QObject" instances owned by this worker.
-        self._state = ThreadWorkerState.DELETED
 
     # ..................{ SLOTS ~ pause                     }..................
     def pause(self) -> None:
@@ -696,6 +638,90 @@ class QBetseeThreadPoolWorker(QRunnable):
                 # unless this method is unconditionally called here.
                 self._unblock_work()
 
+    # ..................{ PSEUDO-SLOTS ~ stop               }..................
+    def stop(self) -> None:
+        '''
+        Thread-safe psuedo-slot (i.e., non-slot method mimicking the
+        thread-safe push-based action of a genuine slot) gracefully and
+        permanently halting all work performed by this worker.
+
+        By :class:`QRunnable` design, this worker is *not* safely restartable
+        after finishing -- whether by this method being called, the
+        :meth:`_work` method either raising an exception or returning
+        successfully without doing so, the parent thread running this worker
+        being terminated, or otherwise. Ergo, completion is permanent.
+
+        States
+        ----------
+        Regardless of the current state of this worker, this method halts work
+        by changing this state to :attr:`ThreadWorkerState.IDLE`. The
+        :meth:`_halt_work_if_requested` method in the thread running this
+        worker then detects this state change and responds by raising an
+        exception internally caught by the parent :meth:`run` method.
+        '''
+
+        # Log this action.
+        logs.log_debug(
+            'Requesting thread "%d" worker "%d" to stop...',
+            guithread.get_current_thread_id(), self._worker_id)
+
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads...
+        with QMutexLocker(self._state_lock):
+            # Regardless of the current state of this worker, change this
+            # worker's state to idle (i.e., non-working).
+            self._state = ThreadWorkerState.IDLE
+
+            # Unblock the parent thread of this worker if currently blocked.
+            # Deadlocks are unlikely but possible in edge cases unless this
+            # method is unconditionally called here.
+            #
+            # The prior logic is sufficiently trivial to guarantee that
+            # *NO* exception is raised. Ergo, this call need *NOT* be embedded
+            # in a "try-finally" block.
+            self._unblock_work()
+
+
+    def delete_later(self) -> None:
+        '''
+        Thread-safe psuedo-slot (i.e., non-slot method mimicking the
+        thread-safe push-based action of a genuine slot) gracefully stopping
+        this worker if needed *and* scheduling all :class:`QObject` instances
+        owned by this worker for immediate deletion.
+
+        Specifically, this method schedules all signals owned by this worker
+        for immediate deletion and hence disconnection from all slots they are
+        currently connected to. (Note that doing so is technically unnecessary
+        in most cases. In theory, the subsequent nullification of this worker
+        by the call should suffice to schedule this deletion. As doing so has
+        no harmful side effects, however, this method exists.)
+        '''
+
+        # Log this action.
+        logs.log_debug(
+            'Scheduling worker "%d" for deletion...', self._worker_id)
+
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads...
+        with QMutexLocker(self._state_lock):
+            # If this worker is running, gracefully stop this worker and hence
+            # emit both the "stopped" and "finished" signals *BEFORE*
+            # scheduling these signals for deletion.
+            if self._is_running:
+                self.stop()
+
+            # If this worker's signals are still alive...
+            if self.signals is not None:
+                # Schedule these signals for deletion.
+                self.signals.deleteLater()
+
+                # Nullify these signals for safety.
+                self.signals = None
+
+            # Change this worker's state to deleted *AFTER* successfully
+            # scheduling all "QObject" instances owned by this worker.
+            self._state = ThreadWorkerState.DELETED
+
     # ..................{ MAKERS ~ optional                 }..................
     # Concrete methods designed to be safely redefinable by subclasses.
 
@@ -758,8 +784,9 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     def _halt_work_if_requested(self) -> None:
         '''
-        Temporarily or permanently halt all subclass-specific business logic
-        when requested to do so by external callers residing in other threads.
+        Thread-safely either temporarily or permanently halt all
+        subclass-specific business logic when requested to do so by external
+        callers residing in other threads.
 
         This function is intended to be periodically called by the subclass
         :meth:`_work` function. Specifically, this method:
@@ -816,8 +843,8 @@ class QBetseeThreadPoolWorker(QRunnable):
     # ..................{ STOPPERS                          }..................
     def _stop_work(self) -> None:
         '''
-        Gracefully terminate all subclass-specific business logic performed by
-        this worker.
+        Thread-safely gracefully terminate all subclass-specific business logic
+        performed by this worker.
 
         This method raises an internal exception expected to be caught *only*
         by the parent :meth:`run` method, as a crude form of coordinating
@@ -835,8 +862,8 @@ class QBetseeThreadPoolWorker(QRunnable):
     # ..................{ (UN)BLOCKERS                      }..................
     def _block_work(self) -> None:
         '''
-        Indefinitely block all subclass-specific business logic performed by
-        this worker.
+        Non-thread-safely indefinitely block all subclass-specific business
+        logic performed by this worker.
 
         This method waits for an external call from another thread to a worker
         pseudo-slot (e.g., the :meth:`resume` method), all of which internally
@@ -844,15 +871,9 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Caveats
         ----------
-        The :attr:`_state_lock` primitive *must* be acquired (i.e., locked)
-        before this method is called. To guarantee this, the call to this
-        method should typically be embedded in a context manager of the form
-        ``with QMutexLocker(self._state_lock):``.
-
-        If this is *not* the case, the behaviour of this method is undefined;
-        doing so may violate thread- and exception-safety in a
-        non-deterministic manner inducing non-human-readable segmentation
-        faults. (Presumably, that's bad.)
+        **This private method is non-thread-safe.** The caller *must*
+        explicitly embed each call to this method within a context manager of
+        the form ``with QMutexLocker(self._state_lock):``.
         '''
 
         # Log this blocking behaviour.
@@ -892,7 +913,8 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     def _unblock_work(self) -> None:
         '''
-        Unblock all subclass-specific business logic performed by this worker.
+        Non-thread-safely unblock all subclass-specific business logic
+        performed by this worker.
 
         This method wakes up the parent thread of this worker and hence this
         worker *after* the :meth:`_halt_work_if_requested` previously called
@@ -907,8 +929,9 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         Caveats
         ----------
-        The :attr:`_state_lock` primitive *must* be acquired (i.e., locked)
-        before this method is called. See the :meth:`_block_work` method.
+        **This private method is non-thread-safe.** The caller *must*
+        explicitly embed each call to this method within a context manager of
+        the form ``with QMutexLocker(self._state_lock):``.
         '''
 
         # Log this unblocking behaviour.
