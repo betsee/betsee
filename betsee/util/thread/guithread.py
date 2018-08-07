@@ -27,10 +27,26 @@ Python's restrictive Global Interpreter Lock (GIL)) facilities.
 from PySide2.QtCore import (
     QAbstractEventDispatcher, QCoreApplication, QEventLoop, QThread)
 from betse.util.io.log import logs
+from betse.util.py import pythread
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideThreadException
 from betsee.util.type.guitype import (
     QAbstractEventDispatcherOrNoneTypes, QThreadOrNoneTypes)
+
+# ....................{ GLOBALS                           }....................
+MAIN_THREAD_ID = None
+'''
+Arbitrary Qt-specific integer uniquely identifying the main thread in the
+active Python interpreter if the currently installed version of PySide2 exposes
+the :meth:`QThread.currentThreadId` method yielding this integer *or* the
+Python-specific ID of this thread's object wrapper instead.
+
+Caveats
+----------
+This integer is non-portable and hence should *only* be embedded in low-level
+debugging messages. Moreover, this integer is ``None`` until the :func:`init`
+function is called. In other words, you probably want to try something else.
+'''
 
 # ....................{ TESTERS                           }....................
 @type_check
@@ -151,6 +167,13 @@ def get_current_thread() -> QThread:
     return QThread.currentThread()
 
 
+# Placeholder function definition to avoid spurious linter errors. For
+# efficiency, this frequently called function is conditionally defined by the
+# init() function at application initialization time.
+def get_current_thread_id() -> int:
+    pass
+
+
 def get_current_thread_process_name() -> str:
     '''
     Name of the OS-level process associated with the current thread, equivalent
@@ -167,46 +190,6 @@ def get_current_thread_process_name() -> str:
 
     # Return this thread's process name.
     return thread.objectName()
-
-# ....................{ GETTERS ~ current : thread : id   }....................
-# Conditionally define the frequently called get_current_thread_id() getter by
-# deciding whether PySide2 provides a binding for the static
-# QThread.currentThreadId() method on the current system and adopting the best
-# implementation available.
-#
-# Although Qt guarantees this method to exist, PySide2 bindings make no such
-# guarantees. For unknown reasons, all recent releases of PySide2 have reliably
-# failed to provide a binding for this method. Yes, this is a bug.
-try:
-    QThread.currentThreadId
-# If PySide2 fails to expose this method, fallback to an implementation
-# returning the Python-specific ID of the object wrapper for this thread.
-except AttributeError:
-    def get_current_thread_id() -> int:
-        return id(get_current_thread())
-# Else, PySide2 exposes this method. In this case, adopt the preferred
-# implementation of simply deferring to this method.
-else:
-    def get_current_thread_id() -> int:
-        return QThread.currentThreadId()
-
-# Unconditionally document this getter regardless of implementation.
-get_current_thread_id.__doc__ = '''
-    Arbitrary Qt-specific integer uniquely identifying the current thread in
-    the active Python interpreter if the currently installed version of PySide2
-    exposes the :meth:`QThread.currentThreadId` method yielding this integer
-    *or* the Python-specific ID of this thread's object wrapper instead.
-
-    Caveats
-    ----------
-    This integer is non-portable and hence should *only* be embedded in
-    low-level debugging messages.
-
-    See Also
-    ----------
-    :func:`get_current_thread`
-        Further details.
-    '''
 
 # ....................{ GETTERS ~ current : event         }....................
 def get_current_event_dispatcher() -> QAbstractEventDispatcher:
@@ -237,6 +220,66 @@ def get_current_event_dispatcher() -> QAbstractEventDispatcher:
     # Return the event dispatcher for this thread.
     return get_event_dispatcher(thread)
 
+# ....................{ LOGGERS                           }....................
+@type_check
+def log_debug_current_thread(message: str, *args) -> None:
+    '''
+    Log the passed debug message from any arbitrary thread with the root
+    logger, formatted with the passed ``%``-style positional arguments.
+
+    Parameters
+    ----------
+    message : str
+        Human-readable message to be logged.
+
+    All remaining positional parameters are conditionally interpolated as
+    ``%``-style format specifiers into this message by logging facilities.
+
+    See Also
+    ----------
+    :func:`log_debug_main_thread`
+        Faster analogue intended to be called *only* when the current thread is
+        the main thread.
+    '''
+
+    # Log this message at the debug level. See log_main_thread_debug().
+    logs.log_debug(
+        message + ' <from thread "%d">', *args, get_current_thread_id())
+
+
+@type_check
+def log_debug_main_thread(message: str, *args) -> None:
+    '''
+    Log the passed debug message from the main thread with the root logger,
+    formatted with the passed ``%``-style positional arguments.
+
+    Caveats
+    ----------
+    This function is intended to be called *only* from the main thread. For
+    efficiency, this function does *not* validate this to be the case.
+
+    Parameters
+    ----------
+    message : str
+        Human-readable message to be logged.
+
+    All remaining positional parameters are conditionally interpolated as
+    ``%``-style format specifiers into this message by logging facilities.
+
+    See Also
+    ----------
+    :func:`log_debug_current_thread`
+        Slower analogue intended to be called from *any* thread.
+    '''
+
+    # Log this message at the debug level. To ensure that "%"-style format
+    # specifiers embedded in this message are properly deferred until logging
+    # time rather than performed now, the desired log message is created with
+    # simple string concatenation rather than deferred until logging time with
+    # "%"-style format specifiers, which would conflict with the former.
+    logs.log_debug(
+        message + ' <from main thread "%d">', *args, MAIN_THREAD_ID)
+
 # ....................{ HALTERS                           }....................
 @type_check
 def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
@@ -252,8 +295,7 @@ def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     After this function is called, this request will be unconditionally
     preserved in this thread until this thread is manually halted and restarted
     (e.g., by calling the :meth:`QBetseeWorkerThread.halt` and
-    :meth:`QBetseeWorkerThread.start` methods in that order). However, doing
-    so:
+    :meth:`QBetseeWorkerThread.start` methods in that order). Sadly, doing so:
 
     * Terminates all tasks and workers currently running in this thread,
       typically in a non-graceful manner resulting in in-memory or on-disk data
@@ -295,8 +337,8 @@ def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
 # ....................{ PROCESSORS                        }....................
 #FIXME: This and the function below require fundamental refactoring. Why? It
 #appears infeasible to pass arbitrary "event_dispatcher" objects around. For
-#unknown reasons, Python and/or Qt aggressively garbage collect these objects in
-#the absence of a reference to the threads owning these objects. Ergo:
+#unknown reasons, Python and/or Qt aggressively garbage collect these objects
+#in the absence of a reference to the threads owning these objects. Ergo:
 #
 #* Refactor this function to accept an additional preceding "thread" argument.
 #* Likewise for the function defined below.
@@ -399,3 +441,90 @@ def wait_for_events_if_none(
 
     # Process all pending events currently queued with this dispatcher.
     event_dispatcher.processEvents(QEventLoop.WaitForMoreEvents)
+
+# ....................{ INITIALIZERS                      }....................
+#FIXME: Call this function *VERY* early at application startup -- ideally,
+#immediately after initializing logging.
+def init() -> None:
+    '''
+    Initialize this submodule.
+
+    Caveats
+    ----------
+    **This function is intended to be called from the main thread.** If this is
+    *not* the case, the :data:`MAIN_THREAD_ID` global will be improperly
+    initialized.
+
+    Raises
+    ----------
+    BetsePyException
+        If the active Python interpreter does *not* support multithreading.
+    '''
+
+    # Submodule attributes at global scope (re)defined below. Yes, you declare
+    # a function at global scope from within another function via the same
+    # "global" declarator; failing to do so results in the former function
+    # being declared as a locally scoped closure, instead. See also:
+    #     https://stackoverflow.com/a/27930100/2809027
+    global MAIN_THREAD_ID, get_current_thread_id
+
+    # Log this initialization.
+    logs.log_debug('Initializing multithreading facilities...')
+
+    # If the active Python interpreter does *NOT* support multithreading, raise
+    # an exception *AFTER* BETSE is initialized.
+    #
+    # While Qt-based multithreading primitives are typically preferable to
+    # Python-based multithreading primitives, the latter have their occasional
+    # use. More critically, the lack of latter typically implies this
+    # interpreter to be in insufficiently sane for our purposes.
+    pythread.die_unless_threadable()
+
+    # Conditionally define the frequently called get_current_thread_id() getter
+    # by deciding whether PySide2 provides a binding for the static
+    # QThread.currentThreadId() method on the current system and adopting the
+    # best implementation available.
+    #
+    # Although Qt guarantees this method to exist, PySide2 bindings make no
+    # such guarantees. For unknown reasons, all recent releases of PySide2 have
+    # reliably failed to provide a binding for this method. Yes, this is a bug.
+    try:
+        QThread.currentThreadId
+    # If PySide2 fails to expose this method, fallback to an implementation
+    # returning the Python-specific ID of the object wrapper for this thread.
+    except AttributeError:
+        # Log this mishap as a non-fatal warning. What can we do, right?
+        logs.log_warning(
+            'QThread.currentThreadId() undefined; '
+            'falling back to thread wrapper ID.')
+
+        # Define this getter in the most hideous way possible.
+        def get_current_thread_id() -> int:
+            return id(get_current_thread())
+    # Else, PySide2 exposes this method. In this case, adopt the preferred
+    # implementation of simply deferring to this method.
+    else:
+        def get_current_thread_id() -> int:
+            return QThread.currentThreadId()
+
+    # Unconditionally document this getter regardless of implementation.
+    get_current_thread_id.__doc__ = '''
+    Arbitrary Qt-specific integer uniquely identifying the current thread in
+    the active Python interpreter if the currently installed version of PySide2
+    exposes the :meth:`QThread.currentThreadId` method yielding this integer
+    *or* the Python-specific ID of this thread's object wrapper instead.
+
+    Caveats
+    ----------
+    This integer is non-portable and hence should *only* be embedded in
+    low-level debugging messages.
+
+    See Also
+    ----------
+    :func:`get_current_thread`
+        Further details.
+    '''
+
+    # Immediately identify the main thread (assumed without proof to be the
+    # current thread) with the same function.
+    MAIN_THREAD_ID = get_current_thread_id()

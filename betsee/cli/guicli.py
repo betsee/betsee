@@ -97,8 +97,6 @@ from betse.util.cli.cliabc import CLIABC
 from betse.util.cli.cliopt import CLIOptionArgStr
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, ModuleType, SequenceTypes
-from betsee import guiignition, guimetadata
-from betsee.lib import guilib
 
 # ....................{ SUBCLASS                          }....................
 class BetseeCLI(CLIABC):
@@ -143,6 +141,22 @@ class BetseeCLI(CLIABC):
     # The following properties *MUST* be implemented by subclasses.
 
     @property
+    def _module_ignition(self) -> ModuleType:
+
+        # Defer heavyweight imports.
+        from betsee import guiignition
+        return guiignition
+
+
+    @property
+    def _module_metadata(self) -> ModuleType:
+
+        # Defer heavyweight imports.
+        from betsee import guimetadata
+        return guimetadata
+
+
+    @property
     def _help_epilog(self) -> str:
 
         return '''
@@ -155,20 +169,12 @@ seed, initialize, and then simulate such a simulation in the current directory:
 ;    betse  sim sim_config.yaml
 '''
 
-
-    @property
-    def _module_ignition(self) -> ModuleType:
-
-        return guiignition
-
-
-    @property
-    def _module_metadata(self) -> ModuleType:
-
-        return guimetadata
-
     # ..................{ SUPERCLASS ~ igniters             }..................
     def _init_app_libs(self) -> None:
+
+        # Defer heavyweight imports.
+        from betsee.lib import guilib
+        from betsee.util.thread import guithread
 
         # Initialize all mandatory runtime dependencies of this application,
         # including both BETSE and BETSEE.
@@ -180,6 +186,10 @@ seed, initialize, and then simulate such a simulation in the current directory:
         #
         # See the body of the function called here for further details.
         guilib.reinit()
+
+        # Initialize multithreading facilities *AFTER* validating dependencies,
+        # which take precedence by virtue of their being things we depend upon.
+        guithread.init()
 
     # ..................{ SUPERCLASS ~ options              }..................
     def _make_options_top(self) -> SequenceTypes:

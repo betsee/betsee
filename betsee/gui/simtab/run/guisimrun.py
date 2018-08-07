@@ -130,7 +130,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     locked behind a Qt-based mutual exclusion primitive.
 
     GIL-less Python interpreters violate this simplistic assumption. For
-    example, the :meth:`_stop_worker` and
+    example, the :meth:`_stop_workers` and
     :meth:`_handle_worker_completion` slots suffer a variety of obvious (albeit
     unlikely) race conditions under these interpreters centered around their
     attempts to competitively delete the same underlying worker in a
@@ -184,8 +184,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     _action_toggle_work : QAction
         Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle_work`
         action.
-    _action_stop_worker : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_worker`
+    _action_stop_workers : QAction
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_workers`
         action.
     _player_progress : QProgressBar
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
@@ -216,7 +216,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Nullify all remaining instance variables for safety.
         self._action_toggle_work = None
-        self._action_stop_worker = None
+        self._action_stop_workers = None
         self._player_progress = None
         self._player_toolbar = None
         self._workers_queued = None
@@ -294,7 +294,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Classify variables of this main window required by this simulator.
         self._action_toggle_work = main_window.action_sim_run_toggle_work
-        self._action_stop_worker = main_window.action_sim_run_stop_work
+        self._action_stop_workers = main_window.action_sim_run_stop_work
         self._player_progress = main_window.sim_run_player_progress
         self._player_toolbar  = main_window.sim_run_player_toolbar_frame
         self._status          = main_window.sim_run_player_status
@@ -339,7 +339,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Connect each such action to this object's corresponding slot.
         self._action_toggle_work.triggered.connect(self._toggle_work)
-        self._action_stop_worker.triggered.connect(self._stop_worker)
+        self._action_stop_workers.triggered.connect(self._stop_workers)
 
         # For each possible phase...
         for phase in self._PHASES:
@@ -388,7 +388,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # * This queue defaults to "None".
         # * The _toggle_work() slot instantiates this queue on initially
         #   starting a new queue of simulator workers.
-        # * The _stop_worker() slot reverts this queue back to "None".
+        # * The _stop_workers() slot reverts this queue back to "None".
         #
         # For efficiency, return this queue reduced to a boolean -- equivalent
         # to this less efficient (but more readable) pair of tests:
@@ -581,7 +581,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Log this slot.
         logs.log_debug(
-            'Simulator phase "%s" state set to "%s"...',
+            'Setting simulator phase "%s" state to "%s"...',
             phase.name, enums.get_member_name_lowercase(phase.state))
 
         # New state to change this simulator to if any *OR* "None" otherwise.
@@ -617,7 +617,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         if state_new is not None:
             # Log this change.
             logs.log_debug(
-                'Simulator state set to "%s"...',
+                'Setting simulator state to "%s"...',
                 enums.get_member_name_lowercase(state_new))
 
             # Change the state of this simulator to this new state.
@@ -648,7 +648,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._action_toggle_work.setEnabled(self._is_workable)
 
         # Enable simulator stopping only if the simulator is currently working.
-        self._action_stop_worker.setEnabled(self._is_working)
+        self._action_stop_workers.setEnabled(self._is_working)
 
         # Update the verbose status of this simulator.
         self._update_status()
@@ -715,6 +715,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             that the simulator be paused.
         '''
 
+        # Log this slot.
+        guithread.log_debug_main_thread(
+            'Toggling simulator work by user request...')
+
         # If the simulator is unworkable, raise an exception.
         self._die_unless_workable()
 
@@ -752,9 +756,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        logs.log_debug(
-            'Starting simulator work by user request from main thread "%d"...',
-            guithread.get_current_thread_id())
+        guithread.log_debug_main_thread(
+            'Starting simulator work by user request...')
 
         # If no simulator phase is currently queued, raise an exception.
         self._die_unless_queued()
@@ -786,9 +789,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        logs.log_debug(
-            'Pausing simulator work by user request from main thread "%d"...',
-            guithread.get_current_thread_id())
+        guithread.log_debug_main_thread(
+            'Pausing simulator work by user request...')
 
         # If the simulator is *not* currently running, raise an exception.
         self._die_unless_running()
@@ -819,9 +821,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        logs.log_debug(
-            'Resuming simulator work by user request from main thread "%d"...',
-            guithread.get_current_thread_id())
+        guithread.log_debug_main_thread(
+            'Resuming simulator work by user request...')
 
         # If the simulator is *not* currently paused, raise an exception.
         self._die_unless_paused()
@@ -839,17 +840,20 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     # ..................{ SLOTS ~ action : stop             }..................
     @Slot()
-    def _stop_worker(self) -> None:
+    def _stop_workers(self) -> None:
         '''
         Slot signalled on the user interactively (but *not* the codebase
         programmatically) clicking the :class:`QPushButton` widget associated
-        with the :attr:`_action_stop_worker` action.
+        with the :attr:`_action_stop_workers` action.
+
+        This method gracefully halts the current simulator worker *and*
+        dequeues all subsequently queued workers in a thread-safe manner,
+        effectively reverting the simulator to the idle state.
         '''
 
         # Log this slot.
-        logs.log_debug(
-            'Stopping simulator work by user request from main thread "%d"...',
-            guithread.get_current_thread_id())
+        guithread.log_debug_main_thread(
+            'Stopping simulator work by user request...')
 
         # If no worker is currently working, raise an exception.
         self._die_unless_working()
@@ -873,10 +877,51 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         worker.phase.state = SimmerState.STOPPED
 
         # Stop this worker *AFTER* dequeueing all currently enqueued workers
-        # and setting this simulator state. While feasible, reversing this
-        # order of operations invites subtle race conditions between this slot
-        # and the _handle_worker_completion() slot signalled by this call.
+        # and setting this simulator state.
+        #
+        # While feasible, reversing this order of operations invites subtle
+        # race conditions between this slot and the _handle_worker_completion()
+        # slot signalled by this call, which calls the _loop_worker() method,
+        # which calls the _dequeue_workers() method. Since the stop() method
+        # called here signals the _handle_worker_completion() slot in a
+        # multithreaded and hence non-deterministic manner, badness ensues.
         worker.stop()
+
+
+    #FIXME: Implement us up as follows (in order):
+    #
+    #* If no worker is currently working, noop.
+    #* Else:
+    #  * Call the _stop_workers() method.
+    #  * Possibly call the QThreadPool.waitForDone() function. Naturally, if we
+    #    do so:
+    #    * That function should be wrapped by a higher-level "guipoolthread"
+    #      function.
+    #    * If the currently working worker refuses to stop, forcefully halt the
+    #      parent thread of that worker. Naturally, we have no idea how to
+    #      currently go about that. Research us up, please.
+    #FIXME: Call us from our closeEvent() handler.
+    def _stop_workers_now_if_any(self) -> None:
+        '''
+        Coercively (i.e., non-gracefully) halt the current simulator worker if
+        any *and* dequeue all subsequently queued workers in a thread-safe
+        manner, reverting the simulator to the idle state by any means
+        necessary.
+
+        Unlike the comparable :meth:`_stop_workers` slot, this method:
+
+        *
+
+        Design
+        ----------
+        This method *must* called at application shutdown (e.g., by the parent
+        main window). If this is not done *and* a previously running simulator
+        worker is currently paused and hence indefinitely blocking its parent
+        thread, this application will itself indefinitely block rather than
+        actually shutdown. Which, of course, would be catastrophic.
+        '''
+
+        pass
 
     # ..................{ QUEUERS                           }..................
     def _enqueue_workers(self) -> None:
@@ -912,7 +957,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        logs.log_debug('Enqueueing simulator workers...')
+        guithread.log_debug_main_thread('Enqueueing simulator workers...')
 
         # If this controller is *NOT* currently queued, raise an exception.
         self._die_unless_queued()
@@ -956,7 +1001,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        logs.log_debug('Dequeueing simulator workers...')
+        guithread.log_debug_main_thread('Dequeueing simulator workers...')
 
         # If no simulator worker is currently working, raise an exception.
         self._die_unless_working()
@@ -994,9 +1039,14 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         short, the current approach stands as the most reasonable.
         '''
 
-        # If no workers remain to be run, gracefully halt this iteration.
+        # If no workers remain to be run, gracefully halt this iteration by
+        # silently reducing to a noop.
         if not self._is_working:
-            self._dequeue_workers()
+            # Log this halt.
+            guithread.log_debug_main_thread(
+                'Ceasing simulator worker iteration...')
+
+            # Reduce to a noop.
             return
         # Else, one or more workers remain to be run.
 
@@ -1058,6 +1108,11 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             Unconditionally encapsulates the passed exception.
         '''
 
+        # Log this slot.
+        guithread.log_debug_main_thread(
+            'Catching simulator worker exception "%s"...',
+            objects.get_class_name(exception))
+
         # If this exception signifies an instability, raise a human-readable
         # translated exception synopsizing this fact. This error is
         # sufficiently common to warrant a special case improving the user
@@ -1095,8 +1150,21 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         * If this queue is non-empty, starts the next enqueued worker.
         '''
 
-        # If no worker is currently working, raise an exception.
-        self._die_unless_working()
+        # If the most recently working worker is no longer working, silently
+        # reduce to a noop. Ideally, a worker would *ALWAYS* be working when
+        # this slot is signalled. In practice, edge cases resulting from the
+        # non-determinism implicit in multithreaded logic can induce this. For
+        # example, the _stop_workers() slot dequeueing all workers *BEFORE*
+        # calling the QBetseeSimmerPhaseWorker.stop() pseudo-slot signalling
+        # this slot reliably induces this case.
+        if not self._is_working:
+            # Log this edge case.
+            guithread.log_debug_main_thread(
+                'Ignoring simulator worker closure...')
+
+            # Reduce to a noop.
+            return
+        # Else, one or more workers remain to be run.
 
         # Currently working simulator worker. For safety, this property is
         # localized *BEFORE* this method dequeues this worker and hence
