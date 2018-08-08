@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -9,20 +9,20 @@ simulation results into multiple pages, each displaying and controlling all
 settings associated with a single result of the current simulation) facilities.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
 from PySide2.QtWidgets import QMainWindow, QTabWidget
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     '''
     :mod:`PySide2`-based tab widget containing multiple tabs, each displaying
     and controlling all settings associated with a single simulation result
-    (e.g., pickled file, plot, animation) of the current simulation created by a
-    single CLI-oriented simulation subcommand (e.g., ``betse plot init``).
+    (e.g., pickled file, plot, animation) of the current simulation created by
+    a single CLI-oriented simulation subcommand (e.g., ``betse plot init``).
 
     Attributes (Public)
     ----------
@@ -37,7 +37,7 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     ----------
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -75,8 +75,8 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
         pertains to the high-level state of this simulation subcommander.
 
         To avoid circular references, this method is guaranteed to *not* retain
-        references to this main window on returning. References to child widgets
-        (e.g., actions) of this window may be retained, however.
+        references to this main window on returning. References to child
+        widgets (e.g., actions) of this window may be retained, however.
 
         Parameters
         ----------
@@ -89,8 +89,8 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
         super().init()
 
         # Initialize all widgets concerning simulation subcommand state the
-        # *BEFORE* connecting all relevant signals and slots typically expecting
-        # these widgets to be initialized.
+        # *BEFORE* connecting all relevant signals and slots typically
+        # expecting these widgets to be initialized.
         self._init_widgets(main_window)
         self._init_connections(main_window)
 
@@ -105,7 +105,7 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
         Parameters
         ----------
         main_window : QMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
+            Initialized parent :class:`QMainWindow` widget.
         '''
 
         # Classify all instance variables of this main window subsequently
@@ -123,6 +123,11 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
         main window, top-level widgets of that window, and leaf widgets
         distributed throughout this application) whose internal state pertains
         to the high-level state of simulation subcommands.
+
+        Parameters
+        ----------
+        main_window : QMainWindow
+            Initialized parent :class:`QMainWindow` widget.
         '''
 
         # Connect each such action to this object's corresponding slot.
@@ -141,7 +146,20 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
 
         pass
 
-    # ..................{ PROPERTIES ~ bool                  }..................
+    # ..................{ FINALIZERS                        }..................
+    #FIXME: Revise docstring accordingly.
+    def halt_work(self) -> None:
+        '''
+        Coercively (i.e., non-gracefully) halt the current simulator worker if
+        any *and* dequeue all subsequently queued workers in a thread-safe
+        manner, reverting the simulator to the idle state... **by any means
+        necessary.**
+        '''
+
+        # Halt the simulator if currently running.
+        self.simmer.halt_workers()
+
+    # ..................{ PROPERTIES ~ bool                 }..................
     # @property
     # def is_open(self) -> bool:
     #     '''
@@ -150,7 +168,7 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     #
     #     return self.p.is_loaded
 
-    # ..................{ PROPERTIES ~ str                   }..................
+    # ..................{ PROPERTIES ~ str                  }..................
     # @property
     # def dirname(self) -> StrOrNoneTypes:
     #     '''
@@ -160,7 +178,7 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     #
     #     return self.p.conf_dirname
 
-    # ..................{ EXCEPTIONS                         }..................
+    # ..................{ EXCEPTIONS                        }..................
     # def die_unless_open(self) -> bool:
     #     '''
     #     Raise an exception unless a simulation configuration file is currently
@@ -171,7 +189,7 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     #         raise BetseeSimConfException(
     #             'No simulation configuration currently open.')
 
-    # ..................{ SIGNALS                            }..................
+    # ..................{ SIGNALS                           }..................
     # set_filename_signal = Signal(str)
     # '''
     # Signal passed either the absolute path of the currently open YAML-formatted
@@ -183,7 +201,7 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     # * Closing a currently open simulation configuration.
     # '''
 
-    # ..................{ SLOTS ~ state                      }..................
+    # ..................{ SLOTS ~ state                     }..................
     # @Slot(str)
     # def set_filename(self, filename: str) -> None:
     #     '''
@@ -202,7 +220,7 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
     #     # of whether a simulation configuration has just been opened or closed.
     #     self.set_dirty_signal.emit(False)
 
-    # ..................{ SLOTS ~ action                     }..................
+    # ..................{ SLOTS ~ action                    }..................
     # @Slot()
     # def _open_sim(self) -> None:
     #     '''

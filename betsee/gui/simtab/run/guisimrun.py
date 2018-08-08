@@ -48,6 +48,11 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #FIXME: Improve the underlying exporting simulation subcommands in BETSE (e.g.,
 #"betse plot seed") to perform routine progress callbacks.
 
+#FIXME: This submodule has become tragically long in the tooth. For
+#maintainability, refactor at least a portion of this functionality into a
+#separate submodule. In theory, isolating all of the logic pertaining to
+#simulator *WORKERS* into a new submodule (e.g., "guisimrunner") might suffice.
+
 #FIXME: Note in a more appropriate docstring somewhere that the text overlaid
 #onto the progress bar is only conditionally displayed depending on the current
 #style associated with this bar. Specifically, the official documentation notes:
@@ -348,6 +353,68 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
             # Inform this simulator of the initial state of this phase.
             self._set_phase_state(phase)
+
+    # ..................{ FINALIZERS                        }..................
+    #FIXME: Implement us up as follows (in order):
+    #
+    #* If no worker is currently working, noop.
+    #* Else:
+    #  * Call the _stop_workers() method.
+    #  * Possibly call the QThreadPool.waitForDone() function. Naturally, if we
+    #    do so:
+    #    * That function should be wrapped by a higher-level "guipoolthread"
+    #      function.
+    #    * If the currently working worker refuses to stop, forcefully halt the
+    #      parent thread of that worker. Naturally, we have no idea how to
+    #      currently go about that. Research us up, please.
+    def halt_workers(self) -> None:
+        '''
+        Coercively (i.e., non-gracefully) halt the current simulator worker if
+        any *and* dequeue all subsequently queued workers in a thread-safe
+        manner, reverting the simulator to the idle state... **by any means
+        necessary.**
+
+        This method subsumes the lower-level :meth:`_stop_workers` slot by:
+
+        *
+
+        Design
+        ----------
+        This method *must* called at application shutdown (e.g., by the parent
+        main window). If this is not done *and* a previously running simulator
+        worker is currently paused and hence indefinitely blocking its parent
+        thread, this application will itself indefinitely block rather than
+        actually shutdown. Which, of course, would be catastrophic.
+
+        This method may induce data loss or corruption in simulation output.
+        In theory, this should only occur in edge cases in which the current
+        simulator worker fails to gracefully terminate itself within a sensible
+        window of time. In practice, this implies that this method should
+        *only* be called when otherwise unavoidable (e.g., at application
+        shutdown).
+        '''
+
+        # Log this shutdown.
+        logs.log_debug('Finalizing simulator workers...')
+
+        # If no worker is currently working, silently reduce to a noop.
+        if not self._is_working:
+            return
+        # Else, a worker is currently working.
+
+        # Currently working simulator worker. For safety, this property is
+        # localized *BEFORE* this worker's stop() pseudo-slot (which
+        # internally dequeues this worker and hence implicitly modifies the
+        # worker returned by the "_worker" property) is called.
+        worker = self._worker
+
+        # Attempt to gracefully halt this worker, dequeue all subsequently
+        # queued workers if any, and unblock this worker's parent thread if
+        # currently blocked.
+        self._stop_workers()
+
+        # 30 seconds.
+        guipoolthread.halt_workers(workers=(worker,), milliseconds=30000)
 
     # ..................{ PROPERTIES ~ bool                 }..................
     @property
@@ -846,9 +913,18 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         programmatically) clicking the :class:`QPushButton` widget associated
         with the :attr:`_action_stop_workers` action.
 
-        This method gracefully halts the current simulator worker *and*
-        dequeues all subsequently queued workers in a thread-safe manner,
-        effectively reverting the simulator to the idle state.
+        This method effectively reverts the simulator to the idle state in a
+        thread-safe manner by (in order):
+
+        #. Unpausing the current simulator worker if currently paused, thus
+           unblocking this worker's parent thread if currently blocked.
+        #. Gracefully halting this worker.
+        #. Dequeueing all subsequently queued workers.
+
+        Raises
+        ----------
+        BetseeSimmerException
+            If no simulator worker is currently working.
         '''
 
         # Log this slot.
@@ -886,42 +962,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # called here signals the _handle_worker_completion() slot in a
         # multithreaded and hence non-deterministic manner, badness ensues.
         worker.stop()
-
-
-    #FIXME: Implement us up as follows (in order):
-    #
-    #* If no worker is currently working, noop.
-    #* Else:
-    #  * Call the _stop_workers() method.
-    #  * Possibly call the QThreadPool.waitForDone() function. Naturally, if we
-    #    do so:
-    #    * That function should be wrapped by a higher-level "guipoolthread"
-    #      function.
-    #    * If the currently working worker refuses to stop, forcefully halt the
-    #      parent thread of that worker. Naturally, we have no idea how to
-    #      currently go about that. Research us up, please.
-    #FIXME: Call us from our closeEvent() handler.
-    def _stop_workers_now_if_any(self) -> None:
-        '''
-        Coercively (i.e., non-gracefully) halt the current simulator worker if
-        any *and* dequeue all subsequently queued workers in a thread-safe
-        manner, reverting the simulator to the idle state by any means
-        necessary.
-
-        Unlike the comparable :meth:`_stop_workers` slot, this method:
-
-        *
-
-        Design
-        ----------
-        This method *must* called at application shutdown (e.g., by the parent
-        main window). If this is not done *and* a previously running simulator
-        worker is currently paused and hence indefinitely blocking its parent
-        thread, this application will itself indefinitely block rather than
-        actually shutdown. Which, of course, would be catastrophic.
-        '''
-
-        pass
 
     # ..................{ QUEUERS                           }..................
     def _enqueue_workers(self) -> None:
@@ -1054,9 +1094,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         worker = self._workers_queued[0]
 
         # Log this work attempt.
-        logs.log_debug(
-            'Spawning simulator worker "%s" from main thread "%d"...',
-            objects.get_class_name(worker), guithread.get_current_thread_id())
+        guithread.log_debug_main_thread('Iterating simulator worker...')
 
         # Finalize this worker's initialization.
         worker.init(

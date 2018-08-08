@@ -12,7 +12,8 @@ exactly one :class:`QRunnable`-based worker at a given time) classes.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QThreadPool
 # from betse.util.io.log import logs
-from betse.util.type.types import type_check
+from betse.util.type import iterables
+from betse.util.type.types import type_check, IterableTypes
 from betsee.guiexception import BetseePySideThreadException
 from betsee.util.type.guitype import QThreadPoolOrNoneTypes
 from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
@@ -139,3 +140,48 @@ def start_worker(
 
     # Run this worker in this thread pool.
     thread_pool.start(worker)
+
+# ....................{ HALTERS                           }....................
+#FIXME: Improve docstring contents, please.
+@type_check
+def halt_workers(
+    # Mandatory parameters.
+    workers: IterableTypes,
+    milliseconds: int,
+
+    # Optional parameters.
+    thread_pool: QThreadPoolOrNoneTypes = None,
+) -> None:
+    '''
+    Wait no more than the passed number of milliseconds for all passed thread
+    pool workers in the passed thread pool to gracefully stop and, if one or
+    more workers fail to do so, non-gracefully terminate these workers
+    immediately.
+
+    Specifically, this function:
+
+
+    Parameters
+    ----------
+    workers : IterableTypes
+        Workers to be halted in this thread pool.
+    milliseconds : int
+        Number of milliseconds (i.e., 10^-3 seconds) to block the current
+        thread *before* non-gracefully halting these workers.
+    thread_pool : QThreadPoolOrNoneTypes
+        Thread pool to halt these workers in. Defaults to ``None``, in which
+        case the singleton thread pool returned by the :func:`get_thread_pool`
+        function is defaulted to.
+    '''
+
+    # If any such worker is *NOT* a worker, raise an exception.
+    iterables.die_unless_items_instance_of(
+        iterable=workers, cls=QBetseeThreadPoolWorker)
+
+    # Default this thread pool to the singleton thread pool if needed.
+    if thread_pool is None:
+        thread_pool = get_thread_pool()
+
+    if not thread_pool.waitForDone(milliseconds):
+        for worker in workers:
+            worker.halt()

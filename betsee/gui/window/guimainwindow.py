@@ -167,6 +167,11 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         self._sim_conf_filename = sim_conf_filename
 
         # Nullify all remaining instance variables for safety.
+        #
+        # Note that the "sim_tab" instance variable is defined by our
+        # superclass, itself statically defined by our main UI file and hence
+        # "betsee.data.py.betsee_ui" submodule. For obvious reasons, this
+        # instance variable must *NOT* be overridden to "None" here.
         self.sim_conf = None
         self._clipboard = None
 
@@ -381,8 +386,11 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # is safely closable. Why? By definition, an application that is only
         # partially initialized is an application that has yet to be displayed
         # to the user and hence has yet to open and hence edit a simulation.
-        if objects.get_attr_or_none(obj=self, attr_name='sim_conf') is None:
-            return False
+        if (
+            objects.get_attr_or_none(obj=self, attr_name='sim_conf') is None or
+            objects.get_attr_or_none(obj=self, attr_name='sim_tab') is None
+        ):
+            return True
 
         #FIXME: Also interactively confirm that the currently running
         #simulation subcommand (if any) is to be prematurely halted.
@@ -418,6 +426,11 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         if self._is_closable():
             # Log this closure.
             logs.log_info('Performing PySide2 UI closure...')
+
+            # Halt all currently working simulator workers if any by attempting
+            # to gracefully stop each such worker if feasible or non-gracefully
+            # terminating each such worker otherwise.
+            self.sim_tab.halt_work()
 
             # Store application-wide settings *BEFORE* closing this window.
             self.signaler.store_settings_signal.emit()
