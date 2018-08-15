@@ -11,7 +11,7 @@ exactly one :class:`QRunnable`-based worker at a given time) classes.
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QThreadPool
-# from betse.util.io.log import logs
+from betse.util.io.log import logs
 from betse.util.type import iterables
 from betse.util.type.types import type_check, IterableTypes
 from betsee.guiexception import BetseePySideThreadException
@@ -142,7 +142,6 @@ def start_worker(
     thread_pool.start(worker)
 
 # ....................{ HALTERS                           }....................
-#FIXME: Improve docstring contents, please.
 @type_check
 def halt_workers(
     # Mandatory parameters.
@@ -158,8 +157,10 @@ def halt_workers(
     more workers fail to do so, non-gracefully terminate these workers
     immediately.
 
-    Specifically, this function:
-
+    Specifically, this function tests whether one or more thread pool workers
+    are still working *and* fail to stop (gracefully or otherwise) after
+    blocking the caller's thread for the passed number of milliseconds; if this
+    is the case, each such worker is terminated by any means necessary.
 
     Parameters
     ----------
@@ -174,6 +175,11 @@ def halt_workers(
         function is defaulted to.
     '''
 
+    # Log this termination.
+    logs.log_debug(
+        'Waiting %dms for %d thread pool workers to halt...',
+        milliseconds, len(workers))
+
     # If any such worker is *NOT* a worker, raise an exception.
     iterables.die_unless_items_instance_of(
         iterable=workers, cls=QBetseeThreadPoolWorker)
@@ -182,6 +188,13 @@ def halt_workers(
     if thread_pool is None:
         thread_pool = get_thread_pool()
 
+    # If one or more thread pool workers are still working and fail to stop
+    # (gracefully or otherwise) after blocking this number of milliseconds...
     if not thread_pool.waitForDone(milliseconds):
+        # Log this termination.
+        logs.log_debug(
+            'Forcing %d thread pool workers to halt...', len(workers))
+
+        # For each such worker, terminate this worker by any means necessary.
         for worker in workers:
             worker.halt()

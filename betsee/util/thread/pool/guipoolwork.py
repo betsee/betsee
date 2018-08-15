@@ -18,8 +18,8 @@ from PySide2.QtCore import (
     QWaitCondition,
 )
 from betse.exceptions import BetseMethodUnimplementedException
-from betse.util.io.log import logs
-# from betse.util.type.decorator.decmemo import property_cached
+# from betse.util.io.log import logs
+from betse.util.py import pyref
 from betse.util.type.types import (
     type_check,
     CallableTypes,
@@ -263,6 +263,11 @@ class QBetseeThreadPoolWorker(QRunnable):
 
     Attributes (Private)
     ----------
+    _thread : WeakRefType
+        Weak reference to the :class:`QThread` instance wrapping the thread in
+        which the :meth:`run` method is currently running if that method is
+        currently running *or* ``None`` otherwise (i.e., if this worker either
+        has yet to be started *or* has already finished).
     _worker_id : int
         0-based integer uniquely identifying this worker. This worker is
         guaranteed to be the *only* instance of this class assigned this
@@ -324,6 +329,9 @@ class QBetseeThreadPoolWorker(QRunnable):
 
         # Default this worker's initial state to the idle state.
         self._state = ThreadWorkerState.IDLE
+
+        # Weak reference to the thread currently running the run() method.
+        self._thread = None
 
         # Collection of all public signals emittable by this worker, classified
         # *AFTER* all other instance variables above to enable subclass methods
@@ -450,6 +458,10 @@ class QBetseeThreadPoolWorker(QRunnable):
             # Log this run.
             guithread.log_debug_current_thread(
                 'Starting pooled thread worker "%d"...', self._worker_id)
+
+            # Classify the pooled thread running this worker *BEFORE*
+            # performing any work, which assumes this thread to exist.
+            self._thread = pyref.refer_weak(guithread.get_current_thread())
 
             # Within a thread- and exception-safe context manager synchronizing
             # access to this state across multiple threads...
@@ -729,8 +741,10 @@ class QBetseeThreadPoolWorker(QRunnable):
     #  would be bad (e.g., due to indefinite blocking
     #  performed by the pause() pseudo-slot).
     #* In this halt() method:
-    #  * Very carefully test whether the "_thread" variable is non-None and, if
-    #    so, perform logic resembling:
+    #  * Very carefully test whether:
+    #    * The "_thread" variable is non-None.
+    #    * The "_state" variable is *NOT* "DELETED". Maybe this doesn't matter?
+    #    If all of these conditions apply, perform logic resembling:
     #    self._thread.quit()
     #    self._thread.wait(30000) // Wait for 30 seconds.
     #    if self._thread.isRunning():
