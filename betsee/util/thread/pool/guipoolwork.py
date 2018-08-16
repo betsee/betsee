@@ -456,12 +456,19 @@ class QBetseeThreadPoolWorker(QRunnable):
         # embedded within an exception handler.
         try:
             # Log this run.
-            guithread.log_debug_current_thread(
+            guithread.log_debug_thread_current(
                 'Starting pooled thread worker "%d"...', self._worker_id)
+
+            # If this thread is the main thread rather than a pooled thread,
+            # raise an exception. Allowing the main thread to directly call
+            # this method could, in the worst case, result in that thread and
+            # thus the GUI event loop being indefinitely blocked (e.g., by a
+            # subsequent call to the pause() pseudo-slot).
+            guithread.die_if_thread_current_main()
 
             # Classify the pooled thread running this worker *BEFORE*
             # performing any work, which assumes this thread to exist.
-            self._thread = pyref.refer_weak(guithread.get_current_thread())
+            self._thread = pyref.refer_weak(guithread.get_thread_current())
 
             # Within a thread- and exception-safe context manager synchronizing
             # access to this state across multiple threads...
@@ -477,7 +484,7 @@ class QBetseeThreadPoolWorker(QRunnable):
                     raise BetseePySideThreadWorkerException(
                         'Non-reentrant thread "{}" worker "{}" run() method '
                         'called reentrantly (i.e., multiple times).'.format(
-                            guithread.get_current_thread_id(),
+                            guithread.get_thread_current_id(),
                             self._worker_id))
 
                 # Change to the running state.
@@ -502,12 +509,12 @@ class QBetseeThreadPoolWorker(QRunnable):
         # thread has been externally requested to stop, do so gracefully by...
         except BetseePySideThreadWorkerStopException:
             # Log this cessation. That's it. Welp, that was easy.
-            guithread.log_debug_current_thread(
+            guithread.log_debug_thread_current(
                 'Stopping pooled thread worker "%d"...', self._worker_id)
         # If this worker raised any other exception...
         except Exception as exception:
             # Log this failure.
-            guithread.log_debug_current_thread(
+            guithread.log_debug_thread_current(
                 'Emitting pooled thread worker "%d" exception "%r"...',
                 self._worker_id, exception)
 
@@ -520,7 +527,7 @@ class QBetseeThreadPoolWorker(QRunnable):
             is_success = True
 
             # Log this success.
-            guithread.log_debug_current_thread(
+            guithread.log_debug_thread_current(
                 'Returning pooled thread worker "%d" value "%r"...',
                 self._worker_id, return_value)
 
@@ -529,7 +536,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         # In either case, this worker completed. In this case...
         finally:
             # Log this completion.
-            guithread.log_debug_current_thread(
+            guithread.log_debug_thread_current(
                 'Finishing pooled thread worker "%d" with exit status "%r"...',
                 self._worker_id, is_success)
 
@@ -543,6 +550,10 @@ class QBetseeThreadPoolWorker(QRunnable):
 
             # Emit this completion status to external subscribers.
             self.signals.finished.emit(is_success)
+
+            # Declassify the pooled thread running this worker *AFTER*
+            # performing all work, which assumes this thread to exist.
+            self._thread = None
 
     # ..................{ SLOTS ~ pause                     }..................
     def pause(self) -> None:
@@ -568,7 +579,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         # Log this action.
-        guithread.log_debug_current_thread(
+        guithread.log_debug_thread_current(
             'Requesting pooled thread worker "%d" to pause...',
             self._worker_id)
 
@@ -578,7 +589,7 @@ class QBetseeThreadPoolWorker(QRunnable):
             # If this worker is *NOT* currently working...
             if self._state is not ThreadWorkerState.RUNNING:
                 # Log this attempt.
-                guithread.log_debug_current_thread(
+                guithread.log_debug_thread_current(
                     'Ignoring attempt to pause idle or already paused '
                     'pooled thread worker "%d".', self._worker_id)
 
@@ -613,7 +624,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         # Log this action.
-        guithread.log_debug_current_thread(
+        guithread.log_debug_thread_current(
             'Requesting pooled thread worker "%d" to resume...',
             self._worker_id)
 
@@ -625,7 +636,7 @@ class QBetseeThreadPoolWorker(QRunnable):
                 # If this worker is *NOT* currently paused...
                 if self._state is not ThreadWorkerState.PAUSED:
                     # Log this attempt.
-                    guithread.log_debug_current_thread(
+                    guithread.log_debug_thread_current(
                         'Ignoring attempt to resume idle or already working '
                         'pooled thread worker "%d".', self._worker_id)
 
@@ -671,7 +682,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         # Log this action.
-        guithread.log_debug_current_thread(
+        guithread.log_debug_thread_current(
             'Requesting pooled thread worker "%d" to stop...', self._worker_id)
 
         # Within a thread- and exception-safe context manager synchronizing
@@ -706,7 +717,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         # Log this action.
-        guithread.log_debug_current_thread(
+        guithread.log_debug_thread_current(
             'Scheduling pooled thread worker "%d" for deletion...',
             self._worker_id)
 
@@ -732,34 +743,109 @@ class QBetseeThreadPoolWorker(QRunnable):
             self._state = ThreadWorkerState.DELETED
 
 
-    #FIXME: Define this method. Doing so will require:
-    #
-    #* Classifying a new private "_thread" instance variable, defaulting to
-    #  False and initialized in the run() method to a *WEAK PROXY* of the
-    #  current thread. Indeed, when doing so, note that we should additionally
-    #  validate the current thread to *NOT* be the main thread. Because that
-    #  would be bad (e.g., due to indefinite blocking
-    #  performed by the pause() pseudo-slot).
-    #* In this halt() method:
-    #  * Very carefully test whether:
-    #    * The "_thread" variable is non-None.
-    #    * The "_state" variable is *NOT* "DELETED". Maybe this doesn't matter?
-    #    If all of these conditions apply, perform logic resembling:
-    #    self._thread.quit()
-    #    self._thread.wait(30000) // Wait for 30 seconds.
-    #    if self._thread.isRunning():
-    #        self._thread.terminate()
-    #* Undefine the "_thread" variable in the "finally:" block of the run()
-    #  method, in preparation for the next (if any) call to that method.
-    #FIXME: Revise docstring accordingly.
     def halt(self) -> None:
         '''
         Thread-safe psuedo-slot (i.e., non-slot method mimicking the
-        thread-safe push-based action of a genuine slot) non-gracefully and
-        permanently terminating this worker and this worker's parent thread.
+        thread-safe push-based action of a genuine slot) attempting to first
+        gracefully and then non-gracefully terminate both this worker and the
+        pooled thread running this worker... **by any means necessary.**
+
+        Specifically, this method (in order):
+
+        #. Politely requests this pooled thread to gracefully terminate.
+        #. Blocks the calling thread (e.g., the main thread) for a negligible
+           span of time (e.g., 100ms) while waiting for this pooled thread to
+           gracefully terminate. Since the :func:`guipoolthread.halt_workers`
+           function calling this pseudo-slot already blocked for a lengthy span
+           of time without success for this worker to gracefully terminate,
+           this pseudo-slot effectively performs *no* blocking.
+        #. If this pooled thread is still running and hence failed to
+           gracefully terminate, this thread is immediately terminated
+           non-gracefully. (Note that doing so may induce catastrophic damage.
+           See the "Caveats" below.)
+
+        Caveats
+        ----------
+        This pseudo-slot may induce data loss or corruption in edge cases in
+        which this worker fails to gracefully terminate itself within a
+        reasonable span of time. This implies that this method should *only* be
+        called when absolutely necessary (e.g., at application shutdown).
         '''
 
-        pass
+        # Maximum number of milliseconds to block the current thread waiting
+        # for the currently working worker (if any) to gracefully halt.
+        WAIT_MAX_MILLISECONDS = 100  # 100ms
+
+        # Log this action.
+        guithread.log_debug_thread_current(
+            'Terminating pooled thread worker "%d" shortly...',
+            self._worker_id)
+
+        # Within a thread- and exception-safe context manager synchronizing
+        # access to this state across multiple threads...
+        with QMutexLocker(self._state_lock):
+            # If this worker is running, try to gracefully halt this worker
+            # *BEFORE* coercively and hence non-gracefully halting this worker.
+            if self._is_running:
+                self.stop()
+
+        # Strong reference to the thread still running this worker if any
+        # or "None" otherwise. Note that this usage pattern guarantees this
+        # thread to remain alive for the duration of this method call, as
+        # strongly (...get it?) recommended by official documentation:
+        #     https://docs.python.org/3/library/weakref.html#weak-reference-objects
+        #
+        # To avoid blocking attempts to gracefully halt this worker and hence
+        # thread from other threads, the following logic is intentionally *NOT*
+        # nested within the above context manager.
+        thread = self._thread()
+
+        # If this thread is no longer running this worker, log this fact
+        # and return immediately.
+        if thread is None:
+            guithread.log_debug_thread_current(
+                'Terminated pooled thread worker "%d" gracefully...',
+                self._worker_id)
+        # Else, this thread is still running this worker. In this case...
+        else:
+            # Log this fact.
+            guithread.log_debug_thread_current(
+                'Terminating pooled thread worker "%d" '
+                'possibly non-gracefully...',
+                self._worker_id)
+
+            # Politely request this thread to gracefully terminate. Since
+            # the prior call to the stop() pseudo-slot failed to do so,
+            # this call is unlikely to fare any better. Since performing
+            # this call incurs no cost, there's no loss in trying anyway.
+            thread.quit()
+
+            # Block the calling thread (e.g., main thread) for a negligible
+            # window of time in the desperate hope that this working thread
+            # will gracefully terminate within this window.
+            #
+            # Since the guipoolthread.halt_workers() function calling this
+            # slot has already waited for 30 seconds without success for this
+            # worker to gracefully terminate, avoid blocking for a significant
+            # window of time here.
+            thread.wait(WAIT_MAX_MILLISECONDS) # 100ms
+
+            # If the working thread is still working, we have little choice
+            # but to...
+            if thread.isRunning():
+                # Log this fact.
+                guithread.log_warning_thread_current(
+                    'Terminating pooled thread worker "%d" '
+                    'non-gracefully!', self._worker_id)
+
+                # Terminate this thread non-gracefully. *UGH!*
+                thread.terminate()
+            # Else, the working thread is no longer working. Log this fact
+            # and return immediately.
+            else:
+                guithread.log_debug_thread_current(
+                    'Terminating pooled thread worker "%d" '
+                    'gracefully after all...', self._worker_id)
 
     # ..................{ MAKERS ~ optional                 }..................
     # Concrete methods designed to be safely redefinable by subclasses.
@@ -891,7 +977,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         # Log this action.
-        guithread.log_debug_current_thread(
+        guithread.log_debug_thread_current(
             'Stopping pooled thread worker "%d"...', self._worker_id)
 
         # Instruct the parent run() method to stop.
@@ -915,7 +1001,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         # Log this blocking behaviour.
-        guithread.log_debug_current_thread(
+        guithread.log_debug_thread_current(
             'Pausing pooled thread worker "%d"...', self._worker_id)
 
         # Notify callers that this worker is now paused immediately *BEFORE*
@@ -972,7 +1058,7 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         # Log this unblocking behaviour.
-        guithread.log_debug_current_thread(
+        guithread.log_debug_thread_current(
             'Resuming pooled thread worker "%d"...', self._worker_id)
 
         # Wake up the parent thread of this worker if currently blocking.

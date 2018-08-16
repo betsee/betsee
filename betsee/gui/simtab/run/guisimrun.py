@@ -355,18 +355,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             self._set_phase_state(phase)
 
     # ..................{ FINALIZERS                        }..................
-    #FIXME: Implement us up as follows (in order):
-    #
-    #* If no worker is currently working, noop.
-    #* Else:
-    #  * Call the _stop_workers() method.
-    #  * Possibly call the QThreadPool.waitForDone() function. Naturally, if we
-    #    do so:
-    #    * That function should be wrapped by a higher-level "guipoolthread"
-    #      function.
-    #    * If the currently working worker refuses to stop, forcefully halt the
-    #      parent thread of that worker. Naturally, we have no idea how to
-    #      currently go about that. Research us up, please.
     def halt_workers(self) -> None:
         '''
         Coercively (i.e., non-gracefully) halt the current simulator worker if
@@ -374,9 +362,15 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         manner, reverting the simulator to the idle state... **by any means
         necessary.**
 
-        This method subsumes the lower-level :meth:`_stop_workers` slot by:
+        This high-level method subsumes the lower-level :meth:`_stop_workers`
+        slot by (in order):
 
-        *
+        #. If no worker is currently working, silently reducing to a noop.
+        #. Attempting to gracefully halt the currently working worker, dequeue
+           all subsequently queued workers if any, and unblock this worker's
+           parent thread if currently blocked.
+        #. If this worker fails to gracefully halt within a reasonable window
+           of time (e.g., 30 seconds), coerce this worker to immediately halt.
 
         Design
         ----------
@@ -386,6 +380,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         thread, this application will itself indefinitely block rather than
         actually shutdown. Which, of course, would be catastrophic.
 
+        Caveats
+        ----------
         This method may induce data loss or corruption in simulation output.
         In theory, this should only occur in edge cases in which the current
         simulator worker fails to gracefully terminate itself within a sensible
@@ -394,13 +390,17 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         shutdown).
         '''
 
+        # Maximum number of milliseconds to block the current thread waiting
+        # for the currently working worker (if any) to gracefully halt.
+        WAIT_MAX_MILLISECONDS = 30000  # 30 seconds
+
         # Log this shutdown.
         logs.log_debug('Finalizing simulator workers...')
 
         # If no worker is currently working, silently reduce to a noop.
         if not self._is_working:
             return
-        # Else, a worker is currently working.
+        # Else, some worker is currently working.
 
         # Currently working simulator worker. For safety, this property is
         # localized *BEFORE* this worker's stop() pseudo-slot (which
@@ -413,8 +413,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # currently blocked.
         self._stop_workers()
 
-        # 30 seconds.
-        guipoolthread.halt_workers(workers=(worker,), milliseconds=30000)
+        # If this worker fails to gracefully halt within a reasonable window
+        # of time (e.g., 30 seconds), coerce this worker to immediately halt.
+        guipoolthread.halt_workers(
+            workers=(worker,), milliseconds=WAIT_MAX_MILLISECONDS)
 
     # ..................{ PROPERTIES ~ bool                 }..................
     @property
@@ -783,7 +785,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this slot.
-        guithread.log_debug_main_thread(
+        guithread.log_debug_thread_main(
             'Toggling simulator work by user request...')
 
         # If the simulator is unworkable, raise an exception.
@@ -823,7 +825,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        guithread.log_debug_main_thread(
+        guithread.log_debug_thread_main(
             'Starting simulator work by user request...')
 
         # If no simulator phase is currently queued, raise an exception.
@@ -856,7 +858,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        guithread.log_debug_main_thread(
+        guithread.log_debug_thread_main(
             'Pausing simulator work by user request...')
 
         # If the simulator is *not* currently running, raise an exception.
@@ -888,7 +890,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        guithread.log_debug_main_thread(
+        guithread.log_debug_thread_main(
             'Resuming simulator work by user request...')
 
         # If the simulator is *not* currently paused, raise an exception.
@@ -928,7 +930,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this slot.
-        guithread.log_debug_main_thread(
+        guithread.log_debug_thread_main(
             'Stopping simulator work by user request...')
 
         # If no worker is currently working, raise an exception.
@@ -997,7 +999,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        guithread.log_debug_main_thread('Enqueueing simulator workers...')
+        guithread.log_debug_thread_main('Enqueueing simulator workers...')
 
         # If this controller is *NOT* currently queued, raise an exception.
         self._die_unless_queued()
@@ -1041,7 +1043,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this action.
-        guithread.log_debug_main_thread('Dequeueing simulator workers...')
+        guithread.log_debug_thread_main('Dequeueing simulator workers...')
 
         # If no simulator worker is currently working, raise an exception.
         self._die_unless_working()
@@ -1083,7 +1085,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # silently reducing to a noop.
         if not self._is_working:
             # Log this halt.
-            guithread.log_debug_main_thread(
+            guithread.log_debug_thread_main(
                 'Ceasing simulator worker iteration...')
 
             # Reduce to a noop.
@@ -1094,7 +1096,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         worker = self._workers_queued[0]
 
         # Log this work attempt.
-        guithread.log_debug_main_thread('Iterating simulator worker...')
+        guithread.log_debug_thread_main('Iterating simulator worker...')
 
         # Finalize this worker's initialization.
         worker.init(
@@ -1147,7 +1149,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         '''
 
         # Log this slot.
-        guithread.log_debug_main_thread(
+        guithread.log_debug_thread_main(
             'Catching simulator worker exception "%s"...',
             objects.get_class_name(exception))
 
@@ -1197,7 +1199,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # this slot reliably induces this case.
         if not self._is_working:
             # Log this edge case.
-            guithread.log_debug_main_thread(
+            guithread.log_debug_thread_main(
                 'Ignoring simulator worker closure...')
 
             # Reduce to a noop.

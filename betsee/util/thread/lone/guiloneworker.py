@@ -226,7 +226,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
             logs.log_debug(
                 'Resuming thread "%d" worker "%s" '
                 'via reentrant start() slot...',
-                guithread.get_current_thread_id(), self.obj_name)
+                guithread.get_thread_current_id(), self.obj_name)
             self._state = ThreadWorkerState.WORKING
             return
 
@@ -238,13 +238,13 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
             logs.log_warning(
                 'Ignoring attempt to reenter '
                 'thread "%d" worker "%s" start() slot.',
-                guithread.get_current_thread_id(), self.obj_name)
+                guithread.get_thread_current_id(), self.obj_name)
             return
 
         # Log this beginning.
         logs.log_debug(
             'Starting thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
+            guithread.get_thread_current_id(), self.obj_name)
 
         # Change to the working state.
         self._state = ThreadWorkerState.WORKING
@@ -281,7 +281,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
         # Log this completion.
         logs.log_debug(
             'Finishing thread "%d" worker "%s" with success status "%r"...',
-            guithread.get_current_thread_id(),
+            guithread.get_thread_current_id(),
             self.obj_name,
             is_success)
 
@@ -316,7 +316,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
         # Log this change.
         logs.log_debug(
             'Stopping thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
+            guithread.get_thread_current_id(), self.obj_name)
 
         # If this worker is currently working or paused, stop this worker.
         if self._state is not ThreadWorkerState.IDLE:
@@ -343,18 +343,13 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
         working worker to be paused and that worker's completion of its work.
         '''
 
-        # Event dispatcher associated with the current thread of execution,
-        # obtained *BEFORE* modifying the state of this worker to raise an
-        # exception in the event that this thread has no such dispatcher.
-        event_dispatcher = guithread.get_current_event_dispatcher()
-
         # If this worker is *NOT* currently working...
         if self._state is not ThreadWorkerState.WORKING:
             # Log this attempt.
             logs.log_debug(
                 'Ignoring attempt to pause idle or already paused '
                 'thread "%d" worker "%s".',
-                guithread.get_current_thread_id(), self.obj_name)
+                guithread.get_thread_current_id(), self.obj_name)
 
             # Safely reduce to a noop.
             return
@@ -363,7 +358,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
         # Log this change.
         logs.log_debug(
             'Pausing thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
+            guithread.get_thread_current_id(), self.obj_name)
 
         # Change this worker's state to paused.
         self._state = ThreadWorkerState.PAUSED
@@ -371,7 +366,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
         # While this worker's state is paused, wait for the resume() slot to be
         # externally signalled by another object (typically in another thread).
         while self._state is ThreadWorkerState.PAUSED:
-            guithread.wait_for_events_if_none(event_dispatcher)
+            guithread.wait_for_thread_current_event_if_none()
 
 
     @Slot()
@@ -399,7 +394,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
         # Log this change.
         logs.log_debug(
             'Resuming thread "%d" worker "%s"...',
-            guithread.get_current_thread_id(), self.obj_name)
+            guithread.get_thread_current_id(), self.obj_name)
 
         # If this worker is currently paused, unpause this worker.
         if self._state is ThreadWorkerState.PAUSED:
@@ -479,7 +474,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
         # Process all pending events currently queued with this worker's thread,
         # notably including any incoming signalling of the stop() slot by
         # objects in other threads..
-        guithread.process_events()
+        guithread.process_thread_current_events()
 
         # If either:
         if (
@@ -492,7 +487,7 @@ class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):
             # Log this interrupt.
             logs.log_debug(
                 'Interrupting thread "%d" worker "%s"...',
-                guithread.get_current_thread_id(), self.obj_name)
+                guithread.get_thread_current_id(), self.obj_name)
 
             # Instruct the parent start() slot to stop.
             raise BetseePySideThreadWorkerStopException('So say we all.')

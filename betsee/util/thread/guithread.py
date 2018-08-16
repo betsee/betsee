@@ -9,32 +9,16 @@ Low-level **multithreading** (i.e., platform-portable, pure-Qt,
 Python's restrictive Global Interpreter Lock (GIL)) facilities.
 '''
 
-#FIXME: This submodule is increasingly awkward, largely due to the unctuous
-#requirement that a "thread" reference always be passed whenever an
-#"event_dispatcher" reference is required. Instead, do the following:
-#
-#* Define a new "ThreadEventDispatcherWrapper" class subclassing "object" rather
-#  than "QObject" in this submodule.
-#* Define the following instance variables of this class:
-#  * "thread".
-#  * "event_dispatcher".
-#* Redefine the process_events() and wait_for_events_if_none() functions into
-#  methods of this class operating upon these variables.
-#* Redefine the get_current_event_dispatcher() to return an instance of the
-#  "ThreadEventDispatcherWrapper" class.
-
 # ....................{ IMPORTS                           }....................
-from PySide2.QtCore import (
-    QAbstractEventDispatcher, QCoreApplication, QEventLoop, QThread)
+from PySide2.QtCore import QCoreApplication, QEventLoop, QThread
 from betse.util.io.log import logs
 from betse.util.py import pythread
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideThreadException
-from betsee.util.type.guitype import (
-    QAbstractEventDispatcherOrNoneTypes, QThreadOrNoneTypes)
+from betsee.util.type.guitype import QThreadOrNoneTypes
 
 # ....................{ GLOBALS                           }....................
-MAIN_THREAD_ID = None
+_THREAD_MAIN_ID = None
 '''
 Arbitrary Qt-specific integer uniquely identifying the main thread in the
 active Python interpreter if the currently installed version of PySide2 exposes
@@ -48,7 +32,67 @@ debugging messages. Moreover, this integer is ``None`` until the :func:`init`
 function is called. In other words, you probably want to try something else.
 '''
 
+# ....................{ EXCEPTIONS                        }....................
+def die_if_thread_current_main() -> None:
+    '''
+    Raise an exception if the current thread is the main thread in the active
+    Python interpreter.
+
+    This function should typically be called for safety by callers attempting
+    to subsequently block the current thread (e.g., by calling the
+    :func:`wait_for_events_if_none` function). The main thread administers the
+    Qt-specific GUI event loop and hence should *never* be blocked for any
+    duration of time whatsoever.
+
+    Raises
+    ----------
+    BetseePySideThreadException
+        If this function is called from the main thread.
+
+    See Also
+    ----------
+    :func:`is_thread_current_main`
+        Further details.
+    '''
+
+    if is_thread_current_main():
+        raise BetseePySideThreadException(QCoreApplication.translate(
+            'die_if_thread_current_main',
+            'Operation prohibited in main thread.'))
+
+# ....................{ EXCEPTIONS ~ private              }....................
+def _die_unless_thread_main_id() -> None:
+    '''
+    Raise an exception unless a prior call to the :func:`init` function has
+    defined the :data:`_THREAD_MAIN_ID` global.
+
+    Raises
+    ----------
+    BetseePySideThreadException
+        If the :func:`init` function has yet to be called.
+    '''
+
+    if _THREAD_MAIN_ID is None:
+        raise BetseePySideThreadException(QCoreApplication.translate(
+            '_die_unless_thread_main_id',
+            '"_THREAD_MAIN_ID" undefined (e.g., '
+            'due to the init() function having yet to be called).'))
+
 # ....................{ TESTERS                           }....................
+@type_check
+def is_thread_current_main() -> bool:
+    '''
+    ``True`` only if the current thread is the main thread in the active Python
+    interpreter.
+    '''
+
+    # Raise an exception unless the "_THREAD_MAIN_ID" global is defined.
+    _die_unless_thread_main_id()
+
+    # Return true only if this thread's identifier is that of the main thread.
+    return get_thread_current_id() == _THREAD_MAIN_ID
+
+
 @type_check
 def should_halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
     '''
@@ -101,64 +145,13 @@ def should_halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
 
     # Default this thread if unpassed to the current thread of execution.
     if thread is None:
-        thread = get_current_thread()
+        thread = get_thread_current()
 
     # Return true only if this thread has been requested to be halted.
     return thread.isInterruptionRequested()
 
-# ....................{ GETTERS                           }....................
-#FIXME: *NO*. This function is fundamentally broken, as some combination of
-#PySide2 and/or Qt erroneously garbage collect event dispatchers unless the
-#threads owning those dispatchers are also in scope. See the above "FIXME".
-@type_check
-def get_event_dispatcher(
-    thread: QThreadOrNoneTypes = None) -> QAbstractEventDispatcher:
-    '''
-    Wrapper encapsulating the **event dispatcher** (i.e., Qt-specific
-    object propagating events received from the underlying window system to the
-    passed thread of execution) if this thread has an event dispatcher *or*
-    raise an exception otherwise (i.e., if this thread has no event
-    dispatcher).
-
-    Parameters
-    ----------
-    thread : QThreadOrNoneTypes
-        Thread to retrieve this event dispatcher from. Defaults to ``None``, in
-        which case the current thread of execution is defaulted to.
-
-    Returns
-    ----------
-    QAbstractEventDispatcher
-        Wrapper encapsulating the event dispatcher for this thread.
-
-    Raises
-    ----------
-    BetseePySideThreadException
-        If the current thread of execution has *no* event dispatcher (i.e., if
-        the :meth:`QThread.exec` method has been called more recently than the
-        :meth:`QThread.exit` or :meth:`QThread.quit` methods for this thread).
-    '''
-
-    # Default this thread if unpassed to the current thread of execution.
-    if thread is None:
-        thread = get_current_thread()
-
-    # Event dispatcher for this thread if any *OR* 0 otherwise.
-    event_dispatcher = thread.eventDispatcher()
-
-    # If this thread has *NO* event dispatcher, raise an exception.
-    if not event_dispatcher:
-        raise BetseePySideThreadException(QCoreApplication.translate(
-            'get_current_event_dispatcher',
-            'No event dispatcher running for thread "{}".'.format(
-                thread.objectName())))
-    # Else, this thread has an event dispatcher.
-
-    # Return this event dispatcher.
-    return event_dispatcher
-
-# ....................{ GETTERS ~ current : thread        }....................
-def get_current_thread() -> QThread:
+# ....................{ GETTERS ~ current                 }....................
+def get_thread_current() -> QThread:
     '''
     Wrapper encapsulating the **current thread** (i.e., Qt-specific thread of
     execution responsible for the call to this function).
@@ -170,14 +163,14 @@ def get_current_thread() -> QThread:
 # Placeholder function definition to avoid spurious linter errors. For
 # efficiency, this frequently called function is conditionally defined by the
 # init() function at application initialization time.
-def get_current_thread_id() -> int:
+def get_thread_current_id() -> int:
     pass
 
 
-def get_current_thread_process_name() -> str:
+def get_thread_current_process_name() -> str:
     '''
-    Name of the OS-level process associated with the current thread, equivalent
-    to the Qt-specific name of this object.
+    Name of the low-level kernel-level process associated with the current
+    thread, equivalent to the Qt-specific name of this object.
 
     See Also
     ----------
@@ -186,43 +179,74 @@ def get_current_thread_process_name() -> str:
     '''
 
     # Current thread.
-    thread = get_current_thread()
+    thread = get_thread_current()
 
     # Return this thread's process name.
     return thread.objectName()
 
 # ....................{ GETTERS ~ current : event         }....................
-def get_current_event_dispatcher() -> QAbstractEventDispatcher:
+#FIXME: This submodule is increasingly awkward, largely due to the unctuous
+#requirement that a "thread" reference always be passed whenever an
+#"event_dispatcher" reference is required. Instead, do the following:
+#
+#* Define a new "ThreadEventDispatcherWrapper" class subclassing "object"
+#  rather than "QObject" in this submodule.
+#* Define the following instance variables of this class:
+#  * "thread".
+#  * "event_dispatcher".
+#* Redefine the process_thread_events() and wait_for_events_if_none() functions into
+#  methods of this class operating upon these variables.
+#* Redefine the get_event_dispatcher_current() to return an instance of the
+#  "ThreadEventDispatcherWrapper" class.
+def get_thread_event_dispatcher_current() -> tuple:
     '''
-    Wrapper encapsulating the event dispatcher for the current thread of
-    execution if this thread has an event dispatcher *or* raise an exception
-    otherwise (i.e., if this thread has no event dispatcher).
+    2-tuple ``(thread, event_dispatcher)`` encapsulating both the thread *and*
+    event dispatcher for the current thread of execution if this thread has an
+    event dispatcher *or* raise an exception otherwise (i.e., if this thread
+    has no event dispatcher).
+
+    Design
+    ----------
+    This getter intentionally returns both the thread *and* event dispatcher
+    for the current thread of execution rather than merely the latter. Why?
+    Because it appears infeasible to pass around arbitrary instances of the
+    :class:`QAbstractEventDispatcher` superclass. For unknown reasons, some
+    combination of Python and/or Qt aggressively collect an event dispatcher in
+    the absence of a strong reference to the thread of that event dispatcher.
+    Ergo, the two *must* be passed around as a single, cohesive unit.
 
     Returns
     ----------
-    QAbstractEventDispatcher
-        Wrapper encapsulating the event dispatcher for the current thread.
+    (QThread, QAbstractEventDispatcher)
+        2-tuple ``(thread, event_dispatcher)``, where:
+
+        * ``thread`` is the Qt-based wrapper encapsulating the current thread.
+        * ``event_dispatcher`` is the Qt-based wrapper for the event dispatcher
+          of the current thread.
 
     Raises
     ----------
     BetseePySideThreadException
         If this thread has *no* event dispatcher.
-
-    See Also
-    ----------
-    :func:`get_event_dispatcher`
-        Further details.
     '''
 
-    # Current thread of execution.
-    thread = get_current_thread()
+    # Current thread and event dispatcher of this thread (if any).
+    thread = QThread.currentThread()
+    event_dispatcher = thread.eventDispatcher()
 
-    # Return the event dispatcher for this thread.
-    return get_event_dispatcher(thread)
+    # If this thread has *NO* event dispatcher, raise an exception.
+    if not event_dispatcher:
+        raise BetseePySideThreadException(QCoreApplication.translate(
+            'get_thread_event_dispatcher_current',
+            'No event dispatcher running for thread "{}".'.format(
+                thread.objectName())))
 
-# ....................{ LOGGERS                           }....................
+    # Return this thread and event dispatcher as a single, cohesive unit.
+    return thread, event_dispatcher
+
+# ....................{ LOGGERS ~ current                 }....................
 @type_check
-def log_debug_current_thread(message: str, *args) -> None:
+def log_debug_thread_current(message: str, *args) -> None:
     '''
     Log the passed debug message from any arbitrary thread with the root
     logger, formatted with the passed ``%``-style positional arguments.
@@ -237,18 +261,38 @@ def log_debug_current_thread(message: str, *args) -> None:
 
     See Also
     ----------
-    :func:`log_debug_main_thread`
+    :func:`log_debug_thread_main`
         Faster analogue intended to be called *only* when the current thread is
         the main thread.
     '''
 
     # Log this message at the debug level. See log_main_thread_debug().
     logs.log_debug(
-        message + ' <from thread "%d">', *args, get_current_thread_id())
+        message + ' <from thread "%d">', *args, get_thread_current_id())
 
 
 @type_check
-def log_debug_main_thread(message: str, *args) -> None:
+def log_warning_thread_current(message: str, *args) -> None:
+    '''
+    Log the passed warning message from any arbitrary thread with the root
+    logger, formatted with the passed ``%``-style positional arguments.
+
+    Parameters
+    ----------
+    message : str
+        Human-readable message to be logged.
+
+    All remaining positional parameters are conditionally interpolated as
+    ``%``-style format specifiers into this message by logging facilities.
+    '''
+
+    # Log this message at the warning level. See log_main_thread_debug().
+    logs.log_warning(
+        message + ' <from thread "%d">', *args, get_thread_current_id())
+
+# ....................{ LOGGERS ~ main                    }....................
+@type_check
+def log_debug_thread_main(message: str, *args) -> None:
     '''
     Log the passed debug message from the main thread with the root logger,
     formatted with the passed ``%``-style positional arguments.
@@ -268,7 +312,7 @@ def log_debug_main_thread(message: str, *args) -> None:
 
     See Also
     ----------
-    :func:`log_debug_current_thread`
+    :func:`log_debug_thread_current`
         Slower analogue intended to be called from *any* thread.
     '''
 
@@ -278,7 +322,7 @@ def log_debug_main_thread(message: str, *args) -> None:
     # simple string concatenation rather than deferred until logging time with
     # "%"-style format specifiers, which would conflict with the former.
     logs.log_debug(
-        message + ' <from main thread "%d">', *args, MAIN_THREAD_ID)
+        message + ' <from main thread "%d">', *args, _THREAD_MAIN_ID)
 
 # ....................{ HALTERS                           }....................
 @type_check
@@ -329,25 +373,16 @@ def halt_thread_work(thread: QThreadOrNoneTypes = None) -> bool:
 
     # Default this thread if unpassed to the current thread of execution.
     if thread is None:
-        thread = get_current_thread()
+        thread = get_thread_current()
 
     # Request this thread's work to be halted.
     return thread.requestInterruption()
 
-# ....................{ PROCESSORS                        }....................
-#FIXME: This and the function below require fundamental refactoring. Why? It
-#appears infeasible to pass arbitrary "event_dispatcher" objects around. For
-#unknown reasons, Python and/or Qt aggressively garbage collect these objects
-#in the absence of a reference to the threads owning these objects. Ergo:
-#
-#* Refactor this function to accept an additional preceding "thread" argument.
-#* Likewise for the function defined below.
+# ....................{ EVENTS ~ current                  }....................
 @type_check
-def process_events(
-    event_dispatcher: QAbstractEventDispatcherOrNoneTypes = None) -> None:
+def process_thread_current_events() -> None:
     '''
-    Process all pending events currently queued with the thread of execution
-    associated with the passed event dispatcher.
+    Process all pending events queued with the current thread.
 
     This function unconditionally processes *all* such events, including both
     outgoing signals emitted by *and* incoming slots signalled on all workers
@@ -357,59 +392,27 @@ def process_events(
     ----------
     Avoid manually calling the static :func:`QCoreApplication.processEvents`
     function to process events for the current thread of execution. If this
-    thread has *no* event dispatcher, this function silently and hence unsafely
+    thread has *no* event dispatcher, that function silently and hence unsafely
     ignores all pending :class:`DeferredDelete` events currently queued for
     this thread. Since numerous standard widgets (e.g., :class:`QToolTip`)
     require these events to be processed in a timely manner, ignoring these
-    events fundamentally disrupts all widget functionality.
-
-    Parameters
-    ----------
-    event_dispatcher : QAbstractEventDispatcherOrNoneTypes
-        Event dispatcher to process events for. Defaults to ``None``, in which
-        case either:
-        * If the current thread of execution has an event dispatcher, events
-          are processed for this dispatcher.
-        * Else, an exception is raised.
+    events fundamentally disrupts widget sanity.
     '''
 
-    # Default this event dispatcher if unpassed to that associated with the
-    # current thread of execution.
-    if event_dispatcher is None:
-        thread, event_dispatcher = get_current_thread_event_dispatcher()
+    # Current thread and event dispatcher of this thread.
+    thread, event_dispatcher = get_thread_event_dispatcher_current()
 
     # Process all pending events currently queued with this dispatcher.
     event_dispatcher.processEvents(QEventLoop.AllEvents)
 
 
-#FIXME: Shift above, please.
-#FIXME: Annotate and document properly, please.
-#FIXME: Replace *ALL* calls to the get_current_event_dispatcher() function with
-#calls to this function instead.
-def get_current_thread_event_dispatcher():
-    thread = QThread.currentThread()
-    event_dispatcher = thread.eventDispatcher()
-    if not event_dispatcher:
-        raise BetseePySideThreadException(QCoreApplication.translate(
-            'get_current_event_dispatcher',
-            'No event dispatcher running for thread "{}".'.format(
-                thread.objectName())))
-
-    return thread, event_dispatcher
-
-
-#FIXME: Explicitly raise an exception if this event dispatcher is the main event
-#dispatcher (i.e., event dispatcher running the main GUI event loop). Permitting
-#this edge case results in the main GUI being blocked -- which is bad.
 @type_check
-def wait_for_events_if_none(
-    event_dispatcher: QAbstractEventDispatcherOrNoneTypes = None) -> None:
+def wait_for_thread_current_event_if_none() -> None:
     '''
-    Indefinitely block the thread of execution associated with the passed
-    event dispatcher until *another* thread of execution posts a new event to
-    the former thread if *no* pending events are currently queued with this
-    thread *or* safely return immediately otherwise (i.e., if one or more
-    pending events are currently queued with this thread).
+    Indefinitely block the current thread until *another* thread posts a new
+    event to the current thread if *no* pending events are queued with the
+    current thread *or* safely return immediately otherwise (i.e., if one or
+    more pending events are currently queued with this thread).
 
     This function is intended to be called *only* from the slots of workers
     currently running in the thread of execution associated with the passed
@@ -423,28 +426,19 @@ def wait_for_events_if_none(
     thread.** Doing so effectively blocks the application GUI managed by this
     thread. Instead, only call this function from a worker guaranteed to be
     running in this thread.
-
-    Parameters
-    ----------
-    event_dispatcher : QAbstractEventDispatcherOrNoneTypes
-        Event dispatcher to process events for. Defaults to ``None``, in which
-        case either:
-        * If the current thread of execution has an event dispatcher, events
-          are processed for this dispatcher.
-        * Else, an exception is raised.
     '''
 
-    # Default this event dispatcher if unpassed to that associated with the
-    # current thread of execution.
-    if event_dispatcher is None:
-        event_dispatcher = get_current_event_dispatcher()
+    # If the current thread is the main thread, raise an exception. The main
+    # thread should *NEVER* be blocked for any period of time whatsoever.
+    die_if_thread_current_main()
+
+    # Current thread and event dispatcher of this thread.
+    thread, event_dispatcher = get_thread_event_dispatcher_current()
 
     # Process all pending events currently queued with this dispatcher.
     event_dispatcher.processEvents(QEventLoop.WaitForMoreEvents)
 
 # ....................{ INITIALIZERS                      }....................
-#FIXME: Call this function *VERY* early at application startup -- ideally,
-#immediately after initializing logging.
 def init() -> None:
     '''
     Initialize this submodule.
@@ -452,7 +446,7 @@ def init() -> None:
     Caveats
     ----------
     **This function is intended to be called from the main thread.** If this is
-    *not* the case, the :data:`MAIN_THREAD_ID` global will be improperly
+    *not* the case, the :data:`_THREAD_MAIN_ID` global will be improperly
     initialized.
 
     Raises
@@ -466,7 +460,7 @@ def init() -> None:
     # "global" declarator; failing to do so results in the former function
     # being declared as a locally scoped closure, instead. See also:
     #     https://stackoverflow.com/a/27930100/2809027
-    global MAIN_THREAD_ID, get_current_thread_id
+    global _THREAD_MAIN_ID, get_thread_current_id
 
     # Log this initialization.
     logs.log_debug('Initializing multithreading facilities...')
@@ -480,7 +474,7 @@ def init() -> None:
     # interpreter to be in insufficiently sane for our purposes.
     pythread.die_unless_threadable()
 
-    # Conditionally define the frequently called get_current_thread_id() getter
+    # Conditionally define the frequently called get_thread_current_id() getter
     # by deciding whether PySide2 provides a binding for the static
     # QThread.currentThreadId() method on the current system and adopting the
     # best implementation available.
@@ -499,16 +493,16 @@ def init() -> None:
             'falling back to thread wrapper ID.')
 
         # Define this getter in the most hideous way possible.
-        def get_current_thread_id() -> int:
-            return id(get_current_thread())
+        def get_thread_current_id() -> int:
+            return id(get_thread_current())
     # Else, PySide2 exposes this method. In this case, adopt the preferred
     # implementation of simply deferring to this method.
     else:
-        def get_current_thread_id() -> int:
+        def get_thread_current_id() -> int:
             return QThread.currentThreadId()
 
     # Unconditionally document this getter regardless of implementation.
-    get_current_thread_id.__doc__ = '''
+    get_thread_current_id.__doc__ = '''
     Arbitrary Qt-specific integer uniquely identifying the current thread in
     the active Python interpreter if the currently installed version of PySide2
     exposes the :meth:`QThread.currentThreadId` method yielding this integer
@@ -519,12 +513,16 @@ def init() -> None:
     This integer is non-portable and hence should *only* be embedded in
     low-level debugging messages.
 
+    Note that there exists no general-purpose :func:`get_thread_id` getter
+    returning the unique identifier for an arbitrary thread, as Qt defines no
+    corresponding functionality for doing so.
+
     See Also
     ----------
-    :func:`get_current_thread`
+    :func:`get_thread_current`
         Further details.
     '''
 
     # Immediately identify the main thread (assumed without proof to be the
     # current thread) with the same function.
-    MAIN_THREAD_ID = get_current_thread_id()
+    _THREAD_MAIN_ID = get_thread_current_id()
