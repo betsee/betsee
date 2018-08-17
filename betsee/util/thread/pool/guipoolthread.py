@@ -176,9 +176,7 @@ def halt_workers(
     '''
 
     # Log this termination.
-    logs.log_debug(
-        'Waiting %dms for %d thread pool workers to halt...',
-        milliseconds, len(workers))
+    logs.log_debug('Halting thread pool...')
 
     # If any such worker is *NOT* a worker, raise an exception.
     iterables.die_unless_items_instance_of(
@@ -188,12 +186,27 @@ def halt_workers(
     if thread_pool is None:
         thread_pool = get_thread_pool()
 
-    # If one or more thread pool workers are still working and fail to stop
-    # (gracefully or otherwise) after blocking this number of milliseconds...
+    # If *NO* thread pool workers are currently working, reduce to a noop.
+    if not is_working(thread_pool):
+        return
+    # Else, one or more thread pool workers are still working.
+
+    # Number of workers to be terminated.
+    workers_num = len(workers)
+
+    # Number of seconds to block.
+    seconds = milliseconds * 10**-3
+
+    # Log a non-fatal warning to inform the end user of this blocking event.
+    logs.log_warning(
+        'Waiting %g seconds for %d thread pool worker(s) to halt...',
+        seconds, workers_num)
+
+    # If these workers fail to stop after blocking for this duration of time...
     if not thread_pool.waitForDone(milliseconds):
         # Log this termination.
-        logs.log_debug(
-            'Forcing %d thread pool workers to halt...', len(workers))
+        logs.log_warning(
+            'Forcing %d thread pool worker(s) to halt...', workers_num)
 
         # For each such worker, terminate this worker by any means necessary.
         for worker in workers:

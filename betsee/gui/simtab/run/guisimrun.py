@@ -97,6 +97,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
     SIMMER_STATES_FIXED,
     SIMMER_STATES_FLUID,
     SIMMER_STATES_RUNNING,
+    SIMMER_STATES_WORKING,
     # MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
     # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
@@ -135,11 +136,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
     locked behind a Qt-based mutual exclusion primitive.
 
     GIL-less Python interpreters violate this simplistic assumption. For
-    example, the :meth:`_stop_workers` and
-    :meth:`_handle_worker_completion` slots suffer a variety of obvious (albeit
-    unlikely) race conditions under these interpreters centered around their
-    attempts to competitively delete the same underlying worker in a
-    desynchronized and hence non-deterministic manner... Woops.
+    example, the :meth:`_stop_workers` and :meth:`_handle_worker_completion`
+    slots suffer obvious (albeit unlikely) race conditions under GIL-less
+    interpreters due to competitively deleting the same underlying worker in a
+    desynchronized and hence non-deterministic manner.
 
     Yes, this is assuredly a bad idea. Yes, this is us nonchalantly shrugging.
 
@@ -348,11 +348,12 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # For each possible phase...
         for phase in self._PHASES:
+            #FIXME: Excise this connection entirely.
             # Connect this phase's signals to this object's equivalent slots.
-            phase.set_state_signal.connect(self._set_phase_state)
+            # phase.set_state_signal.connect(self._set_state_from_phase)
 
             # Inform this simulator of the initial state of this phase.
-            self._set_phase_state(phase)
+            self._set_state_from_phase(phase)
 
     # ..................{ FINALIZERS                        }..................
     def halt_workers(self) -> None:
@@ -518,6 +519,229 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Return the head worker of the worker queue.
         return self._workers_queued[0]
 
+    # ..................{ PROPERTIES ~ worker : phase       }..................
+    @property
+    def _worker_phase_state(self) -> SimmerState:
+        '''
+        State of the queued simulator phase that is currently **running**
+        (i.e., either being modelled or exported by this simulator) if any *or*
+        raise an exception otherwise.
+
+        Caveats
+        ----------
+        For safety, this property should *only* be accessed when this queue is
+        guaranteed to be non-empty (i.e., when the :meth:`_is_working` property
+        is ``True``).
+
+        Design
+        ----------
+        This property getter trivially reduces to a direct access of the
+        :attr:`_worker.phase.state` instance variable, but exists to define the
+        corresponding non-trivial property setter.
+
+        Raises
+        ----------
+        BetseeSimmerException
+            If no simulator phase is currently running (i.e.,
+            :attr:`_workers_cls` is either ``None`` or empty).
+        '''
+
+        return self._worker.phase.state
+
+    # ..................{ PROPERTIES ~ worker : phase : set }..................
+    @_worker_phase_state.setter
+    @type_check
+    def _worker_phase_state(self, state: SimmerState) -> None:
+        '''
+        Set the state of the queued simulator phase that is currently
+        **running** (i.e., either being modelled or exported by this simulator)
+        if any to the passed state *or* raise an exception otherwise.
+
+        This property setter may additionally set the state of this simulator
+        to the passed state (depending on the current state of this simulator
+        and the passed state). Doing so avoids subtle desynchronization issues
+        between the state of this phase and this simulator. In particular, if a
+        queued simulator phase is currently running, this simulator's state is
+        guaranteed to be *always* the state of that phase.
+
+        Caveats
+        ----------
+        For safety, this property should *only* be accessed when this queue is
+        guaranteed to be non-empty (i.e., when the :meth:`_is_working` property
+        is ``True``).
+
+        Parameters
+        ----------
+        state: SimmerState
+            New state to set this phase to.
+
+        Raises
+        ----------
+        BetseeSimmerException
+            If no simulator phase is currently running (i.e.,
+            :attr:`_workers_cls` is either ``None`` or empty).
+        '''
+
+        # Currently working phase, localized purely for negligible efficiency.
+        worker_phase = self._worker.phase
+
+        # Log this setting.
+        logs.log_debug(
+            'Setting simulator phase "%s" state from "%s" to "%s"...',
+            worker_phase.name,
+            enums.get_member_name_lowercase(worker_phase.state),
+            enums.get_member_name_lowercase(state))
+
+        # Set the state of the currently running phase to this state.
+        worker_phase.state = state
+
+        # Possibly set the state of this simulator to the same state.
+        self._set_state_from_phase(worker_phase)
+
+
+    def _set_state_from_phase(self, phase: QBetseeSimmerPhaseABC) -> None:
+        '''
+        Context-sensitively set the current state of this simulator to the
+        current state of the passed simulator phase.
+
+        Parameters
+        ----------
+        phase : QBetseeSimmerPhaseABC
+            Simulator phase whose current state has been previously set.
+        '''
+
+        # New state to change this simulator to if any *OR* "None" otherwise.
+        state_new = None
+
+        # If the current state of either:
+        #
+        # * This phase is fixed (i.e., high-priority) and hence superceding the
+        #   current state of this simulator...
+        # * This simulator is fluid (i.e., low-priority) and hence superceded
+        #   by the current state of this phase...
+        if (
+            phase.state in SIMMER_STATES_FIXED or
+             self.state in SIMMER_STATES_FLUID
+        ):
+            # If this phase's new state is unqueued...
+            if phase.state is SimmerState.UNQUEUED:
+                # If one or more *OTHER* phases are still queued, ignore this
+                # phase's change. Unqueueing is minimally low priority.
+                if self.is_queued:
+                    pass
+                # Else, all phases are unqueued. Set the current state of this
+                # simulator to also be unqueued.
+                else:
+                    state_new = SimmerState.UNQUEUED
+            # Else, this phase's new state unconditionally takes precedence.
+            # Set this simulator's current state to this phase's new state.
+            else:
+                state_new = phase.state
+        # Else, silently preserve this simulator's current state as is.
+
+        # If preserving the state of this simulator, log this fact.
+        if state_new is None:
+            logs.log_debug(
+                'Preserving simulator state as "%s"...',
+                enums.get_member_name_lowercase(self.state))
+        # Else, the state of this simulator is being changed. In this case...
+        else:
+            # Log this change.
+            logs.log_debug(
+                'Setting simulator state from "%s" to "%s"...',
+                enums.get_member_name_lowercase(self.state),
+                enums.get_member_name_lowercase(state_new))
+
+            # Change the state of this simulator to this new state.
+            self.state = state_new
+
+            # Update the state of simulator widgets *AFTER* setting this state.
+            self._update_widgets()
+
+
+    #FIXME: If the simulator is *NOT* currently running (e.g., as given by
+    #"not self._is_running"), either the "self._action_toggle_work" action or
+    #perhaps merely the associated push button should be toggled to the
+    #"normal off" state.
+    def _update_widgets(self) -> None:
+        '''
+        Update the contents of widgets owned or controlled by this simulator to
+        reflect the current state of this simulator.
+        '''
+
+        # Log this update.
+        logs.log_debug('Updating simulator widgets from simulator state...')
+
+        # Enable (in arbitrary order):
+        #
+        # * All widgets controlling the currently queued phase only if one or
+        #   more phases are currently queued.
+        # * All widgets halting the current worker only if some worker is
+        #   currently working.
+        #
+        # To reduce the likelihood of accidental interaction with widgets
+        # intended to be disabled, do so *BEFORE* subsequent slot logic.
+        self._player_toolbar.setEnabled(self.is_queued)
+
+        #FIXME: Consider refactoring to directly the simulator state as below.
+        # Enable simulator working only if the simulator is workable.
+        self._action_toggle_work.setEnabled(self._is_workable)
+
+        # Enable simulator stopping only if the simulator is currently working.
+        # Note that:
+        #
+        # * Testing the "_is_running" property fails to suffice, as that
+        #   property fails to yield "True" when the simulator is paused.
+        # * While testing the "_is_working" property alone could also
+        #   theoretically suffice, doing so would desynchronize the UI from
+        #   this simulator state; specifically, the button associated with this
+        #   action would remain enabled for a non-deterministic window of time
+        #   after the simulator is stopped. Why? Because the _stop_workers()
+        #   slot sets this simulator state to stopped *BEFORE* the currently
+        #   working worker successfully stops resulting in the "_is_working"
+        #   property yielding "False". Ergo, the simulator state takes
+        #   precedence for UI purposes.
+        self._action_stop_workers.setEnabled(
+            self.state in SIMMER_STATES_WORKING)
+
+        # Update the verbose status of this simulator.
+        self._update_status()
+
+
+    def _update_status(self) -> None:
+        '''
+        Update the text displayed by the :attr:`_status` label, verbosely
+        synopsizing the current state of this simulator.
+        '''
+
+        # Unformatted template synopsizing the current state of this simulator.
+        status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[self.state]
+
+        # Text synopsizing the type of simulation phase run by the current
+        # simulator worker if any *OR* an arbitrary placeholder otherwise. In
+        # the latter case, this text is guaranteed to *NOT* be interpolated by
+        # this template and is thus safely ignorable.
+        phase_type_name = (
+            SIM_PHASE_KIND_TO_NAME[self._worker.phase.kind]
+            if self._is_working else
+            'the nameless that shall not be named')
+
+        # Text synopsizing the prior state of this simulator. To permit this
+        # text to be interpolated into the middle of arbitrary sentences, the
+        # first character of this text is lowercased.
+        status_prior_text = strs.lowercase_char_first(self._status.text())
+
+        # Unconditionally format this text with *ALL* possible format specifiers
+        # interpolated into *ALL* possible instances of this text. By design,
+        # format specifiers *NOT* interpolated into this text will be ignored.
+        status_text = status_text_template.format(
+            phase_type=phase_type_name,
+            status_prior=status_prior_text,
+        )
+
+        # Set the text of the label displaying this synopsis to this text.
+        self._status.setText(status_text)
+
     # ..................{ EXCEPTIONS                        }..................
     def _die_unless_workable(self) -> None:
         '''
@@ -631,131 +855,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         if not self._is_working:
             raise BetseeSimmerException(QCoreApplication.translate(
                 'QBetseeSimmer', 'No simulation currently working.'))
-
-    # ..................{ SLOTS ~ action : phase            }..................
-    # Slots connected to signals emitted by "QAction" objects specific to the
-    # queue of simulator phases to be run.
-
-    @Slot(QObject)
-    def _set_phase_state(self, phase: QBetseeSimmerPhaseABC) -> None:
-        '''
-        Slot signalled on either the user interactively *or* the codebase
-        programmatically setting the current state of any simulator phase.
-
-        Parameters
-        ----------
-        phase : QBetseeSimmerPhaseABC
-            Simulator phase whose current state has been set.
-        '''
-
-        # Log this slot.
-        logs.log_debug(
-            'Setting simulator phase "%s" state to "%s"...',
-            phase.name, enums.get_member_name_lowercase(phase.state))
-
-        # New state to change this simulator to if any *OR* "None" otherwise.
-        state_new = None
-
-        # If the current state of either:
-        #
-        # * This phase is fixed (i.e., high-priority) and hence superceding the
-        #   current state of this simulator...
-        # * This simulator is fluid (i.e., low-priority) and hence superceded
-        #   by the current state of this phase...
-        if (
-            phase.state in SIMMER_STATES_FIXED or
-             self.state in SIMMER_STATES_FLUID
-        ):
-            # If this phase's new state is unqueued...
-            if phase.state is SimmerState.UNQUEUED:
-                # If one or more *OTHER* phases are still queued, ignore this
-                # phase's change. Unqueueing is minimally low priority.
-                if self.is_queued:
-                    pass
-                # Else, all phases are unqueued. Set the current state of this
-                # simulator to also be unqueued.
-                else:
-                    state_new = SimmerState.UNQUEUED
-            # Else, this phase's new state unconditionally takes precedence.
-            # Set this simulator's current state to this phase's new state.
-            else:
-                state_new = phase.state
-        # Else, silently preserve this simulator's current state as is.
-
-        # If changing the state of this simulator...
-        if state_new is not None:
-            # Log this change.
-            logs.log_debug(
-                'Setting simulator state to "%s"...',
-                enums.get_member_name_lowercase(state_new))
-
-            # Change the state of this simulator to this new state.
-            self.state = state_new
-
-            # Update the state of simulator widgets *AFTER* setting this state.
-            self._update_widgets()
-
-
-    def _update_widgets(self) -> None:
-        '''
-        Update the contents of widgets owned or controlled by this simulator to
-        reflect the current state of this simulator.
-        '''
-
-        # Enable (in arbitrary order):
-        #
-        # * All widgets controlling the currently queued phase only if one or
-        #   more phases are currently queued.
-        # * All widgets halting the current worker only if some worker is
-        #   currently working.
-        #
-        # To reduce the likelihood of accidental interaction with widgets
-        # intended to be disabled, do so *BEFORE* subsequent slot logic.
-        self._player_toolbar.setEnabled(self.is_queued)
-
-        # Enable simulator working only if the simulator is workable.
-        self._action_toggle_work.setEnabled(self._is_workable)
-
-        # Enable simulator stopping only if the simulator is currently working.
-        self._action_stop_workers.setEnabled(self._is_working)
-
-        # Update the verbose status of this simulator.
-        self._update_status()
-
-
-    def _update_status(self) -> None:
-        '''
-        Update the text displayed by the :attr:`_status` label, verbosely
-        synopsizing the current state of this simulator.
-        '''
-
-        # Unformatted template synopsizing the current state of this simulator.
-        status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[self.state]
-
-        # Text synopsizing the type of simulation phase run by the current
-        # simulator worker if any *OR* an arbitrary placeholder otherwise. In
-        # the latter case, this text is guaranteed to *NOT* be interpolated by
-        # this template and is thus safely ignorable.
-        phase_type_name = (
-            SIM_PHASE_KIND_TO_NAME[self._worker.phase.kind]
-            if self._is_working else
-            'the nameless that shall not be named')
-
-        # Text synopsizing the prior state of this simulator. To permit this
-        # text to be interpolated into the middle of arbitrary sentences, the
-        # first character of this text is lowercased.
-        status_prior_text = strs.lowercase_char_first(self._status.text())
-
-        # Unconditionally format this text with *ALL* possible format specifiers
-        # interpolated into *ALL* possible instances of this text. By design,
-        # format specifiers *NOT* interpolated into this text will be ignored.
-        status_text = status_text_template.format(
-            phase_type=phase_type_name,
-            status_prior=status_prior_text,
-        )
-
-        # Set the text of the label displaying this synopsis to this text.
-        self._status.setText(status_text)
 
     # ..................{ SLOTS ~ action : work             }..................
     # Slots connected to signals emitted by "QAction" objects specific to the
@@ -872,7 +971,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Set this simulator and the currently running phase to the paused
         # state *AFTER* successfully pausing this worker.
-        self._worker.phase.state = SimmerState.PAUSED
+        self._worker_phase_state = SimmerState.PAUSED
 
 
     def _resume_worker(self) -> None:
@@ -905,7 +1004,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Set this simulator and the currently running phase to the
         # worker-specific running state *AFTER* successfully resuming this
         # worker.
-        self._worker.phase.state = self._worker.simmer_state
+        self._worker_phase_state = self._worker.simmer_state
 
     # ..................{ SLOTS ~ action : stop             }..................
     @Slot()
@@ -942,17 +1041,18 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # worker returned by the "_worker" property) is called.
         worker = self._worker
 
+        #FIXME: If this behaves as expected, refactor all similar settings to
+        #do so first rather than last in their respective methods.
+        #FIXME: Comment why we now do this first rather than last.
+
+        # Set this simulator and the currently running phase to the stopped
+        # state *BEFORE* successfully stopping this worker.
+        self._worker_phase_state = SimmerState.STOPPED
+
         # Dequeue all currently enqueued simulator workers, including both the
         # currently working worker and all workers scheduled to work after the
         # currently working worker.
         self._dequeue_workers()
-
-        #FIXME: For safety, relegate this to a new slot of the corresponding
-        #phase connected to the stopped() signal of this worker.
-
-        # Set this simulator and the currently running phase to the stopped
-        # state *AFTER* successfully stopping this worker.
-        worker.phase.state = SimmerState.STOPPED
 
         # Stop this worker *AFTER* dequeueing all currently enqueued workers
         # and setting this simulator state.
@@ -1092,11 +1192,20 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             return
         # Else, one or more workers remain to be run.
 
-        # Next worker to be run.
-        worker = self._workers_queued[0]
+        # Next worker to be run, localized for negligible efficiency.
+        worker = self._worker
 
         # Log this work attempt.
         guithread.log_debug_thread_main('Iterating simulator worker...')
+
+        #FIXME: For safety, relegate this to a new slot of this object
+        #connected to the started() signal of this worker. After all, this
+        #should only be performed if this worker is indeed successfully started
+        #within this thread -- which we have no way of guaranteeing here.
+
+        # Set the state of both this simulator *AND* the currently
+        # running phase *AFTER* successfully starting this worker.
+        self._worker_phase_state = worker.simmer_state
 
         # Finalize this worker's initialization.
         worker.init(
@@ -1111,15 +1220,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Start this worker *AFTER* establishing all signal-slot connections.
         guipoolthread.start_worker(worker)
-
-        #FIXME: For safety, relegate this to a new slot of this object
-        #connected to the started() signal of this worker. After all, this
-        #should only be performed if this worker is indeed successfully started
-        #within this thread -- which we have no way of guaranteeing here.
-
-        # Set the state of both this simulator *AND* the currently
-        # running phase *AFTER* successfully starting this worker.
-        worker.phase.state = worker.simmer_state
 
     # ..................{ WORKERS ~ slot                    }..................
     # Slots connected to signals emitted by "QRunnable" workers.
@@ -1206,10 +1306,15 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             return
         # Else, one or more workers remain to be run.
 
-        # Currently working simulator worker. For safety, this property is
-        # localized *BEFORE* this method dequeues this worker and hence
-        # implicitly modifies the worker returned by the "_worker" property.
-        worker = self._worker
+        # If this worker was *NOT* prematurely stopped by the user and hence
+        # finished successfully, set the state of both this simulator *AND* the
+        # previously working phase to finished -- ensuring that the user-driven
+        # stopped state takes precedence over the worker-driven finished state.
+        #
+        # For safety, do so *BEFORE* this method dequeues this worker and hence
+        # internally modifies the worker yielded by the "_worker" property.
+        if self._worker_phase_state is not SimmerState.STOPPED:
+            self._worker_phase_state = SimmerState.FINISHED
 
         # Schedule this worker for immediate deletion. On doing so, all signals
         # owned by this worker will be disconnected from connected slots.
@@ -1217,15 +1322,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Technically, doing so is unnecessary. The subsequent nullification of
         # the worker owning these signals already signals this deletion. As
         # doing so has no harmful side effects, however, do so regardless.
-        worker.delete_later()
-
-        # If this worker was *NOT* stopped by the user and hence finished
-        # successfully, set the state of both this simulator *AND* the
-        # previously running phase to finished *BEFORE* nullifying this phase.
-        # This conditional ensures that the user-driven stopped state takes
-        # precedence over the worker-driven finished state.
-        if worker.phase.state is not SimmerState.STOPPED:
-            worker.phase.state = SimmerState.FINISHED
+        self._worker.delete_later()
 
         # Dequeue this worker (i.e., remove this worker's subclass from
         # the queue of worker subclasses to be instantiated and run).

@@ -80,15 +80,22 @@ SIMMER_STATES_RUNNING = {
 }
 '''
 Set of all **running simulator states** (i.e., states implying one or more
-queued subcommands to be currently running and hence neither paused, stopped,
-nor finished).
+queued subcommands to be currently running and hence either modelling or
+exportingb but neither paused, stopped, nor finished).
+'''
+
+
+SIMMER_STATES_WORKING = SIMMER_STATES_RUNNING | {SimmerState.PAUSED,}
+'''
+Set of all **working simulator states** (i.e., states implying one or more
+queued subcommands to be currently working and hence either modelling,
+exporting, or paused but neither stopped nor nor finished).
 '''
 
 # ....................{ GLOBALS ~ set : (fluid|fixed)     }....................
 SIMMER_STATES_FLUID = {
     SimmerState.UNQUEUED,
     SimmerState.QUEUED,
-    SimmerState.STOPPED,
     SimmerState.FINISHED,
 }
 '''
@@ -124,6 +131,7 @@ SIMMER_STATES_FIXED = {
     SimmerState.MODELLING,
     SimmerState.EXPORTING,
     SimmerState.PAUSED,
+    SimmerState.STOPPED,
 }
 '''
 Set of all **fixed simulator states** (i.e., states the simulator may *not*

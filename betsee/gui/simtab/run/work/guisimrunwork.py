@@ -11,12 +11,12 @@ the equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
 from betse.science.parameters import Parameters
-from betse.science.phase.phaseenum import SimPhaseKind
+# from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
 from betse.util.type import enums
 from betse.util.type.cls import classes
-from betse.util.type.decorator.deccls import abstractmethod, abstractproperty
+from betse.util.type.decorator.deccls import abstractmethod  #, abstractproperty
 from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check, CallableTypes
@@ -254,7 +254,8 @@ class QBetseeSimmerPhaseWorker(QBetseeSimmerWorkerABC):
         '''
 
         return enums.get_member_from_value(
-            enum_type=SimmerState, enum_member_value=self.phase_subkind.value)
+            enum_type=SimmerState,
+            enum_member_value=self._phase_subkind.value)
 
     # ..................{ GETTERS                           }..................
     def _get_sim_runner_subcommand(self) -> CallableTypes:
