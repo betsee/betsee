@@ -21,7 +21,7 @@ from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check, CallableTypes
 from betsee.guiexception import BetseePySideThreadWorkerException
-from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhaseABC
+from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
@@ -194,7 +194,7 @@ class QBetseeSimmerPhaseWorker(QBetseeSimmerWorkerABC):
 
     Attributes
     ----------
-    _phase : QBetseeSimmerPhaseABC
+    _phase : QBetseeSimmerPhase
         Simulator phase run by this worker.
     _phase_subkind : SimmerPhaseSubkind
         Type of work performed within this phase by this worker.
@@ -204,7 +204,7 @@ class QBetseeSimmerPhaseWorker(QBetseeSimmerWorkerABC):
     @type_check
     def __init__(
         self,
-        phase: QBetseeSimmerPhaseABC,
+        phase: QBetseeSimmerPhase,
         phase_subkind: SimmerPhaseSubkind,
     ) -> None:
         '''
@@ -212,7 +212,7 @@ class QBetseeSimmerPhaseWorker(QBetseeSimmerWorkerABC):
 
         Parameters
         ----------
-        phase : QBetseeSimmerPhaseABC
+        phase : QBetseeSimmerPhase
             Simulator phase run by this worker.
         phase_subkind : SimmerPhaseSubkind
             Type of work performed within this phase by this worker.
@@ -229,7 +229,7 @@ class QBetseeSimmerPhaseWorker(QBetseeSimmerWorkerABC):
     # Read-only concrete properties.
 
     @property
-    def phase(self) -> QBetseeSimmerPhaseABC:
+    def phase(self) -> QBetseeSimmerPhase:
         '''
         Simulator phase run by this worker.
         '''

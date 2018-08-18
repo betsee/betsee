@@ -36,13 +36,11 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #entitled "The State Machine Framework." It's a surprisingly stunning read.
 
 # ....................{ IMPORTS                           }....................
-from PySide2.QtCore import QCoreApplication, QObject, Signal, Slot
-from abc import abstractmethod
+from PySide2.QtCore import QCoreApplication, QObject, Signal  #, Slot
 # from betse.util.io.log import logs
 from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.guiexception import BetseeSimmerException
-# from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
@@ -102,6 +100,10 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         # Update the current state of both this simulator controller and
         # widgets controlled by this controller given this state.
         self._update_state()
+
+        #FIXME: This no longer appears to be desirable, as we no longer appear
+        #to actually connect any slots to this signal. If true, consider
+        #excising this signal entirely.
 
         # Signal all connected slots *AFTER* internally updating this state.
         self.set_state_signal.emit(self)
