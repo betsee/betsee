@@ -10,14 +10,14 @@ simulation phase callbacks whose methods emit queued Qt signals) classes.
 
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
-from betse.science.phase.phasecallbacks import SimCallbacksABC
+from betse.science.phase.phasecallbacks import SimCallbacksBC
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.util.thread.pool.guipoolworksig import (
     QBetseeThreadPoolWorkerSignals)
 
 # ....................{ SUBCLASSES ~ callbacks            }....................
-class SimCallbacksSignaller(SimCallbacksABC):
+class SimCallbacksSignaller(SimCallbacksBC):
     '''
     **Signals-based simulation phase callbacks** (i.e., caller-defined object
     whose methods emit signals on the :class:`QBetseeThreadPoolWorkerSignals`

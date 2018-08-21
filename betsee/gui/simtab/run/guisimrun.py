@@ -16,29 +16,6 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #   * When the user attempts to close the application when one or more threads
 #     are currently running, a warning dialog should be displayed to the user
 #     confirming this action.
-#2. If any worker is currently working (i.e., "if self._is_worker"):
-#   * The stop() pseudo-slot of this worker should be called.
-#   * The slot handling this application closure event should then block for a
-#     reasonable amount of time (say, 100ms?) for this worker to gracefully
-#     terminate. If this worker fails to do so, more drastic measures may be
-#     necessary. (Gulp.)
-#3. If any threads are currently running (e.g., as testable via the
-#   guipoolthread.is_working() tester), these threads should be terminated as
-#   gracefully as feasible... somehow. (Reseach us up, please.)
-#
-#Note the static QThreadPool.waitForDone() method, which may assist us. If we
-#do call that function, we'll absolutely need to pass a reasonable timeout; if
-#this timeout is hit, the thread pool will need to be forcefully terminated.
-#FIXME: Gracefully terminate worker threads that are still running at
-#application shutdown. Ideally, this should reduce to simply:
-#
-#* Defining a new "QBetseeSimmer" slot whose corresponding signal is emitted at
-#  application shutdown.
-#* Connect this slot to that signal in QBetseeSimmer._init_connections().
-#* In this slot (in order):
-#  * If "_worker" is non-None:
-#    * Directly call the _worker.stop() method.
-#    * Wait for this method to emit the "stopped" signal.
 
 #FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
 #with unsaved changes), the GUI should prompt the user as to whether or not
@@ -140,8 +117,8 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
     Attributes (Private: Non-widgets)
     ----------
-    _sim_conf : QBetseeSimConf
-        Object encapsulating high-level simulation configuration state.
+    _p : Parameters
+        Simulation configuration singleton.
 
     Attributes (Private: Phase)
     ----------
@@ -207,7 +184,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        #FIXME: Yeah... Fix this, please. PyPy will probably make the GIL
+        #FIXME: Yeah... fix this, please. PyPy will probably make the GIL
         #optionally go away at some point. (At least, it certainly should.)
 
         # Raise an exception unless the active Python interpreter has a GIL, as
@@ -217,6 +194,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Nullify all remaining instance variables for safety.
         self._action_toggle_work = None
         self._action_stop_workers = None
+        self._p = None
         self._player_progress = None
         self._player_toolbar = None
         self._workers_queued = None
@@ -295,19 +273,10 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Classify variables of this main window required by this simulator.
         self._action_toggle_work = main_window.action_sim_run_toggle_work
         self._action_stop_workers = main_window.action_sim_run_stop_work
+        self._p               = main_window.sim_conf.p
         self._player_progress = main_window.sim_run_player_progress
         self._player_toolbar  = main_window.sim_run_player_toolbar_frame
         self._status          = main_window.sim_run_player_status
-
-        #FIXME: Non-ideal. Ideally, this simulator would only retain
-        #fine-grained references to specific attributes of this simulation
-        #configurator -- ideally, via signal-slot connections.
-        #FIXME: Indeed, we only appear to require the "self._sim_conf.p"
-        #variable. If we recall correctly, the "Parameters" object referred to
-        #by this variable should remain alive throughout the whole application
-        #lifecycle. If this is indeed the case, then we can simply preserve:
-        #    self._p = main_window.sim_conf.p
-        self._sim_conf = main_window.sim_conf
 
         # Dictionary of all keyword arguments to be passed to each call to the
         # QBetseeSimmerPhase.init() method below.
@@ -349,13 +318,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._action_toggle_work.triggered.connect(self._toggle_work)
         self._action_stop_workers.triggered.connect(self._stop_workers)
 
-        # For each possible phase...
+        # For each possible phase, derive the initial state of this simulator
+        # from the initial state of this phase.
         for phase in self._PHASES:
-            #FIXME: Excise this connection entirely.
-            # Connect this phase's signals to this object's equivalent slots.
-            # phase.set_state_signal.connect(self._set_state_from_phase)
-
-            # Inform this simulator of the initial state of this phase.
             self._set_state_from_phase(phase)
 
     # ..................{ FINALIZERS                        }..................
@@ -1229,7 +1194,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         # Finalize this worker's initialization.
         worker.init(
-            conf_filename=self._sim_conf.p.conf_filename,
+            conf_filename=self._p.conf_filename,
             progress_bar=self._player_progress,
         )
 

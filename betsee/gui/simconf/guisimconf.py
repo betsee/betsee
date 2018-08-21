@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
 High-level **simulation configurator** (i.e., :mod:`PySide2`-based object
-both displaying *and* modifying external YAML-formatted simulation configuration
-files) functionality.
+both displaying *and* modifying external YAML-formatted simulation
+configuration files) functionality.
 '''
 
 #FIXME: Either this or a subordinate "QObject" should routinely detect
 #simulation configuration desynchronization (i.e., external changes to the
 #on-disk YAML file underlying the currently open simulation configuration if
-#any) and interactively query the current user to eith:r
+#any) and interactively query the current user to either:
 #
 #* Discard all in-GUI changes to this configuration and reload this
 #  configuration from disk.
@@ -44,7 +44,7 @@ files) functionality.
 #silently rewrite this file to disk on the next save, which seems reasonably
 #sane. In other words, the noop-based lazy approach may be the correct approach.
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
 from betse.science.config import confio
@@ -58,7 +58,7 @@ from betsee.util.io import guimessage
 from betsee.util.path import guifile
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 class QBetseeSimConf(QBetseeControllerABC):
     '''
     High-level **simulation configurator** (i.e., :mod:`PySide2`-based object
@@ -74,8 +74,10 @@ class QBetseeSimConf(QBetseeControllerABC):
     Attributes (Public)
     ----------
     p : Parameters
-        High-level simulation configuration encapsulating a low-level dictionary
-        parsed from an even lower-level YAML-formatted file.
+        High-level simulation configuration encapsulating a low-level
+        dictionary parsed from an even lower-level YAML-formatted file. By
+        design, this object is guaranteed to be a **singleton** (i.e., remain
+        the same object for the lifetime of this application).
     undo_stack : QBetseeUndoStackSimConf
         Undo stack for the currently open simulation configuration if any *or*
         the empty undo stack otherwise.
@@ -83,8 +85,8 @@ class QBetseeSimConf(QBetseeControllerABC):
     Attributes (Private: Non-widgets)
     ----------
     _is_dirty : bool
-        ``True`` only if a simulation configuration is currently open *and* this
-        configuration is **dirty** (i.e., has unsaved changes).
+        ``True`` only if a simulation configuration is currently open *and*
+        this configuration is **dirty** (i.e., has unsaved changes).
 
     Attributes (Private: Widgets)
     ----------
@@ -110,7 +112,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         Alias of the :attr:`QBetseeMainWindow.sim_tab` widget.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -156,8 +158,8 @@ class QBetseeSimConf(QBetseeControllerABC):
           :attr:`set_dirty_signal` signal.
 
         To avoid circular references, this method is guaranteed to *not* retain
-        references to this main window on returning. References to child widgets
-        (e.g., actions) of this window may be retained, however.
+        references to this main window on returning. References to child
+        widgets (e.g., actions) of this window may be retained, however.
 
         Parameters
         ----------
@@ -184,12 +186,14 @@ class QBetseeSimConf(QBetseeControllerABC):
         '''
         Create all widgets owned directly by this object *and* initialize all
         other widgets (not necessarily owned by this object) whose internal
-        state pertains to the high-level state of this simulation configuration.
+        state pertains to the high-level state of this simulation
+        configuration.
 
         Parameters
         ----------
         main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
+            Initialized application-specific parent :class:`QMainWindow`
+            widget.
         '''
 
         # Avoid circular import dependencies.
@@ -236,9 +240,10 @@ class QBetseeSimConf(QBetseeControllerABC):
         # objects across the codebase (including this object).
         #
         # Ideally, those objects would themselves (e.g., in their own init()
-        # methods) connect these signals to these slots. In practice, subsequent
-        # logic emits these signals and hence requires that these connections be
-        # deterministically established *BEFORE* these signals are emitted.
+        # methods) connect these signals to these slots. In practice,
+        # subsequent logic emits these signals and hence requires that these
+        # connections be deterministically established *BEFORE* these signals
+        # are emitted.
         self.set_filename_signal.connect(main_window.set_sim_conf_filename)
 
         #FIXME: Uncomment this *AFTER* defining the slot connected to here.
@@ -248,14 +253,14 @@ class QBetseeSimConf(QBetseeControllerABC):
         self.set_dirty_signal.connect(self.set_dirty)
 
         # Set the state of all widgets dependent upon this simulation
-        # configuration state *AFTER* connecting all relavant signals and slots.
-        # Initially, no simulation configuration has yet to be opened.
+        # configuration state *AFTER* connecting all relavant signals and
+        # slots.  Initially, no simulation configuration has yet to be opened.
         #
         # Note that, as this slot only accepts strings, the empty string rather
         # than "None" is intentionally passed for safety.
         self.set_filename_signal.emit('')
 
-    # ..................{ PROPERTIES ~ bool                  }..................
+    # ..................{ PROPERTIES ~ bool                 }..................
     @property
     def is_open(self) -> bool:
         '''
@@ -264,7 +269,7 @@ class QBetseeSimConf(QBetseeControllerABC):
 
         return self.p.is_loaded
 
-    # ..................{ PROPERTIES ~ str                   }..................
+    # ..................{ PROPERTIES ~ str                  }..................
     @property
     def dirname(self) -> StrOrNoneTypes:
         '''
@@ -278,13 +283,13 @@ class QBetseeSimConf(QBetseeControllerABC):
     @property
     def filename(self) -> StrOrNoneTypes:
         '''
-        Absolute path of the currently open simulation configuration file if any
-        *or* ``None`` otherwise.
+        Absolute path of the currently open simulation configuration file if
+        any *or* ``None`` otherwise.
         '''
 
         return self.p.conf_filename
 
-    # ..................{ EXCEPTIONS                         }..................
+    # ..................{ EXCEPTIONS                        }..................
     def die_unless_open(self) -> bool:
         '''
         Raise an exception unless a simulation configuration file is currently
@@ -295,7 +300,7 @@ class QBetseeSimConf(QBetseeControllerABC):
             raise BetseeSimConfException(
                 'No simulation configuration currently open.')
 
-    # ..................{ SIGNALS                            }..................
+    # ..................{ SIGNALS                           }..................
     set_filename_signal = Signal(str)
     '''
     Signal passed either the absolute path of the currently open YAML-formatted
@@ -312,15 +317,15 @@ class QBetseeSimConf(QBetseeControllerABC):
     '''
     Signal passed a single boolean on the currently open simulation
     configuration associated with the main window either receiving new unsaved
-    changes (in which case this boolean is ``True``) *or* having just been saved
-    (in which case this boolean is ``False``).
+    changes (in which case this boolean is ``True``) *or* having just been
+    saved (in which case this boolean is ``False``).
 
     This signal is typically emitted on each user edit of the contents of any
     widget owned by the top-level simulation configuration tree or stack
     widgets, implying a modification to this simulation configuration.
     '''
 
-    # ..................{ SLOTS ~ state                      }..................
+    # ..................{ SLOTS ~ state                     }..................
     @Slot(str)
     def set_filename(self, filename: str) -> None:
         '''
@@ -343,8 +348,8 @@ class QBetseeSimConf(QBetseeControllerABC):
     @Slot(bool)
     def set_dirty(self, is_dirty: bool) -> None:
         '''
-        Slot signalled on each change of the **dirty state** (i.e., existence of
-        unsaved in-memory changes) of the currently open simulation
+        Slot signalled on each change of the **dirty state** (i.e., existence
+        of unsaved in-memory changes) of the currently open simulation
         configuration if any.
 
         This slot internally updates the state (e.g., enabled or disabled,
@@ -378,7 +383,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         if not self.p.is_loaded:
             self.undo_stack.clear()
 
-    # ..................{ SLOTS ~ action                     }..................
+    # ..................{ SLOTS ~ action                    }..................
     @Slot()
     def _make_sim(self) -> None:
         '''
@@ -412,9 +417,9 @@ class QBetseeSimConf(QBetseeControllerABC):
             # Preserve all external resources required by
             # this file with those contained in this default simulation
             # configuration. Since the guifile.select_file_save() function has
-            # already interactively confirmed this overwrite when this file already
-            # exists, doing so is safe to the extent that the user has accepted the
-            # painful consequences.
+            # already interactively confirmed this overwrite when this file
+            # already exists, doing so is safe to the extent that the user has
+            # accepted the painful consequences.
         )
 
         # Deserialize this low-level file into a high-level configuration.
@@ -464,8 +469,9 @@ class QBetseeSimConf(QBetseeControllerABC):
         configuration is closed and these changes irrevocably lost.
         '''
 
-        # If the user failed to interactively confirm saving all unsaved changes
-        # if any for the currently open simulation configuration if any, noop.
+        # If the user failed to interactively confirm saving all unsaved
+        # changes if any for the currently open simulation configuration if
+        # any, noop.
         if not self.save_if_dirty():
             return
         # Else, these change have all been saved.
@@ -484,10 +490,10 @@ class QBetseeSimConf(QBetseeControllerABC):
     @Slot()
     def _save_sim(self) -> None:
         '''
-        Slot invoked on the user requesting all unsaved changes to the currently
-        open simulation configuration be written to the external YAML-formatted
-        file underlying this configuration, overwriting the contents of this
-        file.
+        Slot invoked on the user requesting all unsaved changes to the
+        currently open simulation configuration be written to the external
+        YAML-formatted file underlying this configuration, overwriting the
+        contents of this file.
         '''
 
         # Reserialize this configuration back to the same file.
@@ -527,7 +533,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         guiappstatus.show_status(QCoreApplication.translate(
             'QBetseeSimConf', 'Simulation saved.'))
 
-    # ..................{ LOADERS                            }..................
+    # ..................{ LOADERS                           }..................
     @type_check
     def load(self, conf_filename: str) -> None:
         '''
@@ -561,7 +567,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         # this tree widget to reflect the state of this configuration.
         self._sim_conf_tree.setFocus()
 
-    # ..................{ SAVERS                             }..................
+    # ..................{ SAVERS                            }..................
     def save_if_dirty(self) -> bool:
         '''
         Write all unsaved changes for the currently open simulation
@@ -584,10 +590,11 @@ class QBetseeSimConf(QBetseeControllerABC):
         ----------
         bool
             Either:
+
             * ``False`` only if a configuration is open, this configuration is
-              dirty, and the user cancels the dialog prompting for confirmation.
-              In this case, the caller should ideally abort the current
-              operation (e.g., closure of either the current window or
+              dirty, and the user cancels the dialog prompting for
+              confirmation.  In this case, the caller should ideally abort the
+              current operation (e.g., closure of either the current window or
               simulation configuration).
             * ``True`` in *all* other cases.
         '''
@@ -633,14 +640,14 @@ class QBetseeSimConf(QBetseeControllerABC):
         # In either case, report success.
         return True
 
-    # ..................{ SHOWERS                            }..................
+    # ..................{ SHOWERS                           }..................
     def _show_dialog_sim_conf_open(self) -> str:
         '''
-        Display a dialog requiring the user to select an existing YAML-formatted
-        file to be subsequently opened for reading (rather than overwriting) as
-        the new simulation configuration, returning the absolute path of this
-        file if this dialog was not canceled *or* ``None`` otherwise (i.e., if
-        this dialog was canceled).
+        Display a dialog requiring the user to select an existing
+        YAML-formatted file to be subsequently opened for reading (rather than
+        overwriting) as the new simulation configuration, returning the
+        absolute path of this file if this dialog was not canceled *or*
+        ``None`` otherwise (i.e., if this dialog was canceled).
         '''
 
         return guifile.select_file_yaml_read(
@@ -651,10 +658,11 @@ class QBetseeSimConf(QBetseeControllerABC):
     def _show_dialog_sim_conf_save(self) -> str:
         '''
         Display a dialog requiring the user to select a YAML-formatted file
-        (either existing or non-existing) to be subsequently opened for in-place
-        saving and hence overwriting as the new simulation configuration,
-        returning the absolute path of this file if this dialog was not canceled
-        *or* ``None`` otherwise (i.e., if this dialog was canceled).
+        (either existing or non-existing) to be subsequently opened for
+        in-place saving and hence overwriting as the new simulation
+        configuration, returning the absolute path of this file if this dialog
+        was not canceled *or* ``None`` otherwise (i.e., if this dialog was
+        canceled).
         '''
 
         return guifile.select_file_yaml_save(
