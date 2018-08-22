@@ -77,6 +77,11 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         self._status = None
 
 
+    #FIXME: Refactor the set_state_from_phase() parameter to either be a
+    #proper signal (*IDEAL*) or a weak reference to the same bound method
+    #(non-ideal, for hopefully obvious reasons). The current approach
+    #implicitly creates a circular reference between the parent "QBetseeSimmer"
+    #object and this child object, which is bad.
     @type_check
     def init(
         self,

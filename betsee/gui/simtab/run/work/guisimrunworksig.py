@@ -68,6 +68,16 @@ class SimCallbacksSignaller(SimCallbacksBC):
 
 
     @type_check
+    def progress_stated(self, progress_status: str) -> None:
+
+        # Perform all superclass callback handling first.
+        super().progress_stated(progress_status=progress_status)
+
+        # Forward these callback parameters to the corresponding worker signal.
+        self._signals.emit_progress_state(progress_status=progress_status)
+
+
+    @type_check
     def progressed(self, progress: int) -> None:
 
         # Perform all superclass callback handling first.

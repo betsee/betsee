@@ -17,7 +17,7 @@ classes.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QObject, Signal
 # from betse.util.io.log import logs
-from betse.util.type.types import type_check, CallableTypes
+from betse.util.type.types import type_check, WeakRefBoundMethodType
 
 # ....................{ SUPERCLASSES                      }....................
 class QBetseeThreadPoolWorkerSignals(QObject):
@@ -54,13 +54,11 @@ class QBetseeThreadPoolWorkerSignals(QObject):
 
     Attributes
     ----------
-    _halt_work_if_requested : CallableTypes
-        Callable temporarily or permanently halting all business logic
-        performed by the parent worker that owns this collection when requested
-        to do so by external callers residing in other threads. For
-        convenience, this is typically the
-        :meth:`guipoolwork.QBetseeThreadPoolWorker._halt_work_if_requested`
-        method bound to this parent worker.
+    _halt_work_if_requested : WeakRefBoundMethodType
+        Weak reference to a bound method either temporarily or permanently
+        halting all business logic performed by the parent worker that owns
+        this collection when requested to do so by external callers residing in
+        other threads.
     '''
 
     # ..................{ SIGNALS                           }..................
@@ -84,12 +82,33 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     ----------
     **This signal is neither guaranteed to be emitted nor guaranteed to be
     emitted in a timely manner.** This signal is only emitted at the optional
-    discretion of subclass-specific business logic. Thanks to this uncertainty,
+    discretion of subclass-specific business logic. Given this uncertainty,
     slots connected to this signal are advised to perform only non-essential
     logic (e.g., by calling only a :meth:`QProgressBar.setRange` method).
 
     This signal should be emitted by calling the higher-level
     :meth:`emit_progress_range` wrapper method rather than the lower-level
+    :meth:`QSignal.emit` method of this signal.
+    '''
+
+
+    progress_stated = Signal(str)
+    '''
+    Signal optionally emitted by the subclass-specific
+    :meth:`QBetseeThreadPoolWorker._work` method, passed the string
+    ``progress_status`` signifying the current state of progress as an
+    arbitrary human-readable message for the parent worker.
+
+    Caveats
+    ----------
+    **This signal is neither guaranteed to be emitted nor guaranteed to be
+    emitted in a timely manner.** This signal is only emitted at the optional
+    discretion of subclass-specific business logic. Given this uncertainty,
+    slots connected to this signal are advised to perform only non-essential
+    logic (e.g., by calling only a :meth:`QTextWidget.setText` method).
+
+    This signal should be emitted by calling the higher-level
+    :meth:`emit_progress_state` wrapper method rather than the lower-level
     :meth:`QSignal.emit` method of this signal.
     '''
 
@@ -187,17 +206,17 @@ class QBetseeThreadPoolWorkerSignals(QObject):
 
     # ..................{ INITIALIZERS                      }..................
     @type_check
-    def __init__(self, halt_work_if_requested: CallableTypes) -> None:
+    def __init__(self, halt_work_if_requested: WeakRefBoundMethodType) -> None:
         '''
         Initialize this pooled worker signals collection.
 
         Parameters
         ----------
-        halt_work_if_requested : CallableTypes
-            Callable temporarily or permanently halting all business logic
-            performed by the parent worker that owns this collection when
-            requested to do so by external callers residing in other threads.
-            For convenience, this is typically the
+        halt_work_if_requested : WeakRefBoundMethodType
+            Weak reference to a bound method either temporarily or permanently
+            halting all business logic performed by the parent worker that owns
+            this collection when requested to do so by external callers
+            residing in other threads.  For convenience, this is typically the
             :meth:`guipoolwork.QBetseeThreadPoolWorker._halt_work_if_requested`
             method bound to this parent worker. Accepting a reference to this
             method rather than this parent worker avoids circular object
@@ -222,9 +241,9 @@ class QBetseeThreadPoolWorkerSignals(QObject):
         Parameters
         ----------
         progress_min : int
-            Minimum progress value emitted by :attr:`emit_progressed`.
+            Minimum progress value emitted by :attr:`emit_progress`.
         progress_max : int
-            Maximum progress value emitted by :attr:`emit_progressed`.
+            Maximum progress value emitted by :attr:`emit_progress`.
 
         See Also
         ----------
@@ -238,7 +257,34 @@ class QBetseeThreadPoolWorkerSignals(QObject):
         # Temporarily or permanently halt all worker-specific business logic
         # when requested to do so by external callers in other threads *AFTER*
         # successfully emitting this signal.
-        self._halt_work_if_requested()
+        self._halt_work_if_requested()()
+
+
+    @type_check
+    def emit_progress_state(self, progress_status: str) -> None:
+        '''
+        Emit the :attr:`progress_stated` signal with the passed **progress
+        status** (i.e., string subsequently emitted by the
+        :attr:`emit_progress_state` signal method) for the parent worker.
+
+        Parameters
+        ----------
+        progress_status : str
+            Human-readable string signifying the progress of work completed.
+
+        See Also
+        ----------
+        :attr:`progress_stated`
+            Further details.
+        '''
+
+        # Signal all slots connected to this signal with these parameters.
+        self.progress_stated.emit(progress_status)
+
+        # Temporarily or permanently halt all worker-specific business logic
+        # when requested to do so by external callers in other threads *AFTER*
+        # successfully emitting this signal.
+        self._halt_work_if_requested()()
 
 
     @type_check
@@ -265,4 +311,4 @@ class QBetseeThreadPoolWorkerSignals(QObject):
         # Temporarily or permanently halt all worker-specific business logic
         # when requested to do so by external callers in other threads *AFTER*
         # successfully emitting this signal.
-        self._halt_work_if_requested()
+        self._halt_work_if_requested()()

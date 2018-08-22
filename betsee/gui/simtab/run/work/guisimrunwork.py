@@ -11,12 +11,10 @@ the equivalent of a simulation subcommand in a Qt-aware manner) functionality.
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  # Slot, Signal
 from betse.science.parameters import Parameters
-# from betse.science.phase.phaseenum import SimPhaseKind
 from betse.science.simrunner import SimRunner
 # from betse.util.io.log import logs
 from betse.util.type import enums
 from betse.util.type.cls import classes
-from betse.util.type.decorator.deccls import abstractmethod  #, abstractproperty
 from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check, CallableTypes
@@ -25,7 +23,6 @@ from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
-# from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker
 
 # ....................{ SUPERCLASSES                      }....................

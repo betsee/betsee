@@ -864,7 +864,10 @@ class QBetseeThreadPoolWorker(QRunnable):
         '''
 
         return QBetseeThreadPoolWorkerSignals(
-            halt_work_if_requested=self._halt_work_if_requested)
+            # Weak reference to the _halt_work_if_requested() method, avoiding
+            # circular references between this object and this child object.
+            halt_work_if_requested=pyref.refer_weak(
+                self._halt_work_if_requested))
 
     # ..................{ WORKERS ~ abstract                }..................
     # Abstract methods required to be redefined by subclasses.
