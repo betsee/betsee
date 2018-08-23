@@ -4,80 +4,34 @@
 # See "LICENSE" for further details.
 
 '''
-High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
-*and* controlling the execution of simulation phases) functionality.
+High-level **simulator proactor** (i.e., :mod:`PySide2`-based object
+controlling but *not* displaying the execution of simulation phases)
+functionality.
 '''
-
-#FIXME: This submodule has become tragically long in the tooth. For
-#maintainability, refactor at least a portion of this functionality into a
-#separate submodule. In theory, isolating all of the logic pertaining to
-#simulator *WORKERS* into a new submodule (e.g., "guisimrunner") might suffice.
-#FIXME: Refactor this submodule to leverage the newly defined "guisimrunact"
-#submodule, which largely subsumes the functionality defined by this submodule.
-#Note that doing so will necessitate numerous refactorings; see the
-#QBetseeSimmerProactor.init() method for several. Additionally, note that many
-#currently private methods of that class will need to be refactored into
-#public methods, so that the "QBetseeSimmer" class may call them.
-
-#FIXME: When the application closure signal is emitted (e.g., from the
-#QApplication.aboutToQuit() signal and/or QMainWindow.closeEvent() handler),
-#the following logic should be performed (in order):
-#
-#1. In the QMainWindow.closeEvent() handler only:
-#   * When the user attempts to close the application when one or more threads
-#     are currently running, a warning dialog should be displayed to the user
-#     confirming this action.
-
-#FIXME: When the user attempts to run a dirty simulation (i.e., a simulation
-#with unsaved changes), the GUI should prompt the user as to whether or not
-#they would like to save those changes *BEFORE* running the simulation. In
-#theory, we should be able to reuse existing "sim_conf" functionality to do so.
 
 #FIXME: Improve the underlying exporting simulation subcommands in BETSE (e.g.,
 #"betse plot seed") to perform routine progress callbacks.
 
-#FIXME: Note in a more appropriate docstring somewhere that the text overlaid
-#onto the progress bar is only conditionally displayed depending on the current
-#style associated with this bar. Specifically, the official documentation notes:
-#
-#    Note that whether or not the text is drawn is dependent on the style.
-#    Currently CDE, CleanLooks, Motif, and Plastique draw the text. Mac, Windows
-#    and WindowsXP style do not.
-#
-#For orthogonality with native applications, it's probably best to accept this
-#constraint as is and intentionally avoid setting a misson-critical format on
-#progress bars. Nonetheless, this *DOES* appear to be circumventable by
-#manually overlaying a "QLabel" widget over the "QProgressBar" widget in
-#question. For details, see the following StackOverflow answer (which, now that
-#I peer closely at it, appears to be quite incorrect... but, something's better
-#than nothing... maybe):
-#    https://stackoverflow.com/a/28816650/2809027
-
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot  #, QObject, Signal
+from PySide2.QtWidgets import QProgressBar, QLabel
 from betse.exceptions import BetseSimUnstableException
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.py import pythread
 from betse.util.type import enums
 from betse.util.type.obj import objects
-from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.guiexception import (
     BetseeSimmerException, BetseeSimmerBetseException)
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
-from betsee.gui.simtab.run.guisimrunact import QBetseeSimmerProactor
 from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
-    SIM_PHASE_KIND_TO_NAME,
-    SIMMER_STATE_TO_STATUS_VERBOSE,
     SIMMER_STATES_FIXED,
     SIMMER_STATES_FLUID,
     SIMMER_STATES_RUNNING,
     SIMMER_STATES_WORKING,
-    # MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
-    # EXPORTING_TYPE_TO_STATUS_DETAILS,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerPhaseWorker
@@ -87,36 +41,116 @@ from betsee.util.thread.pool import guipoolthread
 from collections import deque
 
 # ....................{ CLASSES                           }....................
-class QBetseeSimmer(QBetseeSimmerStatefulABC):
+class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
     '''
-    High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
-    *and* controlling the execution of simulation phases).
+    High-level **simulator proactor** (i.e., :mod:`PySide2`-based object
+    controlling but *not* displaying the execution of simulation phases).
+
+    This proactor maintains all state needed to manage these phases, including:
+
+    * A queue of all simulation subcommands to be interactively run.
+    * Whether or not a simulation subcommand is currently being run.
+    * The state of the currently run simulation subcommand (if any), including:
+
+      * Visualization (typically, Vmem animation) of the most recent step
+        completed for this subcommand.
+      * Textual status describing this step in human-readable language.
+      * Numeric progress as a relative function of the total number of steps
+        required by this subcommand.
+
+    Design
+    ----------
+    This proactor implements the well-known `proactor design pattern`_, whereby
+    each simulation subcommand is asynchronously run by a simulator worker
+    assigned to a pooled thread dedicated to that worker. This pattern is
+    effectively an asynchronous variant of the `reactor design pattern`_.
+
+    For maintainability, this proactor subsumes *all* roles defined by this
+    pattern except the core role of the **asynchronous operation** (e.g., work
+    performed by each worker), including the following roles:
+
+    * **Proactive initiator** (i.e., the highest-level parent object
+      responsible for governing all asynchronous activity).
+    * **Asynchronous operation processor** (i.e., the second-highest-level
+      parent object responsible for starting the asynchronous activity and
+      forwarding responsibility for handling its completion to the completion
+      dispatcher).
+    * **Completion dispatcher** (i.e., the second-lowest-level child object
+      responsible for receiving control from the asynchronous operation
+      processor on the completion of the asynchronous activity and forwarding
+      responsibility for handling its completion to the completion handler).
+    * **Completion handler** (i.e., the lowest-level child object responsible
+      for handling the actual completion of the asynchronous activity).
+
+    .. _proactor design pattern:
+       https://en.wikipedia.org/wiki/Proactor_pattern
+    .. _reactor design pattern:
+       https://en.wikipedia.org/wiki/Reactor_pattern
+
+    Caveats
+    ----------
+    For simplicity, this proactor internally assumes the active Python
+    interpreter to prohibit Python-based multithreading via a Global
+    Interpreter Lock (GIL). Specifically, all worker-centric attributes (e.g.,
+    :attr:`_worker`, :attr:`_workers_queued`) are assumed to be implicitly
+    synchronized despite access to these attributes *not* being explicitly
+    locked behind a Qt-based mutual exclusion primitive.
+
+    GIL-less Python interpreters violate this simplistic assumption. For
+    example, the :meth:`_stop_workers` and :meth:`_handle_worker_completion`
+    slots suffer obvious (albeit unlikely) race conditions under GIL-less
+    interpreters due to competitively deleting the same underlying worker in a
+    desynchronized and hence non-deterministic manner.
+
+    Yes, this is assuredly a bad idea. Yes, this is us nonchalantly shrugging.
+
+    Attributes (Private)
+    ----------
+    _p : Parameters
+        Simulation configuration singleton.
+
+    Attributes (Private: Phase)
+    ----------
+    _PHASES : SequenceTypes
+        Immutable sequence of all simulator phase controllers (e.g.,
+        :attr:`_phase_seed`), needed for iteration over these controllers. For
+        sanity, these phases are ordered is simulation order such that:
+        * The seed phase is listed *before* the initialization phase.
+        * The initialization phase is listed *before* the simulation phase.
+    _phase_seed : QBetseeSimmerPhase
+        Controller for all simulator widgets pertaining to the seed phase.
+    _phase_init : QBetseeSimmerPhase
+        Controller for all simulator widgets pertaining to the initialization
+        phase.
+    _phase_sim : QBetseeSimmerPhase
+        Controller for all simulator widgets pertaining to the simulation
+        phase.
+
+    Attributes (Private: Thread)
+    ----------
+    _thread : QBetseeWorkerThread
+        Thread controller owning all simulator workers (i.e.,
+        :class:`QBetseeSimmerWorkerABC` instances responsible for running
+        queued simulation subcommands in a multithreaded manner).
+    _workers_queued : {QueueType, NoneType}
+        **Simulator worker queue** (i.e., double-ended queue of all simulator
+        workers to be subsequently run in a multithreaded manner by this
+        simulator, where each worker runs a simulation subcommand whose
+        corresponding checkbox was checked at the time this queue was
+        instantiated) if this simulator has started one or more such workers
+        *or* ``None`` otherwise (i.e., if no such workers have been started).
+        Note that this queue is double- rather than single-ended only as the
+        Python stdlib fails to provide the latter. Since the former generalizes
+        the latter, however, leveraging the former in a single-ended manner
+        replicates the behaviour of the latter. Ergo, a double-ended queue
+        remains the most space- and time-efficient data structure for doing so.
 
     Attributes (Private: Widgets)
     ----------
-    _action_toggle_work : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle_work`
-        action.
-    _action_stop_workers : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_workers`
-        action.
-    _player_toolbar : QFrame
-        Alias of the :attr:`QBetseeMainWindow.sim_run_player_toolbar_frame`
-        frame containing only the :class:`QToolBar` controlling this
-        simulation.
     _progress_bar : QProgressBar
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
     _progress_status : QLabel
-        Alias of the :attr:`QBetseeMainWindow.sim_run_player_status` label,
-        synopsizing the current state of this simulator.
-    _proactor : QBetseeSimmerProactor
-        **Simulator proactor** (i.e., lower-level :mod:`PySide2`-based
-        delegate controlling but *not* displaying the execution of simulation
-        phases). In standard model-view-controller (MVC) parlance:
-
-        * BETSE itself is the model (M) that runs simulation phases.
-        * This proactor is the controller (C) for running simulation phases.
-        * This parent object is the view (V) into running simulation phases.
+        Alias of the :attr:`QBetseeMainWindow.sim_run_player_status` label.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -128,39 +162,55 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
+        #FIXME: Yeah... fix this, please. PyPy will probably make the GIL
+        #optionally go away at some point. (At least, it certainly should.)
+
+        # Raise an exception unless the active Python interpreter has a GIL, as
+        # foolishly required by methods defined by this class.
+        pythread.die_unless_gil()
+
         # Nullify all remaining instance variables for safety.
-        self._action_toggle_work = None
-        self._action_stop_workers = None
         self._p = None
-        self._player_toolbar = None
         self._progress_bar = None
         self._progress_status = None
         self._workers_queued = None
-
-        # Simulator proactor.
-        self._proactor = QBetseeSimmerProactor(self)
-
-        # Initialize all phases of this simulator.
-        self._init_phases()
-
-
-    def _init_phases(self) -> None:
-        '''
-        Initialize all phases of this simulator.
-        '''
 
         # Simulator phase controllers.
         self._phase_seed = QBetseeSimmerPhase(self)
         self._phase_init = QBetseeSimmerPhase(self)
         self._phase_sim  = QBetseeSimmerPhase(self)
 
-        # Sequence of all simulator phases. For iterability, these phases are
-        # intentionally listed in simulation order.
+        # Sequence of all simulator phases, intentionally listed in simulation
+        # order to ensure sane iterability.
         self._PHASES = (self._phase_seed, self._phase_init, self._phase_sim)
 
 
+    #FIXME: Refactor this method to additionally accept the following
+    #parameters required throughout this class, which this method should also
+    #then classify as private instance variables of the same name:
+    #
+    #* "progress_bar". (No explanation required.)
+    #* "progress_status". (No explanation required.)
+    #* "update_widgets_signal". (Explanation required. Rather than passing the
+    #  existing _update_widgets() method of the parent class, that method
+    #  should be refactored into a new signal-slot pair with the following
+    #  attribute names:
+    #  * "_update_widgets". This slot should accept no arguments. Ergo, the
+    #    existing _update_widgets() method should simply be prepended by the
+    #    standard "@Slot" decorator.
+    #  * "_update_widgets_signal". The QBetseeSimmer._init_connections() method
+    #    should connect this signal to the new "_update_widgets" slot.
+    #  Lastly, the new "_update_widgets" slot should be passed as the value of
+    #  this new parameter.)
+    #
+    #That should be it.
     @type_check
-    def init(self, main_window: QBetseeMainWindow) -> None:
+    def init(
+        self,
+        main_window: QBetseeMainWindow,
+        progress_bar: QProgressBar,
+        progress_status: QLabel,
+    ) -> None:
         '''
         Finalize this simulator's initialization, owned by the passed main
         window widget.
@@ -179,51 +229,25 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this object.
+        progress_bar : QProgressBar
+            Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress`
+            widget.
+        progress_status : QLabel
+            Alias of the :attr:`QBetseeMainWindow.sim_run_player_status` label.
         '''
 
         # Initialize our superclass with all passed parameters.
         super().init(main_window)
 
-        # Log this initialization.
-        logs.log_debug('Sanitizing simulator state...')
-
-        # Initialize all widgets concerning simulator state.
-        self._init_widgets(main_window)
-
-        # Connect all relevant signals and slots *AFTER* initializing these
-        # widgets, as the former typically requires the latter.
-        self._init_connections(main_window)
-
-
-
-    @type_check
-    def _init_widgets(self, main_window: QBetseeMainWindow) -> None:
-        '''
-        Create all widgets owned directly by this object *and* initialize all
-        other widgets (*not* always owned by this object) concerning this
-        simulator.
-
-        Parameters
-        ----------
-        main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow`
-            widget.
-        '''
+        # Log this finalization.
+        logs.log_debug('Sanitizing simulator proactor state...')
 
         # Classify variables of this main window required by this simulator.
-        self._action_toggle_work  = main_window.action_sim_run_toggle_work
-        self._action_stop_workers = main_window.action_sim_run_stop_work
-        self._p                   = main_window.sim_conf.p
-        self._player_toolbar      = main_window.sim_run_player_toolbar_frame
-        self._progress_bar        = main_window.sim_run_player_progress
-        self._progress_status     = main_window.sim_run_player_status
+        self._p = main_window.sim_conf.p
 
-        # Initialize the simulator proactor.
-        self._proactor.init(
-            main_window=main_window,
-            progress_bar=self._progress_bar,
-            progress_status=self._progress_status,
-        )
+        # Classify all remaining passed parameters.
+        self._progress_bar    = progress_bar
+        self._progress_status = progress_status
 
         # Dictionary of all keyword arguments to be passed to each call to the
         # QBetseeSimmerPhase.init() method below.
@@ -236,34 +260,6 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         self._phase_seed.init(kind=SimPhaseKind.SEED, **phase_init_kwargs)
         self._phase_init.init(kind=SimPhaseKind.INIT, **phase_init_kwargs)
         self._phase_sim .init(kind=SimPhaseKind.SIM , **phase_init_kwargs)
-
-        #FIXME: Excise the following code block after defining and implementing
-        #hooks to update this status in a sane manner.
-
-        # Avoid displaying detailed status for the currently queued subcommand,
-        # as the low-level BETSE codebase lacks sufficient hooks to update this
-        # status in a sane manner.
-        main_window.sim_run_player_substatus_group.hide()
-
-
-    @type_check
-    def _init_connections(self, main_window: QBetseeMainWindow) -> None:
-        '''
-        Connect all relevant signals and slots of *all* widgets (including the
-        main window, top-level widgets of that window, and leaf widgets
-        distributed throughout this application) whose internal state pertains
-        to the high-level state of this simulator.
-
-        Parameters
-        ----------
-        main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow`
-            widget.
-        '''
-
-        # Connect each such action to this object's corresponding slot.
-        self._action_toggle_work.triggered.connect(self._toggle_work)
-        self._action_stop_workers.triggered.connect(self._stop_workers)
 
         # For each possible phase, derive the initial state of this simulator
         # from the initial state of this phase.
@@ -478,7 +474,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         return self._worker.phase.state
 
-    # ..................{ PROPERTIES ~ worker : phase : set }..................
+
     @_worker_phase_state.setter
     @type_check
     def _worker_phase_state(self, state: SimmerState) -> None:
@@ -585,94 +581,12 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
             # Change the state of this simulator to this new state.
             self.state = state_new
 
+            #FIXME: This method no longer resides here and should, ideally, be
+            #supplanted by replaced with the following trivial one-liner:
+            #    self._update_widgets().emit()
+
             # Update the state of simulator widgets *AFTER* setting this state.
             self._update_widgets()
-
-
-    #FIXME: If the simulator is *NOT* currently running (e.g., as given by
-    #"not self._is_running"), either the "self._action_toggle_work" action or
-    #perhaps merely the associated push button should be toggled to the
-    #"normal off" state.
-    def _update_widgets(self) -> None:
-        '''
-        Update the contents of widgets owned or controlled by this simulator to
-        reflect the current state of this simulator.
-        '''
-
-        # Log this update.
-        logs.log_debug('Updating simulator widgets from simulator state...')
-
-        # Enable (in arbitrary order):
-        #
-        # * All widgets controlling the currently queued phase only if one or
-        #   more phases are currently queued.
-        # * All widgets halting the current worker only if some worker is
-        #   currently working.
-        #
-        # To reduce the likelihood of accidental interaction with widgets
-        # intended to be disabled, do so *BEFORE* subsequent slot logic.
-        self._player_toolbar.setEnabled(self.is_queued)
-
-        # Enable simulator starting, pausing, and resuming only if the
-        # simulator is currently workable.
-        self._action_toggle_work.setEnabled(self._is_workable)
-
-        # Enable simulator pausing only if the simulator is currently running.
-        self._action_toggle_work.setChecked(self._is_running)
-
-        # Enable simulator stopping only if the simulator is currently working.
-        # Note that:
-        #
-        # * Testing the "_is_running" property fails to suffice, as that
-        #   property fails to yield "True" when the simulator is paused.
-        # * While testing the "_is_worker" property alone could also
-        #   theoretically suffice, doing so would desynchronize the UI from
-        #   this simulator state; specifically, the button associated with this
-        #   action would remain enabled for a non-deterministic window of time
-        #   after the simulator is stopped. Why? Because the _stop_workers()
-        #   slot sets this simulator state to stopped *BEFORE* the currently
-        #   working worker successfully stops resulting in the "_is_worker"
-        #   property yielding "False". Ergo, the simulator state takes
-        #   precedence for UI purposes.
-        self._action_stop_workers.setEnabled(self._is_working)
-
-        # Update the verbose status of this simulator.
-        self._update_status()
-
-
-    def _update_status(self) -> None:
-        '''
-        Update the text displayed by the :attr:`_status` label, verbosely
-        synopsizing the current state of this simulator.
-        '''
-
-        # Unformatted template synopsizing the current state of this simulator.
-        status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[self.state]
-
-        # Text synopsizing the type of simulation phase run by the current
-        # simulator worker if any *OR* an arbitrary placeholder otherwise. In
-        # the latter case, this text is guaranteed to *NOT* be interpolated by
-        # this template and is thus safely ignorable.
-        phase_type_name = (
-            SIM_PHASE_KIND_TO_NAME[self._worker.phase.kind]
-            if self._is_worker else
-            'the nameless that shall not be named')
-
-        # Text synopsizing the prior state of this simulator. To permit this
-        # text to be interpolated into the middle of arbitrary sentences, the
-        # first character of this text is lowercased.
-        status_prior_text = strs.lowercase_char_first(self._progress_status.text())
-
-        # Unconditionally format this text with *ALL* possible format specifiers
-        # interpolated into *ALL* possible instances of this text. By design,
-        # format specifiers *NOT* interpolated into this text will be ignored.
-        status_text = status_text_template.format(
-            phase_type=phase_type_name,
-            status_prior=status_prior_text,
-        )
-
-        # Set the text of the label displaying this synopsis to this text.
-        self._progress_status.setText(status_text)
 
     # ..................{ EXCEPTIONS                        }..................
     def _die_unless_workable(self) -> None:
@@ -693,9 +607,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         if not self._is_workable:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer',
-                'Simulator not workable (i.e., '
-                'not currently working and no phases queued).'))
+                'QBetseeSimmerProactor',
+                'Simulator not workable '
+                '(i.e., not currently working and no phases queued).'))
 
     # ..................{ EXCEPTIONS ~ state                }..................
     def _die_unless_running(self) -> None:
@@ -718,9 +632,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         if not self._is_running:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer',
-                'Simulator not running (i.e., '
-                'either paused, finished, or not started).'))
+                'QBetseeSimmerProactor',
+                'Simulator not running '
+                '(i.e., either paused, finished, or not started).'))
 
 
     def _die_unless_paused(self) -> None:
@@ -744,9 +658,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         if not self._is_paused:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer',
-                'Simulator not paused (i.e., '
-                'either running, finished, or not started).'))
+                'QBetseeSimmerProactor',
+                'Simulator not paused '
+                '(i.e., either running, finished, or not started).'))
 
     # ..................{ EXCEPTIONS ~ working              }..................
     def _die_if_working(self) -> None:
@@ -766,7 +680,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         if self._is_worker:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer', 'Simulation currently working.'))
+                'QBetseeSimmerProactor', 'Simulation currently working.'))
 
 
     def _die_unless_working(self) -> None:
@@ -786,7 +700,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         if not self._is_worker:
             raise BetseeSimmerException(QCoreApplication.translate(
-                'QBetseeSimmer', 'No simulation currently working.'))
+                'QBetseeSimmerProactor', 'No simulation currently working.'))
 
     # ..................{ SLOTS ~ action : work             }..................
     # Slots connected to signals emitted by "QAction" objects specific to the
@@ -975,7 +889,11 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
 
         #FIXME: If this behaves as expected, refactor all similar settings to
         #do so first rather than last in their respective methods.
-        #FIXME: Comment why we now do this first rather than last.
+        #FIXME: Comment why we now do this first rather than last (e.g., to
+        #force the UI to immediately reflect the user's most recent request,
+        #despite the fact that the underlying simulator worker may indeed
+        #continue working before gracefully halting at some non-deterministic
+        #subsequent point).
 
         # Set this simulator and the currently running phase to the stopped
         # state *BEFORE* successfully stopping this worker.
@@ -1143,6 +1061,9 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         worker.init(
             conf_filename=self._p.conf_filename,
             progress_bar=self._progress_bar,
+            #FIXME: Uncomment after adding worker.init() support for this
+            #additional parameter.
+            # progress_status=self._progress_status,
         )
 
         # Connect signals emitted by this worker to simulator slots *AFTER*
@@ -1192,7 +1113,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         if isinstance(exception, BetseSimUnstableException):
             raise BetseeSimmerBetseException(
                 synopsis=QCoreApplication.translate(
-                    'QBetseeSimmer',
+                    'QBetseeSimmerProactor',
                     'Simulation halted prematurely '
                     'due to computational instability.'),
             ) from exception
@@ -1204,7 +1125,7 @@ class QBetseeSimmer(QBetseeSimmerStatefulABC):
         else:
             raise BetseeSimmerBetseException(
                 synopsis=QCoreApplication.translate(
-                    'QBetseeSimmer',
+                    'QBetseeSimmerProactor',
                     'Simulation halted prematurely with unexpected error:'),
                 exegesis=str(exception),
             ) from exception
