@@ -147,17 +147,32 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
         pass
 
     # ..................{ FINALIZERS                        }..................
-    #FIXME: Revise docstring accordingly.
+    # Although the implementation of this method is currently trivial, this
+    # method will be generalized (at some later date) to transparently halt
+    # work being asynchronously performed in additional tabs (e.g., animation
+    # encoding export) and thus should be preserved as is for now.
     def halt_work(self) -> None:
         '''
-        Coercively (i.e., non-gracefully) halt the current simulator worker if
-        any *and* dequeue all subsequently queued workers in a thread-safe
-        manner, reverting the simulator to the idle state... **by any means
-        necessary.**
+        Schedule all currently running simulation work if any for immediate
+        and thus possibly non-graceful termination *or* silently reduce to a
+        noop otherwise (i.e., if no simulation work is currently running).
+
+        Caveats
+        ----------
+        This method may induce data loss or corruption in simulation output.
+        In theory, this should only occur in edge cases in which the current
+        simulator worker fails to gracefully stop within a sensible window of
+        time. In practice, this implies that this method should *only* be
+        called when otherwise unavoidable (e.g., at application shutdown).
+
+        See Also
+        ----------
+        :meth:`QBetseeSimmer.halt_work`
+            Further details.
         '''
 
         # Halt the simulator if currently running.
-        self.simmer.halt_workers()
+        self.simmer.halt_work()
 
     # ..................{ PROPERTIES ~ bool                 }..................
     # @property

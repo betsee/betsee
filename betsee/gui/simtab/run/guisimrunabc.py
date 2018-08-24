@@ -101,10 +101,6 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         # widgets controlled by this controller given this state.
         self._update_state()
 
-        #FIXME: This no longer appears to be desirable, as we no longer appear
-        #to actually connect any slots to this signal. If true, consider
-        #excising this signal entirely.
-
         # Signal all connected slots *AFTER* internally updating this state.
         self.set_state_signal.emit(self)
 

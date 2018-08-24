@@ -144,6 +144,7 @@ See Also
 '''
 
 # ....................{ GLOBALS ~ dict : status           }....................
+#FIXME: Rename to "SIMMER_STATE_TO_PHASE_STATUS" for orthogonality.
 SIMMER_STATE_TO_STATUS_TERSE = {
     SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Unqueued'),
@@ -167,28 +168,16 @@ being performed in that state.
 '''
 
 
+#FIXME: Rename to "SIMMER_STATE_TO_PROACTOR_STATUS" for orthogonality.
 SIMMER_STATE_TO_STATUS_VERBOSE = {
     SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Waiting for phase(s) to be queued...'),
     SimmerState.QUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Waiting for queued phase(s) to be started...'),
     SimmerState.MODELLING: QCoreApplication.translate(
-        'guisimrunstate',
-        #FIXME: Replace this coarse-grained string with the following
-        #fine-grained string after hooking into the simulation process.
-        'Modelling <b>{phase_type}</b> phase...'),
-        # 'Modelling <b>{phase_type}</b> '
-        # 'step {step_curr} '
-        #   '<i>of</i> {step_total}:'),
+        'guisimrunstate', 'Modelling <b>{phase_type}</b> phase...'),
     SimmerState.EXPORTING: QCoreApplication.translate(
-        'guisimrunstate',
-        #FIXME: Replace this coarse-grained string with the following
-        #fine-grained string after hooking into the simulation process.
-        'Exporting <b>{phase_type}</b> phase...'),
-        # 'Exporting <b>{phase_type}</b> '
-        # '{export_type} <pre>"{export_name}"</pre> '
-        # 'step {step_curr} '
-        #   '<i>of</i> {step_total}:'),
+        'guisimrunstate', 'Exporting <b>{phase_type}</b> phase...'),
     SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused {status_prior}'),
     SimmerState.STOPPED: QCoreApplication.translate(
@@ -217,20 +206,29 @@ Format specifiers embedded in these strings include:
 
 # ....................{ GLOBALS ~ dict : status : details }....................
 MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS = {
-    # Note that low-level details for the "SimPhaseKind.SEED" phase are
-    # specific to the current action being performed and hence defined in the
+    # Note that low-level details for the "SimPhaseKind.SEED" phase are unique
+    # to the current action being performed and hence defined by the
     # lower-level BETSE codebase rather than here.
     SimPhaseKind.INIT: QCoreApplication.translate(
         'guisimrunstate',
-        'Initializing {time_curr} <i>of</i> {time_total}...'),
+        'Initializing {progress_current} <i>of</i> {progress_total} '
+        'time steps...'),
     SimPhaseKind.SIM: QCoreApplication.translate(
         'guisimrunstate',
-        'Simulating {time_curr} <i>of</i> {time_total}...'),
+        'Simulating {progress_current} <i>of</i> {progress_total} '
+        'time steps...'),
 }
 '''
 Dictionary mapping from the initialization and simulation phases to a
 human-readable, translated, unformatted string templating the low-level details
 of the action being performed when modelling that phase.
+
+Format specifiers embedded in these strings include:
+
+* ``{progress_current}``, a non-negative integer signifying the current time
+  step of this phase.
+* ``{progress_total}``, a non-negative integer signifying the total number of
+  time steps in this phase.
 '''
 
 

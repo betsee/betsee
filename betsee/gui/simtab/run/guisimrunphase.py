@@ -9,12 +9,12 @@ modelling and/or exporting by this simulator) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
-from PySide2.QtCore import Slot  # QCoreApplication, Signal,
+from PySide2.QtCore import QObject, Signal, Slot  # QCoreApplication,
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
 from betse.util.type.decorator.decmemo import property_cached
-from betse.util.type.types import type_check, CallableTypes
+from betse.util.type.types import type_check  #, CallableTypes
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
@@ -37,13 +37,6 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
     ----------
     _kind : SimPhaseKind
         Type of simulation phase controlled by this controller.
-    _set_state_from_phase : CallableTypes
-        Callable with signature resembling
-        ``set_state_from_phase(phase: QBetseeSimmerPhase)``,
-        context-sensitively setting the current state of the simulator to the
-        current state of the passed simulator phase. This phase calls this
-        callable to selectively notify the simulator of *some* (but not *all*)
-        state changes.
 
     Attributes (Private: Widgets)
     ----------
@@ -57,6 +50,19 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         support exporting, some (e.g., the seed phase) do *not*.
     _status : QLabel
         Label synopsizing the current state of this phase.
+    '''
+
+    # ..................{ SIGNALS                           }..................
+    set_state_queued_signal = Signal(QObject)
+    '''
+    Signal emitted by the :meth:`_toggle_queue_subkind` slot immediately after
+    changing the state of this simulator phase to be either
+    :attr:`SimmerState.QUEUED` or :attr:`SimmerState.UNQUEUED`, passed this
+    simulator phase itself.
+
+    This signal enables the parent simulator proactor to respond to user
+    requests to enqueue or dequeue any child simulator phase, which are
+    sufficiently unique events to warrant special-case handling.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -73,20 +79,13 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         self._queue_modelling_lock = None
         self._queue_modelling = None
         self._queue_exporting = None
-        self._set_state_from_phase = None
         self._status = None
 
 
-    #FIXME: Refactor the set_state_from_phase() parameter to either be a
-    #proper signal (*IDEAL*) or a weak reference to the same bound method
-    #(non-ideal, for hopefully obvious reasons). The current approach
-    #implicitly creates a circular reference between the parent "QBetseeSimmer"
-    #object and this child object, which is bad.
     @type_check
     def init(
         self,
         main_window: QBetseeMainWindow,
-        set_state_from_phase: CallableTypes,
         kind: SimPhaseKind,
     ) -> None:
         '''
@@ -107,13 +106,6 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this object.
-        set_state_from_phase : CallableTypes
-            Callable with signature resembling
-            ``set_state_from_phase(phase: QBetseeSimmerPhase)``,
-            context-sensitively setting the current state of the simulator to
-            the current state of the passed simulator phase. This phase calls
-            this callable to selectively notify the simulator of *some* (but
-            not *all*) state changes.
         kind : SimPhaseKind:
             Type of simulation phase controlled by this controller.
         '''
@@ -123,7 +115,11 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
 
         # Classify all remaining passed parameters.
         self._kind = kind
-        self._set_state_from_phase = set_state_from_phase
+
+        # Log this initialization *AFTER* classifying these parameters, as
+        # required by the "name" property embedded in this log message.
+        logs.log_debug(
+            'Sanitizing simulator phase "%s" state...', self.name)
 
         # Initialize all widgets concerning simulator state.
         self._init_widgets(main_window)
@@ -146,10 +142,6 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
             Initialized application-specific parent :class:`QMainWindow`
             widget.
         '''
-
-        # Log this initialization.
-        logs.log_debug(
-            'Sanitizing simulator phase "%s" state...', self.name)
 
         # Names of all instance variables of this main window yielding widgets
         # specific to this simulator phase.
@@ -276,11 +268,21 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         to either the :attr:`_queue_modelling` *or* :attr:`_queue_exporting`
         variables.
 
+        If this slot changes the state of this simulator phase to either
+        :attr:`SimmerState.QUEUED` or :attr:`SimmerState.UNQUEUED`, this slot
+        notifies interested parties of this fact by signalling the
+        :attr:`set_state_queued_signal` with this simulator phase.
+
         Parameters
         ----------
         is_queued : bool
             ``True`` only if this :class:`QCheckBox` is currently checked.
         '''
+
+        # Log this action.
+        logs.log_debug(
+            'Enqueueing simulator phase "%s"...' if is_queued else
+            'Dequeueing simulator phase "%s"...', self.name)
 
         # If the current state of this phase is fluid (i.e., freely replaceable
         # with any other state)...
@@ -289,8 +291,8 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
             self.state = (
                 SimmerState.QUEUED if self.is_queued else SimmerState.UNQUEUED)
 
-            # Update the simulator's state to reflect this phase's state.
-            self._set_state_from_phase(phase=self)
+            # Update the proactor's state to reflect this phase's state.
+            self.set_state_queued_signal.emit(self)
         # Else, the current state of this phase is fixed and hence *NOT*
         # replaceable with any other state. For safety, this state is preserved
         # as is.
