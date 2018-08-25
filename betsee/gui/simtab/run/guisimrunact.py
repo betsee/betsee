@@ -352,15 +352,38 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
     @property
     def is_workable(self) -> bool:
         '''
-        ``True`` only if the simulator is **workable** (i.e., currently capable
+        ``True`` only if this proactor is **workable** (i.e., currently capable
         of performing work).
 
-        Equivalently, this property evaluates to ``True`` only if the simulator
-        is queued *or* working; in either case, the simulator is guaranteed to
-        be safely startable, resumable, or pausable and hence workable.
+        This property returns ``True`` only if exactly one of the following
+        conditions holds:
+
+        * This proactor is **working** (i.e., either running or paused).
+        * Both:
+
+          * This proactor is **queued** (i.e., one or more simulator phases are
+            queued to be run).
+          * This proactor's thread pool is empty (i.e., no proactor workers are
+            currently working). This is an essential safety check, avoiding
+            desynchronization during the narrow window of time in which the
+            following conditions hold:
+
+            * The :attr:`is_working` property returns ``False``, due to the
+              end user having manually stopped the previously running phase.
+            * The simulator worker responsible for running that phase has yet
+              to gracefully stop.
+
+        If one of the above conditions hold, this proactor is guaranteed to
+        be safely startable, resumable, or pausable and hence "workable."
         '''
 
-        return self.is_queued or self.is_working
+        # Return true only if...
+        return (
+            # This propactor is either queued *OR*...
+            self.is_working or (
+                # This propactor is queued *AND* this proactor's thread pool is
+                # empty, implying this proactor to be safely startable.
+                self.is_queued and not guipoolthread.is_working()))
 
 
     @property
@@ -397,7 +420,6 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         '''
 
         return self.state in SIMMER_STATES_RUNNING
-
 
     # ..................{ PROPERTIES ~ worker               }..................
     @property
@@ -1146,8 +1168,8 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         #
         # For safety, do so *BEFORE* this method dequeues this worker and hence
         # internally modifies the worker yielded by the "_worker" property.
-        if self._worker_phase_state is not SimmerState.STOPPED:
-            self._worker_phase_state = SimmerState.FINISHED
+        # if self._worker_phase_state is not SimmerState.STOPPED:
+        self._worker_phase_state = SimmerState.FINISHED
 
         # Schedule this worker for immediate deletion. On doing so, all signals
         # owned by this worker will be disconnected from connected slots.

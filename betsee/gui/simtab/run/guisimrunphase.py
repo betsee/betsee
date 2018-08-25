@@ -18,7 +18,7 @@ from betse.util.type.types import type_check  #, CallableTypes
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
-    SIMMER_STATE_TO_STATUS_TERSE,
+    SIMMER_STATE_TO_PHASE_STATUS,
     SIMMER_STATES_FLUID,
 )
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
@@ -332,7 +332,7 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
 
         # Text synopsizing the action being performed in this state *AFTER*
         # possibly setting this state above.
-        status_text = SIMMER_STATE_TO_STATUS_TERSE[self.state]
+        status_text = SIMMER_STATE_TO_PHASE_STATUS[self.state]
 
         # Set the text of the label displaying this synopsis to this text.
         self._status.setText(status_text)

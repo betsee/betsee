@@ -96,7 +96,6 @@ exporting, or paused but neither stopped nor nor finished).
 SIMMER_STATES_FLUID = {
     SimmerState.UNQUEUED,
     SimmerState.QUEUED,
-    SimmerState.FINISHED,
 }
 '''
 Set of all **fluid simulator states** (i.e., states the simulator may freely
@@ -131,6 +130,51 @@ SIMMER_STATES_FIXED = {
     SimmerState.MODELLING,
     SimmerState.EXPORTING,
     SimmerState.PAUSED,
+
+    #FIXME: Painfully insufficient. We need to expand this into a proper state
+    #machine such that the following two states are either fixed or fluid
+    #depending on context, as follows:
+    #
+    #* If the current phase state switches to either "FINISHED" or "STOPPED",
+    #  then the current proactor state should follow suite. Hence, these states
+    #  should be considered "fixed" in this case.
+    #* If the current phase state switches from either "FINISHED" or
+    #  "STOPPED", then the current proactor state should follow suite. Hence,
+    #  these states should be considered "fluid" in this case.
+    #
+    #Clearly, a state machine is in order. Or we could just define more
+    #fine-grained sets defining these states: e.g.,
+    #
+    #    SIMMER_STATES_FROM_FLUID = {
+    #        SimmerState.UNQUEUED,
+    #        SimmerState.QUEUED,
+    #        SimmerState.FINISHED,
+    #        SimmerState.STOPPED,
+    #    }
+    #
+    #    SIMMER_STATES_FROM_FIXED = {
+    #        SimmerState.MODELLING,
+    #        SimmerState.EXPORTING,
+    #        SimmerState.PAUSED,
+    #    }
+    #
+    #    SIMMER_STATES_INTO_FLUID = {
+    #        SimmerState.UNQUEUED,
+    #        SimmerState.QUEUED,
+    #    }
+    #
+    #    SIMMER_STATES_INTO_FIXED = {
+    #        SimmerState.MODELLING,
+    #        SimmerState.EXPORTING,
+    #        SimmerState.PAUSED,
+    #        SimmerState.FINISHED,
+    #        SimmerState.STOPPED,
+    #    }
+    #
+    #Since we sadly lack sufficient time to implement a proper state machine
+    #*AND* since the above generalization should suffice for the moment, let's
+    #just partake of the red Koolaid. (It is bad, but it is good.)
+    SimmerState.FINISHED,
     SimmerState.STOPPED,
 }
 '''
@@ -144,8 +188,7 @@ See Also
 '''
 
 # ....................{ GLOBALS ~ dict : status           }....................
-#FIXME: Rename to "SIMMER_STATE_TO_PHASE_STATUS" for orthogonality.
-SIMMER_STATE_TO_STATUS_TERSE = {
+SIMMER_STATE_TO_PHASE_STATUS = {
     SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Unqueued'),
     SimmerState.QUEUED: QCoreApplication.translate(
@@ -163,13 +206,12 @@ SIMMER_STATE_TO_STATUS_TERSE = {
 }
 '''
 Dictionary mapping from each type of simulator state to a human-readable,
-translated string serving as a terse (i.e., single word) synopsis of the action
-being performed in that state.
+translated string serving as a single-word synopsis of the action being
+performed in that state.
 '''
 
 
-#FIXME: Rename to "SIMMER_STATE_TO_PROACTOR_STATUS" for orthogonality.
-SIMMER_STATE_TO_STATUS_VERBOSE = {
+SIMMER_STATE_TO_PROACTOR_STATUS = {
     SimmerState.UNQUEUED: QCoreApplication.translate(
         'guisimrunstate', 'Waiting for phase(s) to be queued...'),
     SimmerState.QUEUED: QCoreApplication.translate(
@@ -187,13 +229,11 @@ SIMMER_STATE_TO_STATUS_VERBOSE = {
 }
 '''
 Dictionary mapping from each type of simulator state to a human-readable,
-translated, unformatted string templating a verbose (i.e., single sentence)
-synopsis of the action being performed in that state.
+translated, unformatted string templating a single-sentence synopsis of the
+action being performed in that state.
 
-Most such strings contain no format specifiers and are thus displayable as is.
-Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
-and are thus displayable *only* after interpolating the corresponding values.
-
+Formats
+----------
 Format specifiers embedded in these strings include:
 
 * ``{phase_type}``, a word signifying the type of currently running simulator
@@ -202,6 +242,113 @@ Format specifiers embedded in these strings include:
   dictionary synopsizing the prior state of this simulator. Since this text is
   interpolated into the middle of arbitrary sentences, the first character of
   this text *must* be lowercase.
+
+Most such strings contain no format specifiers and are thus displayable as is.
+Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
+and are thus displayable *only* after interpolating the corresponding values.
+'''
+
+# ....................{ GLOBALS ~ dict : substatus        }....................
+SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
+    SimmerState.UNQUEUED: QCoreApplication.translate(
+        'guisimrunstate',
+        'Queued '
+        '{queued_modelling} phase(s) for modelling and '
+        '{queued_exporting} phase(s) for exporting.'
+    ),
+    SimmerState.QUEUED: QCoreApplication.translate(
+        'guisimrunstate',
+        'Queued '
+        '{queued_modelling} phase(s) for modelling and '
+        '{queued_exporting} phase(s) for exporting.'
+    ),
+    SimmerState.MODELLING: {
+        SimPhaseKind.SEED: None,
+        SimPhaseKind.INIT: QCoreApplication.translate(
+            'guisimrunstate',
+            'Initialized {progress_current} <i>of</i> {progress_total} '
+            'time steps.'
+        ),
+        SimPhaseKind.SIM: QCoreApplication.translate(
+            'guisimrunstate',
+            'Simulated {progress_current} <i>of</i> {progress_total} '
+            'time steps.'
+        ),
+    },
+    #FIXME: Consider querying the BETSE client for the metadata interpolated
+    #into the following strings by defining the following new worker signals:
+    #
+    #* subprogress_ranged(), enabling us to at least subdivide a unit of
+    #  progress (e.g., exportation of a single animation) into subunits of
+    #  subprogress (e.g., each frame of that animation).
+    #* subprogressed(), analogous to the existing progressed() signal.
+    #* Some variant of pathname_saved(), pathname_wrote(), pathname_saving(),
+    #  pathname_writing(), or pathname_written(), accepting a single string
+    #  pathname. The saved variants read a tad better than the wrote variants,
+    #  but none of these stand out as particularly inspiring. Tense is
+    #  certainly an issue, as we'd rather callers not assume this pathname to
+    #  have already been written to by this worker when this signal is emitted.
+    SimmerState.EXPORTING: {
+        SimExportType.CSV: QCoreApplication.translate(
+            'guisimrunstate',
+            'Exported comma-separated value (CSV) file '
+            '<pre>"{pathname}"</pre>.'
+        ),
+        SimExportType.PLOT: QCoreApplication.translate(
+            'guisimrunstate',
+            'Exported image <pre>"{pathname}"</pre>.'
+        ),
+        SimExportType.ANIM: QCoreApplication.translate(
+            'guisimrunstate',
+            'Exported animation <pre>"{pathname}"</pre> frame '
+            '{subprogress_current} <i>of</i> {subprogress_total}.'
+        ),
+    },
+    SimmerState.PAUSED:   '{substatus_prior}',
+    SimmerState.STOPPED:  '{substatus_prior}',
+    SimmerState.FINISHED: '{substatus_prior}',
+}
+'''
+Dictionary mapping from each type of simulator state to an object specific to
+that type transitively yielding a human-readable, translated, unformatted
+string templating the single-sentence details of the action being performed in
+that state.
+
+Structure
+----------
+Whereas each value of each key-value pair of the comparable
+:data:`SIMMER_STATE_TO_PHASE_STATUS` and
+:data:`SIMMER_STATE_TO_PROACTOR_STATUS` dictionaries is *always* a string,
+each value of each key-value pair of this dictionary contextually depends upon
+that value. Specifically, if this key is:
+
+* :attr:`SimmerState.MODELLING`, this value is a nested dictionary mapping from
+  each type of simulation phase to either:
+
+  * If that phase is the seed phase, ``None``. Due to the variability of
+    details pertaining to this phase, BETSE itself defines these details by the
+    :meth:`betsee.gui.simtab.run.work.guisimrunworksig.SimCallbacksSignaller.progress_stated`
+    method emitting a signal connected to the text box showing these details.
+  * If that phase is the initialization or simulation phase, an unformatted
+    string template detailing the modelling of that phase.
+
+* :attr:`SimmerState.EXPORTING`, this value is a nested dictionary mapping from
+  each type of simulation export to an unformatted string template detailing
+  the exporting of that export.
+* Any other key, this value is an unformatted string template.
+
+Formats
+----------
+Format specifiers embedded in these strings include:
+
+* ``{progress_current}``, a non-negative integer signifying the current time
+  step of this phase.
+* ``{progress_total}``, a non-negative integer signifying the total number of
+  time steps in this phase.
+
+Most such strings contain no format specifiers and are thus displayable as is.
+Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
+and are thus displayable *only* after interpolating the corresponding values.
 '''
 
 # ....................{ GLOBALS ~ dict : status : details }....................
@@ -223,12 +370,6 @@ Dictionary mapping from the initialization and simulation phases to a
 human-readable, translated, unformatted string templating the low-level details
 of the action being performed when modelling that phase.
 
-Format specifiers embedded in these strings include:
-
-* ``{progress_current}``, a non-negative integer signifying the current time
-  step of this phase.
-* ``{progress_total}``, a non-negative integer signifying the total number of
-  time steps in this phase.
 '''
 
 

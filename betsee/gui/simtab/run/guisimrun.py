@@ -41,16 +41,17 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot  #, QObject, Signal
+from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunact import QBetseeSimmerProactor
 from betsee.gui.simtab.run.guisimrunstate import (
+    SimmerState,
     SIM_PHASE_KIND_TO_NAME,
-    SIMMER_STATE_TO_STATUS_VERBOSE,
-    MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS,
-    # EXPORTING_TYPE_TO_STATUS_DETAILS,
+    SIMMER_STATE_TO_PROACTOR_STATUS,
+    SIMMER_STATE_TO_PROACTOR_SUBSTATUS,
 )
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
@@ -234,6 +235,11 @@ class QBetseeSimmer(QBetseeControllerABC):
         self._proactor.halt_workers()
 
     # ..................{ SLOTS ~ update                    }..................
+    #FIXME: This slot *MUST* be triggered on the current simulator worker
+    #gracefully stopping. Currently, this action is ignored and the toggle
+    #button fails to become re-enabled. We suspect that we need to implement
+    #the fluid-fixed generalization discussed in "guisimrunstate" to resolve
+    #this properly. *sigh*
     @Slot()
     def _update_widgets(self) -> None:
         '''
@@ -290,7 +296,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         '''
 
         # Unformatted template synopsizing the current state of this simulator.
-        status_text_template = SIMMER_STATE_TO_STATUS_VERBOSE[
+        status_text_template = SIMMER_STATE_TO_PROACTOR_STATUS[
             self._proactor.state]
 
         # Text synopsizing the type of simulation phase run by the current
@@ -305,7 +311,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         # Text synopsizing the prior state of this simulator. To permit this
         # text to be interpolated into the middle of arbitrary sentences, the
         # first character of this text is lowercased.
-        status_prior_text = strs.lowercase_char_first(
+        status_text_prior = strs.lowercase_char_first(
             self._progress_status.text())
 
         # Unconditionally format this text with all possible format specifiers
@@ -313,76 +319,59 @@ class QBetseeSimmer(QBetseeControllerABC):
         # ignores format specifiers *NOT* expected by this exact text.)
         status_text = status_text_template.format(
             phase_type=phase_type_name,
-            status_prior=status_prior_text,
+            status_prior=status_text_prior,
         )
 
         # Set the text of the label displaying this synopsis to this text.
         self._progress_status.setText(status_text)
 
 
-    #FIXME: Sanitize this method. As currently defined by the "guisimrunstate"
-    #submodule, only the modelling and exporting states have associated
-    #substatus details. This is fundamentally silly and somewhat jarring,
-    #however; to avoid having to repeatedly hide and unhide the widget group
-    #containing this substatus, *EVERY* proactor state should display
-    #appropriate substatus details. To do so, refactor us up as follows:
-    #
-    #* Merge the
-    #  "MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS" and
-    #  "EXPORTING_TYPE_TO_STATUS_DETAILS" dictionaries into a single
-    #  "SIMMER_STATE_TO_PROACTOR_SUBSTATUS" dictionary ala:
-    #
-    #    SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
-    #        SimmerState.UNQUEUED: QCoreApplication.translate(
-    #            'guisimrunstate',
-    #            'Check the <b>Model?</b> or <b>Export?</b> checkbox '
-    #            'to the right of any phase below.'),
-    #        SimmerState.QUEUED: QCoreApplication.translate(
-    #            'guisimrunstate',
-    #            '{queued_current} <i>of</i> {queued_total} '
-    #            'phase(s) currently queued.'),
-    #        SimmerState.MODELLING: {
-    #            SimPhaseKind.SEED: None,
-    #            SimPhaseKind.INIT: QCoreApplication.translate(
-    #                'guisimrunstate',
-    #                'Initializing {progress_current} <i>of</i> {progress_total} '
-    #                'time steps...'),
-    #            SimPhaseKind.SIM: QCoreApplication.translate(
-    #                'guisimrunstate',
-    #                'Simulating {progress_current} <i>of</i> {progress_total} '
-    #                'time steps...'),
-    #        },
-    #        #FIXME: We have no idea how to actually retrieve this metadata
-    #        #from the BETSE client -- perhaps define a new pair of
-    #        #subprogress_ranged() and subprogressed() worker signals? Ugh.
-    #        SimmerState.EXPORTING: {
-    #            SimExportType.CSV: QCoreApplication.translate(
-    #                'guisimrunstate',
-    #                'Exporting comma-separated value (CSV) file '
-    #                '<pre>"{filename}"</pre>...'),
-    #            SimExportType.PLOT: QCoreApplication.translate(
-    #                'guisimrunstate', 'Exporting image <pre>"{filename}"</pre>...'),
-    #            SimExportType.ANIM: QCoreApplication.translate(
-    #                'guisimrunstate',
-    #                'Exporting animation <pre>"{filename}"</pre> frame '
-    #                '{time_curr} <i>of</i> {time_total}...'),
-    #        },
-    #        SimmerState.PAUSED:   '{substatus_prior}',
-    #        SimmerState.STOPPED:  '{substatus_prior}',
-    #        SimmerState.FINISHED: '{substatus_prior}',
-    #    }
     def _update_progress_substatus(self) -> None:
         '''
         Update the text displayed by the :attr:`_progress_substatus` label,
         detailing the current state of this simulator.
         '''
 
-        #FIXME: Excise after sanitizing this method.
-        return
+        # Arbitrary object detailing the current state of this simulator, whose
+        # type is specific to this state.
+        substatus_value = SIMMER_STATE_TO_PROACTOR_SUBSTATUS[
+            self._proactor.state]
 
-        # Unformatted template detailing the current state of this simulator.
-        substatus_text_template = MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS[
-            self._proactor.worker.phase.kind]
+        # Unformatted template detailing the current state of this simulator,
+        # conditionally defined below in a state-dependent manner.
+        substatus_text_template = None
+
+        # If the proactor is currently modelling...
+        if self._proactor.state is SimmerState.MODELLING:
+            # Type of simulaton phase currently being modelled.
+            phase_kind = self._proactor.worker.phase.kind
+
+            # If the proactor is currently modelling the seed phase, silently
+            # reduce to a noop. Details of modelling the seed phase are already
+            # displayed by the slot connected to the signal emitted by the
+            # SimCallbacksSignaller.progress_stated() of the current simulator
+            # worker in a push-driven manner.
+            if phase_kind is SimPhaseKind.SEED:
+                return
+
+            # Else, the proactor is currently modelling either the
+            # initialization or simulation phases. In either case, the details
+            # of the proactor's current action reduce to the value of this
+            # nested dictionary whose key is this phase.
+            substatus_text_template = substatus_value[phase_kind]
+        #FIXME: Implement this case... somehow. See pertinent FIXME comments in
+        #the "guisimrunstate" submodule.
+        # Else if the proactor is currently exporting...
+        elif self._proactor.state is SimmerState.EXPORTING:
+            substatus_text_template = (
+                "Exported the ancient demesne of lost R'lyeh.")
+        # Else, the proactor is neither modelling nor exporting. In this case,
+        # the details of the proactor's current action reduce to a string.
+        else:
+            substatus_text_template = substatus_value
+
+        # Text detailing the prior state of this simulator.
+        substatus_text_prior = self._progress_substatus.text()
 
         #FIXME: Interpolate the actual progress values expected by this
         #template. Doing so will be non-trivial, albeit mostly from a design
@@ -397,6 +386,9 @@ class QBetseeSimmer(QBetseeControllerABC):
         substatus_text = substatus_text_template.format(
             progress_current=0,
             progress_total=100,
+            queued_modelling=0,
+            queued_exporting=0,
+            substatus_prior=substatus_text_prior,
         )
 
         # Set the text of the label displaying these details to this text.
