@@ -74,6 +74,13 @@ translated name of that phase.
 '''
 
 # ....................{ GLOBALS ~ set                     }....................
+SIMMER_STATES = set(simmer_state for simmer_state in SimmerState)
+'''
+Set of all possible simulator states.
+'''
+
+
+
 SIMMER_STATES_RUNNING = {
     SimmerState.MODELLING,
     SimmerState.EXPORTING,
@@ -92,14 +99,16 @@ queued subcommands to be currently working and hence either modelling,
 exporting, or paused but neither stopped nor nor finished).
 '''
 
-# ....................{ GLOBALS ~ set : (fluid|fixed)     }....................
-SIMMER_STATES_FLUID = {
+# ....................{ GLOBALS ~ set : from              }....................
+SIMMER_STATES_FROM_FLUID = {
     SimmerState.UNQUEUED,
     SimmerState.QUEUED,
+    SimmerState.FINISHED,
+    SimmerState.STOPPED,
 }
 '''
-Set of all **fluid simulator states** (i.e., states the simulator may freely
-transition to from any other state).
+Set of all **out-bound fluid simulator states** (i.e., states the simulator may
+freely transition from into any other state).
 
 Specifically, the states:
 
@@ -123,68 +132,60 @@ For example, the simulator may transition from the:
 
 Pragmatically, preserving these distinctions would incur more cost than
 pretending these states may be freely transitioned from. We prefer the latter.
-'''
-
-
-SIMMER_STATES_FIXED = {
-    SimmerState.MODELLING,
-    SimmerState.EXPORTING,
-    SimmerState.PAUSED,
-
-    #FIXME: Painfully insufficient. We need to expand this into a proper state
-    #machine such that the following two states are either fixed or fluid
-    #depending on context, as follows:
-    #
-    #* If the current phase state switches to either "FINISHED" or "STOPPED",
-    #  then the current proactor state should follow suite. Hence, these states
-    #  should be considered "fixed" in this case.
-    #* If the current phase state switches from either "FINISHED" or
-    #  "STOPPED", then the current proactor state should follow suite. Hence,
-    #  these states should be considered "fluid" in this case.
-    #
-    #Clearly, a state machine is in order. Or we could just define more
-    #fine-grained sets defining these states: e.g.,
-    #
-    #    SIMMER_STATES_FROM_FLUID = {
-    #        SimmerState.UNQUEUED,
-    #        SimmerState.QUEUED,
-    #        SimmerState.FINISHED,
-    #        SimmerState.STOPPED,
-    #    }
-    #
-    #    SIMMER_STATES_FROM_FIXED = {
-    #        SimmerState.MODELLING,
-    #        SimmerState.EXPORTING,
-    #        SimmerState.PAUSED,
-    #    }
-    #
-    #    SIMMER_STATES_INTO_FLUID = {
-    #        SimmerState.UNQUEUED,
-    #        SimmerState.QUEUED,
-    #    }
-    #
-    #    SIMMER_STATES_INTO_FIXED = {
-    #        SimmerState.MODELLING,
-    #        SimmerState.EXPORTING,
-    #        SimmerState.PAUSED,
-    #        SimmerState.FINISHED,
-    #        SimmerState.STOPPED,
-    #    }
-    #
-    #Since we sadly lack sufficient time to implement a proper state machine
-    #*AND* since the above generalization should suffice for the moment, let's
-    #just partake of the red Koolaid. (It is bad, but it is good.)
-    SimmerState.FINISHED,
-    SimmerState.STOPPED,
-}
-'''
-Set of all **fixed simulator states** (i.e., states the simulator may *not*
-freely transition from to any other state).
 
 See Also
 ----------
-:data:`SIMMER_STATES_FIXED`
-    Negation of this set.
+:data:`SIMMER_STATES_FROM_FIXED`
+    Complement (i.e., negation) of this set.
+'''
+
+
+SIMMER_STATES_FROM_FIXED = SIMMER_STATES - SIMMER_STATES_FROM_FLUID
+'''
+Set of all **out-bound fixed simulator states** (i.e., states the simulator may
+*not* freely transition from into any other state).
+
+Specifically, the states:
+
+* Contained in this set are all high priority and hence may be inflexibly
+  replaced at simulator runtime with *only* other states in this same set.
+* Excluded by this set are all low priority.
+
+See Also
+----------
+:data:`SIMMER_STATES_FROM_FLUID`
+    Complement (i.e., negation) of this set.
+'''
+
+# ....................{ GLOBALS ~ set : into              }....................
+SIMMER_STATES_INTO_FLUID = {
+    SimmerState.UNQUEUED,
+    SimmerState.QUEUED,
+}
+'''
+Set of all **in-bound fluid simulator states** (i.e., states the simulator may
+freely transition into from any other state).
+
+See Also
+----------
+:data:`SIMMER_STATES_FROM_FLUID`
+    Analogue of this set with respect to in-bound transitions.
+:data:`SIMMER_STATES_INTO_FIXED`
+    Complement (i.e., negation) of this set.
+'''
+
+
+SIMMER_STATES_INTO_FIXED = SIMMER_STATES - SIMMER_STATES_INTO_FLUID
+'''
+Set of all **in-bound fixed simulator states** (i.e., states the simulator may
+*not* freely transition into from any other state).
+
+See Also
+----------
+:data:`SIMMER_STATES_FROM_FIXED`
+    Analogue of this set with respect to in-bound transitions.
+:data:`SIMMER_STATES_INTO_FLUID`
+    Complement (i.e., negation) of this set.
 '''
 
 # ....................{ GLOBALS ~ dict : status           }....................
@@ -279,6 +280,7 @@ SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
     #into the following strings by defining the following new worker signals:
     #
     #* subprogress_ranged(), enabling us to at least subdivide a unit of
+    #
     #  progress (e.g., exportation of a single animation) into subunits of
     #  subprogress (e.g., each frame of that animation).
     #* subprogressed(), analogous to the existing progressed() signal.

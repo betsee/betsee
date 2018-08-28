@@ -19,7 +19,7 @@ from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
     SIMMER_STATE_TO_PHASE_STATUS,
-    SIMMER_STATES_FLUID,
+    SIMMER_STATES_FROM_FLUID,
 )
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 
@@ -286,7 +286,7 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
 
         # If the current state of this phase is fluid (i.e., freely replaceable
         # with any other state)...
-        if self.state in SIMMER_STATES_FLUID:
+        if self.state in SIMMER_STATES_FROM_FLUID:
             # Reduce this state to whether this phase is queued or not.
             self.state = (
                 SimmerState.QUEUED if self.is_queued else SimmerState.UNQUEUED)

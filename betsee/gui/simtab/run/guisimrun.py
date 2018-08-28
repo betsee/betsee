@@ -235,11 +235,6 @@ class QBetseeSimmer(QBetseeControllerABC):
         self._proactor.halt_workers()
 
     # ..................{ SLOTS ~ update                    }..................
-    #FIXME: This slot *MUST* be triggered on the current simulator worker
-    #gracefully stopping. Currently, this action is ignored and the toggle
-    #button fails to become re-enabled. We suspect that we need to implement
-    #the fluid-fixed generalization discussed in "guisimrunstate" to resolve
-    #this properly. *sigh*
     @Slot()
     def _update_widgets(self) -> None:
         '''
@@ -307,6 +302,16 @@ class QBetseeSimmer(QBetseeControllerABC):
             SIM_PHASE_KIND_TO_NAME[self._proactor.worker.phase.kind]
             if self._proactor.is_worker else
             'the nameless that shall not be named')
+
+        #FIXME: Insufficient. For readability:
+        #
+        #* Any trailing ellipses (i.e., "...") in this text should also be
+        #  replaced by a simple period.
+        #* Any leading text matching "Finished stopping" should be reduced to
+        #  simply "Finished." Let's attempt to concoct a means of doing so that
+        #  gracefully scales with localization -- perhaps by classifying this
+        #  text as an instance variable rather than continually reusing the
+        #  verbatim contents of this text widget. (Yeah; that's the way.)
 
         # Text synopsizing the prior state of this simulator. To permit this
         # text to be interpolated into the middle of arbitrary sentences, the

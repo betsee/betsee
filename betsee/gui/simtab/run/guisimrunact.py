@@ -28,8 +28,8 @@ from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
-    SIMMER_STATES_FIXED,
-    SIMMER_STATES_FLUID,
+    SIMMER_STATES_INTO_FIXED,
+    SIMMER_STATES_FROM_FLUID,
     SIMMER_STATES_RUNNING,
     SIMMER_STATES_WORKING,
 )
@@ -555,8 +555,8 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # * This simulator is fluid (i.e., low-priority) and hence superceded
         #   by the current state of this phase...
         if (
-            phase.state in SIMMER_STATES_FIXED or
-             self.state in SIMMER_STATES_FLUID
+            phase.state in SIMMER_STATES_INTO_FIXED or
+             self.state in SIMMER_STATES_FROM_FLUID
         ):
             # If this phase's new state is unqueued...
             if phase.state is SimmerState.UNQUEUED:
@@ -885,6 +885,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
         # Currently working simulator worker. For safety, this property is
         # localized *BEFORE* this worker's stop() pseudo-slot (which
+        # implicitly signals the _handle_worker_completion() slot, which
         # internally dequeues this worker and hence implicitly modifies the
         # worker returned by the "_worker" property) is called.
         worker = self.worker
@@ -901,10 +902,18 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # state *BEFORE* successfully stopping this worker.
         self._worker_phase_state = SimmerState.STOPPED
 
-        # Dequeue all currently enqueued simulator workers, including both the
-        # currently working worker and all workers scheduled to work after the
-        # currently working worker.
-        self._dequeue_workers()
+        # Dequeue *ALL* currently enqueued simulator workers scheduled to work
+        # following the currently working worker. While the latter could
+        # theoretically be dequeued as well, doing so would prevent the
+        # _handle_worker_completion() slot transitively called by the call to
+        # the stop() pseudo-slot below from setting the state of the phase
+        # associated with the currently working worker. In short, this works.
+        #
+        # For negligible efficiency, this queue is recreated from scratch to
+        # contain only this worker rather than iteratively popping all items
+        # except the first from this queue (e.g., by calling the
+        # queues.pop_left() function).
+        self._workers_queued = deque((worker,))
 
         # Stop this worker *AFTER* dequeueing all currently enqueued workers
         # and setting this simulator state.
@@ -1161,14 +1170,15 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
             return
         # Else, one or more workers remain to be run.
 
-        # If this worker was *NOT* prematurely stopped by the user and hence
-        # finished successfully, set the state of both this simulator *AND* the
-        # previously working phase to finished -- ensuring that the user-driven
-        # stopped state takes precedence over the worker-driven finished state.
+        # If this worker is still technically working, set the state of both
+        # this simulator *AND* the previously working phase to finished. This
+        # ensures that the simulator reliably returns to the finished state on
+        # completing all possible work, regardless of whether that worker
+        # halted gracefully or prematurely (e.g., due to the end user
+        # prematurely stopping all work).
         #
         # For safety, do so *BEFORE* this method dequeues this worker and hence
         # internally modifies the worker yielded by the "_worker" property.
-        # if self._worker_phase_state is not SimmerState.STOPPED:
         self._worker_phase_state = SimmerState.FINISHED
 
         # Schedule this worker for immediate deletion. On doing so, all signals
