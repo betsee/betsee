@@ -20,7 +20,7 @@
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QButtonGroup, QRadioButton
 # from betse.util.io.log import logs
-from betse.util.type import iterables
+from betse.util.type.iterable import iterables
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideRadioButtonException

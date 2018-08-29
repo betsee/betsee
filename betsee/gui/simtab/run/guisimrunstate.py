@@ -80,7 +80,19 @@ Set of all possible simulator states.
 '''
 
 
+SIMMER_STATES_HALTING = {
+    SimmerState.PAUSED,
+    SimmerState.STOPPED,
+    SimmerState.FINISHED,
+}
+'''
+Set of all **halting simulator states** (i.e., states implying one or more
+previously running queued subcommands to be currently halted, either
+temporarily as in the case of a paused subcommand or permanently as in the
+case of a stopped or finished subcommand).
+'''
 
+# ....................{ GLOBALS ~ set : running           }....................
 SIMMER_STATES_RUNNING = {
     SimmerState.MODELLING,
     SimmerState.EXPORTING,

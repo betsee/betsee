@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
-High-level caching functionality for this application's graphical user interface
-(GUI), persisting external resources required by this GUI to user-specific files
-on the local filesystem.
+High-level caching functionality for this application's graphical user
+interface (GUI), persisting external resources required by this GUI to
+user-specific files on the local filesystem.
 '''
 
 #FIXME: Still insufficient. Why? Because we need to automatically invalidate
 #caches whenever any file in the BETSEE codebase changes. *sigh*
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 import PySide2
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmds, cmdpath
-from betse.util.py import pys
-from betse.util.type import modules
+from betse.util.py import pymodule, pys
 from betse.util.type.types import type_check, IterableTypes
 from betsee import guipathtree
 from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
@@ -25,7 +25,7 @@ from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
 from betsee.lib import guilib
 from betsee.util.io.xml import guiqrc, guiui
 
-# ....................{ GLOBALS                            }....................
+# ....................{ GLOBALS                           }....................
 #FIXME: When upstream permits "QButtonGroup" widgets to be promoted via
 #Qt (Creator|Designer), remove this ad-hack kludge.
 _PROMOTE_OBJ_NAME_TO_CLASS = {
@@ -33,8 +33,8 @@ _PROMOTE_OBJ_NAME_TO_CLASS = {
     'sim_conf_space_intra_lattice_type': QBetseeSimConfEnumRadioButtonGroup,
 }
 '''
-Dictionary mapping from the name of each instance variable of the main window to
-the application-specific widget subclass to declare that variable to be an
+Dictionary mapping from the name of each instance variable of the main window
+to the application-specific widget subclass to declare that variable to be an
 instance of.
 
 This dictionary facilitates the manual "promotion" of widgets for which the
@@ -42,7 +42,7 @@ Qt (Creator|Designer) GUI currently provides no means of official promotion,
 notably including :class:`QButtonGroup` widgets.
 '''
 
-# ....................{ CACHERS                            }....................
+# ....................{ CACHERS                           }....................
 def cache_py_files() -> None:
     '''
     Either create and cache *or* reuse each previously cached pure-Python
@@ -68,7 +68,7 @@ def cache_py_files() -> None:
         guipathtree.get_data_py_qrc_filename(),
         guipathtree.get_data_py_ui_filename())
 
-# ....................{ CACHERS ~ private                  }....................
+# ....................{ CACHERS ~ private                 }....................
 def _cache_py_qrc_file() -> None:
     '''
     Reuse the previously cached pure-Python :mod:`PySide2`-based module
@@ -164,8 +164,8 @@ def _cache_py_ui_file() -> None:
     # by the paths.is_mtime_recursive_older_than_paths() function.
     input_pathnames = [
         data_ui_filename,
-        modules.get_filename(guiui),
-        modules.get_dirname(PySide2),
+        pymodule.get_filename(guiui),
+        pymodule.get_dirname(PySide2),
     ]
 
     # If the optional third-party dependency "pyside2-tools" is installed...
@@ -174,7 +174,7 @@ def _cache_py_ui_file() -> None:
         pyside2uic = guilib.import_runtime_optional('pyside2uic')
 
         # Append this package's directory for testing as well.
-        input_pathnames.append(modules.get_dirname(pyside2uic))
+        input_pathnames.append(pymodule.get_dirname(pyside2uic))
 
     # If this output module is at least as new as *ALL* the following paths,
     # this output module is sufficiently up-to-date and need *NOT* be
@@ -198,7 +198,7 @@ def _cache_py_ui_file() -> None:
         promote_obj_name_to_class=_PROMOTE_OBJ_NAME_TO_CLASS,
     )
 
-# ....................{ TESTERS ~ private                  }....................
+# ....................{ TESTERS ~ private                 }....................
 @type_check
 def _is_output_path_outdated(
     input_pathnames: IterableTypes, output_filename: str) -> bool:

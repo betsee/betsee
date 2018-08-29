@@ -10,7 +10,7 @@
 # ....................{ IMPORTS                            }....................
 from PySide2.QtWidgets import QFileDialog
 from betse.util.path import dirs, pathnames, paths
-from betse.util.type import sequences
+from betse.util.type.iterable import sequences
 from betse.util.type.text import strs
 from betse.util.type.types import (
     type_check,

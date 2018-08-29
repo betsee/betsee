@@ -12,7 +12,7 @@ exactly one :class:`QRunnable`-based worker at a given time) classes.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QThreadPool
 from betse.util.io.log import logs
-from betse.util.type import iterables
+from betse.util.type.iterable import iterables
 from betse.util.type.types import type_check, IterableTypes
 from betsee.guiexception import BetseePySideThreadException
 from betsee.util.type.guitype import QThreadPoolOrNoneTypes

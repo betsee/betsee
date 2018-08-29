@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
-High-level support facilities for integrating :mod:`PySide2` widget classes with
-XML-formatted user interface (UI) files exported by the external Qt Designer
-application.
+High-level support facilities for integrating :mod:`PySide2` widget classes
+with XML-formatted user interface (UI) files exported by the external Qt
+Designer application.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2 import QtWidgets
 from PySide2.QtCore import QCoreApplication, QObject
 from betse.util.io import iofiles
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames
-from betse.util.py import pyident, pys
+from betse.util.py import pyident, pymodule, pys
 from betse.util.py.pyident import IDENTIFIER_UNQUALIFIED_REGEX
-from betse.util.type import modules, types
+from betse.util.type import types
 from betse.util.type.cls import classes
 from betse.util.type.text import regexes
 from betse.util.type.types import type_check, MappingType, SequenceTypes
@@ -26,7 +26,7 @@ from betsee.guiexception import BetseeCacheException
 from betsee.lib import guilib
 from io import StringIO
 
-# ....................{ GLOBALS                            }....................
+# ....................{ GLOBALS                           }....................
 # To avoid conflict with PySide2-generated attribute names, obfuscate this
 # global's name in an application-specific manner.
 BASE_CLASSES_GLOBAL_NAME = '__{}_BASE_CLASSES'.format(guimetadata.NAME)
@@ -38,24 +38,25 @@ This global declares the sequence of all base classes that the main window Qt
 widget subclass for this application is expected to subclass (in order).
 '''
 
-# ....................{ GETTERS                            }....................
+# ....................{ GETTERS                           }....................
 @type_check
 def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
     '''
-    Sequence of all base classes declared by the user interface (UI) module with
-    the passed name and intended to be subclassed by the Qt widget subclass
-    implementing this UI.
+    Sequence of all base classes declared by the user interface (UI) module
+    with the passed name and intended to be subclassed by the Qt widget
+    subclass implementing this UI.
 
-    The :func:`convert_ui_to_py_file` function is assumed to have generated this
-    module from an XML-formatted file exported by the external Qt Designer GUI.
+    The :func:`convert_ui_to_py_file` function is assumed to have generated
+    this module from an XML-formatted file exported by the external Qt Designer
+    GUI.
 
     Parameters
     ----------
     ui_module_name : str
         Fully-qualified name of the UI module to be imported and inspected by
-        this function. Since this module is dynamically generated at runtime and
-        hence *not* guaranteed to exist, this function explicitly validates this
-        module to both exist and declare this sequence..
+        this function. Since this module is dynamically generated at runtime
+        and hence *not* guaranteed to exist, this function explicitly validates
+        this module to both exist and declare this sequence..
 
     Raises
     ----------
@@ -66,7 +67,7 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
     '''
 
     # UI module if importable *OR* raise an exception otherwise.
-    ui_module = modules.import_module(
+    ui_module = pymodule.import_module(
         module_name=ui_module_name,
         exception_message=QCoreApplication.translate(
             'get_ui_module_base_classes',
@@ -88,16 +89,16 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
             'get_ui_module_base_classes',
             'Sequence "{0}" undefined.'.format(ui_base_classes_name)))
 
-    # If this sequence is *NOT* a sequence, raise an exception. While this check
-    # is also performed by the @type_check decorator, the following length check
-    # implicitly assumes this variable to be a sequence.
+    # If this sequence is *NOT* a sequence, raise an exception. While this
+    # check is also performed by the @type_check decorator, the following
+    # length check implicitly assumes this variable to be a sequence.
     if not types.is_sequence_nonstr(ui_base_classes):
         raise BetseeCacheException(QCoreApplication.translate(
             'get_ui_module_base_classes',
             'Variable "{0}" type {1!r} not a non-string sequence.'.format(
                 ui_base_classes_name, type(ui_base_classes))))
 
-    # If this sequence does *NOT* contain exactly two items, raise an exception.
+    # If this sequence does *NOT* contain two items, raise an exception.
     if len(ui_base_classes) != 2:
         raise BetseeCacheException(QCoreApplication.translate(
             'get_ui_module_base_classes',
@@ -107,7 +108,7 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
     # Else, return this sequence.
     return ui_base_classes
 
-# ....................{ CONVERTERS                         }....................
+# ....................{ CONVERTERS                        }....................
 @type_check
 def convert_ui_to_py_file_if_able(
     ui_filename: str,
@@ -139,18 +140,18 @@ def convert_ui_to_py_file_if_able(
     * A custom helper class defining the following methods:
 
       * ``setupUi()``, accepting an instance of the :mod:`PySide2` widget base
-        class listed as the last item of the global sequence described below and
-        customizing this widget as specified by this input UI file.
+        class listed as the last item of the global sequence described below
+        and customizing this widget as specified by this input UI file.
       * ``retranslateUi()``, accepting a similar instance and translating all
-        strings displayed by this widget from their default language (typically,
-        English) into the locale of the current user.
+        strings displayed by this widget from their default language
+        (typically, English) into the locale of the current user.
 
     * A global sequence variable whose:
 
       * Name is the value of the
         :data:`BASE_CLASSES_GLOBAL_NAME` global string variable,
-      * Value is the sequence of all base classes that the main Qt window widget
-        class for this application *must* subclass (in order):
+      * Value is the sequence of all base classes that the main Qt window
+        widget class for this application *must* subclass (in order):
 
         #. The custom helper class described above.
         #. The :mod:`PySide2` widget base class of the object to be passed to
@@ -169,11 +170,11 @@ def convert_ui_to_py_file_if_able(
     typesafe API. For unknown reasons (presumably laziness), :mod:`PySide2`
     lacks an analogue to this function.
 
-    For equally unknown reasons, the class returned by that function is commonly
-    referred to as the "form class" in most Qt documentation. This class has no
-    relation to the :class:`PySide2.QLayout.QFormLayout` base class and is thus
-    arguably *not* a "form class." For disambiguity, we prefer to refer to this
-    class as simply the "generated UI class."
+    For equally unknown reasons, the class returned by that function is
+    commonly referred to as the "form class" in most Qt documentation. This
+    class has no relation to the :class:`PySide2.QLayout.QFormLayout` base
+    class and is thus arguably *not* a "form class." For disambiguity, we
+    prefer to refer to this class as simply the "generated UI class."
 
     Parameters
     ----------
@@ -200,7 +201,8 @@ def convert_ui_to_py_file_if_able(
     http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
         :mod:`PyQt5`-specific documentation detailing this conversion. Although
         :mod:`PyQt5`-specific, this documentation probably serves as the
-        canonical resource for understanding this function's internal behaviour.
+        canonical resource for understanding this function's internal
+        behaviour.
     '''
 
     # Log this conversion attempt.
@@ -239,13 +241,13 @@ def convert_ui_to_py_file_if_able(
     # file to be subsequently evaluated.
     ui_code_str_buffer = StringIO()
 
-    # Dictionary of high-level metadata describing the high-level types produced
-    # by converting this file into this string buffer, containing the following
-    # key strings:
+    # Dictionary of high-level metadata describing the high-level types
+    # produced by converting this file into this string buffer, containing the
+    # following key strings:
     #
-    # * "baseclass", whose value is the name of the PySide2-specific widget base
-    #   class that objects passed to the setupUi() and retranslateUi() methods
-    #   of the generated UI class are required to be instances of.
+    # * "baseclass", whose value is the name of the PySide2-specific widget
+    #   base class that objects passed to the setupUi() and retranslateUi()
+    #   methods of the generated UI class are required to be instances of.
     # * "uiclass", whose value is the name of the generated UI class defining
     #   the setupUi() and retranslateUi() methods.
     # * "widgetname", whose value is... an unknown string. (Not our fault.)
@@ -263,13 +265,13 @@ def convert_ui_to_py_file_if_able(
     #   technically reverse engineerable by manually parsing the XML of this
     #   ".ui" file for the corresponding elements (e.g., via the
     #   "xml.etree.ElementTree" package), doing so needlessly incurs space,
-    #   time, and code complexity costs. Due presumably to path dependency, most
-    #   online examples (insanely) do so.
-    # * Adds no meaningful advantages over the UICompiler.compileUi() method for
-    #   most common cases, including this case.
+    #   time, and code complexity costs. Due presumably to path dependency,
+    #   most online examples (insanely) do so.
+    # * Adds no meaningful advantages over the UICompiler.compileUi() method
+    #   for most common cases, including this case.
     #
-    # In short, the pyside2uic.compileUi() function is useless and no one should
-    # ever call it.
+    # In short, the pyside2uic.compileUi() function is useless and no one
+    # should ever call it.
     ui_code_metadata = UICompiler().compileUi(
         input_stream=ui_filename,
         output_stream=ui_code_str_buffer,
@@ -299,9 +301,9 @@ def convert_ui_to_py_file_if_able(
 
     # Append an application-specific global to the Python code generated above,
     # declaring the sequence of all base classes that the main Qt window widget
-    # class for this application *MUST* subclass (in order). In particular, note
-    # that the base Qt widget class is subclassed last and thus remains the
-    # "parent" base class of this multiple inheritance.
+    # class for this application *MUST* subclass (in order). In particular,
+    # note that the base Qt widget class is subclassed last and thus remains
+    # the "parent" base class of this multiple inheritance.
     ui_code_str_buffer.write('''
 from PySide2.QtWidgets import {base_class}
 {var_name} = ({form_class}, {base_class})
@@ -369,8 +371,8 @@ def _munge_ui_code(
     #this ad-hack kludge.
 
     # Globally replace all lines of this code reducing vector SVG icons to
-    # non-vector in-memory pixmaps with lines preserving these icons as is. This
-    # reduction has a variety of harmful side effects, including:
+    # non-vector in-memory pixmaps with lines preserving these icons as is.
+    # This reduction has a variety of harmful side effects, including:
     #
     # * Preventing these icons from being upscaled. Qt unconditionally refuses
     #   to upscale in-memory pixmaps, which are of finite resolution and hence
@@ -389,8 +391,9 @@ def _munge_ui_code(
     #
     # This QIcon should instead be created as:
     #
-    #    # Note the need to pass an additional size, which remains unconstrained
-    #    # due to the infinitely rescalable nature of vector icons.
+    #    # Note the need to pass an additional size, which remains
+    #    # unconstrained due to the infinitely rescalable nature of vector
+    #    # icons.
     #    icon = QtGui.QIcon()
     #    icon.addFile("://icon/open_iconic/lock_fill.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
     #
@@ -431,9 +434,9 @@ def _munge_ui_code(
         ui_code_str += 'from {} import {}\n'.format(
             promote_class_module_name, promote_class_name)
 
-        # Regular expression matching the single line of this code instantiating
-        # this variable to a non-promoted stock Qt widget class into the
-        # following two numeric groups:
+        # Regular expression matching the single line of this code
+        # instantiating this variable to a non-promoted stock Qt widget class
+        # into the following two numeric groups:
         #
         # 1. The assignment statement prefix for this instantiation.
         # 2. The parameters to be passed to this instantiation.

@@ -52,6 +52,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
     SIM_PHASE_KIND_TO_NAME,
     SIMMER_STATE_TO_PROACTOR_STATUS,
     SIMMER_STATE_TO_PROACTOR_SUBSTATUS,
+    SIMMER_STATES_HALTING,
 )
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 
@@ -60,6 +61,15 @@ class QBetseeSimmer(QBetseeControllerABC):
     '''
     High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
     *and* controlling the execution of simulation phases).
+
+    Attributes (Private)
+    ----------
+    _progress_status_text_prior : str
+        Most recent textual contents of the
+        :attr:`QBetseeMainWindow.sim_run_player_status` label, preserved so as
+        to permit this text to be transparently reused without localization
+        concerns (particularly on repeatedly switching between the paused,
+        stopped, and finished simulator states).
 
     Attributes (Private: Controllers)
     ----------
@@ -113,6 +123,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         self._progress_bar = None
         self._progress_status = None
         self._progress_substatus = None
+        self._progress_status_text_prior = None
 
 
     @type_check
@@ -303,29 +314,45 @@ class QBetseeSimmer(QBetseeControllerABC):
             if self._proactor.is_worker else
             'the nameless that shall not be named')
 
-        #FIXME: Insufficient. For readability:
-        #
-        #* Any trailing ellipses (i.e., "...") in this text should also be
-        #  replaced by a simple period.
-        #* Any leading text matching "Finished stopping" should be reduced to
-        #  simply "Finished." Let's attempt to concoct a means of doing so that
-        #  gracefully scales with localization -- perhaps by classifying this
-        #  text as an instance variable rather than continually reusing the
-        #  verbatim contents of this text widget. (Yeah; that's the way.)
-
-        # Text synopsizing the prior state of this simulator. To permit this
-        # text to be interpolated into the middle of arbitrary sentences, the
-        # first character of this text is lowercased.
-        status_text_prior = strs.lowercase_char_first(
-            self._progress_status.text())
+        # If no prior progress status exists, this is the first call to this
+        # method. In this case, the current state of the proactor is guaranteed
+        # to either be the queued or unqueued states; in either case, the
+        # progress status template under this state ignores the prior progress
+        # status. This implies that this status could technically be
+        # initialized to any string with no ill consequences. For simplicity,
+        # default this status to the current progress status.
+        if self._progress_status_text_prior is None:
+            self._progress_status_text_prior = self._progress_status.text()
 
         # Unconditionally format this text with all possible format specifiers
         # expected by all possible instances of this text. (Note that Python
         # ignores format specifiers *NOT* expected by this exact text.)
         status_text = status_text_template.format(
             phase_type=phase_type_name,
-            status_prior=status_text_prior,
+            status_prior=self._progress_status_text_prior,
         )
+
+        # If the proactor is *NOT* currently in a halting state (i.e., is
+        # either running, queued, or unqueued)...
+        if self._proactor.state not in SIMMER_STATES_HALTING:
+            # Preserve this progress status for subsequent use when halting.
+            self._progress_status_text_prior = status_text
+
+            # Enable this text to be interpolated into arbitrary character
+            # positions by (in arbitrary order):
+            #
+            # * Lowercasing the first character of this text.
+            # * Stripping the trailing ellipses from this text if present.
+            self._progress_status_text_prior = (
+                strs.lowercase_char_first(
+                    strs.remove_suffix_if_found(
+                        text=self._progress_status_text_prior, suffix='...')))
+        # Else, the proactor is currently in a halting state (i.e., is either
+        # paused, stopped, or finished). In this case, preserve the prior
+        # progress status for subsequent reuse when switching between halting
+        # states. If this edge case were *NOT* explicitly detected here, then
+        # switching from the stopped to finished states would, for example,
+        # result in progress status resembling "Finished stopped modelling...".
 
         # Set the text of the label displaying this synopsis to this text.
         self._progress_status.setText(status_text)
