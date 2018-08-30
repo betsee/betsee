@@ -13,7 +13,7 @@ from PySide2.QtCore import QCoreApplication
 from betse.science.export.expenum import SimExportType
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.type.enums import make_enum
-# from betse.util.type.types import type_check  #, StrOrNoneTypes
+# from betse.util.type.types import type_check
 
 # ....................{ ENUMERATIONS                      }....................
 SimmerState = make_enum(
@@ -26,38 +26,39 @@ SimmerState = make_enum(
         'PAUSED',
         'STOPPED',
         'FINISHED',
-    ))
-'''
-Enumeration of all supported types of **simulator state** (i.e., mutually
-exclusive combination of one or more booleans uniquely capturing the condition
-of the currently queued simulation subcommand if any, analogous to a state in a
-finite state automata).
+    ),
+    doc='''
+    Enumeration of all supported types of **simulator state** (i.e., mutually
+    exclusive combination of one or more booleans uniquely capturing the
+    condition of the currently queued simulation subcommand if any, analogous
+    to a state in a finite state automata).
 
-Attributes
-----------
-UNQUEUED : enum
-    Unqueued state, implying no subcommands to be queued.
-QUEUED : enum
-    Queued state, implying one or more subcommands to be queued but *not* yet
-    run and hence neither paused, halted, nor done.
-MODELLING : enum
-    Modelling state, implying one or more queued subcommands specific to
-    modelling (e.g., seed, initialization) to be currently running and hence
-    neither paused, halted, nor done.
-EXPORTING : enum
-    Exporting state, implying one or more queued subcommands specific to
-    exporting (e.g., seed exports, initialization exports) to be currently
-    running and hence neither paused, halted, nor done.
-PAUSED : enum
-    Paused state, implying one or more queued subcommands to have been run but
-    paused before completion.
-STOPPED : enum
-    Halted state, implying one or more queued subcommands to have been run but
-    halted before completion.
-FINISHED : enum
-    Completion state, implying all queued subcommands to have been run to
-    completion.
-'''
+    Attributes
+    ----------
+    UNQUEUED : enum
+        Unqueued state, implying no subcommands to be queued.
+    QUEUED : enum
+        Queued state, implying one or more subcommands to be queued but *not*
+        yet run and hence neither paused, halted, nor done.
+    MODELLING : enum
+        Modelling state, implying one or more queued subcommands specific to
+        modelling (e.g., seed, initialization) to be currently running and
+        hence neither paused, halted, nor done.
+    EXPORTING : enum
+        Exporting state, implying one or more queued subcommands specific to
+        exporting (e.g., seed exports, initialization exports) to be currently
+        running and hence neither paused, halted, nor done.
+    PAUSED : enum
+        Paused state, implying one or more queued subcommands to have been run
+        but paused before completion.
+    STOPPED : enum
+        Halted state, implying one or more queued subcommands to have been run
+        but halted before completion.
+    FINISHED : enum
+        Completion state, implying all queued subcommands to have been run to
+        completion.
+    '''
+)
 
 # ....................{ GLOBALS ~ dict                    }....................
 SIM_PHASE_KIND_TO_NAME = {

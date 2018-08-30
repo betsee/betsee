@@ -20,6 +20,7 @@ from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.py import pythread
 from betse.util.type import enums
+from betse.util.type.iterable import tuples
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.guiexception import (
@@ -39,6 +40,45 @@ from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.util.thread import guithread
 from betsee.util.thread.pool import guipoolthread
 from collections import deque
+
+# ....................{ TYPES                             }....................
+#FIXME: This submodule is, yet again, becoming long in the tooth. To rectify
+#this, contemplate the following refactoring:
+#
+#* Define a new "guisimrunphases" submodule in this subpackage.
+#* Define a new "QBetseeSimmerPhaser(QBetseeControllerABC)" subclass in this
+#  submodule.
+#* Shift most phase-specific functionality from the "QBetseeSimmerProactor"
+#  class into this new "QBetseeSimmerPhaser" class. Ideally, the latter should
+#  serve as a somewhat superficial container for phases. This includes:
+#  * The "QBetseeSimmerProactor._PHASES" tuple, which should be renamed to
+#    "QBetseeSimmerPhases.PHASES".
+#  * The "QBetseeSimmerProactor._phase_seed", "_phase_init", and "_phase_sim"
+#    controllers, whose names should probably remain as is.
+#  * This "SimmerProactorMetadata" class.
+#  * The QBetseeSimmerProactor.get_metadata() method.
+#* Define a new "QBetseeSimmerProactor.phaser" instance variable in the
+#  QBetseeSimmerProactor.__init__() method initialized to an instance of the
+#  "QBetseeSimmerPhaser" class.
+SimmerProactorMetadata = tuples.make_named_subclass(
+    class_name='SimmerProactorMetadata',
+    item_names=(
+       'phases_queued_modelling_count',
+       'phases_queued_exporting_count',
+    ),
+    doc='''
+    Named tuple created and returned by the
+    :meth:`QBetseeSimmerProactor.get_metadata` method, aggregating metadata
+    synopsizing the current state of the simulator proactor.
+
+    Attributes
+    ----------
+    phases_queued_modelling_count : int
+        Number of simulator phases currently queued for modelling.
+    phases_queued_exporting_count : int
+        Number of simulator phases currently queued for exporting.
+    '''
+)
 
 # ....................{ CLASSES                           }....................
 class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
@@ -115,6 +155,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         Immutable sequence of all simulator phase controllers (e.g.,
         :attr:`_phase_seed`), needed for iteration over these controllers. For
         sanity, these phases are ordered is simulation order such that:
+
         * The seed phase is listed *before* the initialization phase.
         * The initialization phase is listed *before* the simulation phase.
     _phase_seed : QBetseeSimmerPhase
@@ -545,14 +586,14 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
             Simulator phase whose current state has been previously set.
         '''
 
-        # New state to change this simulator to if any *OR* "None" otherwise.
+        # New state to change this proactor to if any *OR* "None" otherwise.
         state_new = None
 
         # If the current state of either:
         #
         # * This phase is fixed (i.e., high-priority) and hence superceding the
-        #   current state of this simulator...
-        # * This simulator is fluid (i.e., low-priority) and hence superceded
+        #   current state of this proactor...
+        # * This proactor is fluid (i.e., low-priority) and hence superceded
         #   by the current state of this phase...
         if (
             phase.state in SIMMER_STATES_INTO_FIXED or
@@ -569,16 +610,21 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
                 else:
                     state_new = SimmerState.UNQUEUED
             # Else, this phase's new state unconditionally takes precedence.
-            # Set this simulator's current state to this phase's new state.
+            # Set this proactor's current state to this phase's new state.
             else:
                 state_new = phase.state
-        # Else, silently preserve this simulator's current state as is.
+        # Else, silently preserve this proactor's current state as is.
 
-        # If preserving the state of this simulator, log this fact.
+        # If preserving the state of this proactor...
         if state_new is None:
+            # Log this preservation.
             logs.log_debug(
                 'Preserving simulator state as "%s"...',
                 enums.get_member_name_lowercase(self.state))
+
+            # Preserve the state of this proactor below. As "None" is *NOT* a
+            # valid state, reuse the existing state as is.
+            state_new = self.state
         # Else, the state of this simulator is being changed. In this case...
         else:
             # Log this change.
@@ -587,8 +633,21 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
                 enums.get_member_name_lowercase(self.state),
                 enums.get_member_name_lowercase(state_new))
 
-            # Change the state of this simulator to this new state.
-            self.state = state_new
+        # Unconditionally change the state of this proactor to this new state,
+        # regardless of whether this state is already this new state. Why?
+        # Because the superclass state() setter internally signals all slots
+        # connected to the "set_state_signal" for this proactor -- including
+        # the QBetseeSimmer._update_widgets() slot.
+        #
+        # The question then reduces to: "Do widgets require updating even when
+        # the current state of this proactor remains unchanged?" The answer, of
+        # course, is: "Absolutely." Proactor state is a lossy coarse-grained
+        # abstraction at best that fails to capture all possible simulator
+        # state. In particular, proactor state remains unchanged on dequeueing
+        # exactly one but *NOT* all queued simulator phases -- a common case
+        # clearly requiring widgets (e.g., progress substatus) to be updated.
+        # (Good luck debugging this, new hire!)
+        self.state = state_new
 
     # ..................{ EXCEPTIONS                        }..................
     def _die_unless_workable(self) -> None:
@@ -703,6 +762,41 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         if not self.is_worker:
             raise BetseeSimmerException(QCoreApplication.translate(
                 'QBetseeSimmerProactor', 'No simulation currently working.'))
+
+    # ..................{ GETTERS                           }..................
+    def get_metadata(self) -> SimmerProactorMetadata:
+        '''
+        Named tuple aggregating metadata synopsizing the current state of this
+        proactor, typically for displaying this metadata to the end user.
+
+        Design
+        ----------
+        This method is intentionally designed as a getter rather than read-only
+        property to inform callers of the non-negligible cost of each call to
+        this getter, whose return value should thus be stored in a
+        caller-specific variable rather than recreated silently on each access
+        of such a property.
+        '''
+
+        # Number of simulator phases queued for modelling and exporting.
+        phases_queued_modelling_count = 0
+        phases_queued_exporting_count = 0
+
+        # For each such phase...
+        for phase in self._PHASES:
+            # If this phase is queued for modelling, note this fact.
+            if phase.is_queued_modelling:
+                phases_queued_modelling_count += 1
+
+            # If this phase is queued for exporting, note this fact.
+            if phase.is_queued_exporting:
+                phases_queued_exporting_count += 1
+
+        # Create and return a named tuple aggregating this metadata.
+        return SimmerProactorMetadata(
+            phases_queued_modelling_count=phases_queued_modelling_count,
+            phases_queued_exporting_count=phases_queued_exporting_count,
+        )
 
     # ..................{ SLOTS ~ action : work             }..................
     # Slots connected to signals emitted by "QAction" objects specific to the

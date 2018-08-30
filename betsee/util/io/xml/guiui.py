@@ -418,7 +418,7 @@ def _munge_ui_code(
         # If this name is *NOT* a valid Python identifier, raise an exception.
         # This is essential to avoid edge-case issues in which this name
         # erroneously contains regular expression syntax.
-        pyident.die_unless_var_name(promote_obj_name)
+        pyident.die_unless_unqualified(promote_obj_name)
 
         # If this subclass is *NOT* a Qt object subclass, raise an exception.
         classes.die_unless_subclass(

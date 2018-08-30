@@ -405,6 +405,9 @@ class QBetseeSimmer(QBetseeControllerABC):
         # Text detailing the prior state of this simulator.
         substatus_text_prior = self._progress_substatus.text()
 
+        # Metadata synopsizing the current state of this simulator.
+        proactor_metadata = self._proactor.get_metadata()
+
         #FIXME: Interpolate the actual progress values expected by this
         #template. Doing so will be non-trivial, albeit mostly from a design
         #perspective. In particular, we'll need to improve the pooled thread
@@ -418,8 +421,8 @@ class QBetseeSimmer(QBetseeControllerABC):
         substatus_text = substatus_text_template.format(
             progress_current=0,
             progress_total=100,
-            queued_modelling=0,
-            queued_exporting=0,
+            queued_modelling=proactor_metadata.phases_queued_modelling_count,
+            queued_exporting=proactor_metadata.phases_queued_exporting_count,
             substatus_prior=substatus_text_prior,
         )
 
