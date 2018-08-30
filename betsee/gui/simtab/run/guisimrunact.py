@@ -418,13 +418,22 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         be safely startable, resumable, or pausable and hence "workable."
         '''
 
+        #FIXME: It seems feasible that the entire test that follows reduces to:
+        #    return self.state not in {SimmerState.UNQUEUED, SimmerState.STOPPED}
+        #In the stopped state, the simulator is required to wait until the
+        #currently stopping worker does so gracefully. Likewise, in the
+        #unqueued state, there exists no work to be performed. In either case,
+        #these appear to be the only states in which absolutely *NO* new work
+        #may be performed. All other states appear to support work. If this is
+        #indeed the case, define a new "guisimrunstate" set global resembling:
+        #    SIMMER_STATES_UNWORKABLE = {SimmerState.UNQUEUED, SimmerState.STOPPED}
+        #Extensively test us up, please.
+        #FIXME: Yup. That appears to do it, folks. Let's define the set global
+        #given above, and away we go.
+        #FIXME: Revise the docstring above accordingly, please.
+
         # Return true only if...
-        return (
-            # This propactor is either queued *OR*...
-            self.is_working or (
-                # This propactor is queued *AND* this proactor's thread pool is
-                # empty, implying this proactor to be safely startable.
-                self.is_queued and not guipoolthread.is_working()))
+        return self.state not in {SimmerState.UNQUEUED, SimmerState.STOPPED}
 
 
     @property
@@ -547,7 +556,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
         Parameters
         ----------
-        state: SimmerState
+        state : SimmerState
             New state to set this phase to.
 
         Raises
@@ -1246,6 +1255,11 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         * Sets the state of the corresponding simulator phase to finished.
         * Pops this worker from the :attr:`_workers_queued`.
         * If this queue is non-empty, starts the next enqueued worker.
+
+        Parameters
+        ----------
+        is_success : bool
+            ``True`` only if this worker completed successfully.
         '''
 
         # If the most recently working worker is no longer working, silently
@@ -1264,12 +1278,15 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
             return
         # Else, one or more workers remain to be run.
 
+        # Log this slot.
+        guithread.log_debug_thread_main('Handling simulator worker closure...')
+
         # If this worker is still technically working, set the state of both
         # this simulator *AND* the previously working phase to finished. This
         # ensures that the simulator reliably returns to the finished state on
         # completing all possible work, regardless of whether that worker
-        # halted gracefully or prematurely (e.g., due to the end user
-        # prematurely stopping all work).
+        # halted gracefully or prematurely (e.g., due to the user prematurely
+        # stopping all work).
         #
         # For safety, do so *BEFORE* this method dequeues this worker and hence
         # internally modifies the worker yielded by the "_worker" property.
@@ -1278,9 +1295,10 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # Schedule this worker for immediate deletion. On doing so, all signals
         # owned by this worker will be disconnected from connected slots.
         #
-        # Technically, doing so is unnecessary. The subsequent nullification of
-        # the worker owning these signals already signals this deletion. As
-        # doing so has no harmful side effects, however, do so regardless.
+        # In theory, doing so *SHOULD* be unnecessary. The subsequent
+        # nullification of the worker owning these signals should already
+        # signal this deletion. As doing so has no harmful side effects,
+        # however, do so regardless for additional safety.
         self.worker.delete_later()
 
         # Dequeue this worker (i.e., remove this worker's subclass from

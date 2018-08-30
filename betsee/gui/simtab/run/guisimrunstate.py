@@ -235,11 +235,11 @@ SIMMER_STATE_TO_PROACTOR_STATUS = {
     SimmerState.EXPORTING: QCoreApplication.translate(
         'guisimrunstate', 'Exporting <b>{phase_type}</b> phase...'),
     SimmerState.PAUSED: QCoreApplication.translate(
-        'guisimrunstate', 'Paused {status_prior}'),
+        'guisimrunstate', 'Paused {status_prior}.'),
     SimmerState.STOPPED: QCoreApplication.translate(
-        'guisimrunstate', 'Stopped {status_prior}'),
+        'guisimrunstate', 'Stopped {status_prior}.'),
     SimmerState.FINISHED: QCoreApplication.translate(
-        'guisimrunstate', 'Finished {status_prior}'),
+        'guisimrunstate', 'Finished {status_prior}.'),
 }
 '''
 Dictionary mapping from each type of simulator state to a human-readable,
