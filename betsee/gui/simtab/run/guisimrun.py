@@ -219,6 +219,7 @@ class QBetseeSimmer(QBetseeControllerABC):
             main_window=main_window,
             progress_bar=self._progress_bar,
             progress_status=self._progress_status,
+            progress_substatus=self._progress_substatus,
         )
 
     # ..................{ FINALIZERS                        }..................

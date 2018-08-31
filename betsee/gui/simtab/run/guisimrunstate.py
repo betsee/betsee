@@ -24,7 +24,7 @@ SimmerState = make_enum(
         'MODELLING',
         'EXPORTING',
         'PAUSED',
-        'STOPPED',
+        'STOPPING',
         'FINISHED',
     ),
     doc='''
@@ -51,12 +51,24 @@ SimmerState = make_enum(
     PAUSED : enum
         Paused state, implying one or more queued subcommands to have been run
         but paused before completion.
-    STOPPED : enum
-        Halted state, implying one or more queued subcommands to have been run
-        but halted before completion.
+    STOPPING : enum
+        Stopping state, implying one or more queued subcommands to have been
+        run but manually stopped before completion. This is a temporary state
+        during which the proactor waits for the previously running worker to
+        gracefully stop. Until this worker does so, the proactor remains
+        incapable of performing new work (i.e., running queued subcommands).
+        After this worker gracefully stops, the proactor switches from this
+        state into the :attr:`FINISHED` state, implying the proactor to be
+        capable of performing new work.
     FINISHED : enum
-        Completion state, implying all queued subcommands to have been run to
-        completion.
+        Completion state, implying all queued subcommands to have completed
+        either:
+
+        * Successfully, in which case those subcommands ran to completion.
+        * Unsuccessfully, in which case either:
+
+          * The user prematurely stopped some or all of those subcommands.
+          * One of those subcommands raised an uncaught fatal exception.
     '''
 )
 
@@ -80,19 +92,6 @@ SIMMER_STATES = set(simmer_state for simmer_state in SimmerState)
 Set of all possible simulator states.
 '''
 
-
-SIMMER_STATES_HALTING = {
-    SimmerState.PAUSED,
-    SimmerState.STOPPED,
-    SimmerState.FINISHED,
-}
-'''
-Set of all **halting simulator states** (i.e., states implying one or more
-previously running queued subcommands to be currently halted, either
-temporarily as in the case of a paused subcommand or permanently as in the
-case of a stopped or finished subcommand).
-'''
-
 # ....................{ GLOBALS ~ set : running           }....................
 SIMMER_STATES_RUNNING = {
     SimmerState.MODELLING,
@@ -112,12 +111,35 @@ queued subcommands to be currently working and hence either modelling,
 exporting, or paused but neither stopped nor nor finished).
 '''
 
+# ....................{ GLOBALS ~ set : halting           }....................
+SIMMER_STATES_HALTING = {
+    SimmerState.PAUSED,
+    SimmerState.STOPPING,
+    SimmerState.FINISHED,
+}
+'''
+Set of all **halting simulator states** (i.e., states implying one or more
+previously running queued subcommands to be currently halted, either
+temporarily as in the case of a paused subcommand or permanently as in the
+case of a stopped or finished subcommand).
+'''
+
+
+SIMMER_STATES_UNWORKABLE = {
+    SimmerState.UNQUEUED,
+    SimmerState.STOPPING,
+}
+'''
+Set of all **unworkable simulator states** (i.e., states implying the proactor
+to be incapable of performing any work).
+'''
+
 # ....................{ GLOBALS ~ set : from              }....................
 SIMMER_STATES_FROM_FLUID = {
     SimmerState.UNQUEUED,
     SimmerState.QUEUED,
     SimmerState.FINISHED,
-    SimmerState.STOPPED,
+    SimmerState.STOPPING,
 }
 '''
 Set of all **out-bound fluid simulator states** (i.e., states the simulator may
@@ -213,7 +235,7 @@ SIMMER_STATE_TO_PHASE_STATUS = {
         'guisimrunstate', 'Exporting'),
     SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused'),
-    SimmerState.STOPPED: QCoreApplication.translate(
+    SimmerState.STOPPING: QCoreApplication.translate(
         'guisimrunstate', 'Stopped'),
     SimmerState.FINISHED: QCoreApplication.translate(
         'guisimrunstate', 'Finished'),
@@ -236,7 +258,7 @@ SIMMER_STATE_TO_PROACTOR_STATUS = {
         'guisimrunstate', 'Exporting <b>{phase_type}</b> phase...'),
     SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused {status_prior}.'),
-    SimmerState.STOPPED: QCoreApplication.translate(
+    SimmerState.STOPPING: QCoreApplication.translate(
         'guisimrunstate', 'Stopped {status_prior}.'),
     SimmerState.FINISHED: QCoreApplication.translate(
         'guisimrunstate', 'Finished {status_prior}.'),
@@ -320,7 +342,7 @@ SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
         ),
     },
     SimmerState.PAUSED:   '{substatus_prior}',
-    SimmerState.STOPPED:  '{substatus_prior}',
+    SimmerState.STOPPING:  '{substatus_prior}',
     SimmerState.FINISHED: '{substatus_prior}',
 }
 '''

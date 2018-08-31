@@ -233,6 +233,7 @@ class QBetseeSimmerPhaseWorker(QBetseeSimmerWorkerABC):
 
         return self._phase
 
+
     @property
     def phase_subkind(self) -> SimmerPhaseSubkind:
         '''

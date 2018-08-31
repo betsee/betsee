@@ -23,6 +23,7 @@ from betse.util.py import pyref
 from betse.util.type.types import (
     type_check,
     CallableTypes,
+    CallableOrNoneTypes,
     MappingOrNoneTypes,
     SequenceOrNoneTypes,
 )
@@ -33,8 +34,12 @@ from betsee.guiexception import (
 from betsee.util.thread import guithread
 from betsee.util.thread.guithreadenum import ThreadWorkerState
 from betsee.util.thread.pool.guipoolworksig import (
-    QBetseeThreadPoolWorkerSignals)
-from betsee.util.type.guitype import QBetseeProgressBarOrNoneTypes
+    QBetseeThreadPoolWorkerSignals,
+)
+from betsee.util.type.guitype import (
+    QBetseeProgressBarOrNoneTypes,
+    QLabelOrNoneTypes,
+)
 
 # ....................{ GLOBALS                           }....................
 _worker_id_next = 0
@@ -340,7 +345,13 @@ class QBetseeThreadPoolWorker(QRunnable):
 
 
     @type_check
-    def init(self, progress_bar: QBetseeProgressBarOrNoneTypes = None) -> None:
+    def init(
+        self,
+        progress_bar: QBetseeProgressBarOrNoneTypes = None,
+        progress_label: QLabelOrNoneTypes = None,
+        handler_failed: CallableOrNoneTypes = None,
+        handler_finished: CallableOrNoneTypes = None,
+    ) -> None:
         '''
         Finalize this pooled worker's initialization with the passed widgets.
 
@@ -351,9 +362,25 @@ class QBetseeThreadPoolWorker(QRunnable):
         Parameters
         ----------
         progress_bar : QBetseeProgressBarOrNoneTypes
-            Progress bar to connect to progress signals emitted by this worker.
-            Defaults to ``None``, in which case the caller is expected to
-            manually connect these signals to appropriate widget slots.
+            Progress bar to connect to numeric progress signals emitted by this
+            worker. Defaults to ``None``, in which case the caller is expected
+            to manually connect these signals to appropriate widget slots.
+        progress_label : QLabelOrNoneTypes
+            Label to connect to the
+            :attr:`QBetseeThreadPoolWorkerSignals.progress_stated` signal
+            emitted by this worker. Defaults to ``None``, in which case the
+            caller is expected to manually connect this signal to appropriate
+            widget slots.
+        handler_failed : CallableOrNoneTypes
+            Slot to connect to the
+            :attr:`QBetseeThreadPoolWorkerSignals.failed` signal emitted by
+            this worker. Defaults to ``None``, in which case the caller is
+            expected to manually connect this signal to appropriate slots.
+        handler_finished : CallableOrNoneTypes
+            Slot to connect to the
+            :attr:`QBetseeThreadPoolWorkerSignals.finished` signal emitted by
+            this worker. Defaults to ``None``, in which case the caller is
+            expected to manually connect this signal to appropriate slots.
         '''
 
         # If passed a progress bar, connect progress signals emitted by this
@@ -365,6 +392,18 @@ class QBetseeThreadPoolWorker(QRunnable):
             self.signals.progress_ranged.connect(
                 progress_bar.set_range_and_value_minimum)
             self.signals.progressed.connect(progress_bar.setValue)
+
+        # If passed a label, connect progress signals emitted by this worker to
+        # the corresponding slots of this label.
+        if progress_label is not None:
+            self.signals.progress_stated.connect(progress_label.setText)
+
+        # For each passed slot, connect the corresponding signals emitted by
+        # this worker to that slot.
+        if handler_failed is not None:
+            self.signals.failed.connect(handler_failed)
+        if handler_finished is not None:
+            self.signals.finished.connect(handler_finished)
 
     # ..................{ PROPERTIES                        }..................
     @property

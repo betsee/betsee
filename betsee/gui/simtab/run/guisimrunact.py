@@ -33,6 +33,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
     SIMMER_STATES_FROM_FLUID,
     SIMMER_STATES_RUNNING,
     SIMMER_STATES_WORKING,
+    SIMMER_STATES_UNWORKABLE,
 )
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerPhaseWorker
@@ -192,6 +193,8 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
     _progress_status : QLabel
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_status` label.
+    _progress_substatus : QLabel
+        Alias of the :attr:`QBetseeMainWindow.sim_run_player_substatus` label.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -232,6 +235,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         main_window: QBetseeMainWindow,
         progress_bar: QProgressBar,
         progress_status: QLabel,
+        progress_substatus: QLabel,
     ) -> None:
         '''
         Finalize this simulator's initialization, owned by the passed main
@@ -256,6 +260,9 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
             widget.
         progress_status : QLabel
             Alias of the :attr:`QBetseeMainWindow.sim_run_player_status` label.
+        progress_substatus : QLabel
+            Alias of the :attr:`QBetseeMainWindow.sim_run_player_substatus`
+            label.
         '''
 
         # Initialize our superclass with all passed parameters.
@@ -268,8 +275,9 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         self._p = main_window.sim_conf.p
 
         # Classify all remaining passed parameters.
-        self._progress_bar    = progress_bar
-        self._progress_status = progress_status
+        self._progress_bar       = progress_bar
+        self._progress_status    = progress_status
+        self._progress_substatus = progress_substatus
 
         # Initialize all phases (in arbitrary order).
         self._phase_seed.init(kind=SimPhaseKind.SEED, main_window=main_window)
@@ -396,57 +404,34 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         ``True`` only if this proactor is **workable** (i.e., currently capable
         of performing work).
 
-        This property returns ``True`` only if exactly one of the following
-        conditions holds:
-
-        * This proactor is **working** (i.e., either running or paused).
-        * Both:
-
-          * This proactor is **queued** (i.e., one or more simulator phases are
-            queued to be run).
-          * This proactor's thread pool is empty (i.e., no proactor workers are
-            currently working). This is an essential safety check, avoiding
-            desynchronization during the narrow window of time in which the
-            following conditions hold:
-
-            * The :attr:`is_working` property returns ``False``, due to the
-              end user having manually stopped the previously running phase.
-            * The simulator worker responsible for running that phase has yet
-              to gracefully stop.
-
-        If one of the above conditions hold, this proactor is guaranteed to
+        This property returns ``True`` only if this proactor is guaranteed to
         be safely startable, resumable, or pausable and hence "workable."
+        Equivalently, this property returns ``True`` only if the current state
+        of this proactor is neither of the following states:
+
+        * Unqueued. In this state, this proactor is required to wait until the
+          user queues at least one simulation subcommand.
+        * Stopping. In this state, this proactor is required to wait until the
+          currently stopping worker does so gracefully.
+
+        In either case, this proactor is incapable of performing work until its
+        state changes to any other state -- all of which support work.
         '''
 
-        #FIXME: It seems feasible that the entire test that follows reduces to:
-        #    return self.state not in {SimmerState.UNQUEUED, SimmerState.STOPPED}
-        #In the stopped state, the simulator is required to wait until the
-        #currently stopping worker does so gracefully. Likewise, in the
-        #unqueued state, there exists no work to be performed. In either case,
-        #these appear to be the only states in which absolutely *NO* new work
-        #may be performed. All other states appear to support work. If this is
-        #indeed the case, define a new "guisimrunstate" set global resembling:
-        #    SIMMER_STATES_UNWORKABLE = {SimmerState.UNQUEUED, SimmerState.STOPPED}
-        #Extensively test us up, please.
-        #FIXME: Yup. That appears to do it, folks. Let's define the set global
-        #given above, and away we go.
-        #FIXME: Revise the docstring above accordingly, please.
-
-        # Return true only if...
-        return self.state not in {SimmerState.UNQUEUED, SimmerState.STOPPED}
+        return self.state not in SIMMER_STATES_UNWORKABLE
 
 
     @property
     def is_working(self) -> bool:
         '''
-        ``True`` only if the simulator is **working** (i.e., some simulator
-        worker is either running or paused from running some queued simulator
+        ``True`` only if the simulator is **working** (i.e., some proactor
+        worker is either running or paused from running some queued proactor
         phase and hence is *not* finished).
 
         If this fine-grained property is ``True``, note that it is necessarily
         the case that the coarse-grained :attr:`is_workable` property is also
         ``True`` but that the reverse is *not* necessarily the case.
-        Equivalently, the simulator is *always* workable when it is working but
+        Equivalently, this proactor is *always* workable when it is working but
         *not* necessarily working when it is workable (e.g., due to currently
         being queued but unstarted).
         '''
@@ -914,15 +899,13 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # If the simulator is *not* currently running, raise an exception.
         self._die_unless_running()
 
-        # Pause the currently running simulator worker.
-        self.worker.pause()
-
-        #FIXME: For safety, relegate this to a new slot of this object
-        #connected to the paused() signal of this worker.
-
-        # Set this simulator and the currently running phase to the paused
-        # state *AFTER* successfully pausing this worker.
+        # Set both this proactor and the currently working phase to the paused
+        # state *BEFORE* successfully pausing this worker. See the
+        # stop_workers() method for related commentary on this order of logic.
         self._worker_phase_state = SimmerState.PAUSED
+
+        # Pause the currently running proactor worker.
+        self.worker.pause()
 
 
     def _resume_worker(self) -> None:
@@ -946,16 +929,14 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # If the simulator is *not* currently paused, raise an exception.
         self._die_unless_paused()
 
+        # Revert both this proactor and the currently working phase to the
+        # worker-specific running state *BEFORE* successfully resuming this
+        # worker. See the stop_workers() method for related commentary on this
+        # order of logic.
+        self._worker_phase_state = self.worker.simmer_state
+
         # Resume the currently paused simulator worker.
         self.worker.resume()
-
-        #FIXME: For safety, relegate this to a new slot of this object
-        #connected to the resumed() signal of this worker.
-
-        # Set this simulator and the currently running phase to the
-        # worker-specific running state *AFTER* successfully resuming this
-        # worker.
-        self._worker_phase_state = self.worker.simmer_state
 
     # ..................{ SLOTS ~ action : stop             }..................
     @Slot()
@@ -993,17 +974,21 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # worker returned by the "_worker" property) is called.
         worker = self.worker
 
-        #FIXME: If this behaves as expected, refactor all similar settings to
-        #do so first rather than last in their respective methods.
-        #FIXME: Comment why we now do this first rather than last (e.g., to
-        #force the UI to immediately reflect the user's most recent request,
-        #despite the fact that the underlying simulator worker may indeed
-        #continue working before gracefully halting at some non-deterministic
-        #subsequent point).
-
-        # Set this simulator and the currently running phase to the stopped
-        # state *BEFORE* successfully stopping this worker.
-        self._worker_phase_state = SimmerState.STOPPED
+        # Set both this proactor and the currently working phase to the
+        # stopping state *BEFORE* successfully stopping this worker.
+        #
+        # Doing so enforces mutual exclusivity from the end user perspective
+        # with respect to proactor state. Specifically, setting this state
+        # prior to all subsequent logic forces the UI to immediately reflect
+        # this request to stop all work and hence prevents the user from
+        # issuing any subsequent actions at odds with that request (e.g., to
+        # pause or re-stop work) -- regardless of whether that request is
+        # successfully fulfilled. If the order of these operations were
+        # reversed (i.e., if this worker was stopped prior to setting this
+        # state), a window of time would exist in which the UI failed to
+        # reflect this request to stop and hence permitted the user to issue
+        # subsequent actions at odds with that request. In short, this is sane.
+        self._worker_phase_state = SimmerState.STOPPING
 
         # Dequeue *ALL* currently enqueued simulator workers scheduled to work
         # following the currently working worker. While the latter could
@@ -1162,28 +1147,19 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # Log this work attempt.
         guithread.log_debug_thread_main('Iterating simulator worker...')
 
-        #FIXME: For safety, relegate this to a new slot of this object
-        #connected to the started() signal of this worker. After all, this
-        #should only be performed if this worker is indeed successfully started
-        #within this thread -- which we have no way of guaranteeing here.
-
-        # Set the state of both this simulator *AND* the currently
-        # running phase *AFTER* successfully starting this worker.
+        # Set the state of both this proactor and the currently working phase
+        # *BEFORE* successfully starting this worker. See the stop_workers()
+        # method for related commentary on this order of logic.
         self._worker_phase_state = worker.simmer_state
 
         # Finalize this worker's initialization.
         worker.init(
             conf_filename=self._p.conf_filename,
             progress_bar=self._progress_bar,
-            #FIXME: Uncomment after adding worker.init() support for this
-            #additional parameter.
-            # progress_status=self._progress_status,
+            progress_label=self._progress_substatus,
+            handler_failed=self._handle_worker_exception,
+            handler_finished=self._handle_worker_completion,
         )
-
-        # Connect signals emitted by this worker to simulator slots *AFTER*
-        # initializing this worker, which these slots usually assume.
-        worker.signals.failed.connect(self._handle_worker_exception)
-        worker.signals.finished.connect(self._handle_worker_completion)
 
         # Start this worker *AFTER* establishing all signal-slot connections.
         guipoolthread.start_worker(worker)
