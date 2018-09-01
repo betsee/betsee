@@ -19,8 +19,8 @@ from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check, CallableTypes
 from betsee.guiexception import BetseePySideThreadWorkerException
-from betsee.gui.simtab.run.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
+from betsee.gui.simtab.run.phase.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.gui.simtab.run.work.guisimrunworksig import SimCallbacksSignaller
 from betsee.util.thread.pool.guipoolwork import QBetseeThreadPoolWorker

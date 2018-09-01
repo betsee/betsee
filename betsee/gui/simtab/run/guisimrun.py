@@ -407,7 +407,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         substatus_text_prior = self._progress_substatus.text()
 
         # Metadata synopsizing the current state of this simulator.
-        proactor_metadata = self._proactor.get_metadata()
+        proactor_metadata = self._proactor.phaser.get_metadata()
 
         #FIXME: Interpolate the actual progress values expected by this
         #template. Doing so will be non-trivial, albeit mostly from a design
