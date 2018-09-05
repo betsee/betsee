@@ -53,7 +53,7 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
     '''
 
     # ..................{ SIGNALS                           }..................
-    set_state_queued_signal = Signal(QObject)
+    queue_changed = Signal(QObject)
     '''
     Signal emitted by the :meth:`_toggle_queue_subkind` slot immediately after
     changing the state of this simulator phase to be either
@@ -271,7 +271,7 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
         If this slot changes the state of this simulator phase to either
         :attr:`SimmerState.QUEUED` or :attr:`SimmerState.UNQUEUED`, this slot
         notifies interested parties of this fact by signalling the
-        :attr:`set_state_queued_signal` with this simulator phase.
+        :attr:`queue_changed` with this simulator phase.
 
         Parameters
         ----------
@@ -292,7 +292,7 @@ class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):
                 SimmerState.QUEUED if self.is_queued else SimmerState.UNQUEUED)
 
             # Update the proactor's state to reflect this phase's state.
-            self.set_state_queued_signal.emit(self)
+            self.queue_changed.emit(self)
         # Else, the current state of this phase is fixed and hence *NOT*
         # replaceable with any other state. For safety, this state is preserved
         # as is.

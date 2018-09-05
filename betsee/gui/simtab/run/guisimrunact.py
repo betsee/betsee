@@ -16,7 +16,6 @@ functionality.
 from PySide2.QtCore import QCoreApplication, QObject, Slot  #, Signal
 from PySide2.QtWidgets import QProgressBar, QLabel
 from betse.exceptions import BetseSimUnstableException
-from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.py import pythread
 from betse.util.type import enums
@@ -27,6 +26,7 @@ from betsee.guiexception import (
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunstate import (
     SimmerState,
+    SIMMER_STATES_IDLE,
     SIMMER_STATES_INTO_FIXED,
     SIMMER_STATES_FROM_FLUID,
     SIMMER_STATES_RUNNING,
@@ -327,6 +327,24 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
     # ..................{ PROPERTIES ~ bool : state         }..................
     @property
+    def is_idle(self) -> bool:
+        '''
+        ``True`` only if this proactor is **idle** (i.e., *no* proactor
+        worker is either working, stopping, or recently finished, implying this
+        proactor to be in either the queued or unqueued states).
+
+        Equivalently, this property returns ``True`` only if this proactor is
+        currently performing no work such that the user has either queued or
+        unqueued at least one phase since the last work performed by this
+        proactor (if any) completed. In this case, this proactor has no
+        meaningful data or metadata concerning current or recently completed
+        work to display to the user and hence is genuinely "idle."
+        '''
+
+        return self.state in SIMMER_STATES_IDLE
+
+
+    @property
     def is_workable(self) -> bool:
         '''
         ``True`` only if this proactor is **workable** (i.e., currently capable
@@ -558,7 +576,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # Unconditionally change the state of this proactor to this new state,
         # regardless of whether this state is already this new state. Why?
         # Because the superclass state() setter internally signals all slots
-        # connected to the "set_state_signal" for this proactor -- including
+        # connected to the "state_changed" for this proactor -- including
         # the QBetseeSimmer._update_widgets() slot.
         #
         # The question then reduces to: "Do widgets require updating even when

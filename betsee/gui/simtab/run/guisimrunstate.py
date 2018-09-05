@@ -92,6 +92,16 @@ SIMMER_STATES = set(simmer_state for simmer_state in SimmerState)
 Set of all possible simulator states.
 '''
 
+
+SIMMER_STATES_IDLE = {
+    SimmerState.UNQUEUED,
+    SimmerState.QUEUED,
+}
+'''
+Set of all **idle simulator states** (i.e., states implying *no* queued
+subcommands to be currently working, stopping, or recently finished).
+'''
+
 # ....................{ GLOBALS ~ set : running           }....................
 SIMMER_STATES_RUNNING = {
     SimmerState.MODELLING,
@@ -100,7 +110,7 @@ SIMMER_STATES_RUNNING = {
 '''
 Set of all **running simulator states** (i.e., states implying one or more
 queued subcommands to be currently running and hence either modelling or
-exportingb but neither paused, stopped, nor finished).
+exportingb but neither paused, stopping, nor finished).
 '''
 
 
@@ -108,7 +118,7 @@ SIMMER_STATES_WORKING = SIMMER_STATES_RUNNING | {SimmerState.PAUSED,}
 '''
 Set of all **working simulator states** (i.e., states implying one or more
 queued subcommands to be currently working and hence either modelling,
-exporting, or paused but neither stopped nor nor finished).
+exporting, or paused but neither stopping nor finished).
 '''
 
 # ....................{ GLOBALS ~ set : halting           }....................
@@ -302,13 +312,17 @@ SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
         SimPhaseKind.SEED: None,
         SimPhaseKind.INIT: QCoreApplication.translate(
             'guisimrunstate',
-            'Initialized {progress_current} <i>of</i> {progress_total} '
-            'time steps.'
+            'Initialized '
+            '<b>{progress_current}</b> <i>of</i> '
+            '<b>{progress_maximum}</b> '
+            'simulation time steps.'
         ),
         SimPhaseKind.SIM: QCoreApplication.translate(
             'guisimrunstate',
-            'Simulated {progress_current} <i>of</i> {progress_total} '
-            'time steps.'
+            'Simulated '
+            '<b>{progress_current}</b> <i>of</i> '
+            '<b>{progress_maximum}</b> '
+            'simulation time steps.'
         ),
     },
     #FIXME: Consider querying the BETSE client for the metadata interpolated

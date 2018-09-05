@@ -90,7 +90,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
     def state(self, state: SimmerState) -> None:
         '''
         Set the current state of this simulator controller to the passed state
-        *and* signal all slots connected to the :attr:`set_state_signal` of
+        *and* signal all slots connected to the :attr:`state_changed` of
         this state change.
         '''
 
@@ -102,10 +102,10 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         self._update_state()
 
         # Signal all connected slots *AFTER* internally updating this state.
-        self.set_state_signal.emit(self)
+        self.state_changed.emit(self)
 
     # ..................{ SIGNALS                           }..................
-    set_state_signal = Signal(QObject)
+    state_changed = Signal(QObject)
     '''
     Signal passed this simulator controller on each change to the current state
     of that phase, either due to user interaction or programmatic

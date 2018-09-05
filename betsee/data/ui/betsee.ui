@@ -4438,7 +4438,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
-                   <italic>true</italic>
                   </font>
                  </property>
                  <property name="text">

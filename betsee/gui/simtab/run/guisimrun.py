@@ -40,7 +40,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 #    https://stackoverflow.com/a/28816650/2809027
 
 # ....................{ IMPORTS                           }....................
-from PySide2.QtCore import QCoreApplication, Slot  #, QObject, Signal
+from PySide2.QtCore import Slot  #QCoreApplication, QObject, Signal
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type.text import strs
@@ -92,8 +92,8 @@ class QBetseeSimmer(QBetseeControllerABC):
         action.
     _player_toolbar : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_toolbar_frame`
-        frame containing only the :class:`QToolBar` controlling this
-        simulation.
+        frame containing only the :class:`QToolBar` containing buttons for
+        controlling the currently running simulation.
     _progress_bar : QProgressBar
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
     _progress_status : QLabel
@@ -202,14 +202,24 @@ class QBetseeSimmer(QBetseeControllerABC):
             widget.
         '''
 
-        # Connect each such action to this object's corresponding slot.
+        # Connect actions to corresponding slots of the proactor.
         self._action_toggle_work.triggered.connect(
             self._proactor.toggle_work)
         self._action_stop_workers.triggered.connect(
             self._proactor.stop_workers)
 
-        # Update simulator widgets to reflect each change in proactor state.
-        self._proactor.set_state_signal.connect(self._update_widgets)
+        # Connect widget signals to corresponding slots of this simulator.
+        # Specifically:
+        #
+        # * When the proactor state is changed, update simulator widgets
+        #   possibly dependent upon this state.
+        # * When the progress bar is progressed, update simulator widgets
+        #   possibly dependent upon this progress (e.g., progress substatus
+        #   text interpolating the current and maximum progress bar values as
+        #   the current and maximum time steps when modelling the
+        #   initialization or simulation phase).
+        self._proactor.state_changed.connect(self._update_widgets)
+        self._progress_bar.valueChanged.connect(self._update_widgets)
 
         # Initialize the proactor *AFTER* establishing the prior signal-slot
         # connection, as the QBetseeSimmerProactor.init() method called here
@@ -257,6 +267,26 @@ class QBetseeSimmer(QBetseeControllerABC):
         # Log this update.
         logs.log_debug('Updating simulator widgets from simulator state...')
 
+        # Update the contents of the simulator toolbar *BEFORE* any other
+        # updates, as the former takes precedence over the latter. Toolbar
+        # buttons control the state of both the proactor and the currently
+        # working phase (if any). Updating these buttons immediately on
+        # entering this slot significantly increases the likelihood of these
+        # buttons externally reflecting the internal state of both the proactor
+        # and the currently working phase (if any).
+        self._update_toolbar()
+
+        # Update all widgets depicting the proactor's progress.
+        self._update_progress()
+
+
+    def _update_toolbar(self) -> None:
+        '''
+        Update the contents of the **simulator toolbar** (i.e.,
+        :class:`QToolBar` instance containing buttons controlling the currently
+        running simulation).
+        '''
+
         # Enable (in arbitrary order):
         #
         # * All widgets controlling the currently queued phase only if one or
@@ -291,7 +321,20 @@ class QBetseeSimmer(QBetseeControllerABC):
         #   precedence for UI purposes.
         self._action_stop_workers.setEnabled(self._proactor.is_working)
 
-        # Update the status of this simulator.
+
+    def _update_progress(self) -> None:
+        '''
+        Update the contents of all simulator widgets to reflect the current
+        progress of the simulation subcommand being run by the proactor (if
+        any).
+        '''
+
+        # If the proactor is currently idle, reset the progress bar (i.e.,
+        # prevent the progress bar from displaying any progress).
+        if self._proactor.is_idle:
+            self._progress_bar.reset()
+
+        # Update the (sub)status of this simulator.
         self._update_progress_status()
         self._update_progress_substatus()
 
@@ -409,19 +452,35 @@ class QBetseeSimmer(QBetseeControllerABC):
         # Metadata synopsizing the current state of this simulator.
         proactor_metadata = self._proactor.phaser.get_metadata()
 
-        #FIXME: Interpolate the actual progress values expected by this
-        #template. Doing so will be non-trivial, albeit mostly from a design
-        #perspective. In particular, we'll need to improve the pooled thread
-        #worker API to permit both the current state of numeric progress *AND*
-        #the full range of numeric progress to be safely queryable in a
-        #thread-safe manner by callers. *le_sigh*
+        #FIXME: If the following conditions hold:
+        #
+        #* The proactor is currently modelling either the initialization or
+        #  simulation phases.
+        #* The "self._progress_bar.is_reset" property is true, implying the
+        #  phase currently being modelled to have not yet signalled the range
+        #  of possible progress values.
+        #
+        #Then the text message displayed as the substatus should be changed to
+        #something resembling either
+        #"Initialized no simulation time steps" or
+        #"Preparing to initialize simulation...". For readability, we probably
+        #favour the latter. In either case, however, we need to find a way to
+        #cleanly integrate this text into our current "guisimrunstate"
+        #submodule. Maybe define yet another nested dictionary in the existing
+        #"SIMMER_STATE_TO_PROACTOR_SUBSTATUS" dictionary? That works for us...
+        #FIXME: Likewise, it would be useful to define unique text messages to
+        #be displayed after initializing or simulating the last time step to
+        #something resembling either
+        #"Initialized all simulation time steps" or
+        #"Preparing to save initialization to disk...". Again, for readability,
+        #we favour the latter.
 
         # Unconditionally format this text with all possible format specifiers
         # expected by all possible instances of this text. (Note that Python
         # ignores format specifiers *NOT* expected by this exact text.)
         substatus_text = substatus_text_template.format(
-            progress_current=0,
-            progress_total=100,
+            progress_current=self._progress_bar.value(),
+            progress_maximum=self._progress_bar.maximum(),
             queued_modelling=proactor_metadata.phases_queued_modelling_count,
             queued_exporting=proactor_metadata.phases_queued_exporting_count,
             substatus_prior=substatus_text_prior,

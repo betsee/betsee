@@ -176,7 +176,7 @@ class QBetseeSimmerPhaser(QBetseeControllerABC):
         for phase in self.PHASES:
             # Connect the queueing signal emitted by this phase to the
             # corresponding slot of the parent proactor.
-            phase.set_state_queued_signal.connect(set_state_from_phase)
+            phase.queue_changed.connect(set_state_from_phase)
 
             # Set the proactor's initial state from this phase's initial state.
             set_state_from_phase(phase)
