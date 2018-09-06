@@ -24,8 +24,8 @@ from betse.util.type.types import type_check
 from betsee.guiexception import (
     BetseeSimmerException, BetseeSimmerBetseException)
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.simtab.run.guisimrunenum import SimmerState
 from betsee.gui.simtab.run.guisimrunstate import (
-    SimmerState,
     SIMMER_STATES_IDLE,
     SIMMER_STATES_INTO_FIXED,
     SIMMER_STATES_FROM_FLUID,
@@ -37,7 +37,6 @@ from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.phase.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.phase.guisimrunphaser import QBetseeSimmerPhaser
 from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerPhaseWorker
-from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
 from betsee.util.thread import guithread
 from betsee.util.thread.pool import guipoolthread
 from collections import deque
@@ -573,6 +572,44 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
                 enums.get_member_name_lowercase(self.state),
                 enums.get_member_name_lowercase(state_new))
 
+        #FIXME: Shift this logic into the parent "QBetseeSimmer"... somehow.
+        #Display logic of this sort has no place in this lower-level object. To
+        #do so:
+        #
+        #* Define a new public "state_changed_from_phase" signal of this class.
+        #* Define a new private _update_progress_bar() slot in the
+        #  "QBetseeSimmer" class whose implementation is exactly the if
+        #  conditional that follows.
+        #* Connect this signal to this slot in the
+        #  QBetseeSimmer._init_connections() method.
+        #FIXME: Wait. While the above certainly would suffice, it's also
+        #somewhat overkill. Here's what we *REALLY* want to do:
+        #
+        #* Refactor the QBetseeSimmerStatefulABC.state_changed() signal to
+        #  accept the following two parameters rather than the "QObject" that
+        #  that signal currently accepts:
+        #  * "state_new", the new "SimmerState" that this controller is
+        #    transitioning into.
+        #  * "state_old", the old "SimmerState" that this controller is
+        #    transitioning from.
+        #* Refactor the QBetseeSimmer._update_widgets() slot to:
+        #  * Accept these two parameters.
+        #  * Implement the following if conditional given these parameters.
+        #
+        #Sweetness incarnate!
+
+        # If...
+        if (
+            # This proactor is transitioning to the modelling state.
+            state_new is SimmerState.MODELLING and
+            # This proactor is *NOT* already in the modelling state.
+            self.state is not SimmerState.MODELLING
+        # ...then this proactor is starting modelling. In this case, reset the
+        # progress bar (i.e., prevent this bar from displaying any progress).
+        ):
+            logs.log_debug('Resetting simulator progress bar...')
+            self._progress_bar.reset()
+
         # Unconditionally change the state of this proactor to this new state,
         # regardless of whether this state is already this new state. Why?
         # Because the superclass state() setter internally signals all slots
@@ -582,11 +619,10 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # The question then reduces to: "Do widgets require updating even when
         # the current state of this proactor remains unchanged?" The answer, of
         # course, is: "Absolutely." Proactor state is a lossy coarse-grained
-        # abstraction at best that fails to capture all possible simulator
-        # state. In particular, proactor state remains unchanged on dequeueing
-        # exactly one but *NOT* all queued simulator phases -- a common case
-        # clearly requiring widgets (e.g., progress substatus) to be updated.
-        # (Good luck debugging this, new hire!)
+        # abstraction that fails to capture all possible simulator state. In
+        # particular, proactor state remains unchanged on dequeueing exactly
+        # one but *NOT* all queued simulator phases -- a common case clearly
+        # requiring widgets (e.g., progress substatus) to be updated.
         self.state = state_new
 
     # ..................{ EXCEPTIONS                        }..................
@@ -967,36 +1003,8 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # If some simulator worker is currently working, raise an exception.
         self._die_if_working()
 
-        #FIXME: Refactor all of the following logic into a new
-        #phaser.enqueue_phase_workers() method.
-
-        # Simulator worker queue to be classified *AFTER* creating and
-        # enqueuing all workers.
-        workers_queued = deque()
-
-        # For each simulator phase...
-        for phase in self.phaser.PHASES:
-            # If this phase is currently queued for modelling...
-            if phase.is_queued_modelling:
-                # Simulator worker modelling this phase.
-                worker = QBetseeSimmerPhaseWorker(
-                    phase=phase, phase_subkind=SimmerPhaseSubkind.MODELLING)
-
-                # Enqueue a new instance of this subclass.
-                workers_queued.append(worker)
-
-            # If this phase is currently queued for exporting...
-            if phase.is_queued_exporting:
-                # Simulator worker subclass exporting this phase.
-                worker = QBetseeSimmerPhaseWorker(
-                    phase=phase, phase_subkind=SimmerPhaseSubkind.EXPORTING)
-
-                # Enqueue a new instance of this subclass.
-                workers_queued.append(worker)
-
-        # Classify this queue *AFTER* successfully creating and enqueuing all
-        # workers, thus reducing the likelihood of desynchronization.
-        self._workers_queued = workers_queued
+        # Queue of all simulator workers to be subsequently run.
+        self._workers_queued = self.phaser.enqueue_phase_workers()
 
 
     def _dequeue_workers(self) -> None:

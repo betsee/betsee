@@ -47,8 +47,8 @@ from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunact import QBetseeSimmerProactor
+from betsee.gui.simtab.run.guisimrunenum import SimmerState, SimmerModelState
 from betsee.gui.simtab.run.guisimrunstate import (
-    SimmerState,
     SIM_PHASE_KIND_TO_NAME,
     SIMMER_STATE_TO_PROACTOR_STATUS,
     SIMMER_STATE_TO_PROACTOR_SUBSTATUS,
@@ -329,12 +329,19 @@ class QBetseeSimmer(QBetseeControllerABC):
         any).
         '''
 
+        #FIXME: This currently never triggers when we want to (notably, on
+        #transitioning to the "MODELLING" state from any other state). We'll
+        #need to slightly rethink this, sadly.
+
         # If the proactor is currently idle, reset the progress bar (i.e.,
         # prevent the progress bar from displaying any progress).
-        if self._proactor.is_idle:
-            self._progress_bar.reset()
+        # if self._proactor.is_idle:
+        #     logs.log_debug('Resetting simulator progress bar...')
+        #     self._progress_bar.reset()
 
-        # Update the (sub)status of this simulator.
+        # Update the (sub)status of this simulator *AFTER* possibly updating
+        # the state of the progress bar, as the former assumes the latter to
+        # have already been performed.
         self._update_progress_status()
         self._update_progress_substatus()
 
@@ -429,12 +436,42 @@ class QBetseeSimmer(QBetseeControllerABC):
             # worker in a push-driven manner.
             if phase_kind is SimPhaseKind.SEED:
                 return
-
             # Else, the proactor is currently modelling either the
-            # initialization or simulation phases. In either case, the details
-            # of the proactor's current action reduce to the value of this
-            # nested dictionary whose key is this phase.
-            substatus_text_template = substatus_value[phase_kind]
+            # initialization or simulation phases.
+
+            # Type of simulator modelling currently being performed.
+            model_state = None
+
+            # If the progress bar is currently in the reset state, then the
+            # current proactor worker performing this modelling has yet to
+            # model any time steps of this simulation and hence is in the
+            # pre-processing state.
+            #
+            # Note that the proactor explicitly resets the progress bar on
+            # transitioning into the modelling state, ensuring sanity here.
+            if self._progress_bar.is_reset:
+                model_state = SimmerModelState.PREPARING
+            # Else, this worker has modelled one or more time steps.
+            #
+            # If the progress bar is currently in the finished state, then this
+            # this worker has modelled all time steps of this simulation and
+            # hence is in the post-processing state.
+            elif self._progress_bar.is_done:
+                model_state = SimmerModelState.FINISHING
+            # Else, this worker has modelled one or more but *NOT* all time
+            # steps and hence is in the in-processing state.
+            else:
+                model_state = SimmerModelState.MODELLING
+
+            # Dictionary mapping from from each type of simulator modelling
+            # state to an unformatted string template detailing the current
+            # action being performed in that state.
+            model_state_to_substatus_text_template = substatus_value[
+                phase_kind]
+
+            # Unformatted string template detailing the current action.
+            substatus_text_template = model_state_to_substatus_text_template[
+                model_state]
         #FIXME: Implement this case... somehow. See pertinent FIXME comments in
         #the "guisimrunstate" submodule.
         # Else if the proactor is currently exporting...
@@ -451,29 +488,6 @@ class QBetseeSimmer(QBetseeControllerABC):
 
         # Metadata synopsizing the current state of this simulator.
         proactor_metadata = self._proactor.phaser.get_metadata()
-
-        #FIXME: If the following conditions hold:
-        #
-        #* The proactor is currently modelling either the initialization or
-        #  simulation phases.
-        #* The "self._progress_bar.is_reset" property is true, implying the
-        #  phase currently being modelled to have not yet signalled the range
-        #  of possible progress values.
-        #
-        #Then the text message displayed as the substatus should be changed to
-        #something resembling either
-        #"Initialized no simulation time steps" or
-        #"Preparing to initialize simulation...". For readability, we probably
-        #favour the latter. In either case, however, we need to find a way to
-        #cleanly integrate this text into our current "guisimrunstate"
-        #submodule. Maybe define yet another nested dictionary in the existing
-        #"SIMMER_STATE_TO_PROACTOR_SUBSTATUS" dictionary? That works for us...
-        #FIXME: Likewise, it would be useful to define unique text messages to
-        #be displayed after initializing or simulating the last time step to
-        #something resembling either
-        #"Initialized all simulation time steps" or
-        #"Preparing to save initialization to disk...". Again, for readability,
-        #we favour the latter.
 
         # Unconditionally format this text with all possible format specifiers
         # expected by all possible instances of this text. (Note that Python

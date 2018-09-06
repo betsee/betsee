@@ -30,6 +30,18 @@ class QBetseeProgressBar(QBetseeObjectMixin, QProgressBar):
 
     # ..................{ PROPERTIES                        }..................
     @property
+    def is_done(self) -> bool:
+        '''
+        ``True`` only if this progress bar is currently in the **finished
+        state** (i.e., if the current value of this progress bar is equal to
+        the maximum value previously passed to the :meth:`setRange` method).
+        '''
+
+        # Surprisingly, this actually makes sense.
+        return self.value() == self.maximum()
+
+
+    @property
     def is_reset(self) -> bool:
         '''
         ``True`` only if this progress bar is currently in the **reset state**

@@ -10,55 +10,18 @@ functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
-from PySide2.QtCore import QCoreApplication, QObject, Slot  #, Signal
-from PySide2.QtWidgets import QProgressBar, QLabel
-from betse.exceptions import BetseSimUnstableException
 from betse.science.phase.phaseenum import SimPhaseKind
 from betse.util.io.log import logs
-from betse.util.py import pythread
-from betse.util.type import enums
 from betse.util.type.iterable import tuples
-from betse.util.type.obj import objects
 from betse.util.type.types import type_check, CallableTypes, QueueType
-from betsee.guiexception import (
-    BetseeSimmerException, BetseeSimmerBetseException)
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
-from betsee.gui.simtab.run.guisimrunstate import (
-    SimmerState,
-    SIMMER_STATES_INTO_FIXED,
-    SIMMER_STATES_FROM_FLUID,
-    SIMMER_STATES_RUNNING,
-    SIMMER_STATES_WORKING,
-    SIMMER_STATES_UNWORKABLE,
-)
-from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
 from betsee.gui.simtab.run.phase.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerPhaseWorker
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
-from betsee.util.thread import guithread
-from betsee.util.thread.pool import guipoolthread
 from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
 from collections import deque
 
 # ....................{ TYPES                             }....................
-#FIXME: This submodule is, yet again, becoming long in the tooth. To rectify
-#this, contemplate the following refactoring:
-#
-#* Define a new "guisimrunphases" submodule in this subpackage.
-#* Define a new "QBetseeSimmerPhaser(QBetseeControllerABC)" subclass in this
-#  submodule.
-#* Shift most phase-specific functionality from the "QBetseeSimmerProactor"
-#  class into this new "QBetseeSimmerPhaser" class. Ideally, the latter should
-#  serve as a somewhat superficial container for phases. This includes:
-#  * The "QBetseeSimmerProactor.PHASES" tuple, which should be renamed to
-#    "QBetseeSimmerPhases.PHASES".
-#  * The "QBetseeSimmerProactor._phase_seed", "_phase_init", and "_phase_sim"
-#    controllers, whose names should probably remain as is.
-#  * This "SimmerProactorMetadata" class.
-#  * The QBetseeSimmerProactor.get_metadata() method.
-#* Define a new "QBetseeSimmerProactor.phaser" instance variable in the
-#  QBetseeSimmerProactor.__init__() method initialized to an instance of the
-#  "QBetseeSimmerPhaser" class.
 SimmerProactorMetadata = tuples.make_named_subclass(
     class_name='SimmerProactorMetadata',
     item_names=(
@@ -259,24 +222,12 @@ class QBetseeSimmerPhaser(QBetseeControllerABC):
               :attr:`_workers_queued` is already defined to be non-``None``).
         '''
 
-        # Log this action.
-        guithread.log_debug_thread_main('Enqueueing simulator workers...')
-
-        # If this controller is *NOT* currently queued, raise an exception.
-        self._die_unless_queued()
-
-        # If some simulator worker is currently working, raise an exception.
-        self._die_if_working()
-
-        #FIXME: Refactor all of the following logic into a new
-        #phaser.enqueue_phase_workers() method.
-
         # Simulator worker queue to be classified *AFTER* creating and
         # enqueuing all workers.
         workers_queued = deque()
 
         # For each simulator phase...
-        for phase in self.phaser.PHASES:
+        for phase in self.PHASES:
             # If this phase is currently queued for modelling...
             if phase.is_queued_modelling:
                 # Simulator worker modelling this phase.
@@ -295,6 +246,5 @@ class QBetseeSimmerPhaser(QBetseeControllerABC):
                 # Enqueue a new instance of this subclass.
                 workers_queued.append(worker)
 
-        # Classify this queue *AFTER* successfully creating and enqueuing all
-        # workers, thus reducing the likelihood of desynchronization.
-        self._workers_queued = workers_queued
+        # Return this queue.
+        return workers_queued

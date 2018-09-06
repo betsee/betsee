@@ -16,8 +16,8 @@ from betse.util.type import enums
 from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.types import type_check  #, CallableTypes
 from betsee.gui.simtab.run.guisimrunabc import QBetseeSimmerStatefulABC
+from betsee.gui.simtab.run.guisimrunenum import SimmerState
 from betsee.gui.simtab.run.guisimrunstate import (
-    SimmerState,
     SIMMER_STATE_TO_PHASE_STATUS,
     SIMMER_STATES_FROM_FLUID,
 )

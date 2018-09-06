@@ -12,65 +12,8 @@ corresponding to this simulator) functionality.
 from PySide2.QtCore import QCoreApplication
 from betse.science.export.expenum import SimExportType
 from betse.science.phase.phaseenum import SimPhaseKind
-from betse.util.type.enums import make_enum
 # from betse.util.type.types import type_check
-
-# ....................{ ENUMERATIONS                      }....................
-SimmerState = make_enum(
-    class_name='SimmerState',
-    member_names=(
-        'UNQUEUED',
-        'QUEUED',
-        'MODELLING',
-        'EXPORTING',
-        'PAUSED',
-        'STOPPING',
-        'FINISHED',
-    ),
-    doc='''
-    Enumeration of all supported types of **simulator state** (i.e., mutually
-    exclusive combination of one or more booleans uniquely capturing the
-    condition of the currently queued simulation subcommand if any, analogous
-    to a state in a finite state automata).
-
-    Attributes
-    ----------
-    UNQUEUED : enum
-        Unqueued state, implying no subcommands to be queued.
-    QUEUED : enum
-        Queued state, implying one or more subcommands to be queued but *not*
-        yet run and hence neither paused, halted, nor done.
-    MODELLING : enum
-        Modelling state, implying one or more queued subcommands specific to
-        modelling (e.g., seed, initialization) to be currently running and
-        hence neither paused, halted, nor done.
-    EXPORTING : enum
-        Exporting state, implying one or more queued subcommands specific to
-        exporting (e.g., seed exports, initialization exports) to be currently
-        running and hence neither paused, halted, nor done.
-    PAUSED : enum
-        Paused state, implying one or more queued subcommands to have been run
-        but paused before completion.
-    STOPPING : enum
-        Stopping state, implying one or more queued subcommands to have been
-        run but manually stopped before completion. This is a temporary state
-        during which the proactor waits for the previously running worker to
-        gracefully stop. Until this worker does so, the proactor remains
-        incapable of performing new work (i.e., running queued subcommands).
-        After this worker gracefully stops, the proactor switches from this
-        state into the :attr:`FINISHED` state, implying the proactor to be
-        capable of performing new work.
-    FINISHED : enum
-        Completion state, implying all queued subcommands to have completed
-        either:
-
-        * Successfully, in which case those subcommands ran to completion.
-        * Unsuccessfully, in which case either:
-
-          * The user prematurely stopped some or all of those subcommands.
-          * One of those subcommands raised an uncaught fatal exception.
-    '''
-)
+from betsee.gui.simtab.run.guisimrunenum import SimmerState, SimmerModelState
 
 # ....................{ GLOBALS ~ dict                    }....................
 SIM_PHASE_KIND_TO_NAME = {
@@ -310,20 +253,32 @@ SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
     ),
     SimmerState.MODELLING: {
         SimPhaseKind.SEED: None,
-        SimPhaseKind.INIT: QCoreApplication.translate(
-            'guisimrunstate',
-            'Initialized '
-            '<b>{progress_current}</b> <i>of</i> '
-            '<b>{progress_maximum}</b> '
-            'simulation time steps.'
-        ),
-        SimPhaseKind.SIM: QCoreApplication.translate(
-            'guisimrunstate',
-            'Simulated '
-            '<b>{progress_current}</b> <i>of</i> '
-            '<b>{progress_maximum}</b> '
-            'simulation time steps.'
-        ),
+        SimPhaseKind.INIT: {
+            SimmerModelState.PREPARING: QCoreApplication.translate(
+                'guisimrunstate', 'Loading seeded cell cluster...'),
+            SimmerModelState.MODELLING: QCoreApplication.translate(
+                'guisimrunstate',
+                'Initialized '
+                '<b>{progress_current}</b> <i>of</i> '
+                '<b>{progress_maximum}</b> '
+                'simulation time steps.'
+            ),
+            SimmerModelState.FINISHING: QCoreApplication.translate(
+                'guisimrunstate', 'Saving initialization results...'),
+        },
+        SimPhaseKind.SIM: {
+            SimmerModelState.PREPARING: QCoreApplication.translate(
+                'guisimrunstate', 'Loading initialization results...'),
+            SimmerModelState.MODELLING: QCoreApplication.translate(
+                'guisimrunstate',
+                'Simulated '
+                '<b>{progress_current}</b> <i>of</i> '
+                '<b>{progress_maximum}</b> '
+                'simulation time steps.'
+            ),
+            SimmerModelState.FINISHING: QCoreApplication.translate(
+                'guisimrunstate', 'Saving simulation results...'),
+        },
     },
     #FIXME: Consider querying the BETSE client for the metadata interpolated
     #into the following strings by defining the following new worker signals:
@@ -380,8 +335,10 @@ that value. Specifically, if this key is:
     details pertaining to this phase, BETSE itself defines these details by the
     :meth:`betsee.gui.simtab.run.work.guisimrunworksig.SimCallbacksSignaller.progress_stated`
     method emitting a signal connected to the text box showing these details.
-  * If that phase is the initialization or simulation phase, an unformatted
-    string template detailing the modelling of that phase.
+  * If that phase is the initialization or simulation phase, a nested
+    dictionary mapping from each type of simulator modelling state to an
+    unformatted string template detailing the current action being performed in
+    that state.
 
 * :attr:`SimmerState.EXPORTING`, this value is a nested dictionary mapping from
   each type of simulation export to an unformatted string template detailing

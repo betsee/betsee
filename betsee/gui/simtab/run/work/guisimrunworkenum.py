@@ -9,7 +9,7 @@ describing different types of simulator work) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
-from betsee.gui.simtab.run.guisimrunstate import SimmerState
+from betsee.gui.simtab.run.guisimrunenum import SimmerState
 from enum import Enum
 
 # ....................{ ENUMERATIONS                      }....................

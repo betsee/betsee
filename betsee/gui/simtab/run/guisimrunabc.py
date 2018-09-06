@@ -59,6 +59,14 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         should *only* be set by the public :meth:`state` setter.
     '''
 
+    # ..................{ SIGNALS                           }..................
+    state_changed = Signal(QObject)
+    '''
+    Signal passed this simulator controller on each change to the current state
+    of that phase, either due to user interaction or programmatic
+    non-interaction.
+    '''
+
     # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -103,14 +111,6 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
 
         # Signal all connected slots *AFTER* internally updating this state.
         self.state_changed.emit(self)
-
-    # ..................{ SIGNALS                           }..................
-    state_changed = Signal(QObject)
-    '''
-    Signal passed this simulator controller on each change to the current state
-    of that phase, either due to user interaction or programmatic
-    non-interaction.
-    '''
 
     # ..................{ EXCEPTIONS                        }..................
     def _die_unless_queued(self) -> None:
