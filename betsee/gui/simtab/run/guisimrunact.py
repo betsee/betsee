@@ -509,7 +509,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # Set the state of the currently running phase to this state.
         worker_phase.state = state
 
-        # Possibly set the state of this simulator to the same state.
+        # Possibly set the state of this proactor to the same state.
         self._set_state_from_phase(worker_phase)
 
 
@@ -517,12 +517,12 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
     def _set_state_from_phase(self, phase: QBetseeSimmerPhase) -> None:
         '''
         Context-sensitively set the current state of this proactor to the
-        current state of the passed simulator phase.
+        current state of the passed proactor phase.
 
         Parameters
         ----------
         phase : QBetseeSimmerPhase
-            Simulator phase whose current state has been previously set.
+            Proactor phase whose current state has been previously set.
         '''
 
         # New state to change this proactor to if any *OR* "None" otherwise.
@@ -571,44 +571,6 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
                 'Updating simulator proactor state from "%s" to "%s"...',
                 enums.get_member_name_lowercase(self.state),
                 enums.get_member_name_lowercase(state_new))
-
-        #FIXME: Shift this logic into the parent "QBetseeSimmer"... somehow.
-        #Display logic of this sort has no place in this lower-level object. To
-        #do so:
-        #
-        #* Define a new public "state_changed_from_phase" signal of this class.
-        #* Define a new private _update_progress_bar() slot in the
-        #  "QBetseeSimmer" class whose implementation is exactly the if
-        #  conditional that follows.
-        #* Connect this signal to this slot in the
-        #  QBetseeSimmer._init_connections() method.
-        #FIXME: Wait. While the above certainly would suffice, it's also
-        #somewhat overkill. Here's what we *REALLY* want to do:
-        #
-        #* Refactor the QBetseeSimmerStatefulABC.state_changed() signal to
-        #  accept the following two parameters rather than the "QObject" that
-        #  that signal currently accepts:
-        #  * "state_new", the new "SimmerState" that this controller is
-        #    transitioning into.
-        #  * "state_old", the old "SimmerState" that this controller is
-        #    transitioning from.
-        #* Refactor the QBetseeSimmer._update_widgets() slot to:
-        #  * Accept these two parameters.
-        #  * Implement the following if conditional given these parameters.
-        #
-        #Sweetness incarnate!
-
-        # If...
-        if (
-            # This proactor is transitioning to the modelling state.
-            state_new is SimmerState.MODELLING and
-            # This proactor is *NOT* already in the modelling state.
-            self.state is not SimmerState.MODELLING
-        # ...then this proactor is starting modelling. In this case, reset the
-        # progress bar (i.e., prevent this bar from displaying any progress).
-        ):
-            logs.log_debug('Resetting simulator progress bar...')
-            self._progress_bar.reset()
 
         # Unconditionally change the state of this proactor to this new state,
         # regardless of whether this state is already this new state. Why?

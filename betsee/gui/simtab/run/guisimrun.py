@@ -50,6 +50,7 @@ from betsee.gui.simtab.run.guisimrunact import QBetseeSimmerProactor
 from betsee.gui.simtab.run.guisimrunenum import SimmerState, SimmerModelState
 from betsee.gui.simtab.run.guisimrunstate import (
     SIM_PHASE_KIND_TO_NAME,
+    SIMMER_STATES_IDLE,
     SIMMER_STATE_TO_PROACTOR_STATUS,
     SIMMER_STATE_TO_PROACTOR_SUBSTATUS,
     SIMMER_STATES_HALTING,
@@ -218,8 +219,10 @@ class QBetseeSimmer(QBetseeControllerABC):
         #   text interpolating the current and maximum progress bar values as
         #   the current and maximum time steps when modelling the
         #   initialization or simulation phase).
-        self._proactor.state_changed.connect(self._update_widgets)
-        self._progress_bar.valueChanged.connect(self._update_widgets)
+        self._proactor.state_changed.connect(
+            self._sync_widgets_to_proactor_state)
+        self._progress_bar.valueChanged.connect(
+            self._sync_widgets_to_proactor_state_current)
 
         # Initialize the proactor *AFTER* establishing the prior signal-slot
         # connection, as the QBetseeSimmerProactor.init() method called here
@@ -256,16 +259,62 @@ class QBetseeSimmer(QBetseeControllerABC):
         # Transparently forward this request to our proactor.
         self._proactor.halt_workers()
 
-    # ..................{ SLOTS ~ update                    }..................
-    @Slot()
-    def _update_widgets(self) -> None:
+    # ..................{ SLOTS ~ sync                      }..................
+    @Slot(SimmerState, SimmerState)
+    def _sync_widgets_to_proactor_state(
+        self, state_new: SimmerState, state_old: SimmerState) -> None:
         '''
-        Update the contents of widgets owned or controlled by this simulator to
-        reflect the current state of this simulator.
+        Slot signalled on each transition of the proactor from the passed
+        previous state into the passed current state.
+
+        This slot synchronizes all widgets owned or otherwise controlled by
+        this simulator to reflect this transition.
+
+        Parameters
+        ----------
+        state_new : SimmerState
+            Current state of the proactor.
+        state_old : SimmerState
+            Previous state of the proactor.
         '''
 
-        # Log this update.
-        logs.log_debug('Updating simulator widgets from simulator state...')
+        # Log this slot.
+        logs.log_debug('Synchronizing widgets to proactor state transition...')
+
+        # If...
+        if (
+            # The proactor is transitioning to the idle state *OR*...
+            state_new in SIMMER_STATES_IDLE or (
+                # The proactor is transitioning to the modelling state *AND*...
+                state_new is SimmerState.MODELLING and
+                # The proactor is *NOT* already in the modelling state.
+                state_old is not SimmerState.MODELLING
+            )
+        # ...then the proactor is either idle or beginning modelling. In either
+        # case, reset the progress bar (i.e., prevent this bar from displaying
+        # work progress).
+        ):
+            logs.log_debug('Resetting simulator progress bar...')
+            self._progress_bar.reset()
+
+        # Synchronize all widgets to reflect the current state of the proactor
+        # *AFTER* possibly resetting the progress bar. The former explicitly
+        # tests the latter condition.
+        self._sync_widgets_to_proactor_state_current()
+
+
+    @Slot()
+    def _sync_widgets_to_proactor_state_current(self) -> None:
+        '''
+        Slot signalled on each transition of the proactor from its previous
+        into its current state.
+
+        This slot synchronizes all widgets owned or otherwise controlled by
+        this simulator to reflect the current state of the proactor.
+        '''
+
+        # Log this slot.
+        logs.log_debug('Synchronizing widgets to proactor state...')
 
         # Update the contents of the simulator toolbar *BEFORE* any other
         # updates, as the former takes precedence over the latter. Toolbar
@@ -274,13 +323,13 @@ class QBetseeSimmer(QBetseeControllerABC):
         # entering this slot significantly increases the likelihood of these
         # buttons externally reflecting the internal state of both the proactor
         # and the currently working phase (if any).
-        self._update_toolbar()
+        self._sync_toolbar()
 
         # Update all widgets depicting the proactor's progress.
-        self._update_progress()
+        self._sync_progress()
 
 
-    def _update_toolbar(self) -> None:
+    def _sync_toolbar(self) -> None:
         '''
         Update the contents of the **simulator toolbar** (i.e.,
         :class:`QToolBar` instance containing buttons controlling the currently
@@ -322,31 +371,21 @@ class QBetseeSimmer(QBetseeControllerABC):
         self._action_stop_workers.setEnabled(self._proactor.is_working)
 
 
-    def _update_progress(self) -> None:
+    def _sync_progress(self) -> None:
         '''
         Update the contents of all simulator widgets to reflect the current
         progress of the simulation subcommand being run by the proactor (if
         any).
         '''
 
-        #FIXME: This currently never triggers when we want to (notably, on
-        #transitioning to the "MODELLING" state from any other state). We'll
-        #need to slightly rethink this, sadly.
-
-        # If the proactor is currently idle, reset the progress bar (i.e.,
-        # prevent the progress bar from displaying any progress).
-        # if self._proactor.is_idle:
-        #     logs.log_debug('Resetting simulator progress bar...')
-        #     self._progress_bar.reset()
-
         # Update the (sub)status of this simulator *AFTER* possibly updating
         # the state of the progress bar, as the former assumes the latter to
         # have already been performed.
-        self._update_progress_status()
-        self._update_progress_substatus()
+        self._sync_progress_status()
+        self._sync_progress_substatus()
 
 
-    def _update_progress_status(self) -> None:
+    def _sync_progress_status(self) -> None:
         '''
         Update the text displayed by the :attr:`_progress_status` label,
         synopsizing the current state of this simulator.
@@ -409,7 +448,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         self._progress_status.setText(status_text)
 
 
-    def _update_progress_substatus(self) -> None:
+    def _sync_progress_substatus(self) -> None:
         '''
         Update the text displayed by the :attr:`_progress_substatus` label,
         detailing the current state of this simulator.
@@ -447,8 +486,9 @@ class QBetseeSimmer(QBetseeControllerABC):
             # model any time steps of this simulation and hence is in the
             # pre-processing state.
             #
-            # Note that the proactor explicitly resets the progress bar on
-            # transitioning into the modelling state, ensuring sanity here.
+            # Note that the _sync_widgets_to_proactor_state() method explicitly
+            # resets the progress bar on transitioning into the modelling
+            # state, ensuring sanity here.
             if self._progress_bar.is_reset:
                 model_state = SimmerModelState.PREPARING
             # Else, this worker has modelled one or more time steps.

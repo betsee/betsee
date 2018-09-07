@@ -16,6 +16,8 @@ from betse.science.phase.phaseenum import SimPhaseKind
 from betsee.gui.simtab.run.guisimrunenum import SimmerState, SimmerModelState
 
 # ....................{ GLOBALS ~ dict                    }....................
+#FIXME: This absolutely does *NOT* belong here. Shift this into a higher-level
+#and more general-purpose submodule. This is sufficiently generic.
 SIM_PHASE_KIND_TO_NAME = {
     SimPhaseKind.SEED: QCoreApplication.translate(
         'guisimrunstate', 'seed'),
