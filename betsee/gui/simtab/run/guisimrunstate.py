@@ -10,7 +10,7 @@ corresponding to this simulator) functionality.
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
-from betse.science.export.expenum import SimExportType
+from betse.science.pipe.export.pipeexpenum import SimExportType
 from betse.science.phase.phaseenum import SimPhaseKind
 # from betse.util.type.types import type_check
 from betsee.gui.simtab.run.guisimrunenum import SimmerState, SimmerModelState
