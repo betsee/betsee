@@ -14,7 +14,7 @@ configuration) facilities.
 from PySide2.QtCore import Slot  # QCoreApplication,
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
-from betse.util.type.obj import objects
+from betse.util.type.obj import objiter
 from betse.util.type.text import strs
 from betse.util.type.types import type_check
 from betsee.gui.window.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
@@ -189,7 +189,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # Generator iteratively yielding a 2-tuple of the name and value of each
         # child page of this stack widget, matching all instance variables of
         # this main window with names prefixed by an identifying substring.
-        stack_pages = objects.iter_vars_custom_simple_prefixed(
+        stack_pages = objiter.iter_vars_custom_simple_prefixed(
             obj=main_window, prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX)
 
         # Dictionary mapping the name to value of each such child page,

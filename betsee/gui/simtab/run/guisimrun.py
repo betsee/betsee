@@ -512,12 +512,17 @@ class QBetseeSimmer(QBetseeControllerABC):
             # Unformatted string template detailing the current action.
             substatus_text_template = model_state_to_substatus_text_template[
                 model_state]
-        #FIXME: Implement this case... somehow. See pertinent FIXME comments in
-        #the "guisimrunstate" submodule.
         # Else if the proactor is currently exporting...
         elif self._proactor.state is SimmerState.EXPORTING:
-            substatus_text_template = (
-                "Exported the ancient demesne of lost R'lyeh.")
+            #FIXME: Refactor this to actually do something *AFTER* resolving
+            #the lower-level concerns in the BETSE codebase. Notably, see
+            #commentary in the SimPipesExport.export() method for details.
+
+            # Silently reduce to a noop. Details of exporting *ANY* phase are
+            # already displayed by the slot connected to the signal emitted by
+            # the SimCallbacksSignaller.progress_stated() of the current
+            # simulator worker in a push-driven manner... which is awful.
+            return
         # Else, the proactor is neither modelling nor exporting. In this case,
         # the details of the proactor's current action reduce to a string.
         else:

@@ -191,7 +191,7 @@ SIMMER_STATE_TO_PHASE_STATUS = {
     SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused'),
     SimmerState.STOPPING: QCoreApplication.translate(
-        'guisimrunstate', 'Stopped'),
+        'guisimrunstate', 'Finishing'),
     SimmerState.FINISHED: QCoreApplication.translate(
         'guisimrunstate', 'Finished'),
 }
@@ -214,7 +214,7 @@ SIMMER_STATE_TO_PROACTOR_STATUS = {
     SimmerState.PAUSED: QCoreApplication.translate(
         'guisimrunstate', 'Paused {status_prior}.'),
     SimmerState.STOPPING: QCoreApplication.translate(
-        'guisimrunstate', 'Stopped {status_prior}.'),
+        'guisimrunstate', 'Finishing {status_prior}...'),
     SimmerState.FINISHED: QCoreApplication.translate(
         'guisimrunstate', 'Finished {status_prior}.'),
 }
@@ -286,7 +286,6 @@ SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
     #into the following strings by defining the following new worker signals:
     #
     #* subprogress_ranged(), enabling us to at least subdivide a unit of
-    #
     #  progress (e.g., exportation of a single animation) into subunits of
     #  subprogress (e.g., each frame of that animation).
     #* subprogressed(), analogous to the existing progressed() signal.
@@ -308,12 +307,16 @@ SIMMER_STATE_TO_PROACTOR_SUBSTATUS = {
         ),
         SimExportType.ANIM: QCoreApplication.translate(
             'guisimrunstate',
-            'Exported animation <pre>"{pathname}"</pre> frame '
-            '{subprogress_current} <i>of</i> {subprogress_total}.'
+            #FIXME: Replace this less descriptive synopsis with the more
+            #verbose synopsis given below *AFTER* adding support for the
+            #"subprogress_current" and "subprogress_total" fields. (See above.)
+            'Exported animation <pre>"{pathname}"</pre>.'
+            # 'Exported animation <pre>"{pathname}"</pre> frame '
+            # '{subprogress_current} <i>of</i> {subprogress_total}.'
         ),
     },
     SimmerState.PAUSED:   '{substatus_prior}',
-    SimmerState.STOPPING:  '{substatus_prior}',
+    SimmerState.STOPPING: '{substatus_prior}',
     SimmerState.FINISHED: '{substatus_prior}',
 }
 '''
@@ -359,44 +362,4 @@ Format specifiers embedded in these strings include:
 Most such strings contain no format specifiers and are thus displayable as is.
 Some such strings contain one or more format specifiers (e.g., ``{cmd_name}}`)
 and are thus displayable *only* after interpolating the corresponding values.
-'''
-
-# ....................{ GLOBALS ~ dict : status : details }....................
-MODELLING_SIM_PHASE_KIND_TO_STATUS_DETAILS = {
-    # Note that low-level details for the "SimPhaseKind.SEED" phase are unique
-    # to the current action being performed and hence defined by the
-    # lower-level BETSE codebase rather than here.
-    SimPhaseKind.INIT: QCoreApplication.translate(
-        'guisimrunstate',
-        'Initializing {progress_current} <i>of</i> {progress_total} '
-        'time steps...'),
-    SimPhaseKind.SIM: QCoreApplication.translate(
-        'guisimrunstate',
-        'Simulating {progress_current} <i>of</i> {progress_total} '
-        'time steps...'),
-}
-'''
-Dictionary mapping from the initialization and simulation phases to a
-human-readable, translated, unformatted string templating the low-level details
-of the action being performed when modelling that phase.
-
-'''
-
-
-EXPORTING_TYPE_TO_STATUS_DETAILS = {
-    SimExportType.CSV: QCoreApplication.translate(
-        'guisimrunstate',
-        'Exporting comma-separated value (CSV) file '
-        '<pre>"{filename}"</pre>...'),
-    SimExportType.PLOT: QCoreApplication.translate(
-        'guisimrunstate', 'Exporting image <pre>"{filename}"</pre>...'),
-    SimExportType.ANIM: QCoreApplication.translate(
-        'guisimrunstate',
-        'Exporting animation <pre>"{filename}"</pre> frame '
-        '{time_curr} <i>of</i> {time_total}...'),
-}
-'''
-Dictionary mapping from the initialization and simulation phases to a
-human-readable, translated, unformatted string templating the low-level details
-of the action being performed when modelling that phase.
 '''

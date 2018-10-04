@@ -96,8 +96,8 @@ class QBetseeThreadPoolWorkerSignals(QObject):
     '''
     Signal optionally emitted by the subclass-specific
     :meth:`QBetseeThreadPoolWorker._work` method, passed the string
-    ``progress_status`` signifying the current state of progress as an
-    arbitrary human-readable message for the parent worker.
+    ``status`` signifying the current state of progress as an arbitrary
+    human-readable message for the parent worker.
 
     Caveats
     ----------
@@ -261,7 +261,7 @@ class QBetseeThreadPoolWorkerSignals(QObject):
 
 
     @type_check
-    def emit_progress_state(self, progress_status: str) -> None:
+    def emit_progress_state(self, status: str) -> None:
         '''
         Emit the :attr:`progress_stated` signal with the passed **progress
         status** (i.e., string subsequently emitted by the
@@ -269,7 +269,7 @@ class QBetseeThreadPoolWorkerSignals(QObject):
 
         Parameters
         ----------
-        progress_status : str
+        status : str
             Human-readable string signifying the progress of work completed.
 
         See Also
@@ -279,7 +279,7 @@ class QBetseeThreadPoolWorkerSignals(QObject):
         '''
 
         # Signal all slots connected to this signal with these parameters.
-        self.progress_stated.emit(progress_status)
+        self.progress_stated.emit(status)
 
         # Temporarily or permanently halt all worker-specific business logic
         # when requested to do so by external callers in other threads *AFTER*
