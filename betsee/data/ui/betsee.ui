@@ -15,11 +15,11 @@
     <normaloff>:/icon/nounproject/maxim_kulikov/cow_flower_square.png</normaloff>:/icon/nounproject/maxim_kulikov/cow_flower_square.png</iconset>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* ------------------( SYNOPSIS                           )---------------------
+   <string notr="true">/* ------------------( SYNOPSIS                          )---------------------
 Root stylesheet for this application, attached to the main window widget from
 Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
 
----------------------( SEE ALSO                           )---------------------
+---------------------( SEE ALSO                          )---------------------
 * https://doc.qt.io/qt-5/stylesheet-syntax.html
   Reference documentation for Qt 5 stylesheets.
 * http://doc.qt.io/qt-5/stylesheet-syntax.html#conflict-resolution
@@ -32,7 +32,7 @@ Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
 /* FIXME: Report the QSS bugs listed below to the Qt issue tracker, please.
  */
 
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  * CAUTION: *ORDER IS SIGNIFICANT.* The following styles are intentionally
  * listed in order of increasing depth. While conflict resolution in QSS is
  * highly non-trivial and exceeds the scope of this stylesheet to reasonably
@@ -47,16 +47,16 @@ Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
  *   outstanding issues in Qt (Creator|Designer), styles selected via promoted
  *   widget types are displayed at runtime but *NOT* from within Qt
  *   (Creator|Designer) -- defeating the WYSIWYG intention of using Qt
- *   (Creator|Designer) in the first place.  
+ *   (Creator|Designer) in the first place.
  * * &quot;QScrollArea&quot; and &quot;QTabWidget&quot; children should be selected with the &quot; &quot;
  *   descendent selector rather than the &quot;&gt;&quot; child selector (e.g.,
  *   &quot;QScrollArea QGrouBox&quot; rather than &quot;QScrollArea &gt; QGrouBox&quot;). While the
  *   latter is less ambiguous and hence preferable in the general case, QSS
  *   ignores *ALL* selectors of the form &quot;QScrollArea &gt;&quot;. Why? Just because.
- *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
-/* ..................{ GENERAL                            }.....................
+/* ..................{ GENERAL                           }.....................
  * Styles generally applicable to all widgets of a particular type.
  */
 
@@ -70,25 +70,7 @@ QGroupBox {
     font-weight: bold;
 }
 
-
-/* Tree and list view headers (i.e., columns. Ideally, the following font
- * properties would be applied to only the headers of the top-level tree widget
- * rather than of all tree and list views. Sadly, Qt currently ignores all
- * attempts to do so via the descendant selector: e.g.,
- *
- *     # This is ignored.
- *     QTreeWidget#sim_conf_tree QHeaderView { font-weight: bold }
- *
- * Why? We have no idea. Technically, this should work, as real-world use cases
- * online contain similar logic. We suspect a Qt 5.6-specific issue hopefully
- * resolved in subsequent versions.
- */
-QHeaderView {
-    font-weight: bold;
-    font-size: 11pt;
-}
-
-/* ..................{ GENERAL ~ property                 }.....................
+/* ..................{ GENERAL ~ property                }.....................
  * Styles generally applicable to all widgets of a particular type with an
  * arbitrary property set to a particular value.
  */
@@ -100,58 +82,31 @@ QCheckBox[text=&quot;&quot;] {
     spacing: 0px;
 }
 
-/* ..................{ WIDGET ~ name                      }.....................
- * Styles applicable to specific widgets identified by their globally unique
- * object names.
+/* ..................{ GENERAL ~ title                   }.....................
+ * Styles applicable to widget titles or the equivalent thereof for the widget
+ * in question (e.g., column headers for tree widgets) in a general manner.
  */
 
-/* Top-level tree widget. */
-QTreeWidget#sim_conf_tree {
-    /* Ideally, the following font properties would be applied to the items of
-     * this tree rather than this tree itself. Sadly, Qt currently ignores all
-     * attempts to do so via the &quot;::item&quot; selector: e.g.,
-     *
-     *     # This is ignored.
-     *     QTreeWidget#sim_conf_tree::item { font-weight: bold }
-     *
-     * Why? Because:
-     *
-     *     Is there a way to change the font-weight (or font-size minimum) of
-     *     the selected item in QListWidget? No, as such font style option
-     *     applies to QWidgets, so you could apply the font (or other like
-     *     font-size) style option to the entire QWidget (QListWidget in this
-     *     case) and not to special behavior of a derived QWidget i.e.
-     *     QListWidget's selection item.
-     */
-    font-size: 10pt;
-    qproperty-indentation: 26;
-}
-
-/* ..................{ SIM ~ stack|tab                    }.....................
- * Styles applicable to both the simulation configuration-specific stacked and
- * tab widgets.
- */
-
-
-/* Stacked page. */
-QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox {
-    font-size: 13pt;
-}
-
-
-/* Currently selected tab.
+/* Widget title of either a:
  *
- * Due to outstanding QSS issues, note that font properties (e.g., size, weight)
- * cannot be reliably set via the &quot;::tab&quot; subcontrol selected here but *MUST*
- * instead be set on the &quot;QTabWidget &gt; QTabBar&quot; itself. Attempting to set this
- * font size via that subcontrol prevents Qt from resizing tabs to accomodate
- * this larger size, resulting in &quot;cut off&quot; and hence illegible tab titles.
+ * * Stacked page.
+ * * Currently selected tab.
+ * * Top-level tree widget column headers.
+ *
+ * Due to outstanding QSS issues, note that font properties (e.g., size,
+ * weight) cannot be reliably set via the &quot;::tab&quot; subcontrol selected here but
+ * *MUST* instead be set on the &quot;QTabWidget &gt; QTabBar&quot; itself. Attempting to
+ * set this font size via that subcontrol prevents Qt from resizing tabs to
+ * accomodate this larger size, resulting in &quot;cut off&quot; and hence illegible tab
+ * titles.
  *
  * This is an outstanding issue in the Qt issue tracker at:
  *     https://bugreports.qt.io/browse/QTBUG-8209
  */
-QTabWidget#sim_tab &gt; QTabBar {
-    font-size: 11pt;
+QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox,
+QTabWidget#sim_tab &gt; QTabBar,
+QTreeWidget#sim_conf_tree QHeaderView::section {
+    font-size: 14pt;
 
     /* Ideally, *ONLY* the currently selected tab would be emboldened. Sadly,
      * the &quot;:selected&quot; pseudo-class only applies to the &quot;::tab&quot; subcontrol
@@ -161,7 +116,12 @@ QTabWidget#sim_tab &gt; QTabBar {
     font-weight: bold;
 }
 
-/* ..................{ SIM ~ stack|tab : group : widget   }.....................
+
+/* ..................{ SIM ~ stack|tab                   }.....................
+ * Styles applicable to stacked and tab widgets for simulation configuration.
+ */
+
+/* ..................{ SIM ~ stack|tab : group : widget  }.....................
  * Note that pages of both stacked and tab widgets *MUST* be selected via the
  * dynamic &quot;is_page&quot; property manually enabled for these pages. For unknown
  * reasons (presumably reducing to subtle bugs in Qt's CSS selector handling),
@@ -199,7 +159,7 @@ QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QWidget,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QWidget,
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox QWidget,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox QWidget {
-    font-size: 10pt;
+    font-size: 12pt;
 }
 
 
@@ -212,7 +172,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox Q
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox QWidget,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox QWidget,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QWidget[is_group=&quot;true&quot;] QWidget {
-    font-size: 9pt;
+    font-size: 11pt;
 }
 
 
@@ -220,37 +180,72 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
  */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox QWidget {
-    font-size: 8pt;
+    font-size: 10pt;
 }
 
-/* ..................{ SIM ~ stack|tab : group            }.....................
- * To ensure that group box selectors take precedence over selectors intended to
- * be applicable *ONLY* to the children of these selectors, the former are
- * intentionally specified after rather than before the latter. Sadly, Qt
+/* ..................{ SIM ~ stack|tab : group           }.....................
+ * To ensure that group box selectors take precedence over selectors intended
+ * to be applicable *ONLY* to the children of these selectors, the former are
+ * intentionally specified *AFTER* rather than *BEFORE* the latter. Sadly, Qt
  * documentation explicitly admits that selectors of greater class specificity
  * (e.g., &quot;QGroupBox&quot;) take precedence over those of lesser class specificity
- * (e.g., &quot;QWidget&quot;). Ergo, we do this the hard way. (It's always the hard way.)
+ * (e.g., &quot;QWidget&quot;). Ergo, we do this the hard way. Always the hard way.
  */
 
 /* Top-level group box in a stacked page or tabbed tab. */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox {
-    font-size: 11pt;
+    font-size: 13pt;
 }
 
 
 /* Second-level group box in a stacked page or tabbed tab. */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox {
-    font-size: 10pt;
+    font-size: 12pt;
 }
 
 
 /* Third-level group box in a stacked page or tabbed tab. */
 QStackedWidget#sim_conf_stack QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox,
 QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &gt; QGroupBox &gt; QGroupBox {
-    font-size: 9pt;
-}</string>
+    font-size: 11pt;
+}
+
+/* ..................{ WIDGET ~ name                     }.....................
+ * Styles applicable to specific widgets identified by their globally unique
+ * object names, defined last to ensure their precedence over general-purpose
+ * styles defined above.
+ */
+
+/* Top-level logging widget. */
+QPlainTextEdit#log_box {
+    font: 10pt &quot;Monospace&quot;;
+}
+
+
+/* Top-level tree widget. */
+QTreeWidget#sim_conf_tree {
+    /* Ideally, the following font properties would be applied to the items of
+     * this tree rather than this tree itself. Sadly, Qt currently ignores all
+     * attempts to do so via the &quot;::item&quot; selector: e.g.,
+     *
+     *     # This is ignored.
+     *     QTreeWidget#sim_conf_tree::item { font-weight: bold }
+     *
+     * Why? Because:
+     *
+     *     Is there a way to change the font-weight (or font-size minimum) of
+     *     the selected item in QListWidget? No, as such font style option
+     *     applies to QWidgets, so you could apply the font (or other like
+     *     font-size) style option to the entire QWidget (QListWidget in this
+     *     case) and not to special behavior of a derived QWidget i.e.
+     *     QListWidget's selection item.
+     */
+    font-size: 12pt;
+    qproperty-indentation: 26;
+}
+</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>
@@ -573,9 +568,6 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
        </item>
        <item>
         <widget class="QBetseePlainTextEdit" name="log_box">
-         <property name="styleSheet">
-          <string notr="true">font: 7pt &quot;Monospace&quot;;</string>
-         </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
@@ -630,8 +622,8 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>498</width>
-         <height>828</height>
+         <width>506</width>
+         <height>836</height>
         </rect>
        </property>
        <property name="font">
@@ -738,9 +730,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -755,7 +745,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QPushButton" name="sim_conf_path_init_pick_dir_btn">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -786,9 +776,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>10</pointsize>
-                   <weight>50</weight>
-                   <bold>false</bold>
+                   <pointsize>12</pointsize>
                   </font>
                  </property>
                  <property name="toolTip">
@@ -834,9 +822,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -851,7 +837,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QPushButton" name="sim_conf_path_init_exp_dir_btn">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -912,9 +898,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -929,7 +913,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QPushButton" name="sim_conf_path_sim_pick_dir_btn">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -960,9 +944,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>10</pointsize>
-                   <weight>50</weight>
-                   <bold>false</bold>
+                   <pointsize>12</pointsize>
                   </font>
                  </property>
                  <property name="toolTip">
@@ -1008,9 +990,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1025,7 +1005,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QPushButton" name="sim_conf_path_sim_exp_dir_btn">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1112,9 +1092,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_init_total">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1135,7 +1113,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QLabel" name="label_6">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -1175,9 +1153,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_init_step">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1198,7 +1174,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QLabel" name="label_7">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -1238,9 +1214,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_init_sampling">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1261,7 +1235,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QLabel" name="label_8">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -1313,9 +1287,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_sim_total">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1336,7 +1308,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QLabel" name="label_9">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -1376,9 +1348,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_sim_step">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1399,7 +1369,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QLabel" name="label_10">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -1439,9 +1409,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_time_sim_sampling">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -1462,7 +1430,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                    <widget class="QLabel" name="label_11">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -1521,7 +1489,7 @@ QTabWidget#sim_tab            QWidget[is_page=&quot;true&quot;] &gt; QGroupBox &
                 <widget class="QLabel" name="label_14">
                  <property name="font">
                   <font>
-                   <pointsize>10</pointsize>
+                   <pointsize>12</pointsize>
                   </font>
                  </property>
                  <property name="text">
@@ -1648,7 +1616,7 @@ Initial extracellular concentration of the Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;
                       <widget class="QDoubleSpinBox" name="sim_conf_time_sim_total_2">
                        <property name="font">
                         <font>
-                         <pointsize>9</pointsize>
+                         <pointsize>11</pointsize>
                         </font>
                        </property>
                        <property name="toolTip">
@@ -1669,7 +1637,7 @@ Initial extracellular concentration of the Na&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;
                       <widget class="QLabel" name="label_85">
                        <property name="font">
                         <font>
-                         <pointsize>9</pointsize>
+                         <pointsize>11</pointsize>
                         </font>
                        </property>
                        <property name="text">
@@ -1711,7 +1679,7 @@ Initial extracellular concentration of the K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/
                       <widget class="QDoubleSpinBox" name="sim_conf_time_sim_step_2">
                        <property name="font">
                         <font>
-                         <pointsize>9</pointsize>
+                         <pointsize>11</pointsize>
                         </font>
                        </property>
                        <property name="toolTip">
@@ -1732,7 +1700,7 @@ Initial extracellular concentration of the K&lt;sup&gt;&lt;b&gt;+&lt;/b&gt;&lt;/
                       <widget class="QLabel" name="label_87">
                        <property name="font">
                         <font>
-                         <pointsize>9</pointsize>
+                         <pointsize>11</pointsize>
                         </font>
                        </property>
                        <property name="text">
@@ -1774,7 +1742,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                       <widget class="QDoubleSpinBox" name="sim_conf_time_sim_sampling_2">
                        <property name="font">
                         <font>
-                         <pointsize>9</pointsize>
+                         <pointsize>11</pointsize>
                         </font>
                        </property>
                        <property name="toolTip">
@@ -1795,7 +1763,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                       <widget class="QLabel" name="label_89">
                        <property name="font">
                         <font>
-                         <pointsize>9</pointsize>
+                         <pointsize>11</pointsize>
                         </font>
                        </property>
                        <property name="text">
@@ -1942,7 +1910,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                    <widget class="QLabel" name="label_83">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -1993,7 +1961,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                    <widget class="QLabel" name="label_90">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -2099,7 +2067,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                    <widget class="QLabel" name="label_19">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -2149,7 +2117,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                    <widget class="QLabel" name="label_82">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="text">
@@ -2293,9 +2261,7 @@ To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
-                      <weight>50</weight>
-                      <bold>false</bold>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -2310,7 +2276,7 @@ To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
                    <widget class="QPushButton" name="sim_conf_tis_default_image_btn">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -2328,7 +2294,7 @@ To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
                 <widget class="QBetseeLabelImage" name="sim_conf_tis_default_image_label">
                  <property name="font">
                   <font>
-                   <pointsize>10</pointsize>
+                   <pointsize>12</pointsize>
                   </font>
                  </property>
                  <property name="frameShape">
@@ -2388,7 +2354,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which sodium 
                    <widget class="QLabel" name="label_92">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -2444,7 +2410,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which potassi
                    <widget class="QLabel" name="label_93">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -2500,7 +2466,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which chlorid
                    <widget class="QLabel" name="label_94">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -2556,7 +2522,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which calcium
                    <widget class="QLabel" name="label_95">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -2612,7 +2578,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which charge 
                    <widget class="QLabel" name="label_97">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -2668,7 +2634,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which protein
                    <widget class="QLabel" name="label_98">
                     <property name="font">
                      <font>
-                      <pointsize>10</pointsize>
+                      <pointsize>12</pointsize>
                      </font>
                     </property>
                     <property name="toolTip">
@@ -4289,7 +4255,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
           <widget class="QGroupBox" name="groupBox_10">
            <property name="font">
             <font>
-             <pointsize>13</pointsize>
+             <pointsize>14</pointsize>
              <weight>75</weight>
              <bold>true</bold>
             </font>
@@ -4353,8 +4319,8 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>744</width>
-          <height>782</height>
+          <width>756</width>
+          <height>800</height>
          </rect>
         </property>
         <property name="is_page" stdset="0">
@@ -4437,7 +4403,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>11</pointsize>
                   </font>
                  </property>
                  <property name="text">
@@ -4525,10 +4491,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-                <underline>true</underline>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -4661,10 +4624,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-                <underline>true</underline>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -4688,9 +4648,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -4913,9 +4871,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -4939,9 +4895,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -4965,9 +4919,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -4991,10 +4943,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-                <underline>true</underline>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -5018,9 +4967,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -5044,9 +4991,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -5086,8 +5031,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <italic>true</italic>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -5111,8 +5055,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <italic>true</italic>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -5136,8 +5079,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <italic>true</italic>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">
@@ -5177,9 +5119,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="font">
                <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
+                <pointsize>12</pointsize>
                </font>
               </property>
               <property name="toolTip">

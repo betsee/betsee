@@ -8,11 +8,11 @@ class Ui_main_window(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icon/nounproject/maxim_kulikov/cow_flower_square.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         main_window.setWindowIcon(icon)
-        main_window.setStyleSheet("/* ------------------( SYNOPSIS                           )---------------------\n"
+        main_window.setStyleSheet("/* ------------------( SYNOPSIS                          )---------------------\n"
 "Root stylesheet for this application, attached to the main window widget from\n"
 "Qt [Creator|Designer] to preserve the WYSIWYG metaphor.\n"
 "\n"
-"---------------------( SEE ALSO                           )---------------------\n"
+"---------------------( SEE ALSO                          )---------------------\n"
 "* https://doc.qt.io/qt-5/stylesheet-syntax.html\n"
 "  Reference documentation for Qt 5 stylesheets.\n"
 "* http://doc.qt.io/qt-5/stylesheet-syntax.html#conflict-resolution\n"
@@ -25,7 +25,7 @@ class Ui_main_window(object):
 "/* FIXME: Report the QSS bugs listed below to the Qt issue tracker, please.\n"
 " */\n"
 "\n"
-"/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+"/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
 " * CAUTION: *ORDER IS SIGNIFICANT.* The following styles are intentionally\n"
 " * listed in order of increasing depth. While conflict resolution in QSS is\n"
 " * highly non-trivial and exceeds the scope of this stylesheet to reasonably\n"
@@ -40,16 +40,16 @@ class Ui_main_window(object):
 " *   outstanding issues in Qt (Creator|Designer), styles selected via promoted\n"
 " *   widget types are displayed at runtime but *NOT* from within Qt\n"
 " *   (Creator|Designer) -- defeating the WYSIWYG intention of using Qt\n"
-" *   (Creator|Designer) in the first place.  \n"
+" *   (Creator|Designer) in the first place.\n"
 " * * \"QScrollArea\" and \"QTabWidget\" children should be selected with the \" \"\n"
 " *   descendent selector rather than the \">\" child selector (e.g.,\n"
 " *   \"QScrollArea QGrouBox\" rather than \"QScrollArea > QGrouBox\"). While the\n"
 " *   latter is less ambiguous and hence preferable in the general case, QSS\n"
 " *   ignores *ALL* selectors of the form \"QScrollArea >\". Why? Just because.\n"
-" *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+" *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
 " */\n"
 "\n"
-"/* ..................{ GENERAL                            }.....................\n"
+"/* ..................{ GENERAL                           }.....................\n"
 " * Styles generally applicable to all widgets of a particular type.\n"
 " */\n"
 "\n"
@@ -63,25 +63,7 @@ class Ui_main_window(object):
 "    font-weight: bold;\n"
 "}\n"
 "\n"
-"\n"
-"/* Tree and list view headers (i.e., columns. Ideally, the following font\n"
-" * properties would be applied to only the headers of the top-level tree widget\n"
-" * rather than of all tree and list views. Sadly, Qt currently ignores all\n"
-" * attempts to do so via the descendant selector: e.g.,\n"
-" *\n"
-" *     # This is ignored.\n"
-" *     QTreeWidget#sim_conf_tree QHeaderView { font-weight: bold }\n"
-" *\n"
-" * Why? We have no idea. Technically, this should work, as real-world use cases\n"
-" * online contain similar logic. We suspect a Qt 5.6-specific issue hopefully\n"
-" * resolved in subsequent versions.\n"
-" */\n"
-"QHeaderView {\n"
-"    font-weight: bold;\n"
-"    font-size: 11pt;\n"
-"}\n"
-"\n"
-"/* ..................{ GENERAL ~ property                 }.....................\n"
+"/* ..................{ GENERAL ~ property                }.....................\n"
 " * Styles generally applicable to all widgets of a particular type with an\n"
 " * arbitrary property set to a particular value.\n"
 " */\n"
@@ -93,58 +75,31 @@ class Ui_main_window(object):
 "    spacing: 0px;\n"
 "}\n"
 "\n"
-"/* ..................{ WIDGET ~ name                      }.....................\n"
-" * Styles applicable to specific widgets identified by their globally unique\n"
-" * object names.\n"
+"/* ..................{ GENERAL ~ title                   }.....................\n"
+" * Styles applicable to widget titles or the equivalent thereof for the widget\n"
+" * in question (e.g., column headers for tree widgets) in a general manner.\n"
 " */\n"
 "\n"
-"/* Top-level tree widget. */\n"
-"QTreeWidget#sim_conf_tree {\n"
-"    /* Ideally, the following font properties would be applied to the items of\n"
-"     * this tree rather than this tree itself. Sadly, Qt currently ignores all\n"
-"     * attempts to do so via the \"::item\" selector: e.g.,\n"
-"     *\n"
-"     *     # This is ignored.\n"
-"     *     QTreeWidget#sim_conf_tree::item { font-weight: bold }\n"
-"     *\n"
-"     * Why? Because:\n"
-"     *\n"
-"     *     Is there a way to change the font-weight (or font-size minimum) of\n"
-"     *     the selected item in QListWidget? No, as such font style option\n"
-"     *     applies to QWidgets, so you could apply the font (or other like\n"
-"     *     font-size) style option to the entire QWidget (QListWidget in this\n"
-"     *     case) and not to special behavior of a derived QWidget i.e.\n"
-"     *     QListWidget\'s selection item.\n"
-"     */\n"
-"    font-size: 10pt;\n"
-"    qproperty-indentation: 26;\n"
-"}\n"
-"\n"
-"/* ..................{ SIM ~ stack|tab                    }.....................\n"
-" * Styles applicable to both the simulation configuration-specific stacked and\n"
-" * tab widgets.\n"
-" */\n"
-"\n"
-"\n"
-"/* Stacked page. */\n"
-"QStackedWidget#sim_conf_stack > QWidget > QGroupBox {\n"
-"    font-size: 13pt;\n"
-"}\n"
-"\n"
-"\n"
-"/* Currently selected tab.\n"
+"/* Widget title of either a:\n"
 " *\n"
-" * Due to outstanding QSS issues, note that font properties (e.g., size, weight)\n"
-" * cannot be reliably set via the \"::tab\" subcontrol selected here but *MUST*\n"
-" * instead be set on the \"QTabWidget > QTabBar\" itself. Attempting to set this\n"
-" * font size via that subcontrol prevents Qt from resizing tabs to accomodate\n"
-" * this larger size, resulting in \"cut off\" and hence illegible tab titles.\n"
+" * * Stacked page.\n"
+" * * Currently selected tab.\n"
+" * * Top-level tree widget column headers.\n"
+" *\n"
+" * Due to outstanding QSS issues, note that font properties (e.g., size,\n"
+" * weight) cannot be reliably set via the \"::tab\" subcontrol selected here but\n"
+" * *MUST* instead be set on the \"QTabWidget > QTabBar\" itself. Attempting to\n"
+" * set this font size via that subcontrol prevents Qt from resizing tabs to\n"
+" * accomodate this larger size, resulting in \"cut off\" and hence illegible tab\n"
+" * titles.\n"
 " *\n"
 " * This is an outstanding issue in the Qt issue tracker at:\n"
 " *     https://bugreports.qt.io/browse/QTBUG-8209\n"
 " */\n"
-"QTabWidget#sim_tab > QTabBar {\n"
-"    font-size: 11pt;\n"
+"QStackedWidget#sim_conf_stack > QWidget > QGroupBox,\n"
+"QTabWidget#sim_tab > QTabBar,\n"
+"QTreeWidget#sim_conf_tree QHeaderView::section {\n"
+"    font-size: 14pt;\n"
 "\n"
 "    /* Ideally, *ONLY* the currently selected tab would be emboldened. Sadly,\n"
 "     * the \":selected\" pseudo-class only applies to the \"::tab\" subcontrol\n"
@@ -154,7 +109,12 @@ class Ui_main_window(object):
 "    font-weight: bold;\n"
 "}\n"
 "\n"
-"/* ..................{ SIM ~ stack|tab : group : widget   }.....................\n"
+"\n"
+"/* ..................{ SIM ~ stack|tab                   }.....................\n"
+" * Styles applicable to stacked and tab widgets for simulation configuration.\n"
+" */\n"
+"\n"
+"/* ..................{ SIM ~ stack|tab : group : widget  }.....................\n"
 " * Note that pages of both stacked and tab widgets *MUST* be selected via the\n"
 " * dynamic \"is_page\" property manually enabled for these pages. For unknown\n"
 " * reasons (presumably reducing to subtle bugs in Qt\'s CSS selector handling),\n"
@@ -192,7 +152,7 @@ class Ui_main_window(object):
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QWidget,\n"
 "QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox QWidget,\n"
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QGroupBox QWidget {\n"
-"    font-size: 10pt;\n"
+"    font-size: 12pt;\n"
 "}\n"
 "\n"
 "\n"
@@ -205,7 +165,7 @@ class Ui_main_window(object):
 "QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox QWidget,\n"
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QGroupBox > QGroupBox QWidget,\n"
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QGroupBox > QWidget[is_group=\"true\"] QWidget {\n"
-"    font-size: 9pt;\n"
+"    font-size: 11pt;\n"
 "}\n"
 "\n"
 "\n"
@@ -213,37 +173,72 @@ class Ui_main_window(object):
 " */\n"
 "QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox QWidget,\n"
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox QWidget {\n"
-"    font-size: 8pt;\n"
+"    font-size: 10pt;\n"
 "}\n"
 "\n"
-"/* ..................{ SIM ~ stack|tab : group            }.....................\n"
-" * To ensure that group box selectors take precedence over selectors intended to\n"
-" * be applicable *ONLY* to the children of these selectors, the former are\n"
-" * intentionally specified after rather than before the latter. Sadly, Qt\n"
+"/* ..................{ SIM ~ stack|tab : group           }.....................\n"
+" * To ensure that group box selectors take precedence over selectors intended\n"
+" * to be applicable *ONLY* to the children of these selectors, the former are\n"
+" * intentionally specified *AFTER* rather than *BEFORE* the latter. Sadly, Qt\n"
 " * documentation explicitly admits that selectors of greater class specificity\n"
 " * (e.g., \"QGroupBox\") take precedence over those of lesser class specificity\n"
-" * (e.g., \"QWidget\"). Ergo, we do this the hard way. (It\'s always the hard way.)\n"
+" * (e.g., \"QWidget\"). Ergo, we do this the hard way. Always the hard way.\n"
 " */\n"
 "\n"
 "/* Top-level group box in a stacked page or tabbed tab. */\n"
 "QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox,\n"
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QGroupBox {\n"
-"    font-size: 11pt;\n"
+"    font-size: 13pt;\n"
 "}\n"
 "\n"
 "\n"
 "/* Second-level group box in a stacked page or tabbed tab. */\n"
 "QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox,\n"
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QGroupBox > QGroupBox {\n"
-"    font-size: 10pt;\n"
+"    font-size: 12pt;\n"
 "}\n"
 "\n"
 "\n"
 "/* Third-level group box in a stacked page or tabbed tab. */\n"
 "QStackedWidget#sim_conf_stack QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox,\n"
 "QTabWidget#sim_tab            QWidget[is_page=\"true\"] > QGroupBox > QGroupBox > QGroupBox {\n"
-"    font-size: 9pt;\n"
-"}")
+"    font-size: 11pt;\n"
+"}\n"
+"\n"
+"/* ..................{ WIDGET ~ name                     }.....................\n"
+" * Styles applicable to specific widgets identified by their globally unique\n"
+" * object names, defined last to ensure their precedence over general-purpose\n"
+" * styles defined above.\n"
+" */\n"
+"\n"
+"/* Top-level logging widget. */\n"
+"QPlainTextEdit#log_box {\n"
+"    font: 10pt \"Monospace\";\n"
+"}\n"
+"\n"
+"\n"
+"/* Top-level tree widget. */\n"
+"QTreeWidget#sim_conf_tree {\n"
+"    /* Ideally, the following font properties would be applied to the items of\n"
+"     * this tree rather than this tree itself. Sadly, Qt currently ignores all\n"
+"     * attempts to do so via the \"::item\" selector: e.g.,\n"
+"     *\n"
+"     *     # This is ignored.\n"
+"     *     QTreeWidget#sim_conf_tree::item { font-weight: bold }\n"
+"     *\n"
+"     * Why? Because:\n"
+"     *\n"
+"     *     Is there a way to change the font-weight (or font-size minimum) of\n"
+"     *     the selected item in QListWidget? No, as such font style option\n"
+"     *     applies to QWidgets, so you could apply the font (or other like\n"
+"     *     font-size) style option to the entire QWidget (QListWidget in this\n"
+"     *     case) and not to special behavior of a derived QWidget i.e.\n"
+"     *     QListWidget\'s selection item.\n"
+"     */\n"
+"    font-size: 12pt;\n"
+"    qproperty-indentation: 26;\n"
+"}\n"
+"")
         main_window.setUnifiedTitleAndToolBarOnMac(True)
         self.centralWidget = QtWidgets.QWidget(main_window)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -381,7 +376,6 @@ class Ui_main_window(object):
         self.log_label.setObjectName("log_label")
         self.verticalLayout_201.addWidget(self.log_label)
         self.log_box = QBetseePlainTextEdit(self.log_frame)
-        self.log_box.setStyleSheet("font: 7pt \"Monospace\";")
         self.log_box.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.log_box.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.log_box.setLineWidth(2)
@@ -405,7 +399,7 @@ class Ui_main_window(object):
         self.sim_conf_stack_area.setWidgetResizable(True)
         self.sim_conf_stack_area.setObjectName("sim_conf_stack_area")
         self.sim_conf_stack = QBetseeSimConfStackedWidget()
-        self.sim_conf_stack.setGeometry(QtCore.QRect(0, 0, 498, 828))
+        self.sim_conf_stack.setGeometry(QtCore.QRect(0, 0, 506, 836))
         font = QtGui.QFont()
         font.setPointSize(13)
         self.sim_conf_stack.setFont(font)
@@ -457,9 +451,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_conf_path_init_pick_dir_line.sizePolicy().hasHeightForWidth())
         self.sim_conf_path_init_pick_dir_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_path_init_pick_dir_line.setFont(font)
         self.sim_conf_path_init_pick_dir_line.setToolTip("")
         self.sim_conf_path_init_pick_dir_line.setText("")
@@ -467,7 +459,7 @@ class Ui_main_window(object):
         self.horizontalLayout_5.addWidget(self.sim_conf_path_init_pick_dir_line)
         self.sim_conf_path_init_pick_dir_btn = QtWidgets.QPushButton(self.widget_5)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.sim_conf_path_init_pick_dir_btn.setFont(font)
         self.sim_conf_path_init_pick_dir_btn.setObjectName("sim_conf_path_init_pick_dir_btn")
         self.horizontalLayout_5.addWidget(self.sim_conf_path_init_pick_dir_btn)
@@ -482,9 +474,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_conf_path_init_pick_file_line.sizePolicy().hasHeightForWidth())
         self.sim_conf_path_init_pick_file_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_path_init_pick_file_line.setFont(font)
         self.sim_conf_path_init_pick_file_line.setText("")
         self.sim_conf_path_init_pick_file_line.setObjectName("sim_conf_path_init_pick_file_line")
@@ -504,9 +494,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_conf_path_init_exp_dir_line.sizePolicy().hasHeightForWidth())
         self.sim_conf_path_init_exp_dir_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_path_init_exp_dir_line.setFont(font)
         self.sim_conf_path_init_exp_dir_line.setToolTip("")
         self.sim_conf_path_init_exp_dir_line.setText("")
@@ -514,7 +502,7 @@ class Ui_main_window(object):
         self.horizontalLayout_6.addWidget(self.sim_conf_path_init_exp_dir_line)
         self.sim_conf_path_init_exp_dir_btn = QtWidgets.QPushButton(self.widget_6)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.sim_conf_path_init_exp_dir_btn.setFont(font)
         self.sim_conf_path_init_exp_dir_btn.setObjectName("sim_conf_path_init_exp_dir_btn")
         self.horizontalLayout_6.addWidget(self.sim_conf_path_init_exp_dir_btn)
@@ -539,9 +527,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_conf_path_sim_pick_dir_line.sizePolicy().hasHeightForWidth())
         self.sim_conf_path_sim_pick_dir_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_path_sim_pick_dir_line.setFont(font)
         self.sim_conf_path_sim_pick_dir_line.setToolTip("")
         self.sim_conf_path_sim_pick_dir_line.setText("")
@@ -549,7 +535,7 @@ class Ui_main_window(object):
         self.horizontalLayout_7.addWidget(self.sim_conf_path_sim_pick_dir_line)
         self.sim_conf_path_sim_pick_dir_btn = QtWidgets.QPushButton(self.widget_7)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.sim_conf_path_sim_pick_dir_btn.setFont(font)
         self.sim_conf_path_sim_pick_dir_btn.setObjectName("sim_conf_path_sim_pick_dir_btn")
         self.horizontalLayout_7.addWidget(self.sim_conf_path_sim_pick_dir_btn)
@@ -564,9 +550,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_conf_path_sim_pick_file_line.sizePolicy().hasHeightForWidth())
         self.sim_conf_path_sim_pick_file_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_path_sim_pick_file_line.setFont(font)
         self.sim_conf_path_sim_pick_file_line.setText("")
         self.sim_conf_path_sim_pick_file_line.setObjectName("sim_conf_path_sim_pick_file_line")
@@ -586,9 +570,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_conf_path_sim_exp_dir_line.sizePolicy().hasHeightForWidth())
         self.sim_conf_path_sim_exp_dir_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_path_sim_exp_dir_line.setFont(font)
         self.sim_conf_path_sim_exp_dir_line.setToolTip("")
         self.sim_conf_path_sim_exp_dir_line.setText("")
@@ -596,7 +578,7 @@ class Ui_main_window(object):
         self.horizontalLayout_8.addWidget(self.sim_conf_path_sim_exp_dir_line)
         self.sim_conf_path_sim_exp_dir_btn = QtWidgets.QPushButton(self.widget_8)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.sim_conf_path_sim_exp_dir_btn.setFont(font)
         self.sim_conf_path_sim_exp_dir_btn.setObjectName("sim_conf_path_sim_exp_dir_btn")
         self.horizontalLayout_8.addWidget(self.sim_conf_path_sim_exp_dir_btn)
@@ -630,9 +612,7 @@ class Ui_main_window(object):
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
         self.sim_conf_time_init_total = QBetseeSimConfDoubleSpinBox(self.widget_9)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_time_init_total.setFont(font)
         self.sim_conf_time_init_total.setToolTip("")
         self.sim_conf_time_init_total.setSuffix("")
@@ -642,7 +622,7 @@ class Ui_main_window(object):
         self.horizontalLayout_9.addWidget(self.sim_conf_time_init_total)
         self.label_6 = QtWidgets.QLabel(self.widget_9)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_6.setFont(font)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_9.addWidget(self.label_6)
@@ -657,9 +637,7 @@ class Ui_main_window(object):
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
         self.sim_conf_time_init_step = QBetseeSimConfDoubleSpinBox(self.widget_10)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_time_init_step.setFont(font)
         self.sim_conf_time_init_step.setToolTip("")
         self.sim_conf_time_init_step.setSuffix("")
@@ -669,7 +647,7 @@ class Ui_main_window(object):
         self.horizontalLayout_10.addWidget(self.sim_conf_time_init_step)
         self.label_7 = QtWidgets.QLabel(self.widget_10)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_7.setFont(font)
         self.label_7.setObjectName("label_7")
         self.horizontalLayout_10.addWidget(self.label_7)
@@ -684,9 +662,7 @@ class Ui_main_window(object):
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.sim_conf_time_init_sampling = QBetseeSimConfDoubleSpinBox(self.widget_11)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_time_init_sampling.setFont(font)
         self.sim_conf_time_init_sampling.setToolTip("")
         self.sim_conf_time_init_sampling.setSuffix("")
@@ -696,7 +672,7 @@ class Ui_main_window(object):
         self.horizontalLayout_11.addWidget(self.sim_conf_time_init_sampling)
         self.label_8 = QtWidgets.QLabel(self.widget_11)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_8.setFont(font)
         self.label_8.setObjectName("label_8")
         self.horizontalLayout_11.addWidget(self.label_8)
@@ -716,9 +692,7 @@ class Ui_main_window(object):
         self.horizontalLayout_12.setObjectName("horizontalLayout_12")
         self.sim_conf_time_sim_total = QBetseeSimConfDoubleSpinBox(self.widget_12)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_time_sim_total.setFont(font)
         self.sim_conf_time_sim_total.setToolTip("")
         self.sim_conf_time_sim_total.setSuffix("")
@@ -728,7 +702,7 @@ class Ui_main_window(object):
         self.horizontalLayout_12.addWidget(self.sim_conf_time_sim_total)
         self.label_9 = QtWidgets.QLabel(self.widget_12)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_9.setFont(font)
         self.label_9.setObjectName("label_9")
         self.horizontalLayout_12.addWidget(self.label_9)
@@ -743,9 +717,7 @@ class Ui_main_window(object):
         self.horizontalLayout_13.setObjectName("horizontalLayout_13")
         self.sim_conf_time_sim_step = QBetseeSimConfDoubleSpinBox(self.widget_13)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_time_sim_step.setFont(font)
         self.sim_conf_time_sim_step.setToolTip("")
         self.sim_conf_time_sim_step.setSuffix("")
@@ -755,7 +727,7 @@ class Ui_main_window(object):
         self.horizontalLayout_13.addWidget(self.sim_conf_time_sim_step)
         self.label_10 = QtWidgets.QLabel(self.widget_13)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_10.setFont(font)
         self.label_10.setObjectName("label_10")
         self.horizontalLayout_13.addWidget(self.label_10)
@@ -770,9 +742,7 @@ class Ui_main_window(object):
         self.horizontalLayout_14.setObjectName("horizontalLayout_14")
         self.sim_conf_time_sim_sampling = QBetseeSimConfDoubleSpinBox(self.widget_14)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_time_sim_sampling.setFont(font)
         self.sim_conf_time_sim_sampling.setToolTip("")
         self.sim_conf_time_sim_sampling.setSuffix("")
@@ -782,7 +752,7 @@ class Ui_main_window(object):
         self.horizontalLayout_14.addWidget(self.sim_conf_time_sim_sampling)
         self.label_11 = QtWidgets.QLabel(self.widget_14)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_11.setFont(font)
         self.label_11.setObjectName("label_11")
         self.horizontalLayout_14.addWidget(self.label_11)
@@ -808,7 +778,7 @@ class Ui_main_window(object):
         self.formLayout_2.setObjectName("formLayout_2")
         self.label_14 = QtWidgets.QLabel(self.groupBox_20)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_14.setFont(font)
         self.label_14.setObjectName("label_14")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_14)
@@ -840,7 +810,7 @@ class Ui_main_window(object):
         self.horizontalLayout_18.setObjectName("horizontalLayout_18")
         self.sim_conf_time_sim_total_2 = QtWidgets.QDoubleSpinBox(self.widget_18)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(11)
         self.sim_conf_time_sim_total_2.setFont(font)
         self.sim_conf_time_sim_total_2.setToolTip("")
         self.sim_conf_time_sim_total_2.setSuffix("")
@@ -850,7 +820,7 @@ class Ui_main_window(object):
         self.horizontalLayout_18.addWidget(self.sim_conf_time_sim_total_2)
         self.label_85 = QtWidgets.QLabel(self.widget_18)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(11)
         self.label_85.setFont(font)
         self.label_85.setObjectName("label_85")
         self.horizontalLayout_18.addWidget(self.label_85)
@@ -865,7 +835,7 @@ class Ui_main_window(object):
         self.horizontalLayout_19.setObjectName("horizontalLayout_19")
         self.sim_conf_time_sim_step_2 = QtWidgets.QDoubleSpinBox(self.widget_19)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(11)
         self.sim_conf_time_sim_step_2.setFont(font)
         self.sim_conf_time_sim_step_2.setToolTip("")
         self.sim_conf_time_sim_step_2.setSuffix("")
@@ -875,7 +845,7 @@ class Ui_main_window(object):
         self.horizontalLayout_19.addWidget(self.sim_conf_time_sim_step_2)
         self.label_87 = QtWidgets.QLabel(self.widget_19)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(11)
         self.label_87.setFont(font)
         self.label_87.setObjectName("label_87")
         self.horizontalLayout_19.addWidget(self.label_87)
@@ -890,7 +860,7 @@ class Ui_main_window(object):
         self.horizontalLayout_20.setObjectName("horizontalLayout_20")
         self.sim_conf_time_sim_sampling_2 = QtWidgets.QDoubleSpinBox(self.widget_20)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(11)
         self.sim_conf_time_sim_sampling_2.setFont(font)
         self.sim_conf_time_sim_sampling_2.setToolTip("")
         self.sim_conf_time_sim_sampling_2.setSuffix("")
@@ -900,7 +870,7 @@ class Ui_main_window(object):
         self.horizontalLayout_20.addWidget(self.sim_conf_time_sim_sampling_2)
         self.label_89 = QtWidgets.QLabel(self.widget_20)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(11)
         self.label_89.setFont(font)
         self.label_89.setObjectName("label_89")
         self.horizontalLayout_20.addWidget(self.label_89)
@@ -956,7 +926,7 @@ class Ui_main_window(object):
         self.horizontalLayout_17.addWidget(self.sim_conf_space_intra_cell_radius)
         self.label_83 = QtWidgets.QLabel(self.widget_17)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_83.setFont(font)
         self.label_83.setObjectName("label_83")
         self.horizontalLayout_17.addWidget(self.label_83)
@@ -980,7 +950,7 @@ class Ui_main_window(object):
         self.horizontalLayout_25.addWidget(self.sim_conf_space_intra_lattice_disorder)
         self.label_90 = QtWidgets.QLabel(self.widget_25)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_90.setFont(font)
         self.label_90.setObjectName("label_90")
         self.horizontalLayout_25.addWidget(self.label_90)
@@ -1020,7 +990,7 @@ class Ui_main_window(object):
         self.horizontalLayout_15.addWidget(self.sim_conf_space_extra_world_len)
         self.label_19 = QtWidgets.QLabel(self.widget_15)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_19.setFont(font)
         self.label_19.setObjectName("label_19")
         self.horizontalLayout_15.addWidget(self.label_19)
@@ -1040,7 +1010,7 @@ class Ui_main_window(object):
         self.horizontalLayout_16.addWidget(self.sim_conf_space_extra_grid_size)
         self.label_82 = QtWidgets.QLabel(self.widget_16)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_82.setFont(font)
         self.label_82.setObjectName("label_82")
         self.horizontalLayout_16.addWidget(self.label_82)
@@ -1096,9 +1066,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_conf_tis_default_image_line.sizePolicy().hasHeightForWidth())
         self.sim_conf_tis_default_image_line.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_conf_tis_default_image_line.setFont(font)
         self.sim_conf_tis_default_image_line.setToolTip("")
         self.sim_conf_tis_default_image_line.setText("")
@@ -1106,14 +1074,14 @@ class Ui_main_window(object):
         self.horizontalLayout_26.addWidget(self.sim_conf_tis_default_image_line)
         self.sim_conf_tis_default_image_btn = QtWidgets.QPushButton(self.widget_26)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.sim_conf_tis_default_image_btn.setFont(font)
         self.sim_conf_tis_default_image_btn.setObjectName("sim_conf_tis_default_image_btn")
         self.horizontalLayout_26.addWidget(self.sim_conf_tis_default_image_btn)
         self.formLayout_20.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.widget_26)
         self.sim_conf_tis_default_image_label = QBetseeLabelImage(self.groupBox_21)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.sim_conf_tis_default_image_label.setFont(font)
         self.sim_conf_tis_default_image_label.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.sim_conf_tis_default_image_label.setObjectName("sim_conf_tis_default_image_label")
@@ -1137,7 +1105,7 @@ class Ui_main_window(object):
         self.horizontalLayout_27.addWidget(self.sim_conf_tis_default_mem_Na)
         self.label_92 = QtWidgets.QLabel(self.widget_27)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_92.setFont(font)
         self.label_92.setToolTip("")
         self.label_92.setObjectName("label_92")
@@ -1157,7 +1125,7 @@ class Ui_main_window(object):
         self.horizontalLayout_28.addWidget(self.sim_conf_tis_default_mem_K)
         self.label_93 = QtWidgets.QLabel(self.widget_28)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_93.setFont(font)
         self.label_93.setToolTip("")
         self.label_93.setObjectName("label_93")
@@ -1177,7 +1145,7 @@ class Ui_main_window(object):
         self.horizontalLayout_29.addWidget(self.sim_conf_tis_default_mem_Cl)
         self.label_94 = QtWidgets.QLabel(self.widget_29)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_94.setFont(font)
         self.label_94.setToolTip("")
         self.label_94.setObjectName("label_94")
@@ -1197,7 +1165,7 @@ class Ui_main_window(object):
         self.horizontalLayout_30.addWidget(self.sim_conf_tis_default_mem_Ca)
         self.label_95 = QtWidgets.QLabel(self.widget_30)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_95.setFont(font)
         self.label_95.setToolTip("")
         self.label_95.setObjectName("label_95")
@@ -1217,7 +1185,7 @@ class Ui_main_window(object):
         self.horizontalLayout_32.addWidget(self.sim_conf_tis_default_mem_M)
         self.label_97 = QtWidgets.QLabel(self.widget_32)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_97.setFont(font)
         self.label_97.setToolTip("")
         self.label_97.setObjectName("label_97")
@@ -1237,7 +1205,7 @@ class Ui_main_window(object):
         self.horizontalLayout_33.addWidget(self.sim_conf_tis_default_mem_P)
         self.label_98 = QtWidgets.QLabel(self.widget_33)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         self.label_98.setFont(font)
         self.label_98.setToolTip("")
         self.label_98.setObjectName("label_98")
@@ -1965,7 +1933,7 @@ class Ui_main_window(object):
         self.gridLayout_17.addItem(spacerItem29, 0, 0, 1, 1)
         self.groupBox_10 = QtWidgets.QGroupBox(self.sim_conf_stack_page_NetworkModulator)
         font = QtGui.QFont()
-        font.setPointSize(13)
+        font.setPointSize(14)
         font.setWeight(75)
         font.setBold(True)
         self.groupBox_10.setFont(font)
@@ -1999,7 +1967,7 @@ class Ui_main_window(object):
         self.sim_cmd_tab_run_area.setWidgetResizable(True)
         self.sim_cmd_tab_run_area.setObjectName("sim_cmd_tab_run_area")
         self.sim_cmd_tab_run = QtWidgets.QWidget()
-        self.sim_cmd_tab_run.setGeometry(QtCore.QRect(0, 0, 744, 782))
+        self.sim_cmd_tab_run.setGeometry(QtCore.QRect(0, 0, 756, 800))
         self.sim_cmd_tab_run.setProperty("is_page", True)
         self.sim_cmd_tab_run.setObjectName("sim_cmd_tab_run")
         self.gridLayout_30 = QtWidgets.QGridLayout(self.sim_cmd_tab_run)
@@ -2035,7 +2003,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_player_substatus.sizePolicy().hasHeightForWidth())
         self.sim_run_player_substatus.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(11)
         self.sim_run_player_substatus.setFont(font)
         self.sim_run_player_substatus.setObjectName("sim_run_player_substatus")
         self.horizontalLayout.addWidget(self.sim_run_player_substatus)
@@ -2067,10 +2035,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_init.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_init.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setUnderline(True)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_run_queue_init.setFont(font)
         self.sim_run_queue_init.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_init.setObjectName("sim_run_queue_init")
@@ -2126,10 +2091,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_seed.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_seed.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setUnderline(True)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_run_queue_seed.setFont(font)
         self.sim_run_queue_seed.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_seed.setObjectName("sim_run_queue_seed")
@@ -2141,9 +2103,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_head_export.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_head_export.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(75)
-        font.setBold(True)
+        font.setPointSize(12)
         self.sim_run_queue_head_export.setFont(font)
         self.sim_run_queue_head_export.setObjectName("sim_run_queue_head_export")
         self.gridLayout_5.addWidget(self.sim_run_queue_head_export, 1, 6, 2, 1)
@@ -2227,9 +2187,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_init_index.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_init_index.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(75)
-        font.setBold(True)
+        font.setPointSize(12)
         self.sim_run_queue_init_index.setFont(font)
         self.sim_run_queue_init_index.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_init_index.setObjectName("sim_run_queue_init_index")
@@ -2241,9 +2199,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_head_model.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_head_model.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(75)
-        font.setBold(True)
+        font.setPointSize(12)
         self.sim_run_queue_head_model.setFont(font)
         self.sim_run_queue_head_model.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.sim_run_queue_head_model.setObjectName("sim_run_queue_head_model")
@@ -2255,9 +2211,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_sim_index.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_sim_index.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(75)
-        font.setBold(True)
+        font.setPointSize(12)
         self.sim_run_queue_sim_index.setFont(font)
         self.sim_run_queue_sim_index.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_sim_index.setObjectName("sim_run_queue_sim_index")
@@ -2269,10 +2223,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_sim.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_sim.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(50)
-        font.setUnderline(True)
-        font.setBold(False)
+        font.setPointSize(12)
         self.sim_run_queue_sim.setFont(font)
         self.sim_run_queue_sim.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_sim.setObjectName("sim_run_queue_sim")
@@ -2284,9 +2235,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_seed_index.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_seed_index.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(75)
-        font.setBold(True)
+        font.setPointSize(12)
         self.sim_run_queue_seed_index.setFont(font)
         self.sim_run_queue_seed_index.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_seed_index.setObjectName("sim_run_queue_seed_index")
@@ -2298,9 +2247,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_head_phase.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_head_phase.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(75)
-        font.setBold(True)
+        font.setPointSize(12)
         self.sim_run_queue_head_phase.setFont(font)
         self.sim_run_queue_head_phase.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.sim_run_queue_head_phase.setObjectName("sim_run_queue_head_phase")
@@ -2320,8 +2267,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_sim_status.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_sim_status.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setItalic(True)
+        font.setPointSize(12)
         self.sim_run_queue_sim_status.setFont(font)
         self.sim_run_queue_sim_status.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_sim_status.setObjectName("sim_run_queue_sim_status")
@@ -2333,8 +2279,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_init_status.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_init_status.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setItalic(True)
+        font.setPointSize(12)
         self.sim_run_queue_init_status.setFont(font)
         self.sim_run_queue_init_status.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_init_status.setObjectName("sim_run_queue_init_status")
@@ -2346,8 +2291,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_seed_status.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_seed_status.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setItalic(True)
+        font.setPointSize(12)
         self.sim_run_queue_seed_status.setFont(font)
         self.sim_run_queue_seed_status.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.sim_run_queue_seed_status.setObjectName("sim_run_queue_seed_status")
@@ -2367,9 +2311,7 @@ class Ui_main_window(object):
         sizePolicy.setHeightForWidth(self.sim_run_queue_head_status.sizePolicy().hasHeightForWidth())
         self.sim_run_queue_head_status.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setWeight(75)
-        font.setBold(True)
+        font.setPointSize(12)
         self.sim_run_queue_head_status.setFont(font)
         self.sim_run_queue_head_status.setObjectName("sim_run_queue_head_status")
         self.gridLayout_5.addWidget(self.sim_run_queue_head_status, 1, 8, 2, 1)
@@ -2997,16 +2939,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
 from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
