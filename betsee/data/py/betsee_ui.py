@@ -293,6 +293,7 @@ class Ui_main_window(object):
         icon5.addFile(":/icon/open_iconic/folder.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon5)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
+        item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon6 = QtGui.QIcon()
         icon6.addFile("://icon/open_iconic/bolt.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon6)
@@ -2505,23 +2506,24 @@ class Ui_main_window(object):
         self.sim_conf_tree.topLevelItem(1).setText(0, QtWidgets.QApplication.translate("main_window", "Time", None, -1))
         self.sim_conf_tree.topLevelItem(2).setText(0, QtWidgets.QApplication.translate("main_window", "Ions", None, -1))
         self.sim_conf_tree.topLevelItem(3).setText(0, QtWidgets.QApplication.translate("main_window", "Paths", None, -1))
-        self.sim_conf_tree.topLevelItem(4).setText(0, QtWidgets.QApplication.translate("main_window", "Dynamic Channels", None, -1))
-        self.sim_conf_tree.topLevelItem(5).setText(0, QtWidgets.QApplication.translate("main_window", "Interventions", None, -1))
-        self.sim_conf_tree.topLevelItem(6).setText(0, QtWidgets.QApplication.translate("main_window", "Junctions", None, -1))
-        self.sim_conf_tree.topLevelItem(7).setText(0, QtWidgets.QApplication.translate("main_window", "Network", None, -1))
-        self.sim_conf_tree.topLevelItem(7).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Substances", None, -1))
-        self.sim_conf_tree.topLevelItem(7).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Reactions", None, -1))
-        self.sim_conf_tree.topLevelItem(7).child(2).setText(0, QtWidgets.QApplication.translate("main_window", "Transporters", None, -1))
-        self.sim_conf_tree.topLevelItem(7).child(3).setText(0, QtWidgets.QApplication.translate("main_window", "Channels", None, -1))
-        self.sim_conf_tree.topLevelItem(7).child(4).setText(0, QtWidgets.QApplication.translate("main_window", "Modulators", None, -1))
-        self.sim_conf_tree.topLevelItem(8).setText(0, QtWidgets.QApplication.translate("main_window", "Additional Physics", None, -1))
-        self.sim_conf_tree.topLevelItem(9).setText(0, QtWidgets.QApplication.translate("main_window", "Tools", None, -1))
-        self.sim_conf_tree.topLevelItem(10).setText(0, QtWidgets.QApplication.translate("main_window", "Advanced", None, -1))
-        self.sim_conf_tree.topLevelItem(11).setText(0, QtWidgets.QApplication.translate("main_window", "Results", None, -1))
-        self.sim_conf_tree.topLevelItem(12).setText(0, QtWidgets.QApplication.translate("main_window", "Data Export", None, -1))
-        self.sim_conf_tree.topLevelItem(13).setText(0, QtWidgets.QApplication.translate("main_window", "Line Plots", None, -1))
-        self.sim_conf_tree.topLevelItem(14).setText(0, QtWidgets.QApplication.translate("main_window", "2D Plots", None, -1))
-        self.sim_conf_tree.topLevelItem(15).setText(0, QtWidgets.QApplication.translate("main_window", "Animations", None, -1))
+        self.sim_conf_tree.topLevelItem(4).setText(0, QtWidgets.QApplication.translate("main_window", "--[TODO]--", None, -1))
+        self.sim_conf_tree.topLevelItem(5).setText(0, QtWidgets.QApplication.translate("main_window", "Dynamic Channels", None, -1))
+        self.sim_conf_tree.topLevelItem(6).setText(0, QtWidgets.QApplication.translate("main_window", "Interventions", None, -1))
+        self.sim_conf_tree.topLevelItem(7).setText(0, QtWidgets.QApplication.translate("main_window", "Junctions", None, -1))
+        self.sim_conf_tree.topLevelItem(8).setText(0, QtWidgets.QApplication.translate("main_window", "Network", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Substances", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Reactions", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(2).setText(0, QtWidgets.QApplication.translate("main_window", "Transporters", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(3).setText(0, QtWidgets.QApplication.translate("main_window", "Channels", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(4).setText(0, QtWidgets.QApplication.translate("main_window", "Modulators", None, -1))
+        self.sim_conf_tree.topLevelItem(9).setText(0, QtWidgets.QApplication.translate("main_window", "Additional Physics", None, -1))
+        self.sim_conf_tree.topLevelItem(10).setText(0, QtWidgets.QApplication.translate("main_window", "Tools", None, -1))
+        self.sim_conf_tree.topLevelItem(11).setText(0, QtWidgets.QApplication.translate("main_window", "Advanced", None, -1))
+        self.sim_conf_tree.topLevelItem(12).setText(0, QtWidgets.QApplication.translate("main_window", "Results", None, -1))
+        self.sim_conf_tree.topLevelItem(13).setText(0, QtWidgets.QApplication.translate("main_window", "Data Export", None, -1))
+        self.sim_conf_tree.topLevelItem(14).setText(0, QtWidgets.QApplication.translate("main_window", "Line Plots", None, -1))
+        self.sim_conf_tree.topLevelItem(15).setText(0, QtWidgets.QApplication.translate("main_window", "2D Plots", None, -1))
+        self.sim_conf_tree.topLevelItem(16).setText(0, QtWidgets.QApplication.translate("main_window", "Animations", None, -1))
         self.sim_conf_tree.setSortingEnabled(__sortingEnabled)
         self.log_label.setText(QtWidgets.QApplication.translate("main_window", "Log Messages", None, -1))
         self.groupBox_50.setTitle(QtWidgets.QApplication.translate("main_window", "Path Settings", None, -1))
@@ -2939,16 +2941,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

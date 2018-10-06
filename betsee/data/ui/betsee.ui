@@ -366,6 +366,11 @@ QTreeWidget#sim_conf_tree {
          </item>
          <item>
           <property name="text">
+           <string>--[TODO]--</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Dynamic Channels</string>
           </property>
           <property name="icon">
