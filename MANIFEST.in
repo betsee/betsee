@@ -1,9 +1,33 @@
-# --------------------( LICENSE                            )--------------------
-# Copyright 2017 by Alexis Pietak & Cecil Curry
+# --------------------( LICENSE                           )--------------------
+# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 #
-# --------------------( SYNOPSIS                           )--------------------
-# Template with which setuptools generates the "MANIFEST" file for this project.
+# --------------------( SYNOPSIS                          )--------------------
+# Template with which setuptools generates this project's "MANIFEST" file.
 
-# ....................{ MAIN                               }....................
+# ....................{ INCLUDE                           }....................
+# Include all requisite top-level installation-time files.
+include LICENSE
+include MANIFEST.in
+include README.rst
+include setup.cfg
+include setup.py
+
+# ....................{ INCLUDE ~ recursive               }....................
+# Include all requisite data (i.e., external non-Python files internally
+# required by one or more Python subpackages).
 recursive-include betsee/data *
+
+# Include all requisite project-specific setuptools helpers. Note that this
+# subpackage is *ONLY* required at installation time and hence omitted from the
+# "packages" key passed to the setup() function by "setup.py".
+recursive-include betsee_setup *
+
+# Include all optional documentation.
+recursive-include licenses *
+
+# ....................{ EXCLUDE                           }....................
+# Exclude all ignorable cache files.
+recursive-exclude * __pycache__
+recursive-exclude * *.pyc
+recursive-exclude * *.pyo

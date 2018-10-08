@@ -91,6 +91,10 @@ RUNTIME_OPTIONAL = {
     #FIXME: Add a minimum required version *AFTER* upstream resolves the
     #following open issue:
     #    https://bugreports.qt.io/browse/PYSIDE-517
+    #FIXME: The official "PySide2" wheel now ships "pyside2uic" out-of-the-box,
+    #suggesting this should now resemble:
+    #    'pyside2uic': RUNTIME_MANDATORY['PySide2'],
+    #Test the above specification when time admits (i.e., sadly never).
     'pyside2uic': '',
 }
 '''
@@ -163,13 +167,10 @@ def get_runtime_mandatory_tuple() -> tuple:
         for dependency_name, dependency_constraints in
             RUNTIME_MANDATORY.items()
 
-        #FIXME: Uncomment the following line and remove the line that follows
-        #that *AFTER* "PySide2" and "pyside2-tools" become available on PyPI.
-        #Ideally, only "PySide2."-prefixed components should be ignored.
-
-        # If this is *NOT* a PySide2-specific submodule...
-        #if not dependency_name.startswith('PySide2.')
-        if not dependency_name.startswith(('PySide2', 'pyside2'))
+        # If this is neither a PySide2-specific submodule nor the "pyside2uic"
+        # subpackage, which official PySide2 wheels now bundle out-of-the-box
+        # and hence are *NOT* externally available from PyPI...
+        if not dependency_name.startswith(('PySide2.', 'pyside2uic'))
     }
 
     # Return this dictionary converted into a tuple.

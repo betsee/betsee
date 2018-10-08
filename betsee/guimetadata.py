@@ -121,7 +121,7 @@ if sys.version_info[:3] < PYTHON_VERSION_MIN_PARTS:
             NAME, PYTHON_VERSION_MIN, PYTHON_VERSION))
 
 # ....................{ METADATA ~ version                }....................
-VERSION = '0.8.5.0'
+VERSION = '0.9.0.0'
 '''
 Human-readable application version as a ``.``-delimited string.
 
