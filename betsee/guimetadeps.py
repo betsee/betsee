@@ -55,6 +55,7 @@ RUNTIME_MANDATORY = {
     # Versioned dependencies directly required by this application.
     'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
     'PySide2': '>= 2.0.0~alpha0',
+    # 'PySide2': '>= 5.11.0',
 
     # Unversioned dependencies directly required by this application. Since
     # the modules providing these dependencies define no PEP-8-compliant

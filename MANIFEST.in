@@ -18,12 +18,16 @@ include setup.py
 # required by one or more Python subpackages).
 recursive-include betsee/data *
 
-# Include all requisite project-specific setuptools helpers. Note that this
-# subpackage is *ONLY* required at installation time and hence omitted from the
-# "packages" key passed to the setup() function by "setup.py".
+# Include all requisite project-specific py.test and setuptools subpackages.
+#
+# Note that these subpackages are *ONLY* required at installation time and
+# hence omitted from the "packages" key passed to the setup() function by
+# "setup.py". Welcome to Setuptools Hell, dear friend.
 recursive-include betsee_setup *
+recursive-include betsee_test *
 
 # Include all optional documentation.
+recursive-include doc *
 recursive-include licenses *
 
 # ....................{ EXCLUDE                           }....................

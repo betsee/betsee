@@ -102,9 +102,7 @@ def _cache_py_qrc_file() -> None:
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed
     # by the paths.is_mtime_recursive_older_than_paths() function.
-    input_pathnames = [
-        data_qrc_filename,
-    ]
+    input_pathnames = [data_qrc_filename,]
 
     # If the optional third-party dependency "pyside2-tools" is installed,
     # append the "pyside2-rcc" executable for testing as well.
