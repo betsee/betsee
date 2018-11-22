@@ -9,6 +9,39 @@ interface (GUI), persisting external resources required by this GUI to
 user-specific files on the local filesystem.
 '''
 
+#FIXME: O.K.; so, clearly, in the wake of recent issues surrounding cache
+#descrynchronization, we need to significantly "improve our game" here.
+#Specifically, we should cease raising "BetseFileException" exceptions from the
+#_cache_py_qrc_file() and _cache_py_ui_file() functions when the destination
+#cache files are unwritable by the current user. Instead, we note that there
+#are actually two use cases that we've been largely ignoring:
+#
+#* Developer usage, as indicated by the
+#  betse.pathtree.get_git_worktree_dirname_or_none() function returning a
+#  non-None value. Of course, this won't *QUITE* work as intended, as that
+#  function applies only to BETSE. Generalizing that function to BETSEE as well
+#  suggests that we may want to:
+#  * Define a new betse.util.path.gits.get_module_worktree_dirname_or_none()
+#    function accepting a single passed Python module or package object and
+#    otherwise behaving similarly to the
+#    betse.pathtree.get_git_worktree_dirname_or_none() function.
+#  * Refactor the entire "betse.pathtree" submodule from a procedural to
+#    object-oriented approach, in which case BETSEE could simply inherit
+#    existing functionality. Actually, don't do this; we simply have no time.
+#  In any case, when BETSEE is in "developer usage" mode:
+#  * The official copies of these cached files residing under "betsee/data/"
+#    should be written to. If any such file is unwritable, the existing
+#    "BetseFileException" should be raised.
+#* End user usage. In this case:
+#  * The official copies of these cached files residing under "betsee/data/"
+#    should be preserved as is rather than written to. Instead, new files
+#    should be written into the "~/.betse/betsee" subdirectory (e.g.,
+#    "~/.betse/betsee_ui.py"). If any such file is unwritable, the existing
+#    "BetseFileException" should be raised.
+#
+#Ergo, the "betsee.pathtree" submodule should be lightly refactored to
+#conditionally change the filenames returned by the
+
 #FIXME: Still insufficient. Why? Because we need to automatically invalidate
 #caches whenever any file in the BETSEE codebase changes. *sigh*
 

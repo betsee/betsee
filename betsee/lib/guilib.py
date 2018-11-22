@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,21 +8,21 @@ High-level **application dependency** (i.e., both mandatory and optional
 third-party Python packages required by this application) facilities.
 
 This low-level submodule defines functions intended to be called by high-level
-submodules (e.g., :mod:`betse.util.cli.cliabc`) *before* attempting to import any
-such dependencies.
+submodules (e.g., :mod:`betse.util.cli.cliabc`) *before* attempting to import
+any such dependencies.
 '''
 
 #FIXME: Ideally eliminate the boilerplate repeated across the equivalent of
 #this submodule in BETSE, BETSEE, and now NIMME by generalizing this
 #functionality. To do so, see "nimme.lib.nimlib" for detailed commentary.
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on missing mandatory dependencies,
 # the top-level of this module may import *ONLY* from packages guaranteed to
 # exist at initial runtime (i.e., standard Python and application packages,
 # including both BETSEE and BETSE packages).
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betse.lib import libs as betse_libs
 from betse.util.io.log import logs
@@ -30,13 +30,14 @@ from betse.util.type.mapping import mappings
 from betse.util.type.types import type_check
 from betsee import guimetadata, guimetadeps
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ EXCEPTIONS                        }....................
 def die_unless_runtime_mandatory_all() -> None:
     '''
     Raise an exception unless all mandatory runtime dependencies of this
-    application are **satisfiable** (i.e., both importable and of a satisfactory
-    version) *and* all external commands required by these dependencies (e.g.,
-    GraphViz's ``dot`` command) reside in the current ``${PATH}``.
+    application are **satisfiable** (i.e., both importable and of a
+    satisfactory version) *and* all external commands required by these
+    dependencies (e.g., GraphViz's ``dot`` command) reside in the current
+    ``${PATH}``.
 
     Raises
     ----------
@@ -106,7 +107,7 @@ def die_unless_runtime_optional(*requirement_names: str) -> None:
     betse_libs.die_unless_requirements_dict_keys(
         guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
 
-# ....................{ TESTERS                            }....................
+# ....................{ TESTERS                           }....................
 @type_check
 def is_runtime_optional(*requirement_names: str) -> bool:
     '''
@@ -133,7 +134,7 @@ def is_runtime_optional(*requirement_names: str) -> bool:
     return betse_libs.is_requirements_dict_keys(
         guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
 
-# ....................{ IMPORTERS                          }....................
+# ....................{ IMPORTERS                         }....................
 @type_check
 def import_runtime_optional(*requirement_names: str) -> object:
     '''
@@ -158,7 +159,7 @@ def import_runtime_optional(*requirement_names: str) -> object:
     return betse_libs.import_requirements_dict_keys(
         guimetadeps.RUNTIME_OPTIONAL, *requirement_names)
 
-# ....................{ INITIALIZERS                       }....................
+# ....................{ INITIALIZERS                      }....................
 def reinit() -> None:
     '''
     (Re-)initialize all mandatory runtime dependencies of this application,
@@ -166,6 +167,7 @@ def reinit() -> None:
     '''
 
     # Defer heavyweight imports.
+    from betsee.lib.pyside2 import guipsd
     from betsee.util.app import guiapp
 
     # Log this initialization. Since initializing heavyweight third-party
@@ -173,15 +175,19 @@ def reinit() -> None:
     # message is intentionally exposed to all users by default.
     logs.log_info('Loading third-party %s dependencies...', guimetadata.NAME)
 
-    # Initialize PySide2 by instantiating the "QApplication" singleton *BEFORE*
-    # initializing BETSE dependencies. Why? The reason is subtle, but critical:
-    # initializing BETSE initializes matplotlib with the "Qt5Agg" backend, which
-    # instantiates the "QApplication" singleton if this singleton has *NOT*
-    # already been initialized. However, various application-wide settings
-    # (e.g., metadata, high-DPI scaling emulation) *MUST* be initialized before
-    # this singleton is instantiated. Permitting "Qt5Agg" to instantiate this
-    # singleton first prevents us from initializing these settings here. This
-    # singleton *MUST* thus be instantiated by us first.
+    # Initialize PySide2 *BEFORE* instantiating the "QApplication" singleton,
+    # as the former could in theory monkey-patch code required by the latter.
+    guipsd.init()
+
+    # Instantiate the "QApplication" singleton *BEFORE* initializing BETSE
+    # dependencies. Our reasoning is subtle, but vital: initializing BETSE
+    # initializes matplotlib with the "Qt5Agg" backend, which instantiates the
+    # "QApplication" singleton if this singleton has *NOT* already been
+    # initialized. However, various application-wide settings (e.g., metadata,
+    # high-DPI scaling emulation) *MUST* be initialized before this singleton
+    # is instantiated. Permitting "Qt5Agg" to instantiate this singleton first
+    # prevents us from initializing these settings here. This singleton *MUST*
+    # thus be instantiated by us first.
     guiapp.init()
 
     # Initialize all mandatory runtime dependencies of BETSE.

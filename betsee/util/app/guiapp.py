@@ -352,8 +352,8 @@ def _init_qt_app() -> QApplication:
     #this approach only applies to languages other than Python -- notably, C++.
     #FIXME: O.K.; we've verified by manual inspection that this event filter
     #does indeed slow event handling down by approximately 200% when attempting
-    #to perform multithreading -- clearly due to the GIL. Given that, we'll need
-    #to manually implement the equivalent of this filter by:
+    #to perform multithreading -- clearly due to the GIL. Given that, we'll
+    #need to manually implement the equivalent of this filter by:
     #
     #* For each plaintext (i.e., non-HTML) tooltip across the entire
     #  application...
