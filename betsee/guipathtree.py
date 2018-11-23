@@ -20,20 +20,8 @@ See Also
     describing the structure of the local filesystem.
 '''
 
-#FIXME: The current globals-based approach is inefficient in the case of BETSE
-#being installed as a compressed EGG rather than an uncompressed directory. In
-#the former case, the current approach (namely, the call to
-#resources.get_pathname() performed below) silently extracts the entirety of
-#this egg to a temporary setuptools-specific cache directory. That's bad. To
-#circumvent this, we'll need to refactor the codebase to directly require only
-#"file"-like objects rather than indirectly requiring the absolute paths of
-#data resources that are then opened as "file"-like objects.
-#
-#Specifically, whenever we require a "file"-like object for a codebase resource,
-#we'll need to call the setuptools-specific pkg_resources.resource_stream()
-#function rather than attempting to open the path given by a global below.
-#Ultimately, *ALL* of the codebase-specific globals declared below (e.g.,
-#"DATA_DIRNAME") should go away.
+#FIXME: Refactor the remainder of this submodule into the newly annointed
+#"betsee.guimetaapp" submodule.
 
 # ....................{ IMPORTS                            }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -45,34 +33,12 @@ See Also
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betse import pathtree as betse_pathtree
-from betse.util.path import dirs, files, pathnames
+from betse.util.path import dirs, files
 from betse.util.type.decorator.decmemo import func_cached
+from betsee.guimetaapp import app_meta
 from betsee import guimetadata
 
 # ....................{ GETTERS ~ dir : data               }....................
-@func_cached
-def get_data_dirname() -> str:
-    '''
-    Absolute path of this application's top-level data directory if found *or*
-    raise an exception otherwise (i.e., if this directory is *not* found).
-
-    This directory contains application-internal resources (e.g., media files)
-    required at application runtime.
-    '''
-
-    # Avoid circular import dependencies.
-    import betsee
-
-    # Absolute path of this directory.
-    data_dirname = pathnames.get_app_pathname(package=betsee, pathname='data')
-
-    # If this directory is not found, raise an exception.
-    dirs.die_unless_dir(data_dirname)
-
-    # Return the absolute path of this directory.
-    return data_dirname
-
-
 @func_cached
 def get_data_py_dirname() -> str:
     '''
@@ -83,7 +49,7 @@ def get_data_py_dirname() -> str:
     '''
 
     # Create this directory if needed and return its dirname.
-    return dirs.join_and_die_unless_dir(get_data_dirname(), 'py')
+    return dirs.join_and_die_unless_dir(app_meta.data_dirname, 'py')
 
 
 @func_cached
@@ -97,20 +63,20 @@ def get_data_qrc_dirname() -> str:
     '''
 
     # Return this dirname if this directory exists or raise an exception.
-    return dirs.join_and_die_unless_dir(get_data_dirname(), 'qrc')
+    return dirs.join_and_die_unless_dir(app_meta.data_dirname, 'qrc')
 
 
 @func_cached
 def get_data_ui_dirname() -> str:
     '''
     Absolute path of this application's data subdirectory containing
-    XML-formatted user interface (UI) files exported by the external Qt Designer
-    application if found *or* raise an exception otherwise (i.e., if this
-    directory is *not* found).
+    XML-formatted user interface (UI) files exported by the external Qt
+    Designer application if found *or* raise an exception otherwise (i.e., if
+    this directory is *not* found).
     '''
 
     # Return this dirname if this directory exists or raise an exception.
-    return dirs.join_and_die_unless_dir(get_data_dirname(), 'ui')
+    return dirs.join_and_die_unless_dir(app_meta.data_dirname, 'ui')
 
 # ....................{ GETTERS ~ dir : dot                }....................
 @func_cached
@@ -120,9 +86,10 @@ def get_dot_dirname() -> str:
     directory of the current user, silently creating this directory if *not*
     already found.
 
-    This directory contains user-specific files (e.g., generated Python modules)
-    both read from and written to at application runtime. These are typically
-    plaintext files consumable by external users and third-party utilities.
+    This directory contains user-specific files (e.g., programmatically
+    generated Python modules) both read from and written to at application
+    runtime. These are typically plaintext files consumable by external users
+    and third-party utilities.
 
     For tidiness, this directory currently resides under BETSE's dot directory
     (e.g., ``~/.betse/betsee`` under Linux).
