@@ -52,7 +52,7 @@ from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmds, cmdpath
 from betse.util.py import pymodule, pys
 from betse.util.type.types import type_check, IterableTypes
-from betsee import guipathtree
+from betsee.guimetaapp import app_meta
 from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
     QBetseeSimConfEnumRadioButtonGroup)
 from betsee.lib import guilib
@@ -90,7 +90,7 @@ def cache_py_files() -> None:
 
     # Append the directory containing all generated modules to the PYTHONPATH,
     # permitting these modules to be subsequently imported elsewhere.
-    pys.add_import_dirname(guipathtree.get_data_py_dirname())
+    pys.add_import_dirname(app_meta.data_py_dirname)
 
     # Generate the requisite pure-Python modules (in any arbitrary order).
     _cache_py_qrc_file()
@@ -98,8 +98,7 @@ def cache_py_files() -> None:
 
     # For safety, raise an exception unless all such modules exist now.
     files.die_unless_file(
-        guipathtree.get_data_py_qrc_filename(),
-        guipathtree.get_data_py_ui_filename())
+        app_meta.data_py_qrc_filename, app_meta.data_py_ui_filename)
 
 # ....................{ CACHERS ~ private                 }....................
 def _cache_py_qrc_file() -> None:
@@ -126,16 +125,10 @@ def _cache_py_qrc_file() -> None:
         Further details.
     '''
 
-    # Absolute path of the input QRC file used to generate this output module.
-    data_qrc_filename = guipathtree.get_data_qrc_filename()
-
-    # Absolute path of the output module to be generated.
-    data_py_qrc_filename = guipathtree.get_data_py_qrc_filename()
-
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed
     # by the paths.is_mtime_recursive_older_than_paths() function.
-    input_pathnames = [data_qrc_filename,]
+    input_pathnames = [app_meta.data_qrc_filename,]
 
     # If the optional third-party dependency "pyside2-tools" is installed,
     # append the "pyside2-rcc" executable for testing as well.
@@ -151,13 +144,15 @@ def _cache_py_qrc_file() -> None:
     # * Any file or subdirectory in the input directory containing both this
     #   input QRC file and all resource files referenced by this file.
     if not _is_output_path_outdated(
-        input_pathnames=input_pathnames, output_filename=data_py_qrc_filename):
+        input_pathnames=input_pathnames,
+        output_filename=app_meta.data_py_qrc_filename):
         return
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
     guiqrc.convert_qrc_to_py_file_if_able(
-        qrc_filename=data_qrc_filename, py_filename=data_py_qrc_filename)
+        qrc_filename=app_meta.data_qrc_filename,
+        py_filename=app_meta.data_py_qrc_filename)
 
 
 def _cache_py_ui_file() -> None:
@@ -184,17 +179,11 @@ def _cache_py_ui_file() -> None:
         Further details.
     '''
 
-    # Absolute path of the input QRC file used to generate this output module.
-    data_ui_filename = guipathtree.get_data_ui_filename()
-
-    # Absolute path of the output module to be generated.
-    data_py_ui_filename = guipathtree.get_data_py_ui_filename()
-
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed
     # by the paths.is_mtime_recursive_older_than_paths() function.
     input_pathnames = [
-        data_ui_filename,
+        app_meta.data_ui_filename,
         pymodule.get_filename(guiui),
         pymodule.get_dirname(PySide2),
     ]
@@ -218,14 +207,15 @@ def _cache_py_ui_file() -> None:
     #   "PySide2" and "pyside2uic" packages required by the
     #   psdui.convert_ui_to_py_file() function called below.
     if not _is_output_path_outdated(
-        input_pathnames=input_pathnames, output_filename=data_py_ui_filename):
+        input_pathnames=input_pathnames,
+        output_filename=app_meta.data_py_ui_filename):
         return
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
     guiui.convert_ui_to_py_file_if_able(
-        ui_filename=data_ui_filename,
-        py_filename=data_py_ui_filename,
+        ui_filename=app_meta.data_ui_filename,
+        py_filename=app_meta.data_py_ui_filename,
         promote_obj_name_to_class=_PROMOTE_OBJ_NAME_TO_CLASS,
     )
 

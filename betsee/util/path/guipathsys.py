@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -11,19 +11,19 @@ application's specific usage of this filesystem.
 
 See Also
 ----------
-:mod:`betsee.guipathtree`
+:mod:`betsee.guimetaapp`
     Collection of the absolute paths of numerous critical files and directories
     describing the structure of this application on the local filesystem.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QStandardPaths
 from betse.util.io.log import logs
 from betse.util.os.shell import shelldir
 from betse.util.type.decorator.decmemo import func_cached
 from betse.util.type.types import type_check
 
-# ....................{ GETTERS ~ dir                      }....................
+# ....................{ GETTERS ~ dir                     }....................
 #FIXME: Actually implement this function as described. For simplicity, this
 #function currently defers to *ALWAYS* return get_user_docs_dirname(). Instead:
 #
@@ -53,17 +53,18 @@ def get_path_dialog_init_pathname() -> str:
     ----------
     str
         Absolute pathname of either:
+
         * If the current user has already successfully selected at least one
           path from a path dialog _and_ the most recently selected such path
           still exists, that path.
-        * Else (i.e., if this user has yet to select a path from a path dialog),
-          a directory containing work-oriented files for this user.
+        * Else (i.e., if this user has yet to select a path from a path
+          dialog), a directory containing work-oriented files for this user.
     '''
 
     # Return the current user's documents directory.
     return get_user_docs_dirname()
 
-# ....................{ GETTERS ~ dir : cached             }....................
+# ....................{ GETTERS ~ dir : cached            }....................
 @func_cached
 def get_user_docs_dirname() -> str:
     '''
@@ -78,7 +79,7 @@ def get_user_docs_dirname() -> str:
 
     return _get_dir(QStandardPaths.DocumentsLocation)
 
-# ....................{ PRIVATE                            }....................
+# ....................{ PRIVATE                           }....................
 @type_check
 def _get_dir(location: QStandardPaths.StandardLocation) -> str:
     '''
@@ -100,14 +101,14 @@ def _get_dir(location: QStandardPaths.StandardLocation) -> str:
     # Qt provides two means of querying for standard paths:
     #
     # * QStandardPaths.standardLocations(), a static getter function that may
-    #   unsafely return the empty list "...if no locations for [the passed] type
-    #   are defined."
+    #   unsafely return the empty list "...if no locations for [the passed]
+    #   type are defined."
     # * QStandardPaths.writableLocation(), a static getter function that may
     #   unsafely return "...an empty string if the location cannot be
     #   determined."
     #
-    # Although both functions may return unsafe empty values, the latter is more
-    # likely to do so and is thus less safe. Why? Because the former is
+    # Although both functions may return unsafe empty values, the latter is
+    # more likely to do so and is thus less safe. Why? Because the former is
     # guaranteed to return at least as much and typically more than the latter.
 
     # List of the absolute paths of all directories satisfying this location,

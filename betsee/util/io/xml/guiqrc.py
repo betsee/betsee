@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
-High-level support facilities for integrating :mod:`PySide2` widget classes with
-XML-formatted Qt resource collection (QRC) files exported by the external Qt
-Designer application.
+High-level support facilities for integrating :mod:`PySide2` widget classes
+with XML-formatted Qt resource collection (QRC) files exported by the external
+Qt Designer application.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from betse.util.io.log import logs
-from betse.util.path import files, pathnames
+from betse.util.path import files, pathnames, paths
 from betse.util.path.command import cmdrun, cmds
 from betse.util.type.types import type_check
 
-# ....................{ CONVERTERS                         }....................
+# ....................{ CONVERTERS                        }....................
 @type_check
-def convert_qrc_to_py_file_if_able(qrc_filename: str, py_filename: str) -> None:
+def convert_qrc_to_py_file_if_able(
+    qrc_filename: str, py_filename: str) -> None:
     '''
     Convert the XML-formatted file with the passed ``.qrc``-suffixed filename
     *and* all binary resources referenced by this file exported by the external
@@ -27,10 +28,10 @@ def convert_qrc_to_py_file_if_able(qrc_filename: str, py_filename: str) -> None:
 
     Dependencies
     ----------
-    This function requires the optional third-party dependency ``pyside2-tools``
-    distributed by The Qt Company. Specifically, this high-level function wraps
-    the low-level ``pyside2-rcc`` command installed by this dependency with a
-    human-usable API.
+    This function requires the optional third-party dependency
+    ``pyside2-tools`` distributed by The Qt Company. Specifically, this
+    high-level function wraps the low-level ``pyside2-rcc`` command installed
+    by this dependency with a human-usable API.
 
     If this command is unavailable, this function logs a non-fatal warning and
     returns *without* raising a fatal exception.
@@ -58,7 +59,7 @@ def convert_qrc_to_py_file_if_able(qrc_filename: str, py_filename: str) -> None:
         return
 
     # If this output file is unwritable, log a non-fatal warning and return.
-    if not files.is_exists_writable(py_filename):
+    if not paths.is_writable(py_filename):
         logs.log_warning(
             'Skipping! PySide2 module "%s" unwritable, '
             'probably due to a system-wide installation.', py_filename)
@@ -73,7 +74,8 @@ def convert_qrc_to_py_file_if_able(qrc_filename: str, py_filename: str) -> None:
 
     # Convert this input file to this output file or raise an exception if
     # unsuccessful. For debuggability, this command's stdout and stderr is
-    # redirected to this application's stdout, stderr, and logging file handles.
+    # redirected to this application's stdout, stderr, and logging file
+    # handles.
     cmdrun.log_output_or_die(
         command_words=('pyside2-rcc', '-o', py_filename, qrc_filename))
 

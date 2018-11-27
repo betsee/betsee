@@ -14,7 +14,7 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import QCoreApplication, QObject
 from betse.util.io import iofiles
 from betse.util.io.log import logs
-from betse.util.path import files, pathnames
+from betse.util.path import files, pathnames, paths
 from betse.util.py import pyident, pymodule, pys
 from betse.util.py.pyident import IDENTIFIER_UNQUALIFIED_REGEX
 from betse.util.type import types
@@ -220,7 +220,7 @@ def convert_ui_to_py_file_if_able(
         return
 
     # If this output file is unwritable, log a non-fatal warning and return.
-    if not files.is_exists_writable(py_filename):
+    if not paths.is_writable(py_filename):
         logs.log_warning(
             'Skipping! PySide2 module "%s" unwritable, '
             'probably due to a system-wide installation.', py_filename)
