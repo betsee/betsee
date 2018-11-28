@@ -159,9 +159,9 @@ class BetseeMetaApp(MetaAppABC):
         #
         # * Prefixed by the same basename excluding filetype returned by the
         #   get_data_qrc_filename() function.
-        # * Suffixed by "_rc.py". Why? Because the Python code generated at runtime
-        #   by the "pyside2uic" package assumes this to be the case. Naturally, this
-        #   assumption is *NOT* configurable.
+        # * Suffixed by "_rc.py". Why? Because the Python code generated at
+        #   runtime by the "pyside2uic" package assumes this to be the case.
+        #   Naturally, this assumption is *NOT* configurable.
         return pathnames.join(
             self.data_py_dirname,
             guimetadata.MAIN_WINDOW_QRC_MODULE_NAME + '.py')

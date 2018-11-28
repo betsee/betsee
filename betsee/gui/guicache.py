@@ -16,6 +16,22 @@ user-specific files on the local filesystem.
 #cache files are unwritable by the current user. Instead, we note that there
 #are actually two use cases that we've been largely ignoring:
 #
+#* Define the following new "BetseeMetaApp" properties:
+#  * "cache_py_dirname" (e.g., "~/.betse/betsee/py/betsee_qrc.py").
+#  * "cache_py_qrc_filename" (e.g., "~/.betse/betsee/py/betsee_qrc.py").
+#  * "cache_py_ui_filename" (e.g., "~/.betse/betsee/py/betsee_ui.py").
+#* Regardless of whether we are in developer or end user usage (see below),
+#  perform the following behaviour immediately *AFTER* caching the
+#  "data_py_qrc_filename" and "data_py_ui_filename" files:
+#  * If the "cache_py_qrc_filename" file does *NOT* exist, copy from
+#    "data_py_qrc_filename" to "cache_py_qrc_filename".
+#  * If the "cache_py_ui_filename" file does *NOT* exist, copy from
+#    "data_py_ui_filename" to "cache_py_ui_filename".
+#* Change the following line found below:
+#    # ...from this:
+#    pys.add_import_dirname(app_meta.data_py_dirname)
+#    # ...to this:
+#    pys.add_import_dirname(app_meta.cache_py_dirname)
 #* Developer usage, as indicated by the
 #  betse.pathtree.get_git_worktree_dirname_or_none() function returning a
 #  non-None value. Of course, this won't *QUITE* work as intended, as that
@@ -38,9 +54,19 @@ user-specific files on the local filesystem.
 #    should be written into the "~/.betse/betsee" subdirectory (e.g.,
 #    "~/.betse/betsee_ui.py"). If any such file is unwritable, the existing
 #    "BetseFileException" should be raised.
-#
-#Ergo, the "betsee.pathtree" submodule should be lightly refactored to
-#conditionally change the filenames returned by the
+
+#FIXME: Exceptions raised from *EXTERNAL* Python modules (e.g., the
+#"pyside2uic" package) and commands (e.g., "pyside2-rcc") should be explicitly
+#caught and logged as errors. Given the existence of precached files,
+#user-specific caching is optional and hence should *NEVER* unexpectedly halt
+#the current process unless either BETSE or BETSEE themselves are to blame.
+#This implies that exception handling should be constrained to the specific
+#invocations of external utilities rather than entire BETSEE methods.
+#FIXME: Actually, *WAIT.* The above is certainly true when attempting to cache
+#the "cache_py_qrc_filename" and "cache_py_ui_filename" files but *NOT*
+#the "data_py_qrc_filename" and "data_py_ui_filename" files. Since
+#the latter are mandatory, exceptions should absolutely continue to be raised
+#on attempting to cache the latter.
 
 #FIXME: Still insufficient. Why? Because we need to automatically invalidate
 #caches whenever any file in the BETSEE codebase changes. *sigh*
