@@ -16,22 +16,18 @@ user-specific files on the local filesystem.
 #cache files are unwritable by the current user. Instead, we note that there
 #are actually two use cases that we've been largely ignoring:
 #
-#* Define the following new "BetseeMetaApp" properties:
-#  * "cache_py_dirname" (e.g., "~/.betse/betsee/py/betsee_qrc.py").
-#  * "cache_py_qrc_filename" (e.g., "~/.betse/betsee/py/betsee_qrc.py").
-#  * "cache_py_ui_filename" (e.g., "~/.betse/betsee/py/betsee_ui.py").
 #* Regardless of whether we are in developer or end user usage (see below),
 #  perform the following behaviour immediately *AFTER* caching the
 #  "data_py_qrc_filename" and "data_py_ui_filename" files:
-#  * If the "cache_py_qrc_filename" file does *NOT* exist, copy from
-#    "data_py_qrc_filename" to "cache_py_qrc_filename".
-#  * If the "cache_py_ui_filename" file does *NOT* exist, copy from
-#    "data_py_ui_filename" to "cache_py_ui_filename".
+#  * If the "dot_py_qrc_filename" file does *NOT* exist, copy from
+#    "data_py_qrc_filename" to "dot_py_qrc_filename".
+#  * If the "dot_py_ui_filename" file does *NOT* exist, copy from
+#    "data_py_ui_filename" to "dot_py_ui_filename".
 #* Change the following line found below:
 #    # ...from this:
 #    pys.add_import_dirname(app_meta.data_py_dirname)
 #    # ...to this:
-#    pys.add_import_dirname(app_meta.cache_py_dirname)
+#    pys.add_import_dirname(app_meta.dot_py_dirname)
 #* Developer usage, as indicated by the
 #  betse.pathtree.get_git_worktree_dirname_or_none() function returning a
 #  non-None value. Of course, this won't *QUITE* work as intended, as that
@@ -73,12 +69,12 @@ user-specific files on the local filesystem.
 
 # ....................{ IMPORTS                           }....................
 import PySide2
+from betse import metaapp
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmds, cmdpath
 from betse.util.py import pymodule, pys
 from betse.util.type.types import type_check, IterableTypes
-from betsee.guimetaapp import app_meta
 from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
     QBetseeSimConfEnumRadioButtonGroup)
 from betsee.lib import guilib
@@ -114,17 +110,40 @@ def cache_py_files() -> None:
     paths from which these modules are generated).
     '''
 
-    # Append the directory containing all generated modules to the PYTHONPATH,
-    # permitting these modules to be subsequently imported elsewhere.
-    pys.add_import_dirname(app_meta.data_py_dirname)
+    # Application metadata singleton.
+    app_meta = metaapp.get_app_meta()
+
+    #FIXME: Generalize these functions to accept explicit "py_qrc_filename" and
+    #"py_ui_filename" parameters.
 
     # Generate the requisite pure-Python modules (in any arbitrary order).
     _cache_py_qrc_file()
     _cache_py_ui_file()
 
-    # For safety, raise an exception unless all such modules exist now.
-    files.die_unless_file(
-        app_meta.data_py_qrc_filename, app_meta.data_py_ui_filename)
+    #FIXME: Avoid unconditionally overwriting user-specific files. Instead,
+    #only do so conditionally if either:
+    #
+    #* The user-specific file in question does *NOT* exist.
+    #* The application-wide file in question is newer than the corresponding
+    #  user-specific file.
+
+    # Copy each such module from its application-wide to user-specific
+    # subdirectory.
+    files.copy(
+        src_filename=app_meta.data_py_qrc_filename,
+        trg_filename=app_meta.dot_py_qrc_filename,
+        is_overwritable=True,
+    )
+    files.copy(
+        src_filename=app_meta.data_py_ui_filename,
+        trg_filename=app_meta.dot_py_ui_filename,
+        is_overwritable=True,
+    )
+
+    # Append the directory containing all generated user-specific modules to
+    # the PYTHONPATH *AFTER* successfully generating these modules, enabling
+    # these modules to be subsequently imported elsewhere in the codebase.
+    pys.add_import_dirname(app_meta.dot_py_dirname)
 
 # ....................{ CACHERS ~ private                 }....................
 def _cache_py_qrc_file() -> None:
@@ -135,6 +154,8 @@ def _cache_py_qrc_file() -> None:
     as new as all input paths required to regenerate this module) *or*
     regenerate this module from these input paths otherwise.
 
+    Parameters
+    ----------
     Raises
     ----------
     BetseFileException
@@ -150,6 +171,9 @@ def _cache_py_qrc_file() -> None:
     :func:`_is_output_path_outdated`
         Further details.
     '''
+
+    # Application metadata singleton.
+    app_meta = metaapp.get_app_meta()
 
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed
@@ -204,6 +228,9 @@ def _cache_py_ui_file() -> None:
     :func:`_is_output_path_outdated`
         Further details.
     '''
+
+    # Application metadata singleton.
+    app_meta = metaapp.get_app_meta()
 
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed

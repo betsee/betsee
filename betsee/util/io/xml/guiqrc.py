@@ -54,15 +54,15 @@ def convert_qrc_to_py_file_if_able(
     # unavailable, log a non-fatal warning and return.
     if not cmds.is_command('pyside2-rcc'):
         logs.log_warning(
-            'Skipping! Command "pyside2-rcc" not found, '
-            'probably due to "pyside2-tools" not being installed.')
+            'Skipping! Command "pyside2-rcc" not found '
+            '(e.g., as package "pyside2-tools" not installed).')
         return
 
     # If this output file is unwritable, log a non-fatal warning and return.
     if not paths.is_writable(py_filename):
         logs.log_warning(
-            'Skipping! PySide2 module "%s" unwritable, '
-            'probably due to a system-wide installation.', py_filename)
+            'Skipping! PySide2 module "%s" unwritable '
+            '(e.g., due to a system-wide installation).', py_filename)
         return
 
     # If this input file does *NOT* exist, raise an exception.

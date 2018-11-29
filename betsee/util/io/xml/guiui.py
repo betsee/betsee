@@ -215,15 +215,15 @@ def convert_ui_to_py_file_if_able(
     # unavailable, log a non-fatal warning and return.
     if not guilib.is_runtime_optional('pyside2uic'):
         logs.log_warning(
-            'Skipping! Package "pyside2uic" unimportable, '
-            'probably due to "pyside2-tools" not being installed.')
+            'Skipping! Package "pyside2uic" unimportable '
+            '(e.g., as package "pyside2-tools" not installed).')
         return
 
     # If this output file is unwritable, log a non-fatal warning and return.
     if not paths.is_writable(py_filename):
         logs.log_warning(
-            'Skipping! PySide2 module "%s" unwritable, '
-            'probably due to a system-wide installation.', py_filename)
+            'Skipping! PySide2 module "%s" unwritable '
+            '(e.g., due to a system-wide installation).', py_filename)
         return
 
     # Optional third-party dependencies required by this function.

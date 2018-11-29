@@ -17,15 +17,14 @@ synopsizing application metadata via read-only properties).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import betsee
-from betse.metaapp import app_meta as betse_app_meta
+from betse.metaapp import BetseMetaApp
 from betse.util.path import dirs, files, pathnames
-from betse.util.meta.metaappabc import MetaAppABC
 from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.types import ModuleType
 from betsee import guimetadata
 
 # ....................{ SUBCLASSES                        }....................
-class BetseeMetaApp(MetaAppABC):
+class BetseeMetaApp(BetseMetaApp):
     '''
     **Application metadata singleton** (i.e., application-wide object
     synopsizing application metadata via read-only properties) subclass.
@@ -51,16 +50,6 @@ class BetseeMetaApp(MetaAppABC):
     def package(self) -> ModuleType:
         return betsee
 
-    # ..................{ PROPERTIES ~ dir                  }..................
-    @property_cached
-    def dot_dirname(self) -> str:
-
-        # Create this directory if needed and return its dirname. For tidiness,
-        # this directory currently resides under BETSE's dot directory (e.g.,
-        # "~/.betse/betsee" on Linux).
-        return dirs.join_and_make_unless_dir(
-            betse_app_meta.dot_dirname, self.package_name)
-
     # ..................{ PROPERTIES ~ dir : data           }..................
     @property_cached
     def data_py_dirname(self) -> str:
@@ -72,7 +61,7 @@ class BetseeMetaApp(MetaAppABC):
         '''
 
         # Create this directory if needed and return its dirname.
-        return dirs.join_and_die_unless_dir(self.data_dirname, 'py')
+        return dirs.join_or_die(self.data_dirname, 'py')
 
 
     @property_cached
@@ -86,7 +75,7 @@ class BetseeMetaApp(MetaAppABC):
         '''
 
         # Return this dirname if this directory exists or raise an exception.
-        return dirs.join_and_die_unless_dir(self.data_dirname, 'qrc')
+        return dirs.join_or_die(self.data_dirname, 'qrc')
 
 
     @property_cached
@@ -99,7 +88,20 @@ class BetseeMetaApp(MetaAppABC):
         '''
 
         # Return this dirname if this directory exists or raise an exception.
-        return dirs.join_and_die_unless_dir(self.data_dirname, 'ui')
+        return dirs.join_or_die(self.data_dirname, 'ui')
+
+    # ..................{ PROPERTIES ~ dir : dot            }..................
+    @property_cached
+    def dot_py_dirname(self) -> str:
+        '''
+        Absolute dirname of this application's dot subdirectory containing
+        pure-Python modules and packages generated at runtime by this
+        application if found *or* raise an exception otherwise (i.e., if this
+        directory is *not* found).
+        '''
+
+        # Create this directory if needed and return its dirname.
+        return dirs.join_and_make_unless_dir(self.dot_dirname, 'py')
 
     # ..................{ PROPERTIES ~ file : data          }..................
     @property_cached
@@ -118,7 +120,7 @@ class BetseeMetaApp(MetaAppABC):
         # "resources" attribute of all XML tags contained in the file whose
         # path is given by the get_data_ui_filename() function. Why? Because
         # obfuscatory Qt.
-        return files.join_and_die_unless_file(
+        return files.join_or_die(
             self.data_qrc_dirname, self.package_name + '.qrc')
 
 
@@ -132,16 +134,16 @@ class BetseeMetaApp(MetaAppABC):
         '''
 
         # Return this filename if this file exists or raise an exception.
-        return files.join_and_die_unless_file(
+        return files.join_or_die(
             self.data_ui_dirname, self.package_name + '.ui')
 
     # ..................{ PROPERTIES ~ file : data : py     }..................
     @property_cached
     def data_py_qrc_filename(self) -> str:
         '''
-        Absolute filename of the pure-Python module generated from the
-        XML-formatted Qt resource collection (QRC) file exported by the
-        external Qt Designer application structuring all external resources
+        Absolute filename of the pure-Python application-wide module generated
+        from the XML-formatted Qt resource collection (QRC) file exported by
+        the external Qt Designer application structuring all external resources
         (e.g., icons) required by this application's main window.
 
         If this module exists, this module is guaranteed to be importable but
@@ -151,6 +153,8 @@ class BetseeMetaApp(MetaAppABC):
 
         See Also
         ----------
+        :meth:`dot_py_qrc_filename`
+            User-specific equivalent of this file.
         :mod:`betsee.gui.guicache`
             Submodule dynamically generating this module.
         '''
@@ -170,11 +174,11 @@ class BetseeMetaApp(MetaAppABC):
     @property_cached
     def data_py_ui_filename(self) -> str:
         '''
-        Absolute filename of the pure-Python module generated from the
-        XML-formatted user interface (UI) file exported by the external Qt
-        Designer application structuring this application's main window if
-        found *or* raise an exception otherwise (i.e., if this directory is
-        *not* found).
+        Absolute filename of the pure-Python application-wide module generated
+        from the XML-formatted user interface (UI) file exported by the
+        external Qt Designer application structuring this application's main
+        window if found *or* raise an exception otherwise (i.e., if this
+        directory is *not* found).
 
         If this module exists, this module is guaranteed to be importable but
         *not* necessarily up-to-date with the input paths from which this
@@ -183,6 +187,8 @@ class BetseeMetaApp(MetaAppABC):
 
         See Also
         ----------
+        :meth:`dot_py_ui_filename`
+            User-specific equivalent of this file.
         :mod:`betsee.gui.guicache`
             Submodule dynamically generating this module.
         '''
@@ -191,9 +197,41 @@ class BetseeMetaApp(MetaAppABC):
             self.data_py_dirname,
             guimetadata.MAIN_WINDOW_UI_MODULE_NAME + '.py')
 
-# ....................{ SINGLETONS                        }....................
-app_meta = BetseeMetaApp()
-'''
-**Application metadata singleton** (i.e., application-wide object synopsizing
-application metadata via read-only properties).
-'''
+    # ..................{ PROPERTIES ~ file : dot : py      }..................
+    @property_cached
+    def dot_py_qrc_filename(self) -> str:
+        '''
+        Absolute filename of the pure-Python user-specific module generated
+        from the XML-formatted Qt resource collection (QRC) file exported by
+        the external Qt Designer application structuring all external resources
+        (e.g., icons) required by this application's main window.
+
+        See Also
+        ----------
+        :meth:`data_py_qrc_filename`
+            Application-wide equivalent of this file.
+        '''
+
+        return pathnames.join(
+            self.dot_py_dirname,
+            pathnames.get_basename(self.data_py_qrc_filename))
+
+
+    @property_cached
+    def dot_py_ui_filename(self) -> str:
+        '''
+        Absolute filename of the pure-Python user-specific module generated
+        from the XML-formatted user interface (UI) file exported by the
+        external Qt Designer application structuring this application's main
+        window if found *or* raise an exception otherwise (i.e., if this
+        directory is *not* found).
+
+        See Also
+        ----------
+        :mod:`betsee.gui.guicache`
+            Submodule dynamically generating this module.
+        '''
+
+        return pathnames.join(
+            self.dot_py_dirname,
+            pathnames.get_basename(self.data_py_ui_filename))

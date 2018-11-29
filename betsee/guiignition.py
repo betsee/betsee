@@ -51,13 +51,18 @@ def reinit() -> None:
 
     # Defer heavyweight and possibly circular imports.
     from betse import ignition as betse_ignition
+    from betsee.guimetaapp import BetseeMetaApp
     from betsee.lib import guilib
 
+    # Application metadata singleton.
+    app_meta = BetseeMetaApp()
+
     # Initialize all lower-level BETSE logic *BEFORE* any higher-level BETSEE
-    # logic requiring the former. See the betse.guicli.BetseCLI._ignite_app()
-    # method for details on why the betse_ignition.reinit() rather than
-    # betse_ignition.init() function is called here.
-    betse_ignition.reinit()
+    # logic requiring the former. See the
+    # betsee.cli.guicli.BetseCLI._ignite_app() method for details on why the
+    # betse_ignition.reinit() rather than betse_ignition.init() function is
+    # called here.
+    betse_ignition.reinit(app_meta)
 
     # Validate mandatory dependencies *AFTER* initializing BETSE.
     #
