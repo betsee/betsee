@@ -9,48 +9,6 @@ interface (GUI), persisting external resources required by this GUI to
 user-specific files on the local filesystem.
 '''
 
-#FIXME: O.K.; so, clearly, in the wake of recent issues surrounding cache
-#descrynchronization, we need to significantly "improve our game" here.
-#Specifically, we should cease raising "BetseFileException" exceptions from the
-#_cache_py_qrc_file() and _cache_py_ui_file() functions when the destination
-#cache files are unwritable by the current user. Instead, we note that there
-#are actually two use cases that we've been largely ignoring:
-#
-#* Regardless of whether we are in developer or end user usage (see below),
-#  perform the following behaviour immediately *AFTER* caching the
-#  "data_py_qrc_filename" and "data_py_ui_filename" files:
-#  * If the "dot_py_qrc_filename" file does *NOT* exist, copy from
-#    "data_py_qrc_filename" to "dot_py_qrc_filename".
-#  * If the "dot_py_ui_filename" file does *NOT* exist, copy from
-#    "data_py_ui_filename" to "dot_py_ui_filename".
-#* Change the following line found below:
-#    # ...from this:
-#    pys.add_import_dirname(app_meta.data_py_dirname)
-#    # ...to this:
-#    pys.add_import_dirname(app_meta.dot_py_dirname)
-#* Developer usage, as indicated by the
-#  betse.pathtree.get_git_worktree_dirname_or_none() function returning a
-#  non-None value. Of course, this won't *QUITE* work as intended, as that
-#  function applies only to BETSE. Generalizing that function to BETSEE as well
-#  suggests that we may want to:
-#  * Define a new betse.util.path.gits.get_module_worktree_dirname_or_none()
-#    function accepting a single passed Python module or package object and
-#    otherwise behaving similarly to the
-#    betse.pathtree.get_git_worktree_dirname_or_none() function.
-#  * Refactor the entire "betse.pathtree" submodule from a procedural to
-#    object-oriented approach, in which case BETSEE could simply inherit
-#    existing functionality. Actually, don't do this; we simply have no time.
-#  In any case, when BETSEE is in "developer usage" mode:
-#  * The official copies of these cached files residing under "betsee/data/"
-#    should be written to. If any such file is unwritable, the existing
-#    "BetseFileException" should be raised.
-#* End user usage. In this case:
-#  * The official copies of these cached files residing under "betsee/data/"
-#    should be preserved as is rather than written to. Instead, new files
-#    should be written into the "~/.betse/betsee" subdirectory (e.g.,
-#    "~/.betse/betsee_ui.py"). If any such file is unwritable, the existing
-#    "BetseFileException" should be raised.
-
 #FIXME: Exceptions raised from *EXTERNAL* Python modules (e.g., the
 #"pyside2uic" package) and commands (e.g., "pyside2-rcc") should be explicitly
 #caught and logged as errors. Given the existence of precached files,
@@ -59,10 +17,16 @@ user-specific files on the local filesystem.
 #This implies that exception handling should be constrained to the specific
 #invocations of external utilities rather than entire BETSEE methods.
 #FIXME: Actually, *WAIT.* The above is certainly true when attempting to cache
-#the "cache_py_qrc_filename" and "cache_py_ui_filename" files but *NOT*
-#the "data_py_qrc_filename" and "data_py_ui_filename" files. Since
-#the latter are mandatory, exceptions should absolutely continue to be raised
-#on attempting to cache the latter.
+#the "cache_py_qrc_filename" and "cache_py_ui_filename" files but *NOT* the
+#"data_py_qrc_filename" and "data_py_ui_filename" files. Since the latter are
+#mandatory, exceptions should absolutely continue to be raised on attempting to
+#cache the latter.
+#FIXME: The simplest approach might be as follows:
+#
+#* Refactor all non-fatal warnings currently emitted by low-level "guiqrc" and
+#  "guiui" functions into fatal exceptions.
+#* If under non-developer mode, explicitly catch *ALL* exceptions raised by the
+#  calls to these functions below.
 
 #FIXME: Still insufficient. Why? Because we need to automatically invalidate
 #caches whenever any file in the BETSEE codebase changes. *sigh*
@@ -101,9 +65,9 @@ notably including :class:`QButtonGroup` widgets.
 def cache_py_files() -> None:
     '''
     Either create and cache *or* reuse each previously cached pure-Python
-    module required at runtime by this GUI, including all :mod:`PySide2`-based
-    modules converted from XML-formatted files and binary resources exported by
-    the external Qt Designer GUI.
+    submodule required at runtime by this GUI, including :mod:`PySide2`-based
+    submodules converted from XML-formatted files and binary resources exported
+    by the external Qt (Creator|Designer) GUI.
 
     For efficiency, previously generated modules are regenerated *only* as
     needed (i.e., if older than the underlying XML files and other associated
@@ -113,77 +77,158 @@ def cache_py_files() -> None:
     # Application metadata singleton.
     app_meta = metaapp.get_app_meta()
 
-    #FIXME: Generalize these functions to accept explicit "py_qrc_filename" and
-    #"py_ui_filename" parameters.
+    # If this application has a Git-based working tree, assume this application
+    # to be under development by a non-end user developer. In this case,
+    # (re)generate *ALL* pure-Python cached submodules (including both
+    # application-wide *AND* user-specific) from their input XML files.
+    if app_meta.is_git_worktree:
+        _cache_py_files_dev()
+        # _cache_py_files_user()
+    # Else, this application has no such tree. In this case, assuming this
+    # application to be in use by a non-developer end user, (re)generate only
+    # user-specific pure-Python cached submodules from their input XML files.
+    else:
+        _cache_py_files_user()
 
-    # Generate the requisite pure-Python modules (in any arbitrary order).
-    _cache_py_qrc_file()
-    _cache_py_ui_file()
-
-    #FIXME: Avoid unconditionally overwriting user-specific files. Instead,
-    #only do so conditionally if either:
-    #
-    #* The user-specific file in question does *NOT* exist.
-    #* The application-wide file in question is newer than the corresponding
-    #  user-specific file.
-
-    # Copy each such module from its application-wide to user-specific
-    # subdirectory.
-    files.copy(
-        src_filename=app_meta.data_py_qrc_filename,
-        trg_filename=app_meta.dot_py_qrc_filename,
-        is_overwritable=True,
-    )
-    files.copy(
-        src_filename=app_meta.data_py_ui_filename,
-        trg_filename=app_meta.dot_py_ui_filename,
-        is_overwritable=True,
-    )
-
-    # Append the directory containing all generated user-specific modules to
-    # the PYTHONPATH *AFTER* successfully generating these modules, enabling
-    # these modules to be subsequently imported elsewhere in the codebase.
+    # Append the directory containing all generated user-specific submodules to
+    # the ${PYTHONPATH} *AFTER* successfully making these submodules, enabling
+    # these submodules to be subsequently imported elsewhere in the codebase.
     pys.add_import_dirname(app_meta.dot_py_dirname)
 
-# ....................{ CACHERS ~ private                 }....................
-def _cache_py_qrc_file() -> None:
-    '''
-    Reuse the previously cached pure-Python :mod:`PySide2`-based module
-    embedding all binary resources in this application's main Qt resource
-    collection (QRC) if this module is sufficiently up-to-date (i.e., at least
-    as new as all input paths required to regenerate this module) *or*
-    regenerate this module from these input paths otherwise.
 
-    Parameters
-    ----------
-    Raises
-    ----------
-    BetseFileException
-        If this module is outdated (i.e., older than at least one input path
-        required to regenerate this module) but is unwritable by the current
-        user, in which case this module is *NOT* updateable and is thus
-        desynchronized from the remainder of the codebase. Because this
-        desynchronization is liable to induce subtle non-human-readable issues,
-        a fatal exception is raised rather than a non-fatal warning logged.
-
-    See Also
-    ----------
-    :func:`_is_output_path_outdated`
-        Further details.
+def _cache_py_files_dev() -> None:
     '''
+    Either create and cache *or* reuse each previously cached pure-Python
+    submodule required at runtime by this GUI, including both application-wide
+    submodules bundled in this application's package *and* user-specific
+    submodules residing in a dot directory under this user's home directory.
+
+    Caveats
+    ----------
+    **This function should only be called if this application has a Git-based
+    working tree,** in which case this application is assumed to be under
+    development by a non-end user developer.
+    '''
+
+    # Log this caching.
+    logs.log_info('Synchronizing Git-cached submodules...')
 
     # Application metadata singleton.
     app_meta = metaapp.get_app_meta()
 
+    # (Re)cache *ALL* application-wide submodules (in arbitrary order).
+    _cache_py_qrc_file(
+        qrc_filename=app_meta.data_qrc_filename,
+        py_filename=app_meta.data_py_qrc_filename)
+    _cache_py_ui_file(
+        ui_filename=app_meta.data_ui_filename,
+        py_filename=app_meta.data_py_ui_filename)
+
+    # (Re)cache *ALL* user-specific submodules (in arbitrary order). For
+    # simplicity, simply replace these files with their application-wide
+    # equivalents cached above.
+    files.copy_overwritable(
+        src_filename=app_meta.data_py_qrc_filename,
+        trg_filename=app_meta.dot_py_qrc_filename)
+    files.copy_overwritable(
+        src_filename=app_meta.data_py_ui_filename,
+        trg_filename=app_meta.dot_py_ui_filename)
+
+
+def _cache_py_files_user() -> None:
+    '''
+    Either create and cache *or* reuse each previously cached pure-Python
+    submodule required at runtime by this GUI, including only user-specific
+    submodules residing in a dot directory under this user's home directory but
+    *not* application-wide submodules bundled in this application's package.
+
+    Caveats
+    ----------
+    For safety, this function only logs non-fatal warnings rather than raising
+    exceptions. This function only creates optional user-specific submodules
+    rather than mandatory application-wide submodules. While lamentable, any
+    issues in this function (e.g., an inability to write user-specific
+    submodules due to petty ownership or permission conflicts) should be
+    confined to this function rather than halting the entire application.
+    '''
+
+    # Log this caching.
+    logs.log_info('Synchronizing user-cached submodules...')
+
+    # Application metadata singleton.
+    app_meta = metaapp.get_app_meta()
+
+    # Attempt to (re)cache the user-specific QRC submodule.
+    try:
+        _cache_py_qrc_file(
+            qrc_filename=app_meta.data_qrc_filename,
+            py_filename=app_meta.dot_py_qrc_filename)
+    # If doing so fails for *ANY* reason whatsoever...
+    except Exception as exception:
+        # Log this exception as a non-fatal warning.
+        logs.log_warning('Skipping! ' + str(exception))
+
+        # Fallback to simply replacing this submodule with its application-wide
+        # equivalent bundled with this application.
+        files.copy_overwritable(
+            src_filename=app_meta.data_py_qrc_filename,
+            trg_filename=app_meta.dot_py_qrc_filename)
+
+    # Attempt to (re)cache the user-specific UI submodule.
+    try:
+        _cache_py_ui_file(
+            ui_filename=app_meta.data_ui_filename,
+            py_filename=app_meta.dot_py_ui_filename)
+    # If doing so fails for *ANY* reason whatsoever...
+    except Exception as exception:
+        # Log this exception as a non-fatal warning.
+        logs.log_warning('Skipping! ' + str(exception))
+
+        # Fallback to simply replacing this submodule with its application-wide
+        # equivalent bundled with this application.
+        files.copy_overwritable(
+            src_filename=app_meta.data_py_ui_filename,
+            trg_filename=app_meta.dot_py_ui_filename)
+
+# ....................{ CACHERS ~ private                 }....................
+@type_check
+def _cache_py_qrc_file(qrc_filename: str, py_filename: str) -> None:
+    '''
+    Reuse the previously cached pure-Python :mod:`PySide2`-based submodule
+    embedding all binary resources in this application's main Qt resource
+    collection (QRC) with the passed filename if that submodule is sufficiently
+    up-to-date (i.e., at least as new as all input paths required to regenerate
+    that submodule) *or* regenerate this submodule from these input paths
+    otherwise, principally including the input QRC file with the passed
+    filename.
+
+    Parameters
+    ----------
+    qrc_filename : str
+        Absolute or relative filename of the input ``.qrc``-suffixed file.
+    py_filename : str
+        Absolute or relative filename of the output ``.py``-suffixed file.
+
+    Raises
+    ----------
+    BetseCommandException
+        If the ``pyside2-rcc`` command installed by the optional third-party
+        dependency ``pyside2-tools`` is *not* in the current ``${PATH}``.
+
+    See Also
+    ----------
+    :func:`guiqrc.convert_qrc_to_py_file`
+        Further details.
+    '''
+
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed
     # by the paths.is_mtime_recursive_older_than_paths() function.
-    input_pathnames = [app_meta.data_qrc_filename,]
-
-    # If the optional third-party dependency "pyside2-tools" is installed,
-    # append the "pyside2-rcc" executable for testing as well.
-    if cmds.is_command('pyside2-rcc'):
-        input_pathnames.append(cmdpath.get_filename('pyside2-rcc'))
+    src_pathnames = [
+        qrc_filename,
+        pymodule.get_filename(guiqrc),
+        cmdpath.get_filename('pyside2-rcc'),
+    ]
 
     # If this output module is at least as new as *ALL* the following paths,
     # this output module is sufficiently up-to-date and need *NOT* be
@@ -193,61 +238,57 @@ def _cache_py_qrc_file() -> None:
     #   psdqrc.convert_qrc_to_py_file() function called below.
     # * Any file or subdirectory in the input directory containing both this
     #   input QRC file and all resource files referenced by this file.
-    if not _is_output_path_outdated(
-        input_pathnames=input_pathnames,
-        output_filename=app_meta.data_py_qrc_filename):
+    if not _is_trg_file_stale(
+        src_pathnames=src_pathnames, trg_filename=py_filename):
         return
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
-    guiqrc.convert_qrc_to_py_file_if_able(
-        qrc_filename=app_meta.data_qrc_filename,
-        py_filename=app_meta.data_py_qrc_filename)
+    guiqrc.convert_qrc_to_py_file(
+        qrc_filename=qrc_filename, py_filename=py_filename)
 
 
-def _cache_py_ui_file() -> None:
+@type_check
+def _cache_py_ui_file(ui_filename: str, py_filename: str) -> None:
     '''
-    Reuse the previously cached pure-Python :mod:`PySide2`-based module
+    Reuse the previously cached pure-Python :mod:`PySide2`-based submodule
     implementing the superficial construction of this application's main window
-    if this module is sufficiently up-to-date (i.e., at least as new as all
-    input paths required to regenerate this module) *or* regenerate this module
-    from these input paths otherwise.
+    if that submodule is sufficiently up-to-date (i.e., at least as new as all
+    input paths required to regenerate that submodule) *or* regenerate that
+    submodule from these input paths otherwise, principally including the input
+    UI file with the passed filename.
+
+    Parameters
+    ----------
+    ui_filename : str
+        Absolute or relative filename of the input ``.ui``-suffixed file.
+    py_filename : str
+        Absolute or relative filename of the output ``.py``-suffixed file.
 
     Raises
     ----------
-    BetseFileException
-        If this module is outdated (i.e., older than at least one input path
-        required to regenerate this module) but is unwritable by the current
-        user, in which case this module is *NOT* updateable and is thus
-        desynchronized from the remainder of the codebase. Because this
-        desynchronization is liable to induce subtle non-human-readable issues,
-        a fatal exception is raised rather than a non-fatal warning logged.
+    ImportError
+        If the :mod:`pyside2uic` package installed by the optional third-party
+        dependency ``pyside2-tools`` is *not* importable.
 
     See Also
     ----------
-    :func:`_is_output_path_outdated`
+    :func:`guiui.convert_ui_to_py_file`
         Further details.
     '''
 
-    # Application metadata singleton.
-    app_meta = metaapp.get_app_meta()
+    # "pyside2uic" package installed by the "pyside2-tools" dependency.
+    pyside2uic = guilib.import_runtime_optional('pyside2uic')
 
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed
     # by the paths.is_mtime_recursive_older_than_paths() function.
-    input_pathnames = [
-        app_meta.data_ui_filename,
+    src_pathnames = [
+        ui_filename,
         pymodule.get_filename(guiui),
         pymodule.get_dirname(PySide2),
+        pymodule.get_dirname(pyside2uic),
     ]
-
-    # If the optional third-party dependency "pyside2-tools" is installed...
-    if guilib.is_runtime_optional('pyside2uic'):
-        # Package installed by this dependency.
-        pyside2uic = guilib.import_runtime_optional('pyside2uic')
-
-        # Append this package's directory for testing as well.
-        input_pathnames.append(pymodule.get_dirname(pyside2uic))
 
     # If this output module is at least as new as *ALL* the following paths,
     # this output module is sufficiently up-to-date and need *NOT* be
@@ -259,55 +300,63 @@ def _cache_py_ui_file() -> None:
     # * Any file or subdirectory in the input directories containing the
     #   "PySide2" and "pyside2uic" packages required by the
     #   psdui.convert_ui_to_py_file() function called below.
-    if not _is_output_path_outdated(
-        input_pathnames=input_pathnames,
-        output_filename=app_meta.data_py_ui_filename):
+    if not _is_trg_file_stale(
+        src_pathnames=src_pathnames, trg_filename=py_filename):
         return
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
-    guiui.convert_ui_to_py_file_if_able(
-        ui_filename=app_meta.data_ui_filename,
-        py_filename=app_meta.data_py_ui_filename,
+    guiui.convert_ui_to_py_file(
+        ui_filename=ui_filename,
+        py_filename=py_filename,
         promote_obj_name_to_class=_PROMOTE_OBJ_NAME_TO_CLASS,
     )
 
 # ....................{ TESTERS ~ private                 }....................
 @type_check
-def _is_output_path_outdated(
-    input_pathnames: IterableTypes, output_filename: str) -> bool:
+def _is_trg_file_stale(
+    src_pathnames: IterableTypes, trg_filename: str) -> bool:
     '''
-    ``True`` only if the output path either does not exist, does but is older
-    than all input paths in the passed iterable, *or* does but is an empty
-    (i.e., zero-byte) file.
+    ``True`` only if the passed target file either does not exist, does exist
+    but is a directory, does exist but is **empty** (i.e., zero-byte), *or*
+    does exist but is older than all source paths in the passed iterable.
 
     If this function returns ``True``, the caller is expected to explicitly
-    (re)create this output path from these input paths.
+    (re)create this target file from these source paths.
 
     Parameters
     ----------
-    input_pathnames: IterableTypes[str]
-        Iterable of the absolute or relative pathnames of all input paths
-        required to (re)create this output path. For efficiency, these paths
+    src_pathnames: IterableTypes[str]
+        Iterable of the absolute or relative pathnames of all source paths
+        required to (re)create this target file. For efficiency, these paths
         should be ordered according to the heuristic discussed by the
         :func:`paths.is_mtime_recursive_older_than_paths` function.
-    output_filename : str
-        Absolute or relative pathname of the output path.
+    trg_filename : str
+        Absolute or relative filename of the target file.
+
+    Returns
+    ----------
+    bool
+        ``True`` only if this target file either:
+
+        * Does *not* exist.
+        * Does exist but is a directory.
+        * Does exist but is an **empty file** (i.e., zero-byte).
+        * Does exist but is older than all such source paths.
     '''
 
     # Log this inspection.
     logs.log_info(
         'Synchronizing cached submodule "%s"...',
-        pathnames.get_basename(output_filename))
+        pathnames.get_basename(trg_filename))
 
     # Return true only if either...
     return (
-        # This output module does not exist *OR*...
-        not paths.is_path(output_filename) or
-        # This output module does exist but is older than at least one of these
-        # output paths *OR*...
-        paths.is_mtime_recursive_older_than_paths(
-            output_filename, input_pathnames) or
-        # This output module is a zero-byte file.
-        files.get_size(output_filename) == 0
+        # This target file does not exist or does but is *NOT* a file *OR*...
+        not files.is_file(trg_filename) or
+        # This target file is empty.
+        files.is_empty(trg_filename) or
+        # This target file does exist but is older than at least one of these
+        # source paths *OR*...
+        paths.is_mtime_recursive_older_than_paths(trg_filename, src_pathnames)
     )
