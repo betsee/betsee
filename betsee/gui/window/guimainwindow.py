@@ -13,7 +13,7 @@ This submodule imports from the module whose fully-qualified name is given by
 dynamically generated at runtime from XML-formatted files exported by the
 external Qt Designer GUI and bundled with this application's codebase. Since
 that module is *not* guaranteed to exist at application startup, this
-submodule is safely importable only *after* the :mod:`betsee.gui.guicache`
+submodule is safely importable only *after* the :mod:`betsee.lib.pyside2.cache.guipsdcache`
 submodule has locally created and cached that module for the current user.
 '''
 
@@ -75,13 +75,13 @@ from betsee import guimetadata
 from betsee.guiexception import BetseePySideWindowException
 from betsee.gui.guisignal import QBetseeSignaler
 from betsee.util.app import guiappwindow
-from betsee.util.io import guierr
+from betsee.util.io import guierror
 from betsee.util.io.log import guilogconf
-from betsee.util.io.xml import guiui
+from betsee.lib.pyside2 import guipsdui
 from betsee.util.type.guitype import QWidgetOrNoneTypes
 
 # ....................{ GLOBALS                           }....................
-MAIN_WINDOW_BASE_CLASSES = guiui.get_ui_module_base_classes(
+MAIN_WINDOW_BASE_CLASSES = guipsdui.get_ui_module_base_classes(
     ui_module_name=guimetadata.MAIN_WINDOW_UI_MODULE_NAME)
 '''
 Sequence of all main window base classes declared by the module whose
@@ -278,7 +278,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         selected action has yet to be implemented.
         '''
 
-        guierr.show_error(
+        guierror.show_error(
             title='Action Unimplemented',
             synopsis='This action is currently unimplemented.',
         )

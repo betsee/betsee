@@ -252,10 +252,10 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # Additionally attempt to...
         try:
             # Import PySide2.
-            from betsee.util.io import guierr
+            from betsee.util.io import guierror
 
             # Display a PySide2-based message box displaying this exception.
-            guierr.show_exception(exception)
+            guierror.show_exception(exception)
         # If PySide2 or any other module indirectly imported above is
         # unimportable, print this exception message but otherwise ignore this
         # exception. Why? Because we have more significant fish to fry.

@@ -137,6 +137,15 @@ def show_error(
     assert isinstance(title,    str), '"{}" not a string.'.format(title)
     assert isinstance(synopsis, str), '"{}" not a string.'.format(synopsis)
 
+    # Maximum number of characters to which each passed string is truncated
+    # prior to display. Attempting to display untruncated long strings
+    # typically induces non-human-readable application failure (e.g.,
+    # segmentation faults, infinite loops) under Qt, which is bad.
+    TITLE_MAX_LEN    = 80     # standard UNIX terminal line length
+    SYNOPSIS_MAX_LEN = 80*8   # sensible number of sentences of that length
+    EXEGESIS_MAX_LEN = 80*16
+    DETAILS_MAX_LEN  = 80*32
+
     # Instantiate and initialize the "QApplication" singleton for this
     # application if needed *BEFORE* creating children widgets of this
     # singleton. Failure to do so typically results in non-human-readable
@@ -146,20 +155,36 @@ def show_error(
     #    [1]    30475 abort      betsee -v
     guiapp.init()
 
+    # For safety, truncate this title and synopsis to lengths defined above.
+    title_truncated    = _truncate(text=title,    max_len=TITLE_MAX_LEN)
+    synopsis_truncated = _truncate(text=synopsis, max_len=SYNOPSIS_MAX_LEN)
+
     # Message box displaying this error.
     error_box = QMessageBox()
-    error_box.setWindowTitle(title)
-    error_box.setText(synopsis)
+    error_box.setWindowTitle(title_truncated)
+    error_box.setText(synopsis_truncated)
     error_box.setIcon(QMessageBox.Critical)
     error_box.setStandardButtons(QMessageBox.Ok)
 
-    # If this exception provides optional metadata, display this metadata.
+    # If this exception provides an optional exegesis...
     if exegesis is not None:
         assert isinstance(exegesis, str), '"{}" not a string.'.format(exegesis)
-        error_box.setInformativeText(exegesis)
+
+        # For safety, truncate this metadata as above.
+        exegesis_truncated = _truncate(text=exegesis, max_len=EXEGESIS_MAX_LEN)
+
+        # Display this metadata.
+        error_box.setInformativeText(exegesis_truncated)
+
+    # If this exception provides optional details...
     if details is not None:
         assert isinstance(details, str), '"{}" not a string.'.format(details)
-        error_box.setDetailedText(details)
+
+        # For safety, truncate this metadata as above.
+        details_truncated = _truncate(text=details, max_len=DETAILS_MAX_LEN)
+
+        # Display this metadata.
+        error_box.setDetailedText(details_truncated)
 
     # Finalize this message box *AFTER* setting all widget proporties above.
     error_box.show()
@@ -220,3 +245,67 @@ def show_exception(exception: Exception) -> None:
         exegesis=exception_exegesis,
         details=exception_traceback,
     )
+
+# ....................{ TRUNCATERS                        }....................
+def _truncate(text: str, max_len: int) -> str:
+    '''
+    Passed string truncated to the passed maximum length by replacing the
+    substring of this string exceeding that length with the conventional ASCII
+    ellipses (i.e., ``...``).
+
+    Parameters
+    ----------
+    text : str
+        String to be truncated.
+    max_len : int
+        Maximum number of characters to truncate this string to.
+
+    Returns
+    ----------
+    str
+        Passed string truncated to this maximum length, as detailed above.
+
+    See Also
+    ----------
+    :func:`betse.util.type.text.strs.truncate`
+        General-purpose truncater from which this error-specific equivalent is
+        derived. As the top-level of this submodule suggests, BETSE modules are
+        *not* guaranteed to exist at this point. Ergo, this function pastes the
+        :func:`betse.util.type.text.strs.truncate` function into this codebase.
+    '''
+
+    # Substring to replace the truncated portion of this string with.
+    replacement = '...'
+
+    # If this string does *NOT* exceed this maximum, return this string as is.
+    if len(text) <= max_len:
+        return text
+    # Else, this string exceeds this maximum. In this case...
+    else:
+        # Number of characters to truncate from the end of this string.
+        # Dismantled, this is:
+        #
+        # * "len(text) - max_len", the number of characters that this string
+        #   exceeds this maximum length by.
+        # * "... + len(replacement)", truncating an additional number of
+        #   characters equal to the length of this replacement so as to make
+        #   sufficient room for this replacement at the end of this string
+        #   without exceeding this maximum length.
+        #
+        # Note that this number is guaranteed to be non-negative (i.e., greater
+        # than zero), as "len(text) > max_len" and "len(replacement) >= 0".
+        truncate_chars_count = len(text) - max_len + len(replacement)
+
+        # If more characters are to be truncated from this string than exist in
+        # this string, then it can be shown by trivial algebraic equivalency
+        # that "len(replacement) > max_len" (i.e., the length of the
+        # replacement substring exceeds the maximum length). In this uncommon
+        # edge case, return the replacement truncated to this maximum.
+        if truncate_chars_count > len(text):
+            return replacement[:max_len]
+        # Else, fewer characters are to be truncated from this string than
+        # exist in this string. This is the common case.
+
+        # Return this string truncated to this number of characters appended by
+        # this replacement substring.
+        return text[:-truncate_chars_count] + replacement

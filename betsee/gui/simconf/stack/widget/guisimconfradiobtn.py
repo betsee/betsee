@@ -41,7 +41,7 @@ class QBetseeSimConfEnumRadioButtonGroup(
     widgets to instances of this subclass,** a longstanding deficiency with no
     short-term official solution. Instead, button groups *must* be manually
     "promoted" via the admittedly hackish
-    :attr:`betsee.gui.guicache._PROMOTE_OBJ_NAME_TO_TYPE` dictionary.
+    :attr:`betsee.lib.pyside2.cache.guipsdcache._PROMOTE_OBJ_NAME_TO_TYPE` dictionary.
 
     See Also
     ----------

@@ -68,4 +68,4 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
 
     #FIXME: The contents of this output "py_filename" should additionally be
     #opened for writing and prefixed by a shebang line running the active Python
-    #interpreter. See the "guiui" submodule for relevant logic.
+    #interpreter. See the "guipsdcacheui" submodule for relevant logic.

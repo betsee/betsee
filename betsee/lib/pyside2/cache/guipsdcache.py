@@ -9,46 +9,22 @@ interface (GUI), persisting external resources required by this GUI to
 user-specific files on the local filesystem.
 '''
 
-#FIXME: Exceptions raised from *EXTERNAL* Python modules (e.g., the
-#"pyside2uic" package) and commands (e.g., "pyside2-rcc") should be explicitly
-#caught and logged as errors. Given the existence of precached files,
-#user-specific caching is optional and hence should *NEVER* unexpectedly halt
-#the current process unless either BETSE or BETSEE themselves are to blame.
-#This implies that exception handling should be constrained to the specific
-#invocations of external utilities rather than entire BETSEE methods.
-#FIXME: Actually, *WAIT.* The above is certainly true when attempting to cache
-#the "cache_py_qrc_filename" and "cache_py_ui_filename" files but *NOT* the
-#"data_py_qrc_filename" and "data_py_ui_filename" files. Since the latter are
-#mandatory, exceptions should absolutely continue to be raised on attempting to
-#cache the latter.
-#FIXME: The simplest approach might be as follows:
-#
-#* Refactor all non-fatal warnings currently emitted by low-level "guiqrc" and
-#  "guiui" functions into fatal exceptions.
-#* If under non-developer mode, explicitly catch *ALL* exceptions raised by the
-#  calls to these functions below.
-
-#FIXME: Still insufficient. Why? Because we need to automatically invalidate
-#caches whenever any file in the BETSEE codebase changes. *sigh*
-
 # ....................{ IMPORTS                           }....................
 import PySide2
 from betse import metaapp
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
-from betse.util.path.command import cmds, cmdpath
+from betse.util.path.command import cmdpath
 from betse.util.py import pymodule, pys
 from betse.util.type.types import type_check, IterableTypes
 from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
     QBetseeSimConfEnumRadioButtonGroup)
-from betsee.lib import guilib
-from betsee.util.io.xml import guiqrc, guiui
 
 # ....................{ GLOBALS                           }....................
 #FIXME: When upstream permits "QButtonGroup" widgets to be promoted via
 #Qt (Creator|Designer), remove this ad-hack kludge.
 _PROMOTE_OBJ_NAME_TO_CLASS = {
-    # Manually promoto "QButtonGroup" widgets to application-specific types.
+    # Manually promote "QButtonGroup" widgets to application-specific types.
     'sim_conf_space_intra_lattice_type': QBetseeSimConfEnumRadioButtonGroup,
 }
 '''
@@ -61,17 +37,18 @@ Qt (Creator|Designer) GUI currently provides no means of official promotion,
 notably including :class:`QButtonGroup` widgets.
 '''
 
-# ....................{ CACHERS                           }....................
-def cache_py_files() -> None:
+# ....................{ INITIALIZERS                      }....................
+def init() -> None:
     '''
-    Either create and cache *or* reuse each previously cached pure-Python
-    submodule required at runtime by this GUI, including :mod:`PySide2`-based
-    submodules converted from XML-formatted files and binary resources exported
-    by the external Qt (Creator|Designer) GUI.
+    Initialize this submodule and hence the on-disk cache of :mod:`PySide2`
+    submodules required by this application at runtime.
 
-    For efficiency, previously generated modules are regenerated *only* as
-    needed (i.e., if older than the underlying XML files and other associated
-    paths from which these modules are generated).
+    Specifically, this function either creates and caches *or* reuses each
+    pure-Python :mod:`PySide2`-based submodule converted from a source
+    XML-formatted file and zero or more binary resources exported by the
+    external Qt (Creator|Designer) GUI. For efficiency, previously cached
+    submodules are regenerated *only* as needed (i.e., if older than the
+    underlying paths from which these submodules are generated).
     '''
 
     # Application metadata singleton.
@@ -82,21 +59,21 @@ def cache_py_files() -> None:
     # (re)generate *ALL* pure-Python cached submodules (including both
     # application-wide *AND* user-specific) from their input XML files.
     if app_meta.is_git_worktree:
-        _cache_py_files_dev()
-        # _cache_py_files_user()
+        _cache_all_dev()
+        # _cache_all_user()
     # Else, this application has no such tree. In this case, assuming this
     # application to be in use by a non-developer end user, (re)generate only
     # user-specific pure-Python cached submodules from their input XML files.
     else:
-        _cache_py_files_user()
+        _cache_all_user()
 
     # Append the directory containing all generated user-specific submodules to
     # the ${PYTHONPATH} *AFTER* successfully making these submodules, enabling
     # these submodules to be subsequently imported elsewhere in the codebase.
     pys.add_import_dirname(app_meta.dot_py_dirname)
 
-
-def _cache_py_files_dev() -> None:
+# ....................{ CACHERS ~ all                     }....................
+def _cache_all_dev() -> None:
     '''
     Either create and cache *or* reuse each previously cached pure-Python
     submodule required at runtime by this GUI, including both application-wide
@@ -111,7 +88,7 @@ def _cache_py_files_dev() -> None:
     '''
 
     # Log this caching.
-    logs.log_info('Synchronizing Git-cached submodules...')
+    logs.log_info('Synchronizing Git-cached PySide2 submodules...')
 
     # Application metadata singleton.
     app_meta = metaapp.get_app_meta()
@@ -135,7 +112,7 @@ def _cache_py_files_dev() -> None:
         trg_filename=app_meta.dot_py_ui_filename)
 
 
-def _cache_py_files_user() -> None:
+def _cache_all_user() -> None:
     '''
     Either create and cache *or* reuse each previously cached pure-Python
     submodule required at runtime by this GUI, including only user-specific
@@ -153,7 +130,7 @@ def _cache_py_files_user() -> None:
     '''
 
     # Log this caching.
-    logs.log_info('Synchronizing user-cached submodules...')
+    logs.log_info('Synchronizing user-cached PySide2 submodules...')
 
     # Application metadata singleton.
     app_meta = metaapp.get_app_meta()
@@ -166,7 +143,8 @@ def _cache_py_files_user() -> None:
     # If doing so fails for *ANY* reason whatsoever...
     except Exception as exception:
         # Log this exception as a non-fatal warning.
-        logs.log_warning('Skipping! ' + str(exception))
+        logs.log_exception(exception)
+        logs.log_warning('Synchronization failed due to uncaught exception!')
 
         # Fallback to simply replacing this submodule with its application-wide
         # equivalent bundled with this application.
@@ -182,7 +160,8 @@ def _cache_py_files_user() -> None:
     # If doing so fails for *ANY* reason whatsoever...
     except Exception as exception:
         # Log this exception as a non-fatal warning.
-        logs.log_warning('Skipping! ' + str(exception))
+        logs.log_exception(exception)
+        logs.log_warning('Synchronization failed due to uncaught exception!')
 
         # Fallback to simply replacing this submodule with its application-wide
         # equivalent bundled with this application.
@@ -190,7 +169,7 @@ def _cache_py_files_user() -> None:
             src_filename=app_meta.data_py_ui_filename,
             trg_filename=app_meta.dot_py_ui_filename)
 
-# ....................{ CACHERS ~ private                 }....................
+# ....................{ CACHERS ~ py                      }....................
 @type_check
 def _cache_py_qrc_file(qrc_filename: str, py_filename: str) -> None:
     '''
@@ -217,16 +196,19 @@ def _cache_py_qrc_file(qrc_filename: str, py_filename: str) -> None:
 
     See Also
     ----------
-    :func:`guiqrc.convert_qrc_to_py_file`
+    :func:`guipsdcacheqrc.convert_qrc_to_py_file`
         Further details.
     '''
+
+    # Avoid circular import dependencies.
+    from betsee.lib.pyside2.cache import guipsdcacheqrc
 
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed
     # by the paths.is_mtime_recursive_older_than_paths() function.
     src_pathnames = [
         qrc_filename,
-        pymodule.get_filename(guiqrc),
+        pymodule.get_filename(guipsdcacheqrc),
         cmdpath.get_filename('pyside2-rcc'),
     ]
 
@@ -244,7 +226,7 @@ def _cache_py_qrc_file(qrc_filename: str, py_filename: str) -> None:
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
-    guiqrc.convert_qrc_to_py_file(
+    guipsdcacheqrc.convert_qrc_to_py_file(
         qrc_filename=qrc_filename, py_filename=py_filename)
 
 
@@ -273,9 +255,13 @@ def _cache_py_ui_file(ui_filename: str, py_filename: str) -> None:
 
     See Also
     ----------
-    :func:`guiui.convert_ui_to_py_file`
+    :func:`guipsdcacheui.convert_ui_to_py_file`
         Further details.
     '''
+
+    # Avoid circular import dependencies.
+    from betsee.lib import guilib
+    from betsee.lib.pyside2.cache import guipsdcacheui
 
     # "pyside2uic" package installed by the "pyside2-tools" dependency.
     pyside2uic = guilib.import_runtime_optional('pyside2uic')
@@ -285,7 +271,7 @@ def _cache_py_ui_file(ui_filename: str, py_filename: str) -> None:
     # by the paths.is_mtime_recursive_older_than_paths() function.
     src_pathnames = [
         ui_filename,
-        pymodule.get_filename(guiui),
+        pymodule.get_filename(guipsdcacheui),
         pymodule.get_dirname(PySide2),
         pymodule.get_dirname(pyside2uic),
     ]
@@ -306,13 +292,13 @@ def _cache_py_ui_file(ui_filename: str, py_filename: str) -> None:
 
     # Else, this output module is older than at least one such path, in which
     # case this output module is outdated and must be regenerated.
-    guiui.convert_ui_to_py_file(
+    guipsdcacheui.convert_ui_to_py_file(
         ui_filename=ui_filename,
         py_filename=py_filename,
         promote_obj_name_to_class=_PROMOTE_OBJ_NAME_TO_CLASS,
     )
 
-# ....................{ TESTERS ~ private                 }....................
+# ....................{ TESTERS                           }....................
 @type_check
 def _is_trg_file_stale(
     src_pathnames: IterableTypes, trg_filename: str) -> bool:
@@ -347,7 +333,7 @@ def _is_trg_file_stale(
 
     # Log this inspection.
     logs.log_info(
-        'Synchronizing cached submodule "%s"...',
+        'Synchronizing cached PySide2 submodule "%s"...',
         pathnames.get_basename(trg_filename))
 
     # Return true only if either...

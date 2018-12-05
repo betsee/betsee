@@ -8,7 +8,7 @@ High-level :mod:`QMessageBox`-based message handling facilities.
 
 See Also
 ----------
-:mod:`betsee.util.io.guierr`
+:mod:`betsee.util.io.guierror`
     Error-specific :class:`QMessageBox` facilities.
 '''
 

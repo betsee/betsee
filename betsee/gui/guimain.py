@@ -204,9 +204,8 @@ from PySide2.QtCore import QCoreApplication
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import guimetadata
-from betsee.gui import guicache
 from betsee.util.app import guiapp, guiappstatus, guiappwindow
-from betsee.util.io import guierr
+from betsee.util.io import guierror
 
 # ....................{ CLASSES                            }....................
 class BetseeGUI(object):
@@ -251,9 +250,6 @@ class BetseeGUI(object):
         self._signaler = None
         self._settings = None
 
-        # Generate all modules required at runtime by this GUI.
-        guicache.cache_py_files()
-
     # ..................{ RUNNERS                            }..................
     def run(self) -> int:
         '''
@@ -270,7 +266,7 @@ class BetseeGUI(object):
         # triggering any application-specific slots possibly raising exceptions.
         # Since the _make_main_window() method transitively does so, this hook
         # should be installed as the first call of this method.
-        guierr.install_exception_hook()
+        guierror.install_exception_hook()
 
         # Create but do *NOT* display this GUI's main window.
         self._make_main_window()

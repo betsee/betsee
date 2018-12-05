@@ -37,6 +37,6 @@ by BETSE's existing test suite. Note, in particular, the need for:
     * ``betse/data/py/betsee_rc.py`` from ``betse/data/qrc/betsee.qrc``.
     * ``betse/data/py/betsee_ui.py`` from ``betse/data/ui/betsee.ui``.
     
-    To do so, we'll need to generalize the existing :mod:`betsee.gui.guicache`
+    To do so, we'll need to generalize the existing :mod:`betsee.lib.pyside2.cache.guipsdcache`
     submodule to provide public testers permitting this test to trivially test
     for desynchronization. See *FIXME:* comments at the head of that file.

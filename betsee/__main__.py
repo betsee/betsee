@@ -24,9 +24,7 @@ This submodule is a thin wrapper intended to be:
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import sys
-from betsee import guimetadata
-from betsee.guimetadata import NAME
-from betsee.guimetadeps import BETSE_VERSION_REQUIRED_MIN
+from betsee import guimetadata, guimetadeps
 
 # ....................{ EXCEPTIONS                        }....................
 class _BetseNotFoundException(Exception):
@@ -131,7 +129,8 @@ def _die_unless_betse() -> None:
     # machine-readable tuple of integers. This tuple is only required once
     # (i.e., here) and hence *NOT* persisted as a "guimetadata" global.
     BETSE_VERSION_REQUIRED_MIN_PARTS = (
-        guimetadata._convert_version_str_to_tuple(BETSE_VERSION_REQUIRED_MIN))
+        guimetadata._convert_version_str_to_tuple(
+            guimetadeps.BETSE_VERSION_REQUIRED_MIN))
 
     # If the current version of BETSE is insufficient, raise an exception.
     if betse.__version_info__ < BETSE_VERSION_REQUIRED_MIN_PARTS:
@@ -139,9 +138,13 @@ def _die_unless_betse() -> None:
             title=EXCEPTION_TITLE,
             synopsis='Obsolete version of mandatory dependency BETSE found.',
             exegesis=(
-                '{} requires at least BETSE {}, '
+                '{} {} requires at least BETSE {}, '
                 'but only BETSE {} is currently installed.'.format(
-                    NAME, BETSE_VERSION_REQUIRED_MIN, betse.__version__)))
+                    guimetadata.NAME,
+                    guimetadata.VERSION,
+                    guimetadeps.BETSE_VERSION_REQUIRED_MIN,
+                    betse.__version__,
+                )))
 
     # Purely for testing purposes.
     # raise _BetseNotFoundException(
@@ -150,7 +153,7 @@ def _die_unless_betse() -> None:
     #     exegesis='Python package "betse" not importable.',
     # )
 
-# ....................{ EXCEPTIONS                        }....................
+# ....................{ PRINTERS                          }....................
 def _show_betse_exception(exception: _BetseNotFoundException) -> int:
     '''
     Display the passed exception signifying BETSE to be unsatisfied in an
@@ -170,17 +173,23 @@ def _show_betse_exception(exception: _BetseNotFoundException) -> int:
     assert isinstance(exception, _BetseNotFoundException), (
         '"{}" not a BETSE-not-found exception.'.format(exception))
 
+    # Exception message to be redirected to standard error, crudely synthesized
+    # from the synopsis and exegesis embedded in the passed exception.
+    exception_stderr_message = '{} (i.e., {}).'.format(
+        _remove_suffix_if_found(text=exception.synopsis, suffix='.'),
+        _remove_suffix_if_found(text=exception.exegesis, suffix='.'))
+
     # Always redirect this exception message to the standard error file handle
     # for the terminal running this CLI command (if any).
-    print(str(exception), file=sys.stderr)
+    print(exception_stderr_message, file=sys.stderr)
 
     # Additionally attempt to...
     try:
         # Import PySide2.
-        from betsee.util.io import guierr
+        from betsee.util.io import guierror
 
         # Display a PySide2-based message box displaying this exception.
-        guierr.show_exception(exception)
+        guierror.show_exception(exception)
     # If PySide2 or any other module indirectly imported above is unimportable,
     # print this exception message in the same manner as above but otherwise
     # ignore this exception. Why? Because we have more significant fish to fry.
@@ -189,6 +198,36 @@ def _show_betse_exception(exception: _BetseNotFoundException) -> int:
 
     # Report failure to our parent process.
     return 1
+
+# ....................{ PRINTERS                          }....................
+def _remove_suffix_if_found(text: str, suffix: str) -> str:
+    '''
+    Passed string with the passed suffix removed if present *or* the passed
+    string as is otherwise.
+
+    Parameters
+    ----------
+    text : str
+        String to be examined. Since strings are immutable in Python, this
+        string remains unmodified.
+    suffix : str
+        Suffix to remove from this string.
+
+    Returns
+    ----------
+    str
+        Resulting string as described above.
+
+    See Also
+    ----------
+    :func:`betse.util.type.text.strs.remove_suffix_if_found`
+        Original function from which this function is copy-and-pasted. Although
+        BETSE is a mandatory dependency of this application, BETSE is *not*
+        guaranteed to exist this "early" in the application startup.
+    '''
+
+    # See betse.util.type.text.strs.remove_suffix_if_found().
+    return text[:-len(suffix)] if suffix and text.endswith(suffix) else text
 
 # ....................{ MAIN                              }....................
 # If this module is imported from the command line, run this application's CLI;

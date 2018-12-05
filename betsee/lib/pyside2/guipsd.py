@@ -4,7 +4,7 @@
 # See "LICENSE" for further details.
 
 '''
-Low-level PySide2 library facilities.
+Low-level :mod:`PySide2` facilities.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -13,7 +13,7 @@ from betse.util.io.log import logs
 from betse.util.type.decorator.decmemo import func_cached
 # from betse.util.type.types import type_check, IterableTypes
 
-# ....................{ GGLOBALS                          }....................
+# ....................{ GLOBALS                           }....................
 VERSION_PARTS = PySide2.__version_info__
 '''
 Machine-readable :mod:`PySide2` version as a tuple of integers (e.g.,
@@ -34,19 +34,19 @@ def is_version_5_6() -> bool:
 # ....................{ INITIALIZERS                      }....................
 def init() -> None:
     '''
-    Initialize PySide2.
+    Initialize :mod:`PySide2`.
 
     Specifically, this function:
 
-    * Monkey-patches *all* :mod:`PySide2` callables whose version-specific
-      implementations are well-known to be broken (if any).
+    * Contextually caches all :mod:`PySide2`-based submodules required at
+      runtime by this GUI.
     '''
 
     # Avoid circular import dependencies.
-    from betsee.lib.pyside2 import guipsdpatch
+    from betsee.lib.pyside2.cache import guipsdcache
 
     # Log this initialization.
-    logs.log_info('Loading PySide2...')
+    logs.log_info('Initializing PySide2...')
 
-    # Conditionally monkey-patch PySide2 callables well-known to be broken.
-    guipsdpatch.patch_all()
+    # Cache all PySide2-based submodules required at runtime by this GUI.
+    guipsdcache.init()

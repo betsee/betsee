@@ -155,7 +155,7 @@ class BetseeMetaApp(BetseMetaApp):
         ----------
         :meth:`dot_py_qrc_filename`
             User-specific equivalent of this file.
-        :mod:`betsee.gui.guicache`
+        :mod:`betsee.lib.pyside2.cache.guipsdcache`
             Submodule dynamically generating this module.
         '''
 
@@ -189,7 +189,7 @@ class BetseeMetaApp(BetseMetaApp):
         ----------
         :meth:`dot_py_ui_filename`
             User-specific equivalent of this file.
-        :mod:`betsee.gui.guicache`
+        :mod:`betsee.lib.pyside2.cache.guipsdcache`
             Submodule dynamically generating this module.
         '''
 
@@ -228,7 +228,7 @@ class BetseeMetaApp(BetseMetaApp):
 
         See Also
         ----------
-        :mod:`betsee.gui.guicache`
+        :mod:`betsee.lib.pyside2.cache.guipsdcache`
             Submodule dynamically generating this module.
         '''
 
