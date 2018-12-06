@@ -107,6 +107,122 @@ def convert_ui_to_py_file(
         UI class generated from the XML-formatted file with this filename
         exported by the external Qt Designer application.
 
+    Raises
+    ----------
+    BetseeCacheException
+        If the currently installed version of :mod:`PySide2` targets the
+        Qt 5.6.* (LTS) line of stable releases or older. In this case, the
+        :mod:`pyside2uic` package is well-known to be fundamentally broken in
+        numerous critical ways *not* trivially resolvable with a monkey-patch.
+
+        Under Qt 5.6, for example, the core
+        :meth:`pyside2uic.uiparser.UIParser.createWidget` method raises
+        non-human-readable exceptions on iterating button group labels: e.g.,
+
+            AttributeError: 'str' object has no attribute 'string'
+
+            Traceback (most recent call last):
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betse/util/cli/cliabc.py", line 180, in run profile_filename=self._profile_filename,
+            File "", line 65, in func_type_checked
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betse/util/py/pyprofile.py", line 114, in profile_callable
+            profile_filename=profile_filename,
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betse/util/py/pyprofile.py", line 130, in _profile_callable_none
+            return call(*args, **kwargs)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee/cli/guicli.py", line 236, in _do
+            app_gui = BetseeGUI(sim_conf_filename=self._sim_conf_filename)
+            File "", line 15, in func_type_checked
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee/gui/guimain.py", line 255, in init
+            guicache.cache_py_files()
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee.lib.pyside2.cache.guipsdcache.py", line 64, in cache_py_files
+            _cache_py_ui_file()
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee.lib.pyside2.cache.guipsdcache.py", line 198, in _cache_py_ui_file
+            promote_obj_name_to_class=_PROMOTE_OBJ_NAME_TO_CLASS,
+            File "", line 35, in func_type_checked
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee/util/io/xml/guiui.py", line 280, in convert_ui_to_py_file_if_able
+            from_imports=False,
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/Compiler/compiler.py", line 91, in compileUi
+            w = self.parse(input_stream)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 871, in parse
+            actor(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 714, in createUserInterface
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
+            self.traverseWidgetTree(elem)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
+            handler(self, child)
+            File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 214, in createWidget
+            bg_name = bg_i18n.string
+
+        While monkey-patching that specific issue is technically feasible,
+        doing so uncovers additional issues in other :mod:`pyside2uic`
+        callables whose resolution is *not* technically feasible.
+
     See Also
     ----------
     http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
@@ -117,6 +233,8 @@ def convert_ui_to_py_file(
     '''
 
     # Avoid circular import dependencies.
+    from betsee.lib import guilib
+    from betsee.lib.pyside2 import guipsd
     from betsee.lib.pyside2.guipsdui import BASE_CLASSES_GLOBAL_NAME
 
     # Log this conversion attempt.
@@ -124,6 +242,14 @@ def convert_ui_to_py_file(
         'Synchronizing PySide2 module "%s" from "%s"...',
         pathnames.get_basename(py_filename),
         pathnames.get_basename(ui_filename))
+
+    # # If the currently installed version of PySide2 targets the obsolete Qt
+    # # 5.6.* (LTS) line of stable releases or older, raise an exception. See the
+    # # function docstring for further details.
+    if guipsd.is_version_5_6_or_older():
+        raise BetseeCacheException(
+            'Broken "pyside2uic" package bundled with '
+            'PySide2 < 5.7.0 detected.')
 
     # If this input file does *NOT* exist, raise an exception.
     files.die_unless_file(ui_filename)
@@ -139,8 +265,12 @@ def convert_ui_to_py_file(
     # file to be subsequently evaluated.
     ui_code_str_buffer = StringIO()
 
+    # "pyside2uic" package installed by the "pyside2-tools" dependency.
+    pyside2uic = guilib.import_runtime_optional('pyside2uic')
+
     # Object converting XML-formatted UI to Python files.
-    ui_compiler = _make_ui_compiler()
+    ui_compiler = pyside2uic.Compiler.compiler.UICompiler()
+    # ui_compiler = _make_ui_compiler()
 
     # Dictionary of high-level metadata describing the high-level types
     # produced by converting this file into this string buffer, containing the
@@ -300,8 +430,8 @@ def _munge_ui_code(
     #    icon.addFile("://icon/open_iconic/lock_fill.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
     #
     # Indeed, there no longer appears to be any benefit to *EVER* calling the
-    # icon.addPixmap() versus icon.addFile() method. The latter suffices for all
-    # filetypes and is thus always preferable -- regardless of filetype.
+    # icon.addPixmap() versus icon.addFile() method. The latter suffices for
+    # all filetypes and is thus always preferable -- regardless of filetype.
     ui_code_str = regexes.replace_substrs_line(
         text=ui_code_str,
         regex=(
@@ -332,8 +462,9 @@ def _munge_ui_code(
         # Fully-qualified name of the module defining this class.
         promote_class_module_name = classes.get_module_name(promote_class)
 
-        # Append this code with a line importing this class.
-        ui_code_str += 'from {} import {}\n'.format(
+        # Append this code with an unindented line importing this class at
+        # top-level module scope.
+        ui_code_str += '\nfrom {} import {}\n'.format(
             promote_class_module_name, promote_class_name)
 
         # Regular expression matching the single line of this code
@@ -357,7 +488,8 @@ def _munge_ui_code(
         # Globally replace this line with a line instead instantiating this
         # variable to this application-specific widget subclass, implicitly
         # raising an exception if no such line exists.
-        ui_code_str = regexes.die_unless_replace_substrs_line(
+        # ui_code_str = regexes.die_unless_replace_substrs_line(
+        ui_code_str = regexes.replace_substrs_line(
             text=ui_code_str,
             regex=promote_regex,
             replacement=r'\1{}\2'.format(promote_class_name),
@@ -368,318 +500,3 @@ def _munge_ui_code(
 
     # Return this code.
     return ui_code_str
-
-# ....................{ MAKERS                            }....................
-def _make_ui_compiler() -> 'pyside2uic.Compiler.compiler.UICompiler':
-    '''
-    Object converting XML-formatted Qt (Creator|Designer)-generated user
-    interface (UI) files to pure-Python :mod:`PySide2`-based submodules,
-    conditionally monkey-patched to resolve critical defects in the
-    :meth:`pyside2uic.uiparser.UIParser.createWidget` method routinely called
-    by this object if the currently installed version of :mod:`PySide2` targets
-    the obsolete Qt 5.6 (LTS) line of stable releases.
-
-    Under Qt 5.6, that method raises non-human-readable exceptions on
-    attempting to parse button group labels: e.g.,
-
-        AttributeError: 'str' object has no attribute 'string'
-
-        Traceback (most recent call last):
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betse/util/cli/cliabc.py", line 180, in run profile_filename=self._profile_filename,
-        File "", line 65, in func_type_checked
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betse/util/py/pyprofile.py", line 114, in profile_callable
-        profile_filename=profile_filename,
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betse/util/py/pyprofile.py", line 130, in _profile_callable_none
-        return call(*args, **kwargs)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee/cli/guicli.py", line 236, in _do
-        app_gui = BetseeGUI(sim_conf_filename=self._sim_conf_filename)
-        File "", line 15, in func_type_checked
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee/gui/guimain.py", line 255, in init
-        guicache.cache_py_files()
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee.lib.pyside2.cache.guipsdcache.py", line 64, in cache_py_files
-        _cache_py_ui_file()
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee.lib.pyside2.cache.guipsdcache.py", line 198, in _cache_py_ui_file
-        promote_obj_name_to_class=_PROMOTE_OBJ_NAME_TO_CLASS,
-        File "", line 35, in func_type_checked
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/betsee/util/io/xml/guiui.py", line 280, in convert_ui_to_py_file_if_able
-        from_imports=False,
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/Compiler/compiler.py", line 91, in compileUi
-        w = self.parse(input_stream)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 871, in parse
-        actor(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 714, in createUserInterface
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 197, in createWidget
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 427, in createLayout
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 464, in handleItem
-        self.traverseWidgetTree(elem)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 692, in traverseWidgetTree
-        handler(self, child)
-        File "/home/eric/anaconda3/lib/python3.6/site-packages/pyside2uic/uiparser.py", line 214, in createWidget
-        bg_name = bg_i18n.string
-
-    This function resolves this issue by dynamically replacing the entirety of
-    this method's in-memory implementation with an implementation back-ported
-    from the Qt 5.11 line of stable releases. While non-ideal, this ad-hoc
-    solution is the only sane means of doing so.
-    '''
-
-    # Avoid circular import dependencies.
-    from betsee.lib import guilib
-    from betsee.lib.pyside2 import guipsd
-
-    # "pyside2uic" package installed by the "pyside2-tools" dependency.
-    pyside2uic = guilib.import_runtime_optional('pyside2uic')
-
-    # Class converting XML-formatted UI to Python files.
-    UICompiler = pyside2uic.Compiler.compiler.UICompiler
-
-    # Object converting XML-formatted UI to Python files.
-    ui_compiler = UICompiler()
-
-    # If the currently installed version of PySide2 targets the obsolete Qt
-    # 5.6.* (LTS) line of stable releases...
-    if guipsd.is_version_5_6():
-        # Log this monkey-patch.
-        logs.log_debug(
-            'Monkey-patching broken PySide2 5.6.* '
-            'UIParser.createWidget() method...')
-
-        # Monkey-patch this method's broken implementation with a working
-        # implementation. Doing so requires replacing a reference to the former
-        # with a reference to the latter within a public dictionary of this
-        # object internally used to call this method. Since this method is
-        # *NEVER* called directly, doing so effectively replaces this method.
-        ui_compiler.widgetTreeItemHandlers['widget'] = (
-            _pyside2uic_uiparser_UIParser_createWidget)
-    else:
-        # Log this noop.
-        logs.log_debug(
-            'Preserving non-broken PySide2 > 5.6.* '
-            'UIParser.createWidget() method...')
-
-    # Return this object.
-    return ui_compiler
-
-# ....................{ MAKERS ~ monkey-patch             }....................
-def _pyside2uic_uiparser_UIParser_createWidget(self, elem):
-    '''
-    :meth:`pyside2uic.uiparser.UIParser.createWidget` method monkey-patched to
-    avoid raising non-human-readable exceptions under Qt 5.6 on attempting
-    to parse button group labels.
-
-    See Also
-    ----------
-    :func:`patch_pyside2uic_uiparser_UIParser_createWidget`
-        Function conditionally applying this monkey-patch if necessary.
-    '''
-
-    # raise Exception('Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn.')
-
-    self.column_counter = 0
-    self.row_counter = 0
-    self.item_nr = 0
-    self.itemstack = []
-    self.sorting_enabled = None
-
-    widget_class = elem.attrib['class'].replace('::', '.')
-    if widget_class == 'Line':
-        widget_class = 'QFrame'
-
-    # Ignore the parent if it is a container
-    parent = self.stack.topwidget
-
-    # if is a Menubar on MacOS
-    macMenu = (sys.platform == 'darwin') and (widget_class == 'QMenuBar')
-
-    if isinstance(parent, (QtWidgets.QDockWidget, QtWidgets.QMdiArea,
-                           QtWidgets.QScrollArea, QtWidgets.QStackedWidget,
-                           QtWidgets.QToolBox, QtWidgets.QTabWidget,
-                           QtWidgets.QWizard)) or macMenu:
-        parent = None
-
-
-    # See if this is a layout widget.
-    if widget_class == 'QWidget':
-        if parent is not None:
-            if not isinstance(parent, QtWidgets.QMainWindow):
-                self.layout_widget = True
-
-    self.stack.push(self.setupObject(widget_class, parent, elem))
-
-    if isinstance(self.stack.topwidget, QtWidgets.QTableWidget):
-        self.stack.topwidget.setColumnCount(len(elem.findall("column")))
-        self.stack.topwidget.setRowCount(len(elem.findall("row")))
-
-    self.traverseWidgetTree(elem)
-    widget = self.stack.popWidget()
-
-    self.layout_widget = False
-
-    if isinstance(widget, QtWidgets.QTreeView):
-        self.handleHeaderView(elem, "header", widget.header())
-
-    elif isinstance(widget, QtWidgets.QTableView):
-        self.handleHeaderView(elem, "horizontalHeader",
-                              widget.horizontalHeader())
-        self.handleHeaderView(elem, "verticalHeader",
-                              widget.verticalHeader())
-
-    elif isinstance(widget, QtWidgets.QAbstractButton):
-        bg_i18n = self.wprops.getAttribute(elem, "buttonGroup")
-        if bg_i18n is not None:
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # PATCH: This monkey-patch replaces the following one-liner:
-            #     bg_name = bg_i18n.string
-            # ...with the following if conditional harvested from PySide 5.11:
-            if isinstance(bg_i18n, str):
-                bg_name = bg_i18n
-            else:
-                bg_name = bg_i18n.string
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            for bg in self.button_groups:
-                if bg.objectName() == bg_name:
-                    break
-                else:
-                    bg = self.factory.createQObject("QButtonGroup", bg_name,
-                                                    (self.toplevelWidget, ))
-                    bg.setObjectName(bg_name)
-                    self.button_groups.append(bg)
-
-            bg.addButton(widget)
-
-    if self.sorting_enabled is not None:
-        widget.setSortingEnabled(self.sorting_enabled)
-        self.sorting_enabled = None
-
-    if self.stack.topIsLayout():
-        lay = self.stack.peek()
-        gp = elem.attrib["grid-position"]
-
-        if isinstance(lay, QtWidgets.QFormLayout):
-            lay.setWidget(gp[0], self._form_layout_role(gp), widget)
-        else:
-            lay.addWidget(widget, *gp)
-
-    topwidget = self.stack.topwidget
-
-    if isinstance(topwidget, QtWidgets.QToolBox):
-        icon = self.wprops.getAttribute(elem, "icon")
-        if icon is not None:
-            topwidget.addItem(widget, icon, self.wprops.getAttribute(elem, "label"))
-        else:
-            topwidget.addItem(widget, self.wprops.getAttribute(elem, "label"))
-
-        tooltip = self.wprops.getAttribute(elem, "toolTip")
-        if tooltip is not None:
-            topwidget.setItemToolTip(topwidget.indexOf(widget), tooltip)
-
-        elif isinstance(topwidget, QtWidgets.QTabWidget):
-            icon = self.wprops.getAttribute(elem, "icon")
-            if icon is not None:
-                topwidget.addTab(widget, icon, self.wprops.getAttribute(elem, "title"))
-            else:
-                topwidget.addTab(widget, self.wprops.getAttribute(elem, "title"))
-
-        tooltip = self.wprops.getAttribute(elem, "toolTip")
-        if tooltip is not None:
-            topwidget.setTabToolTip(topwidget.indexOf(widget), tooltip)
-
-        elif isinstance(topwidget, QtWidgets.QWizard):
-            topwidget.addPage(widget)
-
-        elif isinstance(topwidget, QtWidgets.QStackedWidget):
-            topwidget.addWidget(widget)
-
-        elif isinstance(topwidget, (QtWidgets.QDockWidget, QtWidgets.QScrollArea)):
-            topwidget.setWidget(widget)
-
-        elif isinstance(topwidget, QtWidgets.QMainWindow):
-            if type(widget) == QtWidgets.QWidget:
-                topwidget.setCentralWidget(widget)
-            elif isinstance(widget, QtWidgets.QToolBar):
-                tbArea = self.wprops.getAttribute(elem, "toolBarArea")
-
-            if tbArea is None:
-                topwidget.addToolBar(widget)
-            else:
-                topwidget.addToolBar(tbArea, widget)
-
-            tbBreak = self.wprops.getAttribute(elem, "toolBarBreak")
-
-            if tbBreak:
-                topwidget.insertToolBarBreak(widget)
-
-            elif isinstance(widget, QtWidgets.QMenuBar):
-                topwidget.setMenuBar(widget)
-            elif isinstance(widget, QtWidgets.QStatusBar):
-                topwidget.setStatusBar(widget)
-            elif isinstance(widget, QtWidgets.QDockWidget):
-                dwArea = self.wprops.getAttribute(elem, "dockWidgetArea")
-                topwidget.addDockWidget(QtCore.Qt.DockWidgetArea(dwArea),
-                                        widget)

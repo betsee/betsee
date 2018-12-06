@@ -11,25 +11,34 @@ Low-level :mod:`PySide2` facilities.
 import PySide2
 from betse.util.io.log import logs
 from betse.util.type.decorator.decmemo import func_cached
+from betse.util.type.numeric import versions
 # from betse.util.type.types import type_check, IterableTypes
 
 # ....................{ GLOBALS                           }....................
 VERSION_PARTS = PySide2.__version_info__
 '''
-Machine-readable :mod:`PySide2` version as a tuple of integers (e.g.,
-``(5, 6, 0, "a", 1)`` for the corresponding human-readable version
-``5.6.0~a1``).
+Machine-readable :mod:`PySide2` version as an efficiently comparable tuple of
+integers (e.g., ``(5, 6, 0, "a", 1)`` for the corresponding human-readable
+version ``5.6.0~a1``).
 '''
 
 # ....................{ TESTERS                           }....................
 @func_cached
-def is_version_5_6() -> bool:
+def is_version_5_6_or_older() -> bool:
     '''
     ``True`` only if the currently installed version of :mod:`PySide2` targets
-    the long-obsolete Qt 5.6 (LTS) line of stable releases.
+    the Qt 5.6 (LTS) line of stable releases or older (e.g., Qt 5.5.0, Qt
+    5.6.1).
+
+    Versions of :mod:`PySide2` targetting such obsolete releases are well-known
+    to suffer a medley of critical defects, including:
+
+    * The entire :mod:`pyside2uic` package, which converts working
+      XML-formatted user interface (UIC) files into broken pure-Python modules.
+      Naturally, this is bad.
     '''
 
-    return VERSION_PARTS[0:2] == (5, 6)
+    return versions.is_less_than(VERSION_PARTS, '5.7.0')
 
 # ....................{ INITIALIZERS                      }....................
 def init() -> None:

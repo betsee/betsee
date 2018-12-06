@@ -73,48 +73,12 @@ tuple of integers.
 '''
 
 
-# Validate the version of the active Python interpreter *BEFORE* subsequent
-# code possibly depending on such version. Since such version should be
-# validated both at setuptools-based install time and post-install runtime
-# *AND* since this module is imported sufficiently early by both, stash such
-# validation here to avoid duplication of such logic and hence the hardcoded
-# Python version.
-#
-# The "sys" module exposes three version-related constants for this purpose:
-#
-# * "hexversion", an integer intended to be specified in an obscure (albeit
-#   both efficient and dependable) hexadecimal format: e.g.,
-#    >>> sys.hexversion
-#    33883376
-#    >>> '%x' % sys.hexversion
-#    '20504f0'
-# * "version", a human-readable string: e.g.,
-#    >>> sys.version
-#    2.5.2 (r252:60911, Jul 31 2008, 17:28:52)
-#    [GCC 4.2.3 (Ubuntu 4.2.3-2ubuntu7)]
-# * "version_info", a tuple of three or more integers *OR* strings: e.g.,
-#    >>> sys.version_info
-#    (2, 5, 2, 'final', 0)
-#
-# For sanity, this application will *NEVER* conditionally depend upon the
-# string-formatted release type of the current Python version exposed via the
-# fourth element of the "version_info" tuple. Since the first three elements of
-# that tuple are guaranteed to be integers *AND* since a comparable 3-tuple of
-# integers is declared above, comparing the former and latter yield the
-# simplest and most reliable Python version test.
-#
-# Note that the nearly decade-old and officially accepted PEP 345 proposed a
-# new field "requires_python" configured via a key-value pair passed to the
-# call to setup() in "setup.py" (e.g., "requires_python = ['>=2.2.1'],"), that
-# field has yet to be integrated into either disutils or setuputils. Hence,
-# that field is validated manually in the typical way.
+# Validate the active Python interpreter version *BEFORE* subsequent code
+# depending on this version. See "betse.metadata" for further details.
 if sys.version_info[:3] < PYTHON_VERSION_MIN_PARTS:
-    # Human-readable current version of Python. "sys.version" is sufficiently
-    # overly verbose as to be unusuable, sadly.
     PYTHON_VERSION = '.'.join(
         str(version_part) for version_part in sys.version_info[:3])
 
-    # Die ignominiously.
     raise RuntimeError(
         '{} requires at least Python {}, but the active interpreter '
         'is only Python {}. We feel deep sadness for you.'.format(
