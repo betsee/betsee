@@ -33,32 +33,32 @@ SimmerState = make_enum(
     Attributes
     ----------
     UNQUEUED : enum
-        Unqueued state, implying no subcommands to be queued.
+        **Unqueued state,** implying no subcommands to be queued.
     QUEUED : enum
-        Queued state, implying one or more subcommands to be queued but *not*
-        yet run and hence neither paused, halted, nor done.
+        **Queued state,** implying one or more subcommands to be queued but
+        *not* yet run and hence neither paused, halted, nor done.
     MODELLING : enum
-        Modelling state, implying one or more queued subcommands specific to
-        modelling (e.g., seed, initialization) to be currently running and
+        **Modelling state,** implying one or more queued subcommands specific
+        to modelling (e.g., seed, initialization) to be currently running and
         hence neither paused, halted, nor done.
     EXPORTING : enum
-        Exporting state, implying one or more queued subcommands specific to
-        exporting (e.g., seed exports, initialization exports) to be currently
-        running and hence neither paused, halted, nor done.
+        **Exporting state,** implying one or more queued subcommands specific
+        to exporting (e.g., seed exports, initialization exports) to be
+        currently running and hence neither paused, halted, nor done.
     PAUSED : enum
-        Paused state, implying one or more queued subcommands to have been run
-        but paused before completion.
+        **Paused state,** implying one or more queued subcommands to have been
+        run but paused before completion.
     STOPPING : enum
-        Stopping state, implying one or more queued subcommands to have been
-        run but manually stopped before completion. This is a temporary state
-        during which the proactor waits for the previously running worker to
-        gracefully stop. Until this worker does so, the proactor remains
+        **Stopping state,** implying one or more queued subcommands to have
+        been run but manually stopped before completion. This is a temporary
+        state during which the proactor waits for the previously running worker
+        to gracefully stop. Until this worker does so, the proactor remains
         incapable of performing new work (i.e., running queued subcommands).
         After this worker gracefully stops, the proactor switches from this
         state into the :attr:`FINISHED` state, implying the proactor to be
         capable of performing new work.
     FINISHED : enum
-        Completion state, implying all queued subcommands to have completed
+        **Completion state,** implying all queued subcommands to have completed
         either:
 
         * Successfully, in which case those subcommands ran to completion.
@@ -95,16 +95,16 @@ SimmerModelState = make_enum(
     Attributes
     ----------
     PREPARING : enum
-        Pre-processing state. When modelling the initialization and simulation
-        (but *not* seed) phases, this state implies a proactor worker to be
-        preparing to model the first time step of this phase but to have yet to
-        actually do so.
+        **Pre-processing state.** When modelling the initialization and
+        simulation (but *not* seed) phases, this state implies a proactor
+        worker to be preparing to model the first time step of this phase but
+        to have yet to actually do so.
     MODELLING : enum
-        In-processing state. When modelling the initialization and simulation
-        (but *not* seed) phases, this state implies a proactor worker to be
-        modelling a time step of this phase.
+        **In-processing state.** When modelling the initialization and
+        simulation (but *not* seed) phases, this state implies a proactor
+        worker to be modelling a time step of this phase.
     FINISHING : enum
-        Post-processing state, implying a proactor worker to:
+        **Post-processing state,** implying a proactor worker to:
 
         * Have successfully modelled all time steps of this phase.
         * Now be saving the results of this phase to disk, typically as one or

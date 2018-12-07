@@ -94,9 +94,10 @@ Concrete subclasses defining this application's command line interface (CLI).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betse.util.cli.cliabc import CLIABC
-from betse.util.cli.cliopt import CLIOptionArgStr
+from betse.util.cli.cliopt import CLIOptionArgEnum, CLIOptionArgStr
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, ModuleType, SequenceTypes
+from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
 
 # ....................{ SUBCLASS                          }....................
 class BetseeCLI(CLIABC):
@@ -105,6 +106,8 @@ class BetseeCLI(CLIABC):
 
     Attributes
     ----------
+    _cache_policy : CachePolicy
+        Type of :mod:`PySide2`-based submodule caching to be performed.
     _sim_conf_filename : StrOrNoneTypes
         Absolute or relative filename of the initial YAML-formatted simulation
         configuration file to be initially opened by this application's GUI if
@@ -119,6 +122,7 @@ class BetseeCLI(CLIABC):
         super().__init__()
 
         # Nullify all instance variables for safety.
+        self._cache_policy = None
         self._sim_conf_filename = None
 
     # ..................{ SUPERCLASS ~ property : optional  }..................
@@ -185,7 +189,7 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # matplotlib complicates the initialization of both.
         #
         # See the body of the function called here for further details.
-        guilib.reinit()
+        guilib.reinit(cache_policy=self._cache_policy)
 
         # Initialize multithreading facilities *AFTER* validating dependencies,
         # which take precedence by virtue of their being things we depend upon.
@@ -199,6 +203,18 @@ seed, initialize, and then simulate such a simulation in the current directory:
 
         # Return a list extending this sequence with subclass-specific options.
         return list(options_top) + [
+            CLIOptionArgEnum(
+                long_name='--cache-policy',
+                synopsis=(
+                    'type of caching to perform (defaults to "{default}"):'
+                    '\n;* "auto", deferring to "dev" or "user" as needed'
+                    '\n;* "dev", caching developer- and user-specific files'
+                    '\n;* "user", caching only user-specific files'
+                ),
+                enum_type=CachePolicy,
+                enum_default=CachePolicy.AUTO,
+            ),
+
             CLIOptionArgStr(
                 long_name='--sim-conf-file',
                 synopsis='simulation configuration file to initially open',
@@ -212,6 +228,10 @@ seed, initialize, and then simulate such a simulation in the current directory:
 
         # Parse all default top-level options.
         super()._parse_options_top()
+
+        # Cache policy, converted from a lowercase string into an enumeration
+        # member. See the CLIABC._parse_options_top_log() method.
+        self._cache_policy = CachePolicy[self._args.cache_policy.upper()]
 
         # Initial simulation configuration file parsed from the passed options.
         self._sim_conf_filename = self._args.sim_conf_filename

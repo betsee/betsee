@@ -16,9 +16,61 @@ from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmdpath
 from betse.util.py import pymodule, pys
+from betse.util.type.enums import make_enum
 from betse.util.type.types import type_check, IterableTypes
+from betsee.guiexception import BetseeCacheException
 from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
     QBetseeSimConfEnumRadioButtonGroup)
+
+# ....................{ ENUMERATIONS                      }....................
+CachePolicy = make_enum(
+    class_name='CachePolicy',
+    member_names=(
+        'AUTO',
+        'DEV',
+        'USER',
+    ),
+    doc='''
+    Enumeration of all supported types of **cache policy** (i.e., procedure for
+    generating and reusing pure-Python submodules from their input
+    XML-formatted files at application runtime).
+
+    Attributes
+    ----------
+    AUTO : enum
+        **Automatic cache policy.** When enabled, this policy defers to either
+        the :attr:`DEV` or :attr:`USER` cache policies conditionally depending
+        on whether this application is currently under developer-specific
+        version control or not. Specifically:
+
+        * If this application has a **Git-based working tree** (i.e., top-level
+          directory containing this application's ``.git`` subdirectory and
+          ``setup.py`` install script), this application is assumed to have
+          been installed for developer usage. In this case, the :attr:`DEV`
+          cache policy is deferred to.
+        * Else, this application is assumed to have been installed for end user
+          usage. In this case, the :attr:`USER` cache policy is deferred to.
+    DEV : enum
+        **Developer cache policy.** When enabled, application-wide submodules
+        (e.g., :meth:`betsee.guimetaapp.BetseeMetaApp.data_py_qrc_filename`)
+        are generated and copied over all equivalent user-specific submodules
+        (e.g., :meth:`betsee.guimetaapp.BetseeMetaApp.dot_py_qrc_filename`),
+        guaranteeing the latter to *always* exist. Exceptions raised while
+        doing so are treated as fatal.
+    USER : enum
+        **End user cache policy.** When enabled, only user-specific submodules
+        are generated. Application-wide submodules are commonly installed into
+        system directories unwritable by end users (e.g.,
+        ``/usr/lib64/python3.6/site-packages/betsee/data/py``). Ergo, this
+        policy *never* attempts to regenerate these submodules. If an exception
+        is raised when regenerating a user-specific submodule:
+
+        * This exception is treated as non-fatal and hence merely logged rather
+          than prematurely halting the active Python process.
+        * The corresponding application-wide submodule is copied over that
+          user-specific submodule, guaranteeing the latter to *always* exist.
+    '''
+)
 
 # ....................{ GLOBALS                           }....................
 #FIXME: When upstream permits "QButtonGroup" widgets to be promoted via
@@ -38,7 +90,8 @@ notably including :class:`QButtonGroup` widgets.
 '''
 
 # ....................{ INITIALIZERS                      }....................
-def init() -> None:
+@type_check
+def init(cache_policy: CachePolicy) -> None:
     '''
     Initialize this submodule and hence the on-disk cache of :mod:`PySide2`
     submodules required by this application at runtime.
@@ -49,31 +102,47 @@ def init() -> None:
     external Qt (Creator|Designer) GUI. For efficiency, previously cached
     submodules are regenerated *only* as needed (i.e., if older than the
     underlying paths from which these submodules are generated).
+
+    Parameters
+    ----------
+    cache_policy : CachePolicy
+        Type of :mod:`PySide2`-based submodule caching to be performed.
     '''
 
     # Application metadata singleton.
     app_meta = metaapp.get_app_meta()
 
-    # If this application has a Git-based working tree, assume this application
-    # to be under development by a non-end user developer. In this case,
-    # (re)generate *ALL* pure-Python cached submodules (including both
-    # application-wide *AND* user-specific) from their input XML files.
-    if app_meta.is_git_worktree:
-        _cache_all_dev()
-        # _cache_all_user()
-    # Else, this application has no such tree. In this case, assuming this
-    # application to be in use by a non-developer end user, (re)generate only
-    # user-specific pure-Python cached submodules from their input XML files.
+    # If the automatic cache policy is preferred...
+    if cache_policy is CachePolicy.AUTO:
+        # If this application has a Git-based working tree, assume this
+        # application to be under development by a developer. In this case,
+        # (re)generate *ALL* pure-Python cached submodules (including both
+        # application-wide *AND* user-specific).
+        if app_meta.is_git_worktree:
+            _init_dev()
+        # Else, this application has no such tree. In this case, assuming this
+        # application to be in use by an end user, (re)generate *ONLY*
+        # user-specific pure-Python cached submodules.
+        else:
+            _init_user()
+    # Else if the developer cache policy is preferred, instate this policy.
+    elif cache_policy is CachePolicy.DEV:
+        _init_dev()
+    # Else if the end user cache policy is preferred, instate this policy.
+    elif cache_policy is CachePolicy.USER:
+        _init_user()
+    # Else, this cache policy is unrecognized. Raise us up an exception.
     else:
-        _cache_all_user()
+        raise BetseeCacheException(
+            'Cache policy {!r} unrecognized.'.format(cache_policy))
 
     # Append the directory containing all generated user-specific submodules to
     # the ${PYTHONPATH} *AFTER* successfully making these submodules, enabling
     # these submodules to be subsequently imported elsewhere in the codebase.
     pys.add_import_dirname(app_meta.dot_py_dirname)
 
-# ....................{ CACHERS ~ all                     }....................
-def _cache_all_dev() -> None:
+
+def _init_dev() -> None:
     '''
     Either create and cache *or* reuse each previously cached pure-Python
     submodule required at runtime by this GUI, including both application-wide
@@ -88,7 +157,7 @@ def _cache_all_dev() -> None:
     '''
 
     # Log this caching.
-    logs.log_info('Synchronizing Git-cached PySide2 submodules...')
+    logs.log_info('Synchronizing cached PySide2 submodules for development...')
 
     # Application metadata singleton.
     app_meta = metaapp.get_app_meta()
@@ -112,7 +181,7 @@ def _cache_all_dev() -> None:
         trg_filename=app_meta.dot_py_ui_filename)
 
 
-def _cache_all_user() -> None:
+def _init_user() -> None:
     '''
     Either create and cache *or* reuse each previously cached pure-Python
     submodule required at runtime by this GUI, including only user-specific
@@ -130,7 +199,7 @@ def _cache_all_user() -> None:
     '''
 
     # Log this caching.
-    logs.log_info('Synchronizing user-cached PySide2 submodules...')
+    logs.log_info('Synchronizing cached PySide2 submodules...')
 
     # Application metadata singleton.
     app_meta = metaapp.get_app_meta()
@@ -169,7 +238,7 @@ def _cache_all_user() -> None:
             src_filename=app_meta.data_py_ui_filename,
             trg_filename=app_meta.dot_py_ui_filename)
 
-# ....................{ CACHERS ~ py                      }....................
+# ....................{ CACHERS                           }....................
 @type_check
 def _cache_py_qrc_file(qrc_filename: str, py_filename: str) -> None:
     '''

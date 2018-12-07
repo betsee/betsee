@@ -13,13 +13,12 @@ from betse.util.io.log import logs
 from betse.util.type.decorator.decmemo import func_cached
 from betse.util.type.numeric import versions
 # from betse.util.type.types import type_check, IterableTypes
+from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
 
 # ....................{ GLOBALS                           }....................
-VERSION_PARTS = PySide2.__version_info__
+VERSION = PySide2.__version__
 '''
-Machine-readable :mod:`PySide2` version as an efficiently comparable tuple of
-integers (e.g., ``(5, 6, 0, "a", 1)`` for the corresponding human-readable
-version ``5.6.0~a1``).
+Human-readable :mod:`PySide2` version string (e.g., ``5.6.0~a1``).
 '''
 
 # ....................{ TESTERS                           }....................
@@ -38,10 +37,10 @@ def is_version_5_6_or_older() -> bool:
       Naturally, this is bad.
     '''
 
-    return versions.is_less_than(VERSION_PARTS, '5.7.0')
+    return versions.is_less_than(VERSION, '5.7.0')
 
 # ....................{ INITIALIZERS                      }....................
-def init() -> None:
+def init(cache_policy: CachePolicy) -> None:
     '''
     Initialize :mod:`PySide2`.
 
@@ -49,13 +48,18 @@ def init() -> None:
 
     * Contextually caches all :mod:`PySide2`-based submodules required at
       runtime by this GUI.
+
+    Parameters
+    ----------
+    cache_policy : CachePolicy
+        Type of :mod:`PySide2`-based submodule caching to be performed.
     '''
 
     # Avoid circular import dependencies.
     from betsee.lib.pyside2.cache import guipsdcache
 
     # Log this initialization.
-    logs.log_info('Initializing PySide2...')
+    logs.log_info('Initializing PySide2 %s...', VERSION)
 
     # Cache all PySide2-based submodules required at runtime by this GUI.
-    guipsdcache.init()
+    guipsdcache.init(cache_policy=cache_policy)

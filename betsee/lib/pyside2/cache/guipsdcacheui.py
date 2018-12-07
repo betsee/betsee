@@ -10,8 +10,7 @@ Designer application.
 '''
 
 # ....................{ IMPORTS                           }....................
-import sys
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtWidgets
 from PySide2.QtCore import QCoreApplication, QObject
 from betse.util.io import iofiles
 from betse.util.io.log import logs
@@ -243,9 +242,9 @@ def convert_ui_to_py_file(
         pathnames.get_basename(py_filename),
         pathnames.get_basename(ui_filename))
 
-    # # If the currently installed version of PySide2 targets the obsolete Qt
-    # # 5.6.* (LTS) line of stable releases or older, raise an exception. See the
-    # # function docstring for further details.
+    # If the currently installed version of PySide2 targets the obsolete Qt
+    # 5.6.* (LTS) line of stable releases or older, raise an exception. See the
+    # function docstring for further details.
     if guipsd.is_version_5_6_or_older():
         raise BetseeCacheException(
             'Broken "pyside2uic" package bundled with '
@@ -270,7 +269,6 @@ def convert_ui_to_py_file(
 
     # Object converting XML-formatted UI to Python files.
     ui_compiler = pyside2uic.Compiler.compiler.UICompiler()
-    # ui_compiler = _make_ui_compiler()
 
     # Dictionary of high-level metadata describing the high-level types
     # produced by converting this file into this string buffer, containing the

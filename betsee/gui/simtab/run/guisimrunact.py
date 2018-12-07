@@ -20,7 +20,7 @@ from betse.util.io.log import logs
 from betse.util.py import pythread
 from betse.util.type import enums
 from betse.util.type.obj import objects
-from betse.util.type.types import type_check
+from betse.util.type.types import type_check, BoolOrNoneTypes
 from betsee.guiexception import (
     BetseeSimmerException, BetseeSimmerBetseException)
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
@@ -131,6 +131,9 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
     Attributes (Private: Widgets)
     ----------
+    _action_toggle_work : QAction
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle_work`
+        action.
     _progress_bar : QProgressBar
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress` widget.
     _progress_status : QLabel
@@ -157,6 +160,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
         # Nullify all remaining instance variables for safety.
         self._p = None
+        self._action_toggle_work = None
         self._progress_bar = None
         self._progress_status = None
         self._workers_queued = None
@@ -166,13 +170,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
 
     @type_check
-    def init(
-        self,
-        main_window: QBetseeMainWindow,
-        progress_bar: QProgressBar,
-        progress_status: QLabel,
-        progress_substatus: QLabel,
-    ) -> None:
+    def init(self, main_window: QBetseeMainWindow) -> None:
         '''
         Finalize this simulator's initialization, owned by the passed main
         window widget.
@@ -191,14 +189,6 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this object.
-        progress_bar : QProgressBar
-            Alias of the :attr:`QBetseeMainWindow.sim_run_player_progress`
-            widget.
-        progress_status : QLabel
-            Alias of the :attr:`QBetseeMainWindow.sim_run_player_status` label.
-        progress_substatus : QLabel
-            Alias of the :attr:`QBetseeMainWindow.sim_run_player_substatus`
-            label.
         '''
 
         # Initialize our superclass with all passed parameters.
@@ -210,10 +200,11 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # Classify variables of this main window required by this simulator.
         self._p = main_window.sim_conf.p
 
-        # Classify all remaining passed parameters.
-        self._progress_bar       = progress_bar
-        self._progress_status    = progress_status
-        self._progress_substatus = progress_substatus
+        # Classify variables of this main window required by this simulator.
+        self._action_toggle_work  = main_window.action_sim_run_toggle_work
+        self._progress_bar        = main_window.sim_run_player_progress
+        self._progress_status     = main_window.sim_run_player_status
+        self._progress_substatus  = main_window.sim_run_player_substatus
 
         # Initialize the container of all simulator phase controllers.
         self.phaser.init(
@@ -706,8 +697,11 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
     # currently running simulator worker if any.
 
     #FIXME: Rewrite documentation to note the considerably changed behaviour.
+
+    # Qt < 5.7.0 fails to pass the "is_playing" parameter, requiring us to
+    # manually detect this failure and set this parameter to the proper value.
     @Slot(bool)
-    def toggle_work(self, is_playing: bool) -> None:
+    def toggle_work(self, is_playing: BoolOrNoneTypes = None) -> None:
         '''
         Slot signalled on either the user interactively *or* the codebase
         programmatically pushing the :class:`QPushButton` widget corresponding
@@ -720,12 +714,15 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
         Parameters
         ----------
-        is_playing : bool
+        is_playing : BoolOrNoneTypes
             ``True`` only if the corresponding :class:`QPushButton` widget is
             toggled, implying the user to have requested that the simulator be
             either started or resumed, contextually depending on the current
             state of the simulator; conversely, ``False`` implies a request
-            that the simulator be paused.
+            that the simulator be paused. Defaults to ``None``, in which case
+            this defaults to the negation of the current simulator state (i.e.,
+            ``True`` if the simulator is currently paused and ``False``
+            otherwise).
         '''
 
         # Log this slot.
@@ -734,6 +731,12 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
 
         # If the simulator is unworkable, raise an exception.
         self._die_unless_workable()
+
+        # If this is Qt < 5.7.0, the "is_playing" parameter is unpassed. In
+        # that case, default to the current state of the action uniquely
+        # associated with this signal. *sigh*
+        if is_playing is None:
+            is_playing = self._action_toggle_work.isChecked()
 
         # If the user requested the simulator be started or unpaused...
         if is_playing:

@@ -29,12 +29,19 @@ from betse.util.io.log import logs
 from betse.util.type.mapping import mappings
 from betse.util.type.types import type_check
 from betsee import guimetadata, guimetadeps
+from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
 
 # ....................{ INITIALIZERS                      }....................
-def reinit() -> None:
+@type_check
+def reinit(cache_policy: CachePolicy) -> None:
     '''
     (Re-)initialize all mandatory runtime dependencies of this application,
     thus including both BETSE and BETSEE.
+
+    Parameters
+    ----------
+    cache_policy : CachePolicy
+        Type of :mod:`PySide2`-based submodule caching to be performed.
     '''
 
     # Defer heavyweight imports.
@@ -60,7 +67,7 @@ def reinit() -> None:
     # Initialize PySide2 *AFTER* instantiating the "QApplication" singleton,
     # as PySide2 will implicitly instantiate its own such singleton if we fail
     # to explicitly do so first.
-    guipsd.init()
+    guipsd.init(cache_policy=cache_policy)
 
     # Initialize all mandatory runtime dependencies of BETSE.
     betse_libs.reinit(matplotlib_backend_name='Qt5Agg')

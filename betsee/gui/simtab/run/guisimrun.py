@@ -85,11 +85,11 @@ class QBetseeSimmer(QBetseeControllerABC):
 
     Attributes (Private: Widgets)
     ----------
-    _action_toggle_work : QAction
-        Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle_work`
-        action.
     _action_stop_workers : QAction
         Alias of the :attr:`QBetseeMainWindow.action_sim_run_stop_workers`
+        action.
+    _action_toggle_work : QAction
+        Alias of the :attr:`QBetseeMainWindow.action_sim_run_toggle_work`
         action.
     _player_toolbar : QFrame
         Alias of the :attr:`QBetseeMainWindow.sim_run_player_toolbar_frame`
@@ -228,12 +228,7 @@ class QBetseeSimmer(QBetseeControllerABC):
         # connection, as the QBetseeSimmerProactor.init() method called here
         # internally changes the proactor state and hence requires that
         # simulator widgets be updated.
-        self._proactor.init(
-            main_window=main_window,
-            progress_bar=self._progress_bar,
-            progress_status=self._progress_status,
-            progress_substatus=self._progress_substatus,
-        )
+        self._proactor.init(main_window)
 
     # ..................{ FINALIZERS                        }..................
     def halt_work(self) -> None:
