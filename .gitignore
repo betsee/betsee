@@ -1,11 +1,11 @@
-# --------------------( LICENSE                            )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# --------------------( LICENSE                           )--------------------
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 #
-# --------------------( SYNOPSIS                           )--------------------
+# --------------------( SYNOPSIS                          )--------------------
 # Paths matching the following glob expressions are *NOT* committed by default.
 #
-# --------------------( SEE ALSO                           )--------------------
+# --------------------( SEE ALSO                          )--------------------
 # For further details, see:
 #
 # * "man gitignore" for high-level commentary.
@@ -13,7 +13,7 @@
 #   that glob() and hence ".gitignore" files support only a proper subset of
 #   bash- and zsh-style glob syntax.
 
-# ....................{ DIRECTORIES ~ top-level            }....................
+# ....................{ DIRECTORIES ~ top-level           }....................
 # Ignore all top-level PyInstaller-specific temporary directories.
 /freeze/build/
 /freeze/dist/
@@ -27,7 +27,7 @@
 /.eggs/
 /*.egg-info/
 
-# ....................{ DIRECTORIES ~ general              }....................
+# ....................{ DIRECTORIES ~ general             }....................
 # Ignore all Python-specific cache directories.
 __pycache__/
 
@@ -37,7 +37,7 @@ __pycache__/
 # Ignore all Rope-specific subdirectories.
 .ropeproject/
 
-# ....................{ FILES ~ top-level                  }....................
+# ....................{ FILES ~ top-level                 }....................
 # Ignore all top-level Nose-specific output files.
 /nosetests.xml
 
@@ -49,13 +49,13 @@ __pycache__/
 # excluded.
 /*.manifest
 
-# ....................{ FILES ~ subdirectory               }....................
+# ....................{ FILES ~ subdirectory              }....................
 # Ignore all non-YAML files output under the YAML data directory by default.
 
 # Ignore all Qt Creator-specific user interface (UI) autosave files.
 /betsee/data/ui/**/*.ui.autosave
 
-# ....................{ FILES ~ general                    }....................
+# ....................{ FILES ~ general                   }....................
 # Ignore all BETSE-specific output files.
 *.btse
 
@@ -72,7 +72,3 @@ __pycache__/
 *~
 *.log
 *.sw?
-
-# --------------------( WASTELANDS                         )--------------------
-# Recursively whitelist all subdirectories of such directory.
-#!/betse/data/yaml/**/*/

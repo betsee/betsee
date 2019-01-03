@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -91,7 +91,7 @@ class QBetseeSimmerWorkerABC(QBetseeThreadPoolWorker):
         if self._conf_filename is None:
             raise BetseePySideThreadWorkerException(
                 '"{}" uninitialized (i.e., init() method not called).'.format(
-                    objects.get_class_name(self)))
+                    objects.get_class_name_unqualified(self)))
 
     # ..................{ MAKERS                            }..................
     def _make_sim_runner(self) -> SimRunner:

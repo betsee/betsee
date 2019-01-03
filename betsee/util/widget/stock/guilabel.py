@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# --------------------( LICENSE                           )--------------------
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
 General-purpose :mod:`QLabel` subclasses.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Qt, QCoreApplication, QSize  #, Signal, Slot
 from PySide2.QtGui import QPixmap
-from PySide2.QtWidgets import QFrame, QLabel, QScrollArea, QSizePolicy
+from PySide2.QtWidgets import QFrame, QLabel, QScrollArea
 from betse.lib.pil import pils
 from betse.util.io.log import logs
 from betse.util.path import pathnames, paths
@@ -21,7 +21,7 @@ from betsee.util.path import guifiletype
 from betsee.util.widget import guiwdg
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
-# ....................{ SUBCLASSES                         }....................
+# ....................{ SUBCLASSES                        }....................
 #FIXME: Submit this class once working as a novel solution to:
 #    https://stackoverflow.com/questions/8211982/qt-resizing-a-qlabel-containing-a-qpixmap-while-keeping-its-aspect-ratio
 #
@@ -44,34 +44,35 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
 
     By default, pixmaps added to :class:`QLabel` widgets are stretched to fit
     layout requirements -- commonly resulting in unappealing deformation of
-    pixmaps added to these widgets. This derivative widget corrects this harmful
-    behaviour by constraining the aspect ratio of this widget to be equal to the
-    aspect ratio of the contained pixmap if any. To do so:
+    pixmaps added to these widgets. This derivative widget corrects this
+    harmful behaviour by constraining the aspect ratio of this widget to be
+    equal to the aspect ratio of the contained pixmap if any. To do so:
 
     * The width of this widget is always preserved as is.
     * The height of this widget is dynamically set to be the width of this
-      widget multiplied by the aspect ratio of the contained pixmap if any, thus
-      constraining the aspect ratio of this widget to be the same.
+      widget multiplied by the aspect ratio of the contained pixmap if any,
+      thus constraining the aspect ratio of this widget to be the same.
 
     This widget supports all image filetypes supported by standard Qt widgets.
     Specifically, all images whose filetypes are in the system-specific set
-    returned by the :func:`betse.util.path.guifiletype.get_image_read_filetypes`
-    function are explicitly supported.
+    returned by the
+    :func:`betse.util.path.guifiletype.get_image_read_filetypes` function are
+    explicitly supported.
 
     Caveats
     ----------
     This widget *must* be contained in a :class:`QScrollArea` widget.
     Equivalently, some transitive parent widget of this widget *must* be a
-    :class:`QScrollArea` widget. If this is *not* the case when the :meth:`init`
-    method finalizing this widget's initialization is called, that method
-    explicitly raises an exception.
+    :class:`QScrollArea` widget. If this is *not* the case when the
+    :meth:`init` method finalizing this widget's initialization is called, that
+    method explicitly raises an exception.
 
-    Why? Because size hints for widgets residing outside of :class:`QScrollArea`
-    widgets are typically silently ignored. This widget declares a size hint
-    preserving the aspect ratio of its pixmap. If this size hint is silently
-    ignored, this pixmap's aspect ratio will typically be silently violated.
-    Since this widget type exists *only* to preserve this aspect ratio, this
-    constitutes a fatal error.
+    Why? Because size hints for widgets residing outside of
+    :class:`QScrollArea` widgets are typically silently ignored. This widget
+    declares a size hint preserving the aspect ratio of its pixmap. If this
+    size hint is silently ignored, this pixmap's aspect ratio will typically be
+    silently violated. Since this widget type exists *only* to preserve this
+    aspect ratio, this constitutes a fatal error.
 
     Recursion
     ----------
@@ -85,8 +86,8 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
       :meth:`QLabel.setPixmap`.
     * :meth:`QLabel.setPixmap` calls :meth:`QLabel.updateLabel`.
     * :meth:`QLabel.updateLabel` calls :meth:`QLabel.updateGeometry`.
-    * :meth:`QLabel.updateGeometry` may conditionally call :meth:`QLabel.resize`
-      in edge cases.
+    * :meth:`QLabel.updateGeometry` may conditionally call
+      :meth:`QLabel.resize` in edge cases.
     * :meth:`QLabel.resize` queues a new resize event for this label.
     * The Qt event loop processes this event by calling
       :meth:`QLabel.resizeEvent`, completing the recursive cycle.
@@ -94,10 +95,11 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
     Technically speaking, no recursive cycle exists. Due to indirection
     introduced by event handling, the :meth:`QLabel.resize` and
     :meth:`QLabel.resizeEvent` methods are called in different branches of the
-    call stack. Ergo, the above call chain should noticeably degrade application
-    performance *without* fatally exhausting the stack. Sadly, since these
-    methods are called sequentially rather than recursively, detecting and
-    guarding against this edge case is infeasible. (It could be worse.)
+    call stack. Ergo, the above call chain should noticeably degrade
+    application performance *without* fatally exhausting the stack. Sadly,
+    since these methods are called sequentially rather than recursively,
+    detecting and guarding against this edge case is infeasible. (It could be
+    worse.)
 
     Practically speaking, we were unable to replicate this worst-case issue.
     Since we cannot replicate it, we cannot resolve it. We have elected instead
@@ -109,8 +111,9 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
     Attributes
     ----------
     _pixmap : (QPixmap, NoneType)
-        Pixmap added to this widget by an external call to the :meth:`setPixmap`
-        method if that method has been called *or* ``None`` otherwise.
+        Pixmap added to this widget by an external call to the
+        :meth:`setPixmap` method if that method has been called *or* ``None``
+        otherwise.
 
     See Also
     ----------
@@ -118,7 +121,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         StackOverflow answer inspiring this implementation.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed parameters.
@@ -157,7 +160,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
             predicate=lambda widget_parent: isinstance(
                 widget_parent, QScrollArea))
 
-    # ..................{ PROPERTIES                         }..................
+    # ..................{ PROPERTIES                        }..................
     @property
     def _is_pixmap(self) -> bool:
         '''
@@ -166,7 +169,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
 
         return self._pixmap is not None and not self._pixmap.isNull()
 
-    # ..................{ SUPERCLASS ~ getters               }..................
+    # ..................{ SUPERCLASS ~ getters              }..................
     def sizeHint(self) -> QSize:
         '''
         Preferred size for this label, defined in a manner preserving both this
@@ -189,9 +192,9 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
 
     def heightForWidth(self, label_width_new: int) -> int:
         '''
-        Preferred height for this widget given the passed width if this widget's
-        height depend on its width *or* -1 otherwise (i.e., if this widget's
-        height is independent of its width).
+        Preferred height for this widget given the passed width if this
+        widget's height depend on its width *or* -1 otherwise (i.e., if this
+        widget's height is independent of its width).
 
         Parameters
         ----------
@@ -202,14 +205,15 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         ----------
         int
             Either:
+
             * If this widget contains a **non-null pixmap** (i.e., if the
               :meth:`setPixmap` method of this widget has been passed a pixmap
               whose :meth:`QPixmap.isNull` method returns ``False``), the
-              returned height is guaranteed to preserve the aspect ratio of this
-              pixmap with respect to the passed width.
-            * Else (i.e., if this widget either contains no pixmap *or* contains
-              the null pixmap), the returned height is this widget's current
-              height unmodified.
+              returned height is guaranteed to preserve the aspect ratio of
+              this pixmap with respect to the passed width.
+            * Else (i.e., if this widget either contains no pixmap *or*
+              contains the null pixmap), the returned height is this widget's
+              current height unmodified.
         '''
 
         # If this label has a non-null pixmap, return a height preserving the
@@ -224,7 +228,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         else:
             return self.height()
 
-    # ..................{ SUPERCLASS ~ setters               }..................
+    # ..................{ SUPERCLASS ~ setters              }..................
     @type_check
     def setPixmap(self, pixmap: QPixmap) -> None:
         '''
@@ -237,8 +241,8 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         widget to preserve the aspect ratio of this pixmap, this pixmap's new:
 
         * Width will be the current width of this label.
-        * Height will be a function of this width preserving the aspect ratio of
-          this pixmap.
+        * Height will be a function of this width preserving the aspect ratio
+          of this pixmap.
 
         For aesthetics, this pixmap is rescaled with smooth bilinear filtering
         rather than with the default non-smooth transition.
@@ -264,10 +268,10 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         #
         # Ideally, the size() method returning the current size of this label
         # rather than the sizeHint() method returning only a preferred size
-        # would be called. This widget has overriden all available size-specific
-        # hint methods to return sizes preserving the aspect ratio of this
-        # pixmap, but the size returned by the size() method still insists on
-        # ignoring these hints in common edge cases.
+        # would be called. This widget has overriden all available
+        # size-specific hint methods to return sizes preserving the aspect
+        # ratio of this pixmap, but the size returned by the size() method
+        # still insists on ignoring these hints in common edge cases.
         #
         # In particular, supplanting sizeHint() by size() here instructs Qt to
         # gradually increase the size of this label to this preferred size over
@@ -299,7 +303,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         # Set this label's pixmap to this rescaled pixmap.
         super().setPixmap(pixmap_rescaled)
 
-    # ..................{ SUPERCLASS ~ events                }..................
+    # ..................{ SUPERCLASS ~ events               }..................
     def resizeEvent(self, *args, **kwargs) -> None:
 
         # Defer to our superclass implementation.
@@ -311,7 +315,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
             # Rescale this pixmap to the desired size of this widget.
             self.setPixmap(self._pixmap)
 
-    # ..................{ LOADERS                            }..................
+    # ..................{ LOADERS                           }..................
     @type_check
     def load_image(self, filename: str) -> None:
         '''
@@ -321,9 +325,9 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         For safety, this method preferentially displays otherwise fatal errors
         resulting from this loading process as non-fatal warnings set as this
         label's text. Since this widget is typically *only* leveraged as an
-        image previewer, the failure to preview arbitrary user-defined images of
-        dubious origin, quality, and contents and possibly unsupported filetype
-        should *not* halt the entire application. Ergo, it doesn't.
+        image previewer, the failure to preview arbitrary user-defined images
+        of dubious origin, quality, and contents and possibly unsupported
+        filetype should *not* halt the entire application. Ergo, it doesn't.
 
         Parameters
         ----------
@@ -369,8 +373,8 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
                     'Image filetype "{0}" unrecognized by Pillow.'.format(
                         filetype)))
                 return
-            # Else, this image is readable by Pillow and hence BETSE and is thus
-            # presumably valid.
+            # Else, this image is readable by Pillow and hence BETSE and is
+            # thus presumably valid.
 
             # If this image is unreadable by Qt, show a warning and return.
             # Since Qt reads fewer image filetypes than Pillow, this condition
@@ -393,7 +397,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         # If doing so raises an exception...
         except Exception as exception:
             # Exception type.
-            exception_type = classes.get_class_name(exception)
+            exception_type = classes.get_name_unqualified(exception)
 
             # Exception message.
             exception_message = str(exception)
@@ -406,16 +410,16 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
                     exception_type,
                     exception_message)))
 
-    # ..................{ WARNERS                            }..................
+    # ..................{ WARNERS                           }..................
     @type_check
     def _warn(self, warning: str) -> None:
         '''
         Set the passed human-readable message as this label's text, log this
         message as a warning, and remove this label's existing pixmap if any.
 
-        For clarity, this message is embedded in rich text (i.e., HTML) visually
-        accentuating this message in a manner indicative of warnings -- notably,
-        with boldened red text.
+        For clarity, this message is embedded in rich text (i.e., HTML)
+        visually accentuating this message in a manner indicative of warnings
+        -- notably, with boldened red text.
 
         Caveats
         ----------
@@ -427,7 +431,8 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         Parameters
         ----------
         warning : str
-            Human-readable warning message to be displayed as this label's text.
+            Human-readable warning message to be displayed as this label's
+            text.
         '''
 
         # Log this warning.

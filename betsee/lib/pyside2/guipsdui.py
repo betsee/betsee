@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -9,7 +9,7 @@ Low-level :mod:`PySide2` XML-formatted user interface (UI) facilities.
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
-from betse.util.py import pymodule
+from betse.util.py.module import pymodname
 from betse.util.type import types
 from betse.util.type.types import type_check, SequenceTypes
 from betsee import guimetadata
@@ -59,7 +59,7 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
     '''
 
     # UI module if importable *OR* raise an exception otherwise.
-    ui_module = pymodule.import_module(
+    ui_module = pymodname.import_module(
         module_name=ui_module_name,
         exception_message=QCoreApplication.translate(
             'get_ui_module_base_classes',

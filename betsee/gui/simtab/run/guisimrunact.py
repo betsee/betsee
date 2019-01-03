@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -1081,7 +1081,7 @@ class QBetseeSimmerProactor(QBetseeSimmerStatefulABC):
         # Log this slot.
         guithread.log_debug_thread_main(
             'Catching simulator worker exception "%s"...',
-            objects.get_class_name(exception))
+            objects.get_class_name_unqualified(exception))
 
         # If this exception signifies an instability, raise a human-readable
         # translated exception synopsizing this fact. This error is

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -455,10 +455,11 @@ def _munge_ui_code(
             subclass=promote_class, superclass=QObject)
 
         # Unqualified name of this class.
-        promote_class_name = classes.get_name(promote_class)
+        promote_class_name = classes.get_name_unqualified(promote_class)
 
         # Fully-qualified name of the module defining this class.
-        promote_class_module_name = classes.get_module_name(promote_class)
+        promote_class_module_name = classes.get_module_name_qualified(
+            promote_class)
 
         # Append this code with an unindented line importing this class at
         # top-level module scope.

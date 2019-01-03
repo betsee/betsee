@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -15,7 +15,8 @@ from betse import metaapp
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmdpath
-from betse.util.py import pymodule, pys
+from betse.util.py import pys
+from betse.util.py.module import pymodule
 from betse.util.type.enums import make_enum
 from betse.util.type.types import type_check, IterableTypes
 from betsee.guiexception import BetseeCacheException

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                            )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -208,7 +208,7 @@ class QBetseeObjectMixin(object):
         cls = type(self)
 
         # Unqualified CamelCase name of this subclass.
-        cls_name = classes.get_name(cls)
+        cls_name = classes.get_name_unqualified(cls)
 
         # Remove the application-specific class name prefix if found and then
         # remove the application-agnostic class name prefix if found, as the

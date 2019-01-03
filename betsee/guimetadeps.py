@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2018 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -54,8 +54,14 @@ versions 0.8.1.0 *and* 0.8.1.1 of this application.
 RUNTIME_MANDATORY = {
     # Versioned dependencies directly required by this application.
     'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
-    'PySide2': '>= 2.0.0~alpha0',
-    # 'PySide2': '>= 5.11.0',
+
+    #FIXME: Convert this into a versioned dependency once the Qt Company
+    #releases an official PySide2 release supported under all requisite
+    #platforms (e.g., conda-forge, Gentoo). Until then, this suffices.
+
+    # Unversioned dependencies directly required by this application.
+    'PySide2': '',
+    # 'pyside2': '>= 5.6.0~a1',
 
     # Unversioned dependencies directly required by this application. Since
     # the modules providing these dependencies define no PEP-8-compliant
