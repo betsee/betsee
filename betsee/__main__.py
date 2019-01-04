@@ -128,12 +128,12 @@ def _die_unless_betse() -> None:
     # Minimum version of BETSE required by this application as a
     # machine-readable tuple of integers. This tuple is only required once
     # (i.e., here) and hence *NOT* persisted as a "guimetadata" global.
-    BETSE_VERSION_REQUIRED_MIN_PARTS = (
+    BETSE_VERSION_MIN_PARTS = (
         guimetadata._convert_version_str_to_tuple(
-            guimetadeps.BETSE_VERSION_REQUIRED_MIN))
+            guimetadeps.BETSE_VERSION_MIN))
 
     # If the current version of BETSE is insufficient, raise an exception.
-    if betse.__version_info__ < BETSE_VERSION_REQUIRED_MIN_PARTS:
+    if betse.__version_info__ < BETSE_VERSION_MIN_PARTS:
         raise _BetseNotFoundException(
             title=EXCEPTION_TITLE,
             synopsis='Obsolete version of mandatory dependency BETSE found.',
@@ -142,7 +142,7 @@ def _die_unless_betse() -> None:
                 'but only BETSE {} is currently installed.'.format(
                     guimetadata.NAME,
                     guimetadata.VERSION,
-                    guimetadeps.BETSE_VERSION_REQUIRED_MIN,
+                    guimetadeps.BETSE_VERSION_MIN,
                     betse.__version__,
                 )))
 

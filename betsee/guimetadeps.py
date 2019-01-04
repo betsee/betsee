@@ -18,6 +18,46 @@ Metadata constants synopsizing high-level application dependencies.
 
 from betsee.guimetadata import VERSION
 
+# ....................{ LIBS ~ install : mandatory        }....................
+SETUPTOOLS_VERSION_MIN = '38.2.0'
+'''
+Minimum version of :mod:`setuptools` required at application installation time
+as a human-readable ``.``-delimited string.
+
+Motivation
+----------
+This application requires :mod:`PySide2`, which is distributed as a wheel and
+thus requires wheel support, which in turns requires either ``pip`` >= 1.4.0 or
+:mod:`setuptools` >= 38.2.0. While ``pip`` 1.4.0 is relatively ancient,
+:mod:`setuptools` 38.2.0 is comparatively newer. If the current version of
+:mod:`setuptools` is *not* explicitly validated at installation time, older
+:mod:`setuptools` versions fail on attempting to install :mod:`PySide2` with
+non-human-readable fatal errors resembling:
+
+    $ sudo python3 setup.py develop
+    running develop
+    running egg_info
+    writing betsee.egg-info/PKG-INFO
+    writing dependency_links to betsee.egg-info/dependency_links.txt
+    writing entry points to betsee.egg-info/entry_points.txt
+    writing requirements to betsee.egg-info/requires.txt
+    writing top-level names to betsee.egg-info/top_level.txt
+    reading manifest template 'MANIFEST.in'
+    writing manifest file 'betsee.egg-info/SOURCES.txt'
+    running build_ext
+    Creating /usr/lib64/python3.6/site-packages/betsee.egg-link (link to .)
+    Saving /usr/lib64/python3.6/site-packages/easy-install.pth
+    Installing betsee script to /usr/bin
+    changing mode of /usr/bin/betsee to 755
+
+    Installed /home/leycec/py/betsee
+    Processing dependencies for betsee==0.9.2.0
+    Searching for PySide2
+    Reading https://pypi.python.org/simple/PySide2/
+    No local packages or working download links found for PySide2
+    error: Could not find suitable distribution for Requirement.parse('PySide2')
+'''
+
 # ....................{ LIBS ~ runtime : mandatory        }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: Changes to this subsection *MUST* be synchronized with:
@@ -30,7 +70,7 @@ from betsee.guimetadata import VERSION
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # See the "Design" section below for commentary.
-BETSE_VERSION_REQUIRED_MIN = VERSION[:VERSION.rindex('.')]
+BETSE_VERSION_MIN = VERSION[:VERSION.rindex('.')]
 '''
 Minimum version of BETSE, the low-level CLI underlying this high-level GUI,
 required by this application as a human-readable ``.``-delimited string.
@@ -53,7 +93,7 @@ versions 0.8.1.0 *and* 0.8.1.1 of this application.
 
 RUNTIME_MANDATORY = {
     # Versioned dependencies directly required by this application.
-    'BETSE': '>= ' + BETSE_VERSION_REQUIRED_MIN,
+    'BETSE': '>= ' + BETSE_VERSION_MIN,
 
     #FIXME: Convert this into a versioned dependency once the Qt Company
     #releases an official PySide2 release supported under all requisite

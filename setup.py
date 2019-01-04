@@ -35,29 +35,10 @@ from betsee import guimetadata, guimetadeps
 from betsee_setup import beupbuild, beuputil
 
 # ....................{ EXCEPTIONS                        }....................
-#FIXME: BETSEE installation now strictly requires setuptools >= 38.2.
-#
-#* Define a new "guimetadeps.SETUPTOOLS_VERSION_REQUIRED_MIN == '38.2'" global.
-#* Define a new beuputil.die_unless_setuptools_version_at_least() function,
-#  whose implementation should probably resemble:
-#
-# from distutils.version import StrictVersion
-# from setuptools import __version__ as SETUPTOOLS_VERSION
-#
-# def die_unless_setuptools_version_at_least(setuptools_version_min: str) -> None:
-#
-#     if (
-#         StrictVersion(SETUPTOOLS_VERSION) <
-#         StrictVersion(setuptools_version_min)
-#     ):
-#         raise Exception(
-#             'Setuptools version "{}" < '
-#             'minimum required setuptools version "{}".'.format(
-#                 SETUPTOOLS_VERSION, setuptools_version_min)))
-#
-#* Uncomment the following:
-#     beuputil.die_unless_setuptools_version_at_least(
-#         guimetadeps.SETUPTOOLS_VERSION_REQUIRED_MIN)
+# Validate the currently installed version of setuptools to meet the
+# installation-time requirements of this application.
+beuputil.die_unless_setuptools_version_at_least(
+    guimetadeps.SETUPTOOLS_VERSION_MIN)
 
 # ....................{ METADATA                          }....................
 # PyPI-specific metadata declared here rather than in the "betsee.metadata"

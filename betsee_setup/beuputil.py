@@ -39,87 +39,12 @@ side effects, we adopt the former approach.
 # ....................{ IMPORTS                           }....................
 import importlib, os, platform, shutil, subprocess, sys, time
 from betsee import guimetadata
-from distutils.errors import (
-    DistutilsExecError, DistutilsFileError, DistutilsModuleError)
+from distutils.errors import DistutilsFileError, DistutilsModuleError
+from distutils.version import StrictVersion
 from os import path
 from pkg_resources import Distribution, PathMetadata
+from setuptools import __version__ as SETUPTOOLS_VERSION
 from setuptools import Command
-
-# ....................{ EXCEPTIONS ~ command              }....................
-def die_unless_command_succeeds(*command_words) -> None:
-    '''
-    Raise an exception unless running the passed command succeeds.
-
-    For portability, this command *must* be passed as a list of shell words
-    whose first element is the pathname of such command and all subsequent
-    elements the command-line arguments to be passed to such command (e.g.,
-    ``['ls', '/']``).
-    '''
-
-    # If the first passed shell word is *NOT* pathable, raise an exception.
-    die_unless_pathable(command_words[0])
-
-    # Print the command to be run before doing so.
-    print('Running "{}".'.format(' '.join(command_words)))
-
-    # Keyword arguments to be passed to subprocess.check_call() below, which
-    # accepts all arguments accepted by subprocess.Popen.__init__().
-    popen_kwargs = {}
-
-    # If the current platform is vanilla Windows, permit this command to
-    # inherit all file handles (including stdin, stdout, and stderr) from the
-    # current process. By default, subprocess.Popen documentation insists that:
-    #
-    #     "On Windows, if close_fds is true then no handles will be inherited
-    #     by the child process."
-    #
-    # The child process will then open new file handles for stdin, stdout, and
-    # stderr. If the current terminal is a Windows Console, the underlying
-    # terminal devices and hence file handles will remain the same, in which
-    # case this is *NOT* an issue. If the current terminal is Cygwin-based
-    # (e.g.,, MinTTY), however, the underlying terminal devices and hence file
-    # handles will differ, in which case this behaviour prevents interaction
-    # between the current shell and the vanilla Windows command to be run
-    # below.  In particular, all output from this command will be squelched.
-    #
-    # If at least one of stdin, stdout, or stderr are redirected to a blocking
-    # pipe, setting "close_fds" to False can induce deadlocks under certain
-    # edge-case scenarios. Since all such file handles default to None and
-    # hence are *NOT* redirected in this case, "close_fds" may be safely set to
-    # False.
-    #
-    # On all other platforms, if "close_fds" is True, no file handles *EXCEPT*
-    # stdin, stdout, and stderr will be inherited by the child process. Hence,
-    # this function fundamentally differs in subtle (and only slightly
-    # documented ways) between vanilla Windows and all other platforms. These
-    # discrepancies appear to be harmful but probably unavoidable, given the
-    # philosophical gulf between vanilla Windows and all other platforms.
-    if is_os_windows_vanilla():
-        popen_kwargs['close_fds'] = False
-
-    # Run this command.
-    subprocess.check_call(command_words, **popen_kwargs)
-
-
-def die_unless_pathable(command_basename: str, exception_message: str = None):
-    '''
-    Raise an exception with the passed message if the passed **pathable**
-    (i.e., external command in the current ``${PATH}``) does *not* exist.
-    '''
-
-    # If this pathable is not found, raise an exception.
-    if not is_pathable(command_basename):
-        # If no message was passed, default this message.
-        if not exception_message:
-            exception_message = (
-                'Command "{}" not found in the current ${{PATH}} or '
-                'found but not an executable file.'.format(
-                   command_basename))
-        assert isinstance(exception_message, str), (
-            '"{}" not a string.'.format(exception_message))
-
-        # Raise this exception.
-        raise DistutilsExecError(exception_message)
 
 # ....................{ EXCEPTIONS ~ path                 }....................
 def die_unless_basename(pathname: str, exception_message: str = None) -> None:
@@ -136,61 +61,6 @@ def die_unless_basename(pathname: str, exception_message: str = None) -> None:
                 'Pathname "{}" not a basename '
                 '(i.e., either empty or '
                 'contains a directory separator).'.format(pathname))
-        assert isinstance(exception_message, str), (
-            '"{}" not a string.'.format(exception_message))
-
-        # Raise this exception.
-        raise DistutilsFileError(exception_message)
-
-
-def die_unless_dir_or_not_found(
-    pathname: str, exception_message: str = None) -> None:
-    '''
-    Raise an exception unless the passed path is either an existing directory
-    *or* does not exist (i.e., if this path is an existing non-directory).
-    '''
-    # If such path is an existing non-directory, fail.
-    if is_path(pathname) and not is_dir(pathname):
-        # If no such message was passed, default such message.
-        if not exception_message:
-            if is_file(pathname):
-                exception_message =\
-                    'Directory "{}" already an existing file.'.format(pathname)
-            elif is_symlink(pathname):
-                exception_message =\
-                    'Directory "{}" already an existing symbolic link.'.format(
-                        pathname)
-            else:
-                exception_message = 'Path "{}" not a directory.'.format(
-                    pathname)
-        assert isinstance(exception_message, str),\
-            '"{}" not a string.'.format(exception_message)
-
-        # Raise this exception.
-        raise DistutilsFileError(exception_message)
-
-
-def die_unless_file_or_not_found(
-    pathname: str, exception_message: str = None) -> None:
-    '''
-    Raise an exception unless the passed path is either an existing non-special
-    file _or_ does not exist (e.g., if such path is an existing directory).
-    '''
-
-    # If this path exists and is *NOT* an existing non-special file, fail.
-    if is_path(pathname) and not is_file(pathname):
-        # If no such message was passed, default this message.
-        if not exception_message:
-            if is_dir(pathname):
-                exception_message = (
-                    'File "{}" already an existing directory.'.format(
-                        pathname))
-            elif is_symlink(pathname):
-                exception_message = (
-                    'File "{}" already an existing symbolic link.'.format(
-                        pathname))
-            else:
-                exception_message = 'Path "{}" not a file.'.format(pathname)
         assert isinstance(exception_message, str), (
             '"{}" not a string.'.format(exception_message))
 
@@ -281,10 +151,43 @@ def die_unless_module(module_name: str, exception_message: str = None):
         # Raise this exception.
         raise DistutilsModuleError(exception_message)
 
+# ....................{ EXCEPTIONS ~ setuptools           }....................
+def die_unless_setuptools_version_at_least(
+    setuptools_version_min: str) -> None:
+    '''
+    Raise an exception unless the currently installed version of
+    :mod:`setuptools` is at least as recent as the passed minimum version.
+
+    Parameters
+    ----------
+    setuptools_version_min : str
+        Human-readable ``.``-delimited specifier of the minimum version of
+        :mod:`setuptools` required at installation time by this application.
+
+    Raises
+    ----------
+    Exception
+        If the currently installed version of :mod:`setuptools` is older than
+        the passed minimum version.
+    '''
+    assert isinstance(setuptools_version_min, str), (
+        '"{}" not a string.'.format(setuptools_version_min))
+
+    # If the currently installed version of setuptools is older than this
+    # minimum version, raise an exception.
+    if (
+        StrictVersion(SETUPTOOLS_VERSION) <
+        StrictVersion(setuptools_version_min)
+    ):
+        raise Exception(
+            'setuptools >= {} required by this application, but only '
+            'setuptools {} found.'.format(
+                setuptools_version_min, SETUPTOOLS_VERSION))
+
 # ....................{ TESTERS ~ os                      }....................
 def is_os_linux() -> bool:
     '''
-    `True` only if the current operating system is Linux.
+    ``True`` only if the current operating system is Linux.
     '''
     return platform.system() == 'Linux'
 
