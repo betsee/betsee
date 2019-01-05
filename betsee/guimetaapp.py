@@ -16,11 +16,9 @@ synopsizing application metadata via read-only properties).
 # for downstream consumers (e.g., BETSEE).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-import betsee
 from betse.metaapp import BetseMetaApp
 from betse.util.path import dirs, files, pathnames
 from betse.util.type.decorator.decmemo import property_cached
-from betse.util.type.types import ModuleType
 from betsee import guimetadata
 
 # ....................{ SUBCLASSES                        }....................
@@ -42,13 +40,6 @@ class BetseeMetaApp(BetseMetaApp):
         Collection of the absolute paths of numerous core files and
         directories describing the structure of the local filesystem.
     '''
-
-    # ..................{ PROPERTIES ~ public : superclass  }..................
-    # Abstract read-only properties required to be defined by subclasses.
-
-    @property
-    def package(self) -> ModuleType:
-        return betsee
 
     # ..................{ PROPERTIES ~ dir : data           }..................
     @property_cached

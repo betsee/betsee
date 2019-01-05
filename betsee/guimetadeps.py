@@ -101,7 +101,7 @@ RUNTIME_MANDATORY = {
 
     # Unversioned dependencies directly required by this application.
     'PySide2': '',
-    # 'pyside2': '>= 5.6.0~a1',
+    # 'PySide2': '>= 5.6.0~a1',
 
     # Unversioned dependencies directly required by this application. Since
     # the modules providing these dependencies define no PEP-8-compliant
