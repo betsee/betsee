@@ -11,7 +11,7 @@ user-specific files on the local filesystem.
 
 # ....................{ IMPORTS                           }....................
 import PySide2
-from betse import metaapp
+from betse.util.app.meta import metaappton
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmdpath
@@ -111,7 +111,7 @@ def init(cache_policy: CachePolicy) -> None:
     '''
 
     # Application metadata singleton.
-    app_meta = metaapp.get_app_meta()
+    app_meta = metaappton.get_app_meta()
 
     # If the automatic cache policy is preferred...
     if cache_policy is CachePolicy.AUTO:
@@ -161,7 +161,7 @@ def _init_dev() -> None:
     logs.log_info('Synchronizing cached PySide2 submodules for development...')
 
     # Application metadata singleton.
-    app_meta = metaapp.get_app_meta()
+    app_meta = metaappton.get_app_meta()
 
     # (Re)cache *ALL* application-wide submodules (in arbitrary order).
     _cache_py_qrc_file(
@@ -203,7 +203,7 @@ def _init_user() -> None:
     logs.log_info('Synchronizing cached PySide2 submodules...')
 
     # Application metadata singleton.
-    app_meta = metaapp.get_app_meta()
+    app_meta = metaappton.get_app_meta()
 
     # Attempt to (re)cache the user-specific QRC submodule.
     try:

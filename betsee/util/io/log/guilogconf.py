@@ -51,7 +51,7 @@ def log_to_text_edit(text_edit: QBetseePlainTextEdit) -> None:
     '''
 
     # Global logging configuration.
-    log_config = logconfig.get()
+    log_config = logconfig.get_log_conf()
 
     # Root logger handler redirecting to all slots connected to a signal.
     logger_root_handler_signal = LogHandlerSignal(
