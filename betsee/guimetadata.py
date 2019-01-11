@@ -49,8 +49,8 @@ Human-readable minimum version of Python required by this application as a
 
 PYTHON_VERSION_MINOR_MAX = 8
 '''
-Maximum minor stable version of this major version of Python currently released
-(e.g., ``5`` if Python 3.5 is the most recent stable version of Python 3.x).
+Maximum minor stable version of the current Python 3.x mainline (e.g., ``9`` if
+Python 3.9 is the most recent stable version of Python 3.x).
 '''
 
 
@@ -69,7 +69,8 @@ def _convert_version_str_to_tuple(version_str: str) -> tuple:
 PYTHON_VERSION_MIN_PARTS = _convert_version_str_to_tuple(PYTHON_VERSION_MIN)
 '''
 Machine-readable minimum version of Python required by this application as a
-tuple of integers.
+tuple of integers (e.g., ``(3, 5, 0)`` if this application requires at least
+Python 3.5.0).
 '''
 
 

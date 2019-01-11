@@ -400,7 +400,6 @@ def get_chars(filename: str, encoding: str = 'utf-8') -> str:
         return text_file.read()
 
 # ....................{ GETTERS ~ metadata                }....................
-#FIXME: Reuse in the "betse_setup.betseutil" submodule as well.
 def get_description() -> str:
     '''
     Human-readable multiline description of this application in
@@ -515,19 +514,44 @@ def get_path_sans_filetype(pathname: str) -> str:
     return path.splitext(pathname)[0]
 
 # ....................{ SANITIZERS ~ metadata             }....................
-#FIXME: Reuse in the "betse_setup.betseutil" submodule as well.
-def sanitize_classifiers(classifiers: list) -> list:
+def sanitize_classifiers(
+    classifiers: list,
+    python_version_min_parts: tuple,
+    python_version_minor_max: int,
+) -> list:
     '''
     List of all PyPI-specific trove classifier strings synopsizing this
     application, manufactured by appending classifiers synopsizing this
     application's support for Python major versions (e.g.,
     ``Programming Language :: Python :: 3.6``, a classifier implying this
     application to successfully run under Python 3.6) to the passed list.
+
+    Parameters
+    ----------
+    classifiers : list
+        List of all PyPI-specific trove classifier strings to be sanitized.
+    python_version_min_parts : tuple
+        Minimum fully-specified version of Python required by this application
+        as a tuple of integers (e.g., ``(3, 5, 0)`` if this application
+        requires at least Python 3.5.0).
+    python_version_minor_max : int
+        Maximum minor stable version of the current Python 3.x mainline (e.g.,
+        ``9`` if Python 3.9 is the most recent stable version of Python 3.x).
+
+    Returns
+    ----------
+    list
+        List of all sanitized PyPI-specific trove classifier strings.
     '''
-    assert isinstance(classifiers, list), '"{}" not a list.'.format(classifiers)
+    assert isinstance(classifiers, list), '"{}" not a list.'.format(
+        classifiers)
+    assert isinstance(python_version_min_parts, tuple), (
+        '"{}" not a tuple.'.format(python_version_min_parts))
+    assert isinstance(python_version_minor_max, int), (
+        '"{}" not an integer.'.format(python_version_minor_max))
 
     # Major version of Python required by this application.
-    PYTHON_VERSION_MAJOR = guimetadata.PYTHON_VERSION_MIN_PARTS[0]
+    PYTHON_VERSION_MAJOR = python_version_min_parts[0]
 
     # List of classifiers to return, copied from the passed list for safety.
     classifiers_sane = classifiers[:]
@@ -535,8 +559,7 @@ def sanitize_classifiers(classifiers: list) -> list:
     # For each minor version of Python 3.x supported by this application,
     # formally classify this version as such.
     for python_version_minor in range(
-        guimetadata.PYTHON_VERSION_MIN_PARTS[1],
-        guimetadata.PYTHON_VERSION_MINOR_MAX):
+        python_version_min_parts[1], python_version_minor_max):
         classifiers.append(
             'Programming Language :: Python :: {}.{}'.format(
                 PYTHON_VERSION_MAJOR, python_version_minor,))

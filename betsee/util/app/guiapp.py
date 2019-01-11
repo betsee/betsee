@@ -149,9 +149,6 @@ def init() -> None:
     if     _IS_INITTED:
         return
 
-    # Log this initialization.
-    logging.debug('Instantiating Qt application singleton...')
-
     # Destroy the existing "QApplication" singleton (if any).
     _deinit_qt_app()
 
@@ -323,7 +320,7 @@ def _init_qt_app() -> QApplication:
     #     QBetseePlaintextTooltipEventFilter)
 
     # Log this instantiation.
-    logging.debug('Instantiating application singleton...')
+    logging.debug('Instantiating Qt application singleton...')
 
     #FIXME: Actually, this isn't *QUITE* right. At least the "-session" option
     #should be forwarded on to the "QApplication" constructor, required for

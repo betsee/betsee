@@ -19,7 +19,9 @@ synopsizing application metadata via read-only properties).
 from betse.metaapp import BetseMetaApp
 from betse.util.path import dirs, files, pathnames
 from betse.util.type.decorator.decmemo import property_cached
+from betse.util.type.types import type_check
 from betsee import guimetadata
+from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
 
 # ....................{ SUBCLASSES                        }....................
 class BetseeMetaApp(BetseMetaApp):
@@ -40,6 +42,74 @@ class BetseeMetaApp(BetseMetaApp):
         Collection of the absolute paths of numerous core files and
         directories describing the structure of the local filesystem.
     '''
+
+    # ..................{ INITIALIZERS                      }..................
+    def init_sans_libs(self) -> None:
+        '''
+        Initialize this application *except* mandatory third-party dependencies
+        of this application, which requires external resources (e.g.,
+        command-line options, configuration files) to have been parsed.
+
+        Specifically, this method (in order):
+
+        #. Initializes BETSE itself by calling the superclass method.
+        #. Validates but does *not* initialize all mandatory third-party
+           dependencies of this application, which the :meth:`init_libs` method
+           does so subsequently.
+        #. Validates the active Python interpreter to support multithreading.
+        '''
+
+        # Avoid circular import dependencies.
+        from betsee.lib import guilib
+
+        # Initialize our superclass and hence BETSE itself.
+        super().init_sans_libs()
+
+        # Validate mandatory dependencies *AFTER* initializing BETSE.
+        #
+        # These dependencies are intentionally *NOT* initialized here (e.g., by
+        # calling guilib.init()), as doing so requires the logging
+        # configuration to have been finalized (e.g., by parsing CLI options),
+        # which has yet to occur this early in the application lifecycle.
+        guilib.die_unless_runtime_mandatory_all()
+
+
+    @type_check
+    def init_libs(self, cache_policy: CachePolicy) -> None:
+        '''
+        Initialize all mandatory runtime dependencies of this application with
+        sane defaults, including those required by both BETSE *and* BETSEE.
+
+        Parameters
+        ----------
+        cache_policy : CachePolicy
+            Type of :mod:`PySide2`-based submodule caching to be performed.
+        '''
+
+        # Defer heavyweight imports.
+        from betsee.lib.pyside2 import guipsd
+        from betsee.util.app import guiapp
+
+        # Instantiate the "QApplication" singleton *BEFORE* initializing BETSE
+        # dependencies. Our reasoning is subtle, but vital: initializing BETSE
+        # initializes matplotlib with the "Qt5Agg" backend, which instantiates
+        # the "QApplication" singleton if this singleton has *NOT* already been
+        # initialized. However, various application-wide settings (e.g.,
+        # metadata, high-DPI scaling emulation) *MUST* be initialized before
+        # this singleton is instantiated. Permitting "Qt5Agg" to instantiate
+        # this singleton first prevents us from initializing these settings
+        # here. This singleton *MUST* thus be instantiated by us first.
+        guiapp.init()
+
+        # Initialize PySide2 *AFTER* instantiating the "QApplication"
+        # singleton, as PySide2 will implicitly instantiate its own such
+        # singleton if we fail to explicitly do so first.
+        guipsd.init(cache_policy=cache_policy)
+
+        # Initialize our superclass dependencies (and hence those required by
+        # BETSE itself) to strictly require a Qt 5-specific matplotlib backend
+        # *AFTER* initializing PySide2 .
+        super().init_libs(matplotlib_backend_name='Qt5Agg')
 
     # ..................{ PROPERTIES ~ dir : data           }..................
     @property_cached

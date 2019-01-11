@@ -110,7 +110,11 @@ _SETUP_OPTIONS = {
 
     # ..................{ PYPI                              }..................
     # PyPi-specific metadata.
-    'classifiers': beuputil.sanitize_classifiers(_CLASSIFIERS),
+    'classifiers': beuputil.sanitize_classifiers(
+        classifiers=_CLASSIFIERS,
+        python_version_min_parts=guimetadata.PYTHON_VERSION_MIN_PARTS,
+        python_version_minor_max=guimetadata.PYTHON_VERSION_MINOR_MAX,
+    ),
     'keywords':    _KEYWORDS,
     'license':     guimetadata.LICENSE,
 
@@ -135,9 +139,10 @@ _SETUP_OPTIONS = {
     'tests_require': guimetadeps.get_testing_mandatory_tuple(),
 
     # ..................{ PACKAGES                           }..................
-    # List of all Python packages (i.e., directories containing zero or more
-    # Python modules) to be installed. Currently, this includes the "betse"
-    # package and all subpackages of this package excluding:
+    # List of the fully-qualified names of all Python packages (i.e.,
+    # directories containing zero or more Python modules) to be installed,
+    # including the top-level application package and all subpackages of that
+    # package. This thus excludes:
     #
     # * The top-level test package and all subpackages of this package, test
     #   functionality *NOT* intended to be installed with this application.
@@ -147,6 +152,12 @@ _SETUP_OPTIONS = {
     #   package, required only by a prior application installation.
     # * "freeze", providing PyInstaller-specific functionality required only for
     #   application freezing (i.e., conversion into an executable binary).
+    #
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # WARNING: This inspection intentionally omits subdirectories containing no
+    # "__init__.py" file, despite the remainder of the Python ecosystem
+    # commonly accepting such subdirectories as subpackages.
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     'packages': setuptools.find_packages(exclude=(
         guimetadata.PACKAGE_NAME + '_test',
         guimetadata.PACKAGE_NAME + '_test.*',

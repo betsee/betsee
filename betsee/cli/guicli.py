@@ -93,6 +93,7 @@ Concrete subclasses defining this application's command line interface (CLI).
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+from betse.util.app.meta import metaappton
 from betse.util.cli.cliabc import CLIABC
 from betse.util.cli.cliopt import CLIOptionArgEnum, CLIOptionArgStr
 from betse.util.io.log import logs
@@ -145,14 +146,6 @@ class BetseeCLI(CLIABC):
     # The following properties *MUST* be implemented by subclasses.
 
     @property
-    def _module_ignition(self) -> ModuleType:
-
-        # Defer heavyweight imports.
-        from betsee import guiignition
-        return guiignition
-
-
-    @property
     def _module_metadata(self) -> ModuleType:
 
         # Defer heavyweight imports.
@@ -176,10 +169,6 @@ seed, initialize, and then simulate such a simulation in the current directory:
     # ..................{ SUPERCLASS ~ igniters             }..................
     def _init_app_libs(self) -> None:
 
-        # Defer heavyweight imports.
-        from betsee.lib import guilib
-        from betsee.util.thread import guithread
-
         # Initialize all mandatory runtime dependencies of this application,
         # including both BETSE and BETSEE.
         #
@@ -188,12 +177,8 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # so is typically desirable, a chicken-and-egg conflict between Qt and
         # matplotlib complicates the initialization of both.
         #
-        # See the body of the function called here for further details.
-        guilib.reinit(cache_policy=self._cache_policy)
-
-        # Initialize multithreading facilities *AFTER* validating dependencies,
-        # which take precedence by virtue of their being things we depend upon.
-        guithread.init()
+        # See the MetaAppABC.init_libs() method for further details.
+        metaappton.get_app_meta().init_libs(cache_policy=self._cache_policy)
 
     # ..................{ SUPERCLASS ~ options              }..................
     def _make_options_top(self) -> SequenceTypes:
