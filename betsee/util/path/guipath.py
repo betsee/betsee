@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,15 +7,16 @@
 :mod:`PySide2`-based file functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtWidgets import QFileDialog
+from betse.util.io.log import logs
 from betse.util.path import dirs, pathnames, paths
 from betse.util.type.iterable import sequences
+from betse.util.type.numeric import bits
 from betse.util.type.text import strs
 from betse.util.type.types import (
     type_check,
     CallableTypes,
-    IntOrNoneTypes,
     MappingType,
     MappingOrNoneTypes,
     NoneType,
@@ -23,7 +24,7 @@ from betse.util.type.types import (
 )
 from betsee.util.app import guiappwindow
 
-# ....................{ CALLERS                            }....................
+# ....................{ CALLERS                           }....................
 @type_check
 def select_path(
     # Mandatory parameters.
@@ -41,59 +42,92 @@ def select_path(
     Absolute or relative pathname of a path interactively selected by the end
     user from a dialog displayed by calling the passed static getter of the
     :class:`QFileDialog` class (e.g., :func:`QFileDialog.getOpenFileName`)
-    configured with the passed parameters if this dialog was not cancelled *or*
-    ``None`` otherwise (i.e., if this dialog was cancelled).
+    configured with the passed parameters if this user confirmed this dialog
+    *or* ``None`` otherwise (i.e., if this user cancelled this dialog).
 
     Constraints
     ----------
-    Whether the pathname returned by this function is absolute or relative *and*
-    whether the initial pathname accepted by this function is required to be
-    absolute or relative depends on which optional parameters are passed.
+    The type of path (e.g., directory, non-directory file) that this dialog
+    permits the user to select is constrained *only* by the passed
+    ``dialog_callable`` and ``dialog_options`` parameters.
 
-    Specifically:
+    Similarly, whether the returned pathname is absolute or relative *and*
+    whether the passed ``init_pathname`` parameter is required to be absolute
+    or relative depends on which optional parameters are passed. Specifically:
 
-    * If the ``parent_dirname`` parameter is non-``None``:
-      * The returned pathname is either:
-        * If this path resides in this parent directory or a subdirectory
-          thereof, relative to the absolute pathname of this parent directory.
-        * Else, absolute.
-      * If the ``init_pathname`` parameter is also non-``None``, this pathname
-        may be either:
-        * Relative, in which case this pathname is interpreted as relative to
-          the absolute pathname of this parent directory.
-        * Absolute, in which case this pathname is preserved as is.
-    * Else (i.e., if the ``parent_dirname`` parameter is ``None``):
-      * The returned pathname is absolute.
-      * If the ``init_pathname`` parameter is non-``None``, this pathname *must*
-        also be absolute. If this is *not* the case, an exception is raised.
+    * If the ``parent_dirname`` parameter is non-``None``, the returned
+      pathname will be either:
+
+      * If this path resides in this parent directory or a subdirectory
+        thereof, relative to the absolute dirname of this parent directory.
+      * Else, absolute.
+
+    * Else, the ``parent_dirname`` parameter is ``None``. In this case, the
+      returned pathname will *always* be absolute.
+
+    Likewise, if the ``init_pathname`` parameter is non-``None``:
+
+    * If the ``parent_dirname`` parameter is also non-``None``, the
+      ``init_pathname`` parameter may be either:
+
+      * Relative, in which case ``init_pathname`` is interpreted as relative to
+        the absolute dirname of this parent directory.
+      * Absolute, in which case ``init_pathname`` is preserved as is.
+
+    * Else, the ``parent_dirname`` parameter is ``None``. In this case, if the
+      ``init_pathname`` parameter is:
+
+      * A basename (i.e., contains no directory separator), ``init_pathname``
+        is interpreted as relative to the absolute dirname of the **last
+        selected directory** (i.e., the directory component of the pathname
+        returned by the most recent call to this function; equivalently, the
+        return value of the :func:`guipathsys.get_selected_dirname_prior`
+        function).
+      * Relative but *not* a basename (i.e., contains one or more directory
+        separators), an exception is raised. While ``init_pathname`` could
+        technically be interpreted as relative to the absolute dirname of the
+        last selected directory as in the prior case, doing so would be
+        unlikely to yield an existing directory and hence be practically
+        guaranteed of raising an even less readable exception than this. Why?
+        Since the last selected directory is an arbitrary directory,
+        concatenating the arbitrary subdirectory defined by ``init_pathname``
+        onto that directory is unlikely to yield a meaningful pathname.
+      * Absolute, ``init_pathname`` is preserved as is.
 
     Parameters
     ----------
     dialog_callable : CallableTypes
-        Static getter function of the :class:`QFileDialog` class to be called by
-        this function (e.g., :func:`QFileDialog.getOpenFileName`).
+        Static getter function of the :class:`QFileDialog` class to be called
+        by this function (e.g., :func:`QFileDialog.getOpenFileName`).
     dialog_title : str
         Human-readable title of this dialog.
     dialog_options : (QFileDialog.Option, NoneType)
-        *Bit field* (i.e., integer OR-ed together from mutually exclusive bit
+        **Bit field** (i.e., integer OR-ed together from mutually exclusive bit
         flags ala C-style enumeration types) of all :attr:`QFileDialog.Option`
         flags with which to configure this dialog. Defaults to ``None``, in
         which case this dialog defaults to the default configuration.
     init_pathname : StrOrNoneTypes
-        Absolute or relative pathname of the path of arbitrary type (e.g., file,
-        directory) to initially display in this dialog. Defaults to ``None``, in
-        which case the pathname selected by the most recent call of this
-        function is defaulted to.
+        Absolute or relative pathname of the path to initially display in this
+        dialog. If this path is a directory, this directory is selected and the
+        basename of the current selection is the empty string; else if this
+        path is a file, this file is selected. If the directory component of
+        this path does *not* exist, this directory component is implicitly
+        reduced with a non-fatal warning to the last (i.e., most deeply nested)
+        parent directory of this path that exists to ensure this dialog opens
+        onto an existing directory. Defaults to ``None``, in which case the
+        last selected directory is defaulted to. (**This is currently a lie.**
+        See FIXME commentary preceding the
+        :func:`guipathsys.get_selected_dirname_prior` function.)
     parent_dirname : StrOrNoneTypes
         Absolute pathname of the parent directory to select a path from.
         Defaults to ``None``, in which case no parental constraint is applied.
         See above for details.
     is_subpaths : bool
-        ``True`` only if both the ``init_pathname`` parameter *and* the returned
-        selected path are required to be children of the ``parent_dirname``
-        parameter (i.e., residing either in this directory or a transitive
-        subdirectory of this directory). Defaults to ``False``, in which case
-        these paths may reside in any directory.
+        ``True`` only if both the ``init_pathname`` parameter *and* the
+        returned selected path are required to be children of the
+        ``parent_dirname`` parameter (i.e., residing in either this directory
+        itself *or* a subdirectory of this directory). Defaults to ``False``,
+        in which case these paths may reside in any directory.
     label_to_filetypes : MappingOrNoneTypes
         Dictionary mapping from a human-readable label to be displayed for each
         iterable of related filetypes selectable by this dialog (e.g.,
@@ -107,17 +141,34 @@ def select_path(
     ----------
     StrOrNoneTypes
         Either:
-        * If this dialog was confirmed, the absolute pathname of this path.
+
+        * If this dialog was confirmed, the absolute or relative pathname of
+          the path confirmed by the end user.
         * If this dialog was cancelled, ``None``.
     '''
 
     # Avoid circular import dependencies.
     from betsee.util.path import guipathsys
 
+    # True only if this dialog is selecting one or more directories, as
+    # indicated by the "QFileDialog.ShowDirsOnly" bit being enabled in the
+    # "dialog_options" bit field if passed. Nice, eh?
+    is_dir_selection = (
+        dialog_options is not None and
+        bits.is_bit_on(
+            bit_field=dialog_options, bit_mask=QFileDialog.ShowDirsOnly)
+    )
+
     # If no initial path was passed, default to a sane path. To avoid subtle
     # edge cases, do so *BEFORE* handling the passed parent directory if any.
     if init_pathname is None:
-        init_pathname = guipathsys.get_path_dialog_init_pathname()
+        init_pathname = guipathsys.get_selected_dirname_prior()
+
+    #FIXME: This function is getting rather long in this tooth. Split this
+    #function up into the following subfunctions:
+    #
+    #* A new subfunction implementing this if conditional.
+    #* A new subfunction implementing the if conditional following this one.
 
     # If no parent directory was passed...
     if parent_dirname is None:
@@ -132,21 +183,43 @@ def select_path(
         # If this parent directory does *NOT* exist, raise an exception.
         dirs.die_unless_dir(parent_dirname)
 
-        # If this initial path is relative, expand this into an absolute
+        # If this initial path is relative, canonicalize that into an absolute
         # pathname relative to this parent directory.
         if pathnames.is_relative(init_pathname):
             init_pathname = pathnames.join(parent_dirname, init_pathname)
-        # Else, this initial path is absolute. If this path is required to live
-        # in this parent directory, raise an exception if this is not the case.
+        # Else, this initial path is absolute.
+        #
+        # If this initial path is required to reside in this parent directory
+        # but does *NOT*, raise an exception.
         elif is_subpaths:
             pathnames.die_unless_parent(
                 parent_dirname=parent_dirname, child_pathname=init_pathname)
 
-    # If this initial path does *NOT* exist, silently reduce this path to the
-    # last (i.e., most deeply nested) parent directory of this path that
-    # exists. This ensures this dialog opens to an existing path.
+    # Ensure this dialog opens to an existing path.
+    #
+    # If this initial path does *NOT* exist...
     if not paths.is_path(init_pathname):
-        init_pathname = dirs.get_parent_dir_last(init_pathname)
+        # Log a non-fatal warning.
+        logs.log_warning(
+            'Initial file dialog path "%s" not found.', init_pathname)
+
+        # If this dialog is selecting one or more directories, reduce this
+        # dirname to the dirname of the last (i.e., most deeply nested) parent
+        # directory of this dirname that exists.
+        if is_dir_selection:
+            init_pathname = dirs.get_parent_dir_last(init_pathname)
+        # Else, this dialog is selecting one or more files. In this case...
+        else:
+            # Absolute dirname and basename of the initial file to select.
+            init_dirname  = pathnames.get_dirname (init_pathname)
+            init_basename = pathnames.get_basename(init_pathname)
+
+            # Reduce this dirname to an existing dirname as above.
+            init_dirname = dirs.get_parent_dir_last(init_dirname)
+
+            # Sanitize the initial file by concatenating this existing dirname
+            # and the original basename of this file.
+            init_pathname = pathnames.join(init_dirname, init_basename)
 
     # List of all arguments to be passed to this dialog creation function.
     dialog_args = [
@@ -179,8 +252,9 @@ def select_path(
         dialog_args.append(dialog_options)
     # logs.log_debug('QFileDialog args: %r', dialog_args)
 
-    # Absolute pathname of the path selected by the user if this dialog was not
-    # canceled *OR* the empty string otherwise.
+    # Display this dialog and localize the absolute pathname of the path
+    # selected by the user if this dialog was not canceled *OR* the empty
+    # string otherwise.
     pathname = dialog_callable(*dialog_args)
 
     # If this pathname is actually a 2-tuple "(pathname, filetypes_filter)",
@@ -192,25 +266,27 @@ def select_path(
     # of this tuple is the "filetypes_filter" substring corresponding to the
     # filetype of this file (e.g., "YAML files (*.yml *.yaml);;" for a file
     # "sim_config.yaml"). Since this substring conveys no metadata not already
-    # conveyed by this filetype, this substring is safely ignorable.
+    # conveyed by this filetype, this substring is safely ignorable. (Bad API!)
     if sequences.is_sequence(pathname) and len(pathname) == 2:
         pathname = pathname[0]
 
-    # If this dialog was canceled, silently noop.
+    # If this dialog was canceled, silently reduce to a noop.
     if not pathname:
         return None
-    # Else, this dialog was *NOT* canceled.
+    # Else, this dialog was confirmed.
 
     # If a parent directory was passed...
     if parent_dirname is not None:
-        # If this path lives in this parent directory, reduce this path to a
+        # If this path resides in this parent directory, reduce this path to a
         # relative pathname relative to this parent directory.
         if pathnames.is_parent(
             parent_dirname=parent_dirname, child_pathname=pathname):
             pathname = pathnames.relativize(
                 src_dirname=parent_dirname, trg_pathname=pathname)
-        # ELse, this path does *NOT* live in this parent directory. If this path
-        # is required to do so, raise an exception.
+        # ELse, this path resides outside this parent directory.
+        #
+        # If this path is instead required to reside in this parent directory,
+        # raise an exception.
         elif is_subpaths:
             pathnames.die_unless_parent(
                 parent_dirname=parent_dirname, child_pathname=init_pathname)
@@ -218,7 +294,7 @@ def select_path(
     # Return this pathname.
     return pathname
 
-# ....................{ PRIVATE ~ makers                   }....................
+# ....................{ PRIVATE ~ makers                  }....................
 @type_check
 def _make_filetypes_filter(label_to_filetypes: MappingType) -> str:
     '''

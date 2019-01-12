@@ -25,11 +25,11 @@ from betse.util.type.types import type_check
 
 # ....................{ GETTERS ~ dir                     }....................
 #FIXME: Actually implement this function as described. For simplicity, this
-#function currently defers to *ALWAYS* return get_user_docs_dirname(). Instead:
+#function currently defers to *ALWAYS* return get_user_documents_dirname(). Instead:
 #
 #* Define a new set_path_dialog_init_pathname() setter in this submodule,
 #  internally caching the passed pathname to the application's "QSettings" store.
-#* In the get_path_dialog_init_pathname() function:
+#* In the get_selected_dirname_prior() function:
 #  * If the application's "QSettings" store contains this previously cached
 #    pathname *AND* this pathname still exists, return this pathname.
 #  * Else, return get_user_docs_pathname().
@@ -42,33 +42,75 @@ from betse.util.type.types import type_check
 #    call this setter.
 #
 #Not terribly arduous and quite useful. Make it so, please.
+#FIXME: Actually, the above may be slightly overkill. It would appear that
+#Qt already provides such functionality internally -- but *ONLY* for dialogs
+#opened with the QFileDialog.getOpenFileName() getter passed an "init_pathname"
+#of "None" and a "dialog_options" bit-field containing the
+#"QFileDialog.DontUseNativeDialog" option. Why? Because Qt's builtin non-native
+#file dialog implementation internally defaults to the last opened pathname,
+#which Qt even preserves across application invocations. That said, the
+#usefulness of this feature is somewhat hampered by these constraints. What
+#would be more useful would be to obtain access to the internal global that Qt
+#preserves across application invocations -- which, hopefully, PySide2 will
+#somehow expose. Let's examine the C++-based implementation of the
+#QFileDialog.getOpenFileName() getter to discover this global's identity.
+#
+#See also this relevant StackOverflow question:
+#    https://stackoverflow.com/a/23003370/2809027
+#FIXME: We have confirmed that, indeed, such a C++ global exists --
+#"QFileDialog.lastVisitedDir", as visible here:
+#    https://code.woboq.org/qt5/qtbase/src/widgets/dialogs/qfiledialog.cpp.html#lastVisitedDir
+#Sadly, as expected, neither PyQt5 nor PySide2 expose this global to Python
+#code. For this reason, Qt-based Python applications reimplement this global in
+#Python space by... wait for it, using a similar approach to that delineated in
+#the first FIXME comment above. Of course, since the exact approach that we've
+#outlined appears to demonstrably superior to anything any other application is
+#doing, let's just run with that, shall we? *sigh*
 
-def get_path_dialog_init_pathname() -> str:
+def get_selected_dirname_prior() -> str:
     '''
-    Absolute pathname of the path of arbitrary type (e.g., file, directory) to
-    initially display in *path dialogs* (i.e., dialogs requesting the end user
-    interactively select a possibly non-existing path).
+    Absolute dirname of the **last selected directory** (i.e., the directory
+    component of the pathname returned by the most recent call to this
+    function; equivalently, the return value of the
+    :func:`guipathsys.get_selected_dirname_prior` function)
+    directory to be initially selected by **path dialogs**
+    (i.e., dialogs requesting the end user interactively select a possibly
+    non-existing path).
 
     Returns
     ----------
     str
-        Absolute pathname of either:
+        Absolute dirname of either:
 
         * If the current user has already successfully selected at least one
-          path from a path dialog _and_ the most recently selected such path
-          still exists, that path.
+          path from a path dialog *and* the most recently selected such path
+          still exists, the directory component of that path.
         * Else (i.e., if this user has yet to select a path from a path
-          dialog), a directory containing work-oriented files for this user.
+          dialog), a directory assumed to contain work-related files for this
+          user.
     '''
 
-    # Return the current user's documents directory.
-    return get_user_docs_dirname()
+    # Return the dirname of the current user's documents directory.
+    return get_user_documents_dirname()
 
 # ....................{ GETTERS ~ dir : cached            }....................
+#FIXME: Define a new related function get_user_documents_existing_dirname()
+#implemented as follows:
+#
+#    @func_cached
+#    def get_user_documents_existing_dirname() -> str:
+#        return dirs.get_parent_dir_last(get_user_documents_existing_dirname())
+#
+#Likewise, call the get_user_documents_existing_dirname() function wherever we
+#currently call the get_user_documentsdirname() function in a manner assuming
+#that directory to exist (e.g., from get_selected_dirname_prior()). Why?
+#Because the get_user_documentsdirname() function only returns a directory that
+#is guaranteed to exist on macOS and Windows but *NOT* Linux, for which
+#effectively no rules exist. Naturally, we should document this observation.
 @func_cached
-def get_user_docs_dirname() -> str:
+def get_user_documents_dirname() -> str:
     '''
-    Absolute pathname of the platform- and typically user-specific directory
+    Absolute dirname of the platform- and typically user-specific directory
     containing work-oriented files for the current user.
 
     This directory is:
@@ -83,8 +125,9 @@ def get_user_docs_dirname() -> str:
 @type_check
 def _get_dir(location: QStandardPaths.StandardLocation) -> str:
     '''
-    Absolute path of the **standard directory** (i.e., platform- and typically
-    user-specific directory) identified by the passed Qt enumeration constant.
+    Absolute dirname of the **standard directory** (i.e., platform- and
+    typically user-specific directory) identified by the passed Qt enumeration
+    constant.
 
     Parameters
     ----------
@@ -95,7 +138,7 @@ def _get_dir(location: QStandardPaths.StandardLocation) -> str:
     Returns
     ----------
     str
-        Absolute path of this standard directory.
+        Absolute dirname of this standard directory.
     '''
 
     # Qt provides two means of querying for standard paths:
@@ -124,7 +167,10 @@ def _get_dir(location: QStandardPaths.StandardLocation) -> str:
     else:
         # Log a non-fatal warning.
         logs.log_warning(
-            'Standard location "%d" directories not found.', location)
+            'No platform-specific directories '
+            'defined for QStandardPaths type "%d"; '
+            'falling back to current working directory (CWD).',
+            location)
 
         # For safety, fallback to the current working directory (CWD).
         dirname = shelldir.get_cwd_dirname()

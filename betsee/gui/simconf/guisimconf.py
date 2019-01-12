@@ -392,6 +392,9 @@ class QBetseeSimConf(QBetseeControllerABC):
         default settings be both created and opened.
         '''
 
+        #FIXME: Set the default basename of this dialog to that of the default
+        #simulation configuration for BETSE (i.e., "sample_sim.yaml").
+
         # Absolute path of a possibly non-existing YAML-formatted simulation
         # configuration file selected by the user.
         conf_filename = self._show_dialog_sim_conf_save()
@@ -399,7 +402,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         # If the user canceled this dialog, silently noop.
         if conf_filename is None:
             return
-        # Else, the user did *NOT* cancel this dialog.
+        # Else, the user confirmed this dialog.
 
         # Close the currently open simulation configuration if any.
         self._close_sim()
@@ -514,6 +517,9 @@ class QBetseeSimConf(QBetseeControllerABC):
         configuration be written to an arbitrary external YAML-formatted file.
         '''
 
+        #FIXME: Set the default basename of this dialog to that of the current
+        #simulation configuration.
+
         # Absolute path of a possibly non-existing YAML-formatted simulation
         # configuration file selected by the user.
         conf_filename = self._show_dialog_sim_conf_save()
@@ -521,7 +527,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         # If the user canceled this dialog, silently noop.
         if conf_filename is None:
             return
-        # Else, the user did *NOT* cancel this dialog.
+        # Else, the user confirmed this dialog.
 
         # Reserialize this configuration into this new file.
         self.p.save(conf_filename)

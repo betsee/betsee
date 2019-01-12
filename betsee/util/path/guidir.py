@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,13 +7,13 @@
 :mod:`PySide2`-based directory functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 
-# ....................{ SELECTORS                          }....................
+# ....................{ SELECTORS                         }....................
 #FIXME: Generalize to prevent users from traversing up (but *NOT* down) the
 #directory tree during subdirectory selection. Doing so is non-trivial but
 #absolutely feasible, requiring:
@@ -45,7 +45,8 @@ from betse.util.type.types import type_check, StrOrNoneTypes
 
 @type_check
 def select_subdir(
-    init_pathname: str, parent_dirname: str, *args, **kwargs) -> StrOrNoneTypes:
+    init_pathname: str, parent_dirname: str, *args, **kwargs) -> (
+    StrOrNoneTypes):
     '''
     Display a dialog requesting the user to select an existing subdirectory of
     the parent directory with the passed path, returning the relative pathname
@@ -62,13 +63,14 @@ def select_subdir(
     parent_dirname : str
         Absolute pathname of the parent directory to select a subdirectory of.
 
-    All remaining paremeters are passed as is to the :func:`guipath.select_path`
-    function.
+    All remaining paremeters are passed as is to the
+    :func:`guipath.select_path` function.
 
     Returns
     ----------
     StrOrNoneTypes
         Either:
+
         * If this dialog was confirmed, the absolute pathname of this
           subdirectory.
         * If this dialog was cancelled, ``None``.

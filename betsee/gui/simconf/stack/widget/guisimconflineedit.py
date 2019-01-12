@@ -135,8 +135,8 @@ class QBetseeSimConfPathnameLineEditABC(QBetseeSimConfLineEdit):
         # associated with this line edit if not cancelled *OR* "None" else.
         new_pathname = self._select_pathname(old_pathname)
 
-        # If this dialog was *NOT* canceled, set the text displayed by this
-        # line edit to this pathname.
+        # If this dialog was confirmed, set the text displayed by this line
+        # edit to this pathname.
         if new_pathname is not None:
             self.setText(new_pathname)
 
@@ -148,8 +148,8 @@ class QBetseeSimConfPathnameLineEditABC(QBetseeSimConfLineEdit):
         '''
         Possibly non-existing pathname interactively selected by the user on
         clicking the push button buddy associated with this line edit from a
-        subclass-specific dialog displayed by this method if the user did not
-        cancel this dialog *or* ``None`` otherwise (i.e., if the user cancelled
+        subclass-specific dialog displayed by this method if the user confirmed
+        this dialog *or* ``None`` otherwise (i.e., if the user sadly cancelled
         this dialog).
 
         Parameters
@@ -162,8 +162,9 @@ class QBetseeSimConfPathnameLineEditABC(QBetseeSimConfLineEdit):
         ----------
         StrOrNoneTypes
             Either:
-            * If this dialog was *not* cancelled, the possibly non-existing
-              pathname selected from this dialog.
+
+            * If this dialog was confirmed, the possibly non-existing pathname
+              selected from this dialog.
             * Else, ``None``.
         '''
 
@@ -359,7 +360,7 @@ class QBetseeSimConfPathnameSubdirLineEdit(QBetseeSimConfPathnameLineEditABC):
         # If the pathname of this subdirectory is absolute, raise an exception.
         pathnames.die_if_absolute(init_pathname)
 
-        # Return the relative pathname of an existing selected subdirectory of
+        # Return the relative dirname of an existing selected subdirectory of
         # the parent directory containing the current simulation configuration
         # if this dialog was not canceled *OR* "None" otherwise.
         return guidir.select_subdir(

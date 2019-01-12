@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,7 +7,7 @@
 :mod:`PySide2`-based file functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
@@ -15,14 +15,14 @@ from betse.lib.pil import pils
 from betse.lib.yaml import yamls
 from betse.util.type.types import type_check, StrOrNoneTypes
 
-# ....................{ GLOBALS                            }....................
-_YAML_LABEL_TO_FILETYPES = {'YAML files': yamls.FILETYPES,}
+# ....................{ GLOBALS                           }....................
+_YAML_LABEL_TO_FILETYPES = {'YAML files': yamls.FILETYPES}
 '''
 Dictionary mapping from a human-readable label to be displayed for each
 iterable of YAML-specific filetypes accepted by this dialog to that iterable.
 '''
 
-# ....................{ SELECTORS ~ read                   }....................
+# ....................{ SELECTORS ~ read                  }....................
 @type_check
 def select_file_read(*args, **kwargs) -> StrOrNoneTypes:
     '''
@@ -43,6 +43,7 @@ def select_file_read(*args, **kwargs) -> StrOrNoneTypes:
     ----------
     StrOrNoneTypes
         Either:
+
         * If this dialog was confirmed, the absolute filename of this file.
         * If this dialog was cancelled, ``None``.
     '''
@@ -91,10 +92,11 @@ def select_image_read(*args, **kwargs) -> StrOrNoneTypes:
     absolute or relative filename of this file if this dialog was not cancelled
     *or* ``None`` otherwise (i.e., if this dialog was cancelled).
 
-    For generality, this dialog recognizes all image filetypes recognized by the
-    third-party image processing framework leveraged by BETSE itself: Pillow.
-    BETSE defers to this framework for most low-level image I/O operations.
-    Deferring to the same framework guarantees parity with BETSE behaviour.
+    For generality, this dialog recognizes all image filetypes recognized by
+    the third-party image processing framework leveraged by BETSE itself:
+    Pillow. (As BETSE defers to this framework for most low-level image I/O
+    operations, deferring to the same framework guarantees parity with
+    BETSE behaviour.)
 
     See Also
     ----------
@@ -113,7 +115,7 @@ def select_image_read(*args, **kwargs) -> StrOrNoneTypes:
         label_to_filetypes={'Image files': pils.get_filetypes(),},
         **kwargs)
 
-# ....................{ SELECTORS ~ save                   }....................
+# ....................{ SELECTORS ~ save                  }....................
 @type_check
 def select_file_save(*args, **kwargs) -> StrOrNoneTypes:
     '''
@@ -144,9 +146,9 @@ def select_file_save(*args, **kwargs) -> StrOrNoneTypes:
 def select_file_yaml_save(*args, **kwargs) -> StrOrNoneTypes:
     '''
     Display a dialog requesting the user to select an existing YAML file to be
-    subsequently opened for in-place saving and hence overwriting, returning the
-    absolute filename of this file if this dialog was not cancelled *or* ``None``
-    otherwise (i.e., if this dialog was cancelled).
+    subsequently opened for in-place saving and hence overwriting, returning
+    the absolute filename of this file if this dialog was not cancelled *or*
+    ``None`` otherwise (i.e., if this dialog was cancelled).
 
     See Also
     ----------
