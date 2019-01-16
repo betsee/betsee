@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -6,10 +7,10 @@
 Low-level :mod:`PySide2`-based application-wide signal classes.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QObject, Signal
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 class QBetseeSignaler(QObject):
     '''
     :class:`PySide2`-based collection of various application-wide signals.
@@ -27,17 +28,18 @@ class QBetseeSignaler(QObject):
     :class:`QBetseeSettings`) to circumvent circular chicken-and-the-egg issues
     between this and the :class:`QBetseeMainWindow` class. Conjoining these
     sibling classes into one monolithic class would introduce non-trivial (and
-    probably non-resolvable) complications, including the need for the conjoined
-    class to retain a weak reference to its :class:`QBetseeMainWindow` parent,
-    which could conceivably be prematurely destroyed by Qt in another thread.
+    probably non-resolvable) complications, including the need for the
+    conjoined class to retain a weak reference to its
+    :class:`QBetseeMainWindow` parent, which could conceivably be prematurely
+    destroyed by Qt in another thread.
     '''
 
-    # ..................{ SIGNALS ~ settings                 }..................
+    # ..................{ SIGNALS ~ settings                }..................
     restore_settings_signal = Signal()
     '''
-    Signal reading and restoring application-wide settings previously written to
-    a predefined application- and user-specific on-disk file by the most recent
-    execution of this application if any *or* reducing to a noop.
+    Signal reading and restoring application-wide settings previously written
+    to a predefined application- and user-specific on-disk file by the most
+    recent execution of this application if any *or* reducing to a noop.
 
     This signal is connected to the
     :meth:`QBetseeSettings.restore_settings` slot at initialization time,
@@ -52,6 +54,6 @@ class QBetseeSignaler(QObject):
     will read and restore on startup.
 
     This signal is connected to the
-    :meth:`QBetseeSettings.store_settings` slot at initialization time, enabling
-    callers in different threads to thread-safely store settings.
+    :meth:`QBetseeSettings.store_settings` slot at initialization time,
+    enabling callers in different threads to thread-safely store settings.
     '''

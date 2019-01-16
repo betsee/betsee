@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,14 +7,14 @@
 :mod:`PySide2`-based filetype functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication
 from PySide2.QtGui import QImageReader
 from betse.util.type.decorator.decmemo import func_cached
 # from betse.util.io.log import logs
 from betse.util.type.types import SetType  # type_check,
 
-# ....................{ SELECTORS ~ read                   }....................
+# ....................{ SELECTORS ~ read                  }....................
 @func_cached
 def get_image_read_filetypes() -> SetType:
     '''

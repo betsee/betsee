@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -199,7 +200,7 @@ Root-level classes defining this application's graphical user interface (GUI).
 #
 #Annnnnnd we are done.
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
@@ -207,7 +208,7 @@ from betsee import guimetadata
 from betsee.util.app import guiapp, guiappstatus, guiappwindow
 from betsee.util.io import guierror
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 class BetseeGUI(object):
     '''
     Graphical user interface (GUI) for this application, doubling as both the
@@ -226,7 +227,7 @@ class BetseeGUI(object):
         otherwise.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self, sim_conf_filename: StrOrNoneTypes) -> None:
         '''
@@ -250,7 +251,7 @@ class BetseeGUI(object):
         self._signaler = None
         self._settings = None
 
-    # ..................{ RUNNERS                            }..................
+    # ..................{ RUNNERS                           }..................
     def run(self) -> int:
         '''
         Run this GUI's main event loop and display this GUI.
@@ -263,9 +264,9 @@ class BetseeGUI(object):
 
         # Install a global exception hook overriding PySide2's default insane
         # exception handling behaviour with sane exception handling *BEFORE*
-        # triggering any application-specific slots possibly raising exceptions.
-        # Since the _make_main_window() method transitively does so, this hook
-        # should be installed as the first call of this method.
+        # triggering any application-specific slots possibly raising
+        # exceptions. Since the _make_main_window() method transitively does
+        # so, this hook should be installed as the first call of this method.
         guierror.install_exception_hook()
 
         # Create but do *NOT* display this GUI's main window.
@@ -284,8 +285,8 @@ class BetseeGUI(object):
         # subclasses the custom user interface (UI) base class defined by a
         # module generated at runtime above, this importation is deferred until
         # *AFTER* this module is guaranteed to be importable.
-        from betsee.gui.guisettings import QBetseeSettings
-        from betsee.gui.guisignal import QBetseeSignaler
+        from betsee.gui.guimainsettings import QBetseeSettings
+        from betsee.gui.guimainsignaler import QBetseeSignaler
         from betsee.gui.window.guimainwindow import QBetseeMainWindow
 
         # Log this initialization.
@@ -313,8 +314,9 @@ class BetseeGUI(object):
         # Publicize this main window for use elsewhere in the codebase.
         guiappwindow.set_main_window(main_window)
 
-        # Display a sensible startup message in this window's status bar *AFTER*
-        # publicizing this window, as the former requires the latter.
+        # Display a sensible startup message in this window's status bar
+        # *AFTER* publicizing this window, since the former requires the
+        # latter.
         guiappstatus.show_status(QCoreApplication.translate(
             'BetseeGUI', 'Welcome to {}'.format(guimetadata.NAME)))
 

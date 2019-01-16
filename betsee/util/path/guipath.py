@@ -81,7 +81,7 @@ def select_path(
         is interpreted as relative to the absolute dirname of the **last
         selected directory** (i.e., the directory component of the pathname
         returned by the most recent call to this function; equivalently, the
-        return value of the :func:`guipathsys.get_selected_dirname_prior`
+        return value of the :func:`guipathsys.get_selected_prior_dirname`
         function).
       * Relative but *not* a basename (i.e., contains one or more directory
         separators), an exception is raised. While ``init_pathname`` could
@@ -117,7 +117,7 @@ def select_path(
         onto an existing directory. Defaults to ``None``, in which case the
         last selected directory is defaulted to. (**This is currently a lie.**
         See FIXME commentary preceding the
-        :func:`guipathsys.get_selected_dirname_prior` function.)
+        :func:`guipathsys.get_selected_prior_dirname` function.)
     parent_dirname : StrOrNoneTypes
         Absolute pathname of the parent directory to select a path from.
         Defaults to ``None``, in which case no parental constraint is applied.
@@ -159,10 +159,14 @@ def select_path(
             bit_field=dialog_options, bit_mask=QFileDialog.ShowDirsOnly)
     )
 
-    # If no initial path was passed, default to a sane path. To avoid subtle
-    # edge cases, do so *BEFORE* handling the passed parent directory if any.
+    # Absolute dirname of the last selected directory.
+    prior_dirname = guipathsys.get_selected_prior_dirname()
+
+    # If no initial pathname was passed, default to the absolute dirname of the
+    # last selected directory. To avoid subtle edge cases, do so *BEFORE*
+    # handling this parent directory if any.
     if init_pathname is None:
-        init_pathname = guipathsys.get_selected_dirname_prior()
+        init_pathname = prior_dirname
 
     #FIXME: This function is getting rather long in this tooth. Split this
     #function up into the following subfunctions:
@@ -172,9 +176,20 @@ def select_path(
 
     # If no parent directory was passed...
     if parent_dirname is None:
-        # If this initial pathname is relative, raise an exception. Since no
-        # parent directory was passed, this pathname *CANNOT* be relativized.
-        pathnames.die_if_relative(init_pathname)
+        # If this initial pathname is a pure basename, canonicalize this
+        # pathname into an absolute pathname relative to the last selected
+        # directory.
+        if pathnames.is_basename(init_pathname):
+            init_pathname = pathnames.join(prior_dirname, init_pathname)
+        # Else, this initial pathname contains one or more directory
+        # separators. In this case...
+        else:
+            # If this initial pathname is relative, raise an exception. Since
+            # no parent directory was passed, canonicalizing this pathname into
+            # an absolute pathname is effectively infeasible.
+            pathnames.die_if_relative(init_pathname)
+            # Else, this initial pathname is absolute. In this case, preserve
+            # this pathname as is.
     # Else, a parent directory was passed. In this case...
     else:
         # If this parent directory is relative, raise an exception.
@@ -183,26 +198,24 @@ def select_path(
         # If this parent directory does *NOT* exist, raise an exception.
         dirs.die_unless_dir(parent_dirname)
 
-        # If this initial path is relative, canonicalize that into an absolute
-        # pathname relative to this parent directory.
+        # If this initial pathname is relative, canonicalize this pathname into
+        # an absolute pathname relative to this parent directory.
         if pathnames.is_relative(init_pathname):
             init_pathname = pathnames.join(parent_dirname, init_pathname)
-        # Else, this initial path is absolute.
+        # Else, this initial pathname is absolute.
         #
-        # If this initial path is required to reside in this parent directory
-        # but does *NOT*, raise an exception.
+        # If this initial pathname is required to reside in this parent
+        # directory but does *NOT*, raise an exception.
         elif is_subpaths:
             pathnames.die_unless_parent(
                 parent_dirname=parent_dirname, child_pathname=init_pathname)
 
-    # Ensure this dialog opens to an existing path.
+    # Ensure this dialog opens to an existing directory but *NOT* necessarily
+    # an existing file in an existing directory, which cannot be guaranteed in
+    # the general case (e.g., writing a new file in an existing directory).
     #
     # If this initial path does *NOT* exist...
     if not paths.is_path(init_pathname):
-        # Log a non-fatal warning.
-        logs.log_warning(
-            'Initial file dialog path "%s" not found.', init_pathname)
-
         # If this dialog is selecting one or more directories, reduce this
         # dirname to the dirname of the last (i.e., most deeply nested) parent
         # directory of this dirname that exists.

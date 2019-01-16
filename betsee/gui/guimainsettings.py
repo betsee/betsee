@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -6,20 +7,20 @@
 Low-level :mod:`QSettings`-based application-wide slottable settings classes.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QObject, Slot
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guisettings
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 class QBetseeSettings(QObject):
     '''
-    :class:`QSettings`-based object exposing all application-wide settings with
-    cross-platform, thread- and process-safe slots permitting external callers
-    to request restoration and storage of these settings to and from their
-    on-disk backing store (e.g., an application- and user-specific dotfile).
+    :class:`QSettings`-driven object exposing *all* application-wide settings
+    with cross-platform, thread- and process-safe slots permitting external
+    callers to request restoration and storage of these settings to and from an
+    on-disk backing store (e.g., application- and user-specific dotfile).
 
     Attributes
     ----------
@@ -28,13 +29,14 @@ class QBetseeSettings(QObject):
 
     See Also
     ----------
-    :class:`betsee.gui.guisignal.QBetseeSignaler`
+    :class:`betsee.gui.guimainsignaler.QBetseeSignaler`
         Sibling class, whose signals are connected to this object's slots.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
-    def __init__(self, main_window: QBetseeMainWindow, *args, **kwargs) -> None:
+    def __init__(
+        self, main_window: QBetseeMainWindow, *args, **kwargs) -> None:
         '''
         Initialize this slotter, connecting each slot to the corresponding
         signal of the :class:`QBetseeSettingsSignaler` instance owned by the
@@ -60,7 +62,7 @@ class QBetseeSettings(QObject):
         signaler.restore_settings_signal.connect(self.restore_settings)
         signaler.store_settings_signal.connect(self.store_settings)
 
-    # ..................{ SLOTS                              }..................
+    # ..................{ SLOTS                             }..................
     #FIXME: This should be called:
     #
     #* By the QGuiApplication::saveStateRequest() slot, which Qt triggers on
@@ -74,14 +76,11 @@ class QBetseeSettings(QObject):
         recent execution of this application if any *or* reduce to a noop.
         '''
 
-        #FIXME: Excise this.
-        # return
-
         # Log this restoration.
         logs.log_info('Restoring application settings...')
 
         # Previously written application settings.
-        settings = guisettings.make()
+        settings = guisettings.get_settings()
 
         # Read settings specific to this main window.
         settings.beginGroup('MainWindow')
@@ -90,15 +89,15 @@ class QBetseeSettings(QObject):
         #
         # Note that there exist numerous means of doing so. While the canonical
         # means of doing so appears to be the QMainWindow.restoreGeometry() and
-        # QMainWindow.restoreState() methods, QSettings documentation explicitly
-        # states that:
+        # QMainWindow.restoreState() methods, QSettings documentation
+        # explicitly states that:
         #
         #     "See Window Geometry for a discussion on why it is better to call
         #      QWidget::resize() and QWidget::move() rather than
         #      QWidget::setGeometry() to restore a window's geometry."
         #
-        # Sadly, the "Window Geometry" article fails to actually discuss why the
-        # QWidget.resize() and QWidget.move() methods are preferable to
+        # Sadly, the "Window Geometry" article fails to actually discuss why
+        # the QWidget.resize() and QWidget.move() methods are preferable to
         # QWidget.setGeometry() with respect to the main window. We do note,
         # however, that QWidget.setGeometry() documentation cautions:
         #
@@ -139,8 +138,9 @@ class QBetseeSettings(QObject):
 
             # Restore this position.
             self._main_window.move(main_window_position)
-        # Else, position this window at the origin -- ensuring that subsequently
-        # maximizing this window consumes all available screen space.
+        # Else, position this window at the origin -- guaranteeing that
+        # subsequent maximization of this window consumes all available screen
+        # real estate.
         else:
             self._main_window.move(0, 0)
 
@@ -199,19 +199,20 @@ class QBetseeSettings(QObject):
         logs.log_info('Storing application settings...')
 
         # Currently written application settings if any.
-        settings = guisettings.make()
+        settings = guisettings.get_settings()
 
         # Write settings specific to this main window.
         settings.beginGroup('MainWindow')
 
         # Current window full-screen state, position, and size.
         main_window_is_full_screen = self._main_window.isFullScreen()
-        main_window_position = self._main_window.pos()
-        main_window_size = self._main_window.size()
+        main_window_position       = self._main_window.pos()
+        main_window_size           = self._main_window.size()
 
         # Log these window properties.
-        logs.log_debug('Storing window full-screen state "%r"...',
-                       main_window_is_full_screen)
+        logs.log_debug(
+            'Storing window full-screen state "%r"...',
+            main_window_is_full_screen)
         logs.log_debug('Storing window position %r...', main_window_position)
         logs.log_debug('Storing window size %r...', main_window_size)
 

@@ -20,6 +20,7 @@ See Also
 from PySide2.QtCore import QStandardPaths
 from betse.util.io.log import logs
 from betse.util.os.shell import shelldir
+from betse.util.path import dirs
 from betse.util.type.decorator.decmemo import func_cached
 from betse.util.type.types import type_check
 
@@ -29,7 +30,7 @@ from betse.util.type.types import type_check
 #
 #* Define a new set_path_dialog_init_pathname() setter in this submodule,
 #  internally caching the passed pathname to the application's "QSettings" store.
-#* In the get_selected_dirname_prior() function:
+#* In the get_selected_prior_dirname() function:
 #  * If the application's "QSettings" store contains this previously cached
 #    pathname *AND* this pathname still exists, return this pathname.
 #  * Else, return get_user_docs_pathname().
@@ -67,12 +68,12 @@ from betse.util.type.types import type_check
 #outlined appears to demonstrably superior to anything any other application is
 #doing, let's just run with that, shall we? *sigh*
 
-def get_selected_dirname_prior() -> str:
+def get_selected_prior_dirname() -> str:
     '''
     Absolute dirname of the **last selected directory** (i.e., the directory
     component of the pathname returned by the most recent call to this
     function; equivalently, the return value of the
-    :func:`guipathsys.get_selected_dirname_prior` function)
+    :func:`guipathsys.get_selected_prior_dirname` function)
     directory to be initially selected by **path dialogs**
     (i.e., dialogs requesting the end user interactively select a possibly
     non-existing path).
@@ -91,22 +92,32 @@ def get_selected_dirname_prior() -> str:
     '''
 
     # Return the dirname of the current user's documents directory.
-    return get_user_documents_dirname()
+    return get_user_documents_existing_dirname()
 
 # ....................{ GETTERS ~ dir : cached            }....................
-#FIXME: Define a new related function get_user_documents_existing_dirname()
-#implemented as follows:
-#
-#    @func_cached
-#    def get_user_documents_existing_dirname() -> str:
-#        return dirs.get_parent_dir_last(get_user_documents_existing_dirname())
-#
-#Likewise, call the get_user_documents_existing_dirname() function wherever we
-#currently call the get_user_documentsdirname() function in a manner assuming
-#that directory to exist (e.g., from get_selected_dirname_prior()). Why?
-#Because the get_user_documentsdirname() function only returns a directory that
-#is guaranteed to exist on macOS and Windows but *NOT* Linux, for which
-#effectively no rules exist. Naturally, we should document this observation.
+@func_cached
+def get_user_documents_existing_dirname() -> str:
+    '''
+    Absolute dirname of the **last existing directory compoment** (i.e.,
+    longest trailing dirname whose directory actually exists) of the platform-
+    and typically user-specific directory containing work-oriented files for
+    the current user.
+
+    Unlike the directory returned by the comparable
+    :func:`get_user_documents_dirname` getter, this directory is guaranteed to
+    exist on all platforms. For safety, this function does *not* create any
+    additional directories; this function only finds an existing directory
+    whose dirname most closely approximates that of the expected directory.
+
+    See Also
+    ----------
+    :func:`get_user_documents_dirname`
+        Comparable getter *not* guaranteeing the returned directory to exist.
+    '''
+
+    return dirs.get_parent_dir_last(get_user_documents_dirname())
+
+
 @func_cached
 def get_user_documents_dirname() -> str:
     '''
@@ -117,6 +128,23 @@ def get_user_documents_dirname() -> str:
 
     * On both Linux and macOS, ``~/Documents``.
     * On Windows, ``C:/Users/{USERNAME}/Documents``.
+
+    Caveats
+    ----------
+    **This directory is not guaranteed to exist on all platforms.** Under:
+
+    * Microsoft Windows, this directory is guaranteed to exist.
+    * macOS, this directory is guaranteed to exist.
+    * Linux, this directory is *not* guaranteed to exist. This directory is
+      likely to exist under Linux distributions complying with the
+      freedesktop.org XDG Base Directory Specification. Even under these
+      distributions, however, users remain freely at liberty to remove this
+      directory. (Freedom has its price, does it not?)
+
+    See Also
+    ----------
+    :func:`get_user_documents_existing_dirname`
+        Comparable getter guaranteeing the returned directory to exist.
     '''
 
     return _get_dir(QStandardPaths.DocumentsLocation)

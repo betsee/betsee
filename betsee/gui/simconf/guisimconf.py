@@ -49,6 +49,8 @@ from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
 from betse.science.config import confio
 from betse.science.parameters import Parameters
+from betse.util.app.meta import metaappton
+from betse.util.path import pathnames
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.guiexception import BetseeSimConfException
@@ -392,12 +394,28 @@ class QBetseeSimConf(QBetseeControllerABC):
         default settings be both created and opened.
         '''
 
-        #FIXME: Set the default basename of this dialog to that of the default
-        #simulation configuration for BETSE (i.e., "sample_sim.yaml").
+        # Basename of the default simulation configuration.
+        conf_default_basename = pathnames.get_basename(
+            metaappton.get_app_meta().betse_sim_conf_default_filename)
 
-        # Absolute path of a possibly non-existing YAML-formatted simulation
-        # configuration file selected by the user.
-        conf_filename = self._show_dialog_sim_conf_save()
+        # Display a dialog requiring the user to select a YAML-formatted file
+        # (either existing or non-existing) to be subsequently opened for
+        # in-place saving and hence overwriting as the new simulation
+        # configuration, returning the absolute filename of this file if this
+        # dialog was confirmed *OR* "None" otherwise (i.e., if this dialog was
+        # canceled).
+        #
+        # For convenience, pass the basename of the default simulation
+        # configuration as this dialog's initial pathname. The underlying
+        # guipath.select_path() function implicitly prepends this basename with
+        # the absolute dirname of the last selected directory, producing a
+        # reasonable facsimile of the absolute filename of a new default
+        # simulation configuration file.
+        conf_filename = guifile.select_file_yaml_save(
+            dialog_title=QCoreApplication.translate(
+                'QBetseeSimConf', 'New Simulation Configuration'),
+            init_pathname=conf_default_basename,
+        )
 
         # If the user canceled this dialog, silently noop.
         if conf_filename is None:
@@ -441,14 +459,19 @@ class QBetseeSimConf(QBetseeControllerABC):
         configuration be opened.
         '''
 
-        # Absolute path of an existing YAML-formatted simulation configuration
-        # file selected by the user.
-        conf_filename = self._show_dialog_sim_conf_open()
+        # Display a dialog requiring the user to select an existing
+        # YAML-formatted file to be subsequently opened for reading (rather
+        # than overwriting) as the new simulation configuration, returning the
+        # absolute filename of this file if this dialog was confirmed *OR*
+        # "None" otherwise (i.e., if this dialog was canceled).
+        conf_filename = guifile.select_file_yaml_read(
+            dialog_title=QCoreApplication.translate(
+                'QBetseeSimConf', 'Open Simulation Configuration'))
 
         # If the user canceled this dialog, silently noop.
         if conf_filename is None:
             return
-        # Else, the user did *NOT* cancel this dialog.
+        # Else, the user confirmed this dialog.
 
         # Close the currently open simulation configuration if any.
         self._close_sim()
@@ -517,12 +540,24 @@ class QBetseeSimConf(QBetseeControllerABC):
         configuration be written to an arbitrary external YAML-formatted file.
         '''
 
-        #FIXME: Set the default basename of this dialog to that of the current
-        #simulation configuration.
-
-        # Absolute path of a possibly non-existing YAML-formatted simulation
-        # configuration file selected by the user.
-        conf_filename = self._show_dialog_sim_conf_save()
+        # Display a dialog requiring the user to select a YAML-formatted file
+        # (either existing or non-existing) to be subsequently opened for
+        # in-place saving and hence overwriting as the new simulation
+        # configuration, returning the absolute filename of this file if this
+        # dialog was confirmed *OR* "None" otherwise (i.e., if this dialog was
+        # canceled).
+        #
+        # For convenience, pass the basename of the current simulation
+        # configuration as this dialog's initial pathname. The underlying
+        # guipath.select_path() function implicitly prepends this basename with
+        # the absolute dirname of the last selected directory, producing a
+        # reasonable facsimile of the absolute filename of an alternative
+        # simulation configuration file.
+        conf_filename = guifile.select_file_yaml_save(
+            dialog_title=QCoreApplication.translate(
+                'QBetseeSimConf', 'Save Simulation Configuration As...'),
+            init_pathname=self.p.conf_basename,
+        )
 
         # If the user canceled this dialog, silently noop.
         if conf_filename is None:
@@ -645,32 +680,3 @@ class QBetseeSimConf(QBetseeControllerABC):
 
         # In either case, report success.
         return True
-
-    # ..................{ SHOWERS                           }..................
-    def _show_dialog_sim_conf_open(self) -> str:
-        '''
-        Display a dialog requiring the user to select an existing
-        YAML-formatted file to be subsequently opened for reading (rather than
-        overwriting) as the new simulation configuration, returning the
-        absolute path of this file if this dialog was not canceled *or*
-        ``None`` otherwise (i.e., if this dialog was canceled).
-        '''
-
-        return guifile.select_file_yaml_read(
-            dialog_title=QCoreApplication.translate(
-                'QBetseeSimConf', 'Open Simulation Configuration'))
-
-
-    def _show_dialog_sim_conf_save(self) -> str:
-        '''
-        Display a dialog requiring the user to select a YAML-formatted file
-        (either existing or non-existing) to be subsequently opened for
-        in-place saving and hence overwriting as the new simulation
-        configuration, returning the absolute path of this file if this dialog
-        was not canceled *or* ``None`` otherwise (i.e., if this dialog was
-        canceled).
-        '''
-
-        return guifile.select_file_yaml_save(
-            dialog_title=QCoreApplication.translate(
-                'QBetseeSimConf', 'New Simulation Configuration'))

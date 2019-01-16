@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -15,11 +15,11 @@ See Also
     FAQ and hence comes recommended, particularly for the Qt neophyte.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QSettings
 from betse.util.os import oses
 
-# ....................{ INITIALIZERS                       }....................
+# ....................{ INITIALIZERS                      }....................
 def init() -> None:
     '''
     Initialize the :class:`QSettings` class *before* the :func:`make` function
@@ -31,8 +31,9 @@ def init() -> None:
 
     * If the current platform is non-Cygwin Windows, request that settings be
       formatted in INI format to a physical file. By default, Windows settings
-      are formatted as registery keys. Since the registery is fragile, insecure,
-      and broken by design, this default remains unfortunate but fixable.
+      are formatted as registery keys. Since the Windows registery is
+      well-known to be fragile, insecure, and broken by design, this default
+      remains sadly unfortunate but unfixable.
     * Else, request that settings be formatted in the format preferred by the
       current platform guaranteed to be a physical file.
     '''
@@ -43,17 +44,17 @@ def init() -> None:
         QSettings.NativeFormat)
 
 # ....................{ MAKERS                             }....................
-def make() -> QSettings:
+def get_settings() -> QSettings:
     '''
-    Create and return a new :class:`QSettings` instance, encapsulating all
-    application-wide settings in a cross-platform, thread- and process-safe
-    manner guaranteed to be safely (de)serializable to and from a predefined
-    application- and user-specific on-disk file.
+    Return a new :class:`QSettings` instance encapsulating all application-wide
+    settings in a cross-platform, thread- and process-safe manner guaranteed to
+    be safely (de)serializable to and from an application- and user-specific
+    on-disk file.
 
     Design
     ----------
-    Note that repeatedly calling this function throughout the lifetime of this
-    application is guaranteed to be efficient by design. Thus, callers are
+    By Qt design, repeatedly calling this function throughout the lifetime of
+    this application is guaranteed to be efficient. Thus, callers are
     encouraged to do so rather than persist a permanent reference to the first
     :class:`QSettings` instance returned by this function.
     '''

@@ -73,11 +73,11 @@ from betse.util.type.obj import objects
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee import guimetadata
 from betsee.guiexception import BetseePySideWindowException
-from betsee.gui.guisignal import QBetseeSignaler
+from betsee.gui.guimainsignaler import QBetseeSignaler
+from betsee.lib.pyside2 import guipsdui
 from betsee.util.app import guiappwindow
 from betsee.util.io import guierror
 from betsee.util.io.log import guilogconf
-from betsee.lib.pyside2 import guipsdui
 from betsee.util.type.guitype import QWidgetOrNoneTypes
 
 # ....................{ GLOBALS                           }....................
