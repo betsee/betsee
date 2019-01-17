@@ -7,6 +7,18 @@
 Low-level :mod:`QSettings`-based application-wide slottable settings classes.
 '''
 
+#FIXME: The entire approach pursued below strikes us as both overkill and less
+#responsive than desired. Ideally, settings should be incrementally saved on a
+#slot-based basis (i.e., in slots connected to relevant signals) throughout the
+#application lifecycle; currently, settings are only saved all-at-once at
+#application closure, which is demonstrably worse. See the comparable
+#betsee.util.path.guipath.get_selected_prior_dirname() and
+#betsee.util.path.guipath.set_selected_prior_dirname() functions for an
+#incremental save approach implementing this as desired.
+#
+#Of course, we should continue to restore attributes of the main window (e.g.,
+#position, size) at application startup as we currently do. That's still good.
+
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QObject, Slot
 from betse.util.io.log import logs
@@ -51,8 +63,7 @@ class QBetseeSettings(QObject):
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
-
-        # Classify all remaining parameters.
+# Classify all remaining parameters.
         self._main_window = main_window
 
         # Signaler owned by this window.
@@ -72,8 +83,8 @@ class QBetseeSettings(QObject):
     def restore_settings(self) -> None:
         '''
         Read and restore application-wide settings previously written to a
-        predefined application- and user-specific on-disk file by the most
-        recent execution of this application if any *or* reduce to a noop.
+        user-specific dotfile by the most recent execution of this application
+        if any *or* reduce to a noop otherwise.
         '''
 
         # Log this restoration.
@@ -83,7 +94,7 @@ class QBetseeSettings(QObject):
         settings = guisettings.get_settings()
 
         # Read settings specific to this main window.
-        settings.beginGroup('MainWindow')
+        settings.beginGroup('main_window')
 
         # Restore all previously written properties of this window.
         #
@@ -114,9 +125,9 @@ class QBetseeSettings(QObject):
         #event, this logic *MUST* be disabled for the moment.
 
         # If a preferred window full screen state was previously stored...
-        # if settings.contains('isFullScreen'):
+        # if settings.contains('is_full_screen'):
         #     # Previously stored window full-screen state.
-        #     main_window_is_full_screen = bool(settings.value('isFullScreen'))
+        #     main_window_is_full_screen = bool(settings.value('is_full_screen'))
         #
         #     # Log this restoration.
         #     logs.log_debug(
@@ -128,9 +139,9 @@ class QBetseeSettings(QObject):
         #         self._main_window.resize_full()
 
         # If a preferred window position was previously stored...
-        if settings.contains('pos'):
+        if settings.contains('position'):
             # Previously stored window position.
-            main_window_position = settings.value('pos')
+            main_window_position = settings.value('position')
 
             # Log this restoration.
             logs.log_debug(
@@ -171,7 +182,7 @@ class QBetseeSettings(QObject):
     #
     #* Ideally incrementally during the application life cycle to prevent
     #  settings from being lost if the application fails to close gracefully.
-    #  "QTimer" is probably our friends, here.
+    #  "QTimer" is probably our friend, here.
     #* By the QGuiApplication::commitDataRequest() slot, which Qt triggers on
     #  the current desktop session manager beginning a shutdown or suspend.
     #  However, note that:
@@ -182,17 +193,16 @@ class QBetseeSettings(QObject):
     #    will need to be called to prevent fallback session management from
     #    interfering with this slot's behaviour.
     #  * Any concurrent operations (e.g., simulation running) will need to be
-    #    temporarily halted until this application is restored. Failure to do so
-    #    typically results in the OS killing this application. (Makes sense.) To
-    #    respond to this application state change in a robust manner, it will
-    #    probably be necessary to connect to the
+    #    temporarily halted until this application is restored. Failure to do
+    #    so typically results in the OS killing this application. (Makes
+    #    sense.) To respond to this application state change in a robust
+    #    manner, it will probably be necessary to connect to the
     #    QGuiApplication::applicationStateChanged() slot.
     @Slot()
     def store_settings(self) -> None:
         '''
-        Write application-wide settings to a predefined application- and
-        user-specific on-disk file, which the next execution of this application
-        will read and restore on startup.
+        Write application-wide settings to a user-specific dotfile, which the
+        next execution of this application will read and restore on startup.
         '''
 
         # Log this storage.
@@ -202,7 +212,7 @@ class QBetseeSettings(QObject):
         settings = guisettings.get_settings()
 
         # Write settings specific to this main window.
-        settings.beginGroup('MainWindow')
+        settings.beginGroup('main_window')
 
         # Current window full-screen state, position, and size.
         main_window_is_full_screen = self._main_window.isFullScreen()
@@ -217,8 +227,8 @@ class QBetseeSettings(QObject):
         logs.log_debug('Storing window size %r...', main_window_size)
 
         # Store these window properties.
-        settings.setValue('isFullScreen', main_window_is_full_screen)
-        settings.setValue('pos', main_window_position)
+        settings.setValue('is_full_screen', main_window_is_full_screen)
+        settings.setValue('position', main_window_position)
         settings.setValue('size', main_window_size)
 
         # Cease writing settings specific to this window.

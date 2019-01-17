@@ -194,7 +194,7 @@ class BetseePySideClipboardException(BetseePySideException):
 
         # Translate this title.
         return QCoreApplication.translate(
-            'BetseePySideClipboardException', 'Clipboard Error'),
+            'BetseePySideClipboardException', 'Clipboard Error')
 
 
 class BetseePySideFocusException(BetseePySideException):
@@ -212,6 +212,23 @@ class BetseePySideFocusException(BetseePySideException):
         # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideFocusException', 'Widget Focus Error')
+
+
+class BetseePySideSettingsException(BetseePySideException):
+    '''
+    General-purpose exception applicable to all interaction with the
+    platform-specific backing store of application settings.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
+        return QCoreApplication.translate(
+            'BetseePySideSettingsException', 'Settings Error')
 
 # ....................{ EXCEPTIONS ~ psd : thread         }....................
 class BetseePySideThreadException(BetseePySideException):

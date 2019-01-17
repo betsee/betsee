@@ -9,7 +9,7 @@
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtWidgets import QFileDialog
-from betse.util.io.log import logs
+# from betse.util.io.log import logs
 from betse.util.path import dirs, pathnames, paths
 from betse.util.type.iterable import sequences
 from betse.util.type.numeric import bits
@@ -22,9 +22,8 @@ from betse.util.type.types import (
     NoneType,
     StrOrNoneTypes,
 )
-from betsee.util.app import guiappwindow
 
-# ....................{ CALLERS                           }....................
+# ....................{ SELECTORS                         }....................
 @type_check
 def select_path(
     # Mandatory parameters.
@@ -80,9 +79,7 @@ def select_path(
       * A basename (i.e., contains no directory separator), ``init_pathname``
         is interpreted as relative to the absolute dirname of the **last
         selected directory** (i.e., the directory component of the pathname
-        returned by the most recent call to this function; equivalently, the
-        return value of the :func:`guipathsys.get_selected_prior_dirname`
-        function).
+        returned by the most recent call to this function).
       * Relative but *not* a basename (i.e., contains one or more directory
         separators), an exception is raised. While ``init_pathname`` could
         technically be interpreted as relative to the absolute dirname of the
@@ -115,9 +112,7 @@ def select_path(
         reduced with a non-fatal warning to the last (i.e., most deeply nested)
         parent directory of this path that exists to ensure this dialog opens
         onto an existing directory. Defaults to ``None``, in which case the
-        last selected directory is defaulted to. (**This is currently a lie.**
-        See FIXME commentary preceding the
-        :func:`guipathsys.get_selected_prior_dirname` function.)
+        last selected directory is defaulted to.
     parent_dirname : StrOrNoneTypes
         Absolute pathname of the parent directory to select a path from.
         Defaults to ``None``, in which case no parental constraint is applied.
@@ -148,19 +143,19 @@ def select_path(
     '''
 
     # Avoid circular import dependencies.
-    from betsee.util.path import guipathsys
+    from betsee.util.app import guiappwindow
 
     # True only if this dialog is selecting one or more directories, as
     # indicated by the "QFileDialog.ShowDirsOnly" bit being enabled in the
     # "dialog_options" bit field if passed. Nice, eh?
-    is_dir_selection = (
+    is_selecting_dir = (
         dialog_options is not None and
         bits.is_bit_on(
             bit_field=dialog_options, bit_mask=QFileDialog.ShowDirsOnly)
     )
 
     # Absolute dirname of the last selected directory.
-    prior_dirname = guipathsys.get_selected_prior_dirname()
+    prior_dirname = _get_selected_prior_dirname()
 
     # If no initial pathname was passed, default to the absolute dirname of the
     # last selected directory. To avoid subtle edge cases, do so *BEFORE*
@@ -219,7 +214,7 @@ def select_path(
         # If this dialog is selecting one or more directories, reduce this
         # dirname to the dirname of the last (i.e., most deeply nested) parent
         # directory of this dirname that exists.
-        if is_dir_selection:
+        if is_selecting_dir:
             init_pathname = dirs.get_parent_dir_last(init_pathname)
         # Else, this dialog is selecting one or more files. In this case...
         else:
@@ -268,7 +263,7 @@ def select_path(
     # Display this dialog and localize the absolute pathname of the path
     # selected by the user if this dialog was not canceled *OR* the empty
     # string otherwise.
-    pathname = dialog_callable(*dialog_args)
+    selected_pathname = dialog_callable(*dialog_args)
 
     # If this pathname is actually a 2-tuple "(pathname, filetypes_filter)",
     # this dialog was created by a file-specific callable (e.g.,
@@ -280,32 +275,52 @@ def select_path(
     # filetype of this file (e.g., "YAML files (*.yml *.yaml);;" for a file
     # "sim_config.yaml"). Since this substring conveys no metadata not already
     # conveyed by this filetype, this substring is safely ignorable. (Bad API!)
-    if sequences.is_sequence(pathname) and len(pathname) == 2:
-        pathname = pathname[0]
+    if (
+        sequences.is_sequence(selected_pathname) and
+        len(selected_pathname) == 2
+    ):
+        selected_pathname = selected_pathname[0]
 
     # If this dialog was canceled, silently reduce to a noop.
-    if not pathname:
+    if not selected_pathname:
         return None
     # Else, this dialog was confirmed.
+
+    # Store the directory component of the selected pathname as an application
+    # setting for subsequent recall by the next call to this function *BEFORE*
+    # possibly reducing this pathname to a relative pathname.
+    #
+    # If this dialog is selecting one or more directories, this pathname is
+    # necessarily a dirname and hence may be stored as is.
+    if is_selecting_dir:
+        _set_selected_prior_dirname(selected_pathname)
+    # Else, this dialog is selecting one or more files. In this case...
+    else:
+        # Absolute dirname of the directory containing these files.
+        selected_dirname = pathnames.get_dirname(selected_pathname)
+
+        # Store this dirname to the backing store.
+        _set_selected_prior_dirname(selected_dirname)
 
     # If a parent directory was passed...
     if parent_dirname is not None:
         # If this path resides in this parent directory, reduce this path to a
         # relative pathname relative to this parent directory.
         if pathnames.is_parent(
-            parent_dirname=parent_dirname, child_pathname=pathname):
-            pathname = pathnames.relativize(
-                src_dirname=parent_dirname, trg_pathname=pathname)
+            parent_dirname=parent_dirname, child_pathname=selected_pathname):
+            selected_pathname = pathnames.relativize(
+                src_dirname=parent_dirname, trg_pathname=selected_pathname)
         # ELse, this path resides outside this parent directory.
         #
         # If this path is instead required to reside in this parent directory,
         # raise an exception.
         elif is_subpaths:
             pathnames.die_unless_parent(
-                parent_dirname=parent_dirname, child_pathname=init_pathname)
+                parent_dirname=parent_dirname,
+                child_pathname=selected_pathname)
 
     # Return this pathname.
-    return pathname
+    return selected_pathname
 
 # ....................{ PRIVATE ~ makers                  }....................
 @type_check
@@ -350,3 +365,57 @@ def _make_filetypes_filter(label_to_filetypes: MappingType) -> str:
 
     # Return this Qt-formatted string.
     return filetypes_filter
+
+# ....................{ PRIVATE ~ settings                }....................
+def _get_selected_prior_dirname() -> str:
+    '''
+    Absolute dirname of the **last selected directory** (i.e., the directory
+    component of the pathname returned by the most recent call to the
+    :func:`select_path` function).
+
+    Returns
+    ----------
+    str
+        Absolute dirname of either:
+
+        * If the current user has already successfully selected at least one
+          path from a path dialog *and* the most recently selected such path
+          still exists, the directory component of that path.
+        * Else, a user-specific directory containing work-related files.
+    '''
+
+    # Avoid circular import dependencies.
+    from betsee.util.io import guisettings
+    from betsee.util.path import guipathsys
+
+    # Return either:
+    #
+    # * If the absolute dirname of the last selected directory has been saved
+    #   to the backing store for this application, that dirname.
+    # * Else, the absolute dirname of the current user's documents directory.
+    return guisettings.get_setting_or_default(
+        setting_name='path_dialog/selected_prior_dirname',
+        setting_value_default=guipathsys.get_user_documents_existing_dirname())
+
+
+@type_check
+def _set_selected_prior_dirname(dirname: str) -> None:
+    '''
+    Set the absolute dirname of the **last selected directory** (i.e., the
+    directory component of the pathname returned by the most recent call to the
+    :func:`select_path` function) to the passed dirname.
+
+    Parameters
+    ----------
+    dirname : str
+        Absolute dirname of the last selected directory.
+    '''
+
+    # Avoid circular import dependencies.
+    from betsee.util.io import guisettings
+
+    # Save the passed dirname as the absolute dirname of the last selected
+    # directory to the backing store for this application.
+    return guisettings.set_setting(
+        setting_name='path_dialog/selected_prior_dirname',
+        setting_value=dirname)
