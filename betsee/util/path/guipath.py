@@ -388,14 +388,24 @@ def _get_selected_prior_dirname() -> str:
     from betsee.util.io import guisettings
     from betsee.util.path import guipathsys
 
-    # Return either:
-    #
-    # * If the absolute dirname of the last selected directory has been saved
-    #   to the backing store for this application, that dirname.
-    # * Else, the absolute dirname of the current user's documents directory.
-    return guisettings.get_setting_or_default(
-        setting_name='path_dialog/selected_prior_dirname',
-        setting_value_default=guipathsys.get_user_documents_existing_dirname())
+    # Absolute dirname of the last selected directory if that dirname has been
+    # saved to the backing store for this application *OR* "None" otherwise.
+    selected_prior_dirname = guisettings.get_setting_or_none(
+        setting_name='path_dialog/selected_prior_dirname')
+
+    # If either...
+    if (
+        # This dirname has yet to be saved to this backing store *OR*...
+        selected_prior_dirname is None or
+        # This directory no longer exists...
+        not dirs.is_dir(selected_prior_dirname)
+    # Then replace this dirname with that of this user's documents directory.
+    ):
+        selected_prior_dirname = (
+            guipathsys.get_user_documents_existing_dirname())
+
+    # Return this dirname.
+    return selected_prior_dirname
 
 
 @type_check
