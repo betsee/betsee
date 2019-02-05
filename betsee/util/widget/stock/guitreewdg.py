@@ -86,15 +86,18 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
         # header_view.setStretchLastSection(False)
 
     # ..................{ SUPERCLASS ~ setters              }..................
-    def setColumnCount(self, column_count: int) -> None:
+    #FIXME: Consider excising. See commentary preceding the
+    #"header_view.setStretchLastSection(False)" line, above.
 
-        # Defer to the superclass implementation.
-        super().setColumnCount(column_count)
-
-        # If this tree now contains more than one column, permit the last such
-        # column's content to automatically resize to the viewport width.
-        if column_count != 1:
-            self.header().setStretchLastSection(True)
+    # def setColumnCount(self, column_count: int) -> None:
+    #
+    #     # Defer to the superclass implementation.
+    #     super().setColumnCount(column_count)
+    #
+    #     # If this tree now contains more than one column, permit the last such
+    #     # column's content to automatically resize to the viewport width.
+    #     if column_count != 1:
+    #         self.header().setStretchLastSection(True)
 
     # ..................{ ITERATORS                         }..................
     def iter_items_top(self) -> GeneratorType:

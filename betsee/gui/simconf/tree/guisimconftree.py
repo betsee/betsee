@@ -8,6 +8,83 @@
 simulation configuration.
 '''
 
+#FIXME: Generalize the "QBetseeSimConfTreeWidget" subclass defined below to
+#elegantly allow this subclass to contextually enable and disable the
+#"action_sim_conf_tree_item_append" and "action_sim_conf_tree_item_remove"
+#toolbar actions associated with this tree as follows:
+#
+#* Declare a new private "_tree_list_items" instance variable of this subclass,
+#  initialized to the empty set in the __init__() method: e.g.,
+#      self._tree_list_items = set()
+#  This variable contains all tree items that also masquerade as lists -- that
+#  is, that may dynamically have new child tree items added and existing child
+#  tree items removed from their subtree at runtime.
+#* Define a QBetseeTreeWidget.get_child_item() method returning the child tree
+#  item with the passed parent tree item whose text in the first column matches
+#  that of the passed string. This method should have signature resembling:
+#      @type_check
+#      def get_child_item(
+#          self, parent_item: QTreeWidgetItem, child_text: str) -> QTreeWidgetItem:
+#  Naturally, a human-readable exception should be raised if this parent
+#  contains no such child.
+#* Define the "_tree_list_items" set. At the moment, this set should *ONLY*
+#  contain the tree item corresponding to the "Space/Tissue" tree item. Sadly,
+#  obtaining nested items by the text contained in their first column (i.e.,
+#  "Tissue", here) is rather fugly. While we could brute-force this query, it
+#  might be preferable to create and call a new
+#  QBetseeTreeWidget.get_item_from_text_path() method automating such querying
+#  with signature resembling:
+#      @type_check
+#      def get_item_from_text_path(self, *text_path: str) -> QTreeWidgetItem:
+#  In this case, that method would be called like so:
+#      self._tree_list_items = {self.get_item_from_text_path('Space', 'Tissue')}
+#  Sweet, right? That said, defining get_item_from_text_path() will probably
+#  prove non-trivial. The body of that method will probably need to iteratively
+#  (i.e., *NOT* recursively, which would probably be extreme overkill here and
+#  invite stack exhaustion issues) call the self.get_child_item() method with a
+#  "parent_item" parameter starting at the root item (i.e.,
+#  self.invisibleRootItem()). Something resembling:
+#
+#      if not text_path:
+#          raise SomeExceptionHere()
+#
+#      parent_item = self.invisibleRootItem()
+#
+#      for child_item_text in text_path:
+#          parent_item = self.get_child_item(
+#             parent_item=parent_item, child_text=child_item_text)
+#
+#      return parent_item
+#
+#  Surprisingly trivial, given the get_child_item() method.
+#* Declare a new select_tree_item() slot resembling the existing
+#  QBetseeSimConfStackedWidget.switch_page_to_tree_item() slot but residing
+#  inside this subclass instead.
+#* Connect the select_tree_item() slot to the "self.currentItemChanged" signal
+#  in the _init_connections() method.
+#* Define the the select_tree_item() slot as follows:
+#  * Toggle the "action_sim_conf_tree_item_append" action as follows:
+#    * If the passed "tree_item_curr" is in the "self._tree_list_items" set:
+#      * Enable the "action_sim_conf_tree_item_append" action.
+#    * Else:
+#      * Disable the "action_sim_conf_tree_item_append" action.
+#  * Toggle the "action_sim_conf_tree_item_remove" action as follows:
+#    * If the passed "tree_item_curr" is the child of an item in the
+#      "self._tree_list_items" set:
+#      * Enable the "action_sim_conf_tree_item_remove" action.
+#    * Else:
+#      * Disable the "action_sim_conf_tree_item_remove" action.
+#  Note that detecting whether the passed "tree_item_curr" is the child of an
+#  item in the "self._tree_list_items" set should simply be implemented via a
+#  brute-force search, for now. Efficiently implementing that search would
+#  require maintaining a separate "self._tree_list_child_items" set. Well, we
+#  suppose that wouldn't be terribly arduous, actually. Doing so would obviate
+#  the need for brute-force searching, which would probably simplify the
+#  resulting logic if anything. Very well: "self._tree_list_child_items" it is!
+#* Given the above, consider renaming these sets for disambiguity:
+#  * From "_tree_list_items" to "_items_list_root".
+#  * From "_tree_list_child_items" to "_items_list_leaf".
+
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  #, Slot
 from PySide2.QtWidgets import QMainWindow
@@ -35,6 +112,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     #
     #     # Initialize our superclass with all passed parameters.
     #     super().__init__(*args, **kwargs)
+
 
     # To avoid circular import dependencies, this parameter is validated to be
     # an instance of the "QMainWindow" superclass rather than the expected

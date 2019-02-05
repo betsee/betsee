@@ -628,7 +628,7 @@ QTreeWidget#sim_conf_tree {
          <x>0</x>
          <y>0</y>
          <width>506</width>
-         <height>836</height>
+         <height>846</height>
         </rect>
        </property>
        <property name="font">
@@ -4325,7 +4325,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
           <x>0</x>
           <y>0</y>
           <width>756</width>
-          <height>800</height>
+          <height>809</height>
          </rect>
         </property>
         <property name="is_page" stdset="0">
@@ -5215,7 +5215,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
      <x>0</x>
      <y>0</y>
      <width>1572</width>
-     <height>27</height>
+     <height>20</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -5481,7 +5481,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>Append</string>
    </property>
    <property name="toolTip">
-    <string>Append a new item to the current list.</string>
+    <string>Append a new item (e.g., tissue, plot, animation) to the current list.</string>
    </property>
   </action>
   <action name="action_sim_conf_tree_item_remove">
@@ -5493,7 +5493,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
     <string>Remove</string>
    </property>
    <property name="toolTip">
-    <string>Remove the current item from the current list.</string>
+    <string>Remove the current item (e.g., tissue, plot, animation) from the current list.</string>
    </property>
   </action>
   <action name="action_sim_run_stop_work">
@@ -5535,7 +5535,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
   <customwidget>
    <class>QBetseeSimConfTreeWidget</class>
    <extends>QTreeWidget</extends>
-   <header>betsee/gui/simconf/guisimconftree.h</header>
+   <header>betsee/gui/simconf/tree/guisimconftree.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimConfStackedWidget</class>

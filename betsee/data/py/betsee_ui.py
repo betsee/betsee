@@ -400,7 +400,7 @@ class Ui_main_window(object):
         self.sim_conf_stack_area.setWidgetResizable(True)
         self.sim_conf_stack_area.setObjectName("sim_conf_stack_area")
         self.sim_conf_stack = QBetseeSimConfStackedWidget()
-        self.sim_conf_stack.setGeometry(QtCore.QRect(0, 0, 506, 836))
+        self.sim_conf_stack.setGeometry(QtCore.QRect(0, 0, 506, 846))
         font = QtGui.QFont()
         font.setPointSize(13)
         self.sim_conf_stack.setFont(font)
@@ -1968,7 +1968,7 @@ class Ui_main_window(object):
         self.sim_cmd_tab_run_area.setWidgetResizable(True)
         self.sim_cmd_tab_run_area.setObjectName("sim_cmd_tab_run_area")
         self.sim_cmd_tab_run = QtWidgets.QWidget()
-        self.sim_cmd_tab_run.setGeometry(QtCore.QRect(0, 0, 756, 800))
+        self.sim_cmd_tab_run.setGeometry(QtCore.QRect(0, 0, 756, 809))
         self.sim_cmd_tab_run.setProperty("is_page", True)
         self.sim_cmd_tab_run.setObjectName("sim_cmd_tab_run")
         self.gridLayout_30 = QtWidgets.QGridLayout(self.sim_cmd_tab_run)
@@ -2351,7 +2351,7 @@ class Ui_main_window(object):
         self.gridLayout.addWidget(self.sim_tab, 0, 2, 1, 1)
         main_window.setCentralWidget(self.centralWidget)
         self.menu_bar = QtWidgets.QMenuBar(main_window)
-        self.menu_bar.setGeometry(QtCore.QRect(0, 0, 1572, 27))
+        self.menu_bar.setGeometry(QtCore.QRect(0, 0, 1572, 20))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -2933,23 +2933,23 @@ class Ui_main_window(object):
         self.action_close_sim.setToolTip(QtWidgets.QApplication.translate("main_window", "Close the currently open simulation.", None, -1))
         self.action_close_sim.setShortcut(QtWidgets.QApplication.translate("main_window", "Ctrl+W", None, -1))
         self.action_sim_conf_tree_item_append.setText(QtWidgets.QApplication.translate("main_window", "Append", None, -1))
-        self.action_sim_conf_tree_item_append.setToolTip(QtWidgets.QApplication.translate("main_window", "Append a new item to the current list.", None, -1))
+        self.action_sim_conf_tree_item_append.setToolTip(QtWidgets.QApplication.translate("main_window", "Append a new item (e.g., tissue, plot, animation) to the current list.", None, -1))
         self.action_sim_conf_tree_item_remove.setText(QtWidgets.QApplication.translate("main_window", "Remove", None, -1))
-        self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item from the current list.", None, -1))
+        self.action_sim_conf_tree_item_remove.setToolTip(QtWidgets.QApplication.translate("main_window", "Remove the current item (e.g., tissue, plot, animation) from the current list.", None, -1))
         self.action_sim_run_stop_work.setText(QtWidgets.QApplication.translate("main_window", "Stop", None, -1))
         self.action_sim_run_stop_work.setToolTip(QtWidgets.QApplication.translate("main_window", "Prematurely halt the currently running simulation phase. Once stopped, rerunning this phase necessarily restarts this phase from the beginning (e.g., first sampled time step).", None, -1))
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
 from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 import betsee_rc
 

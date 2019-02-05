@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -10,7 +10,7 @@ settings associated with a single simulation feature  of the current such
 configuration) facilities.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Slot  # QCoreApplication,
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
@@ -20,33 +20,37 @@ from betse.util.type.types import type_check
 from betsee.gui.window.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     '''
-    :mod:`PySide2`-based stack widget containing multiple pages, each displaying
-    and editing all settings associated with a single simulation feature (e.g.,
-    ions, plots, tissue) of the current simulation configuration.
+    :mod:`PySide2`-based stack widget containing multiple pages, each
+    displaying and editing all settings associated with a single simulation
+    feature (e.g., ions, plots, tissue) of the current simulation
+    configuration.
 
     This application-specific widget augments the stock :class:`QStackedWidget`
     with support for handling simulation configurations, including:
 
-    * Integration with the corresponding :class:`QStackedWidget`, exposing all
+    * Integration with the corresponding :class:`QTreeWidget`, exposing all
       low-level configuration settings for the high-level simulation feature
       currently selected from this tree.
 
     Caveats
     ----------
-    Each child page widget of this stack widget should have a name prefixed by a
-    substring uniquely identifying this widget to be a child page and the name
-    of the parent page widget of this child page widget if any. Specifically:
+    The name of each child page widget of this stack widget must be prefixed by
+    a prefix uniquely identifying that widget to be a child page widget of this
+    stack widget *and* the name of the parent page widget of that child if any.
+    Spepcifically:
 
-    * If this child page widget is top-level (i.e., has no parent), this is the
+    * If this child page widget is top-level (i.e., has no parent), that
+      widget's name must be prefixed by the
       :attr:`SIM_CONF_STACK_PAGE_NAME_PREFIX` substring.
-    * If this child page widget is *not* top-level (i.e., has a parent), this is
-      the name of that parent page widget followed by a delimiting underscore.
+    * If this child page widget is *not* top-level (i.e., has a parent), that
+      widget's name must be prefixed by the name of that parent page widget
+      followed by a delimiting underscore.
 
-    As a corrolary, this implies the names of all page widgets regardless of
-    hierarchical nesting to be prefixed by the
+    As a corrolary, this implies that the names of all page widgets regardless
+    of hierarchical nesting are all prefixed by at least the same
     :attr:`SIM_CONF_STACK_PAGE_NAME_PREFIX` substring. No other widgets should
     have such names. Failure to comply may be met with an unutterable anguish.
 
@@ -55,25 +59,26 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     _pagers : tuple
         Container of all high-level objects controlling the state of each stack
         widget page, preserved to prevent Python from erroneously garbage
-        collecting these objects. Since these objects are *NOT* explicitly
+        collecting these objects. Since these objects are *not* explicitly
         accessed after instantiation, this simplistic scheme suffices.
     _sim_conf : QBetseeSimConf
         High-level object controlling simulation configuration state.
     _tree_item_to_stack_page : dict
         Dictionary mapping from each :class:`QTreeWidgetItem` in the
         :class:`QTreeWidget` associated with this stack widget to each child
-        page widget of this stack widget. This dictionary ensures that clicking
-        on each :class:`QTreeWidgetItem` displays the corresponding page widget.
+        page widget of this stack widget. This dictionary enables this stack
+        widget to ensure that the selection of any :class:`QTreeWidgetItem` by
+        the end user displays the associated page widget.
 
     See Also
     ----------
     QBetseeSimConfTreeWidget
         Corresponding :class:`QTreeWidget` instance, exposing all high-level
         features of the current simulation configuration which this
-        :class:`QStackedWidget` instance then exposes the low-level settings of.
+        :class:`QStackedWidget` instance then exposes the settings of.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed parameters.
@@ -108,7 +113,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         from betsee.gui.simconf.stack.pager.guisimconfpagertis import (
             QBetseeSimConfTissueDefaultStackedWidgetPager)
 
-        # Tuple of all stack widget page controllers defined in arbitrary order.
+        # Tuple of all stack widget page controllers (in arbitrary order).
         self._pagers = (
             QBetseeSimConfIonStackedWidgetPager(),
             QBetseeSimConfPathStackedWidgetPager(),
@@ -130,13 +135,13 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         Initialize this stacked widget against the passed parent main window.
 
         This method is principally intended to perform **post-population
-        initialization** (i.e., initialization performed *after* the main window
-        has been completely pre-populated with all initial child widgets).
+        initialization** (i.e., initialization performed *after* the main
+        window has been fully pre-populated with all initial child widgets).
 
         To avoid circular references, this method is guaranteed to *not* retain
         a reference to this main window on returning. References to child
-        widgets (e.g., simulation configuration stack widget) of this window may
-        be retained, however.
+        widgets (e.g., simulation configuration stack widget) of this window
+        may be retained, however.
 
         Parameters
         ----------
@@ -163,13 +168,13 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         for pager in self._pagers:
             pager.init(main_window)
 
-    # ..................{ INITIALIZERS ~ tree                }..................
+    # ..................{ INITIALIZERS ~ tree               }..................
     @type_check
     def _init_tree_to_stack(self, main_window: QMainWindow) -> None:
         '''
         Recursively map all tree widget items of the simulation
         configuration-specific tree widget in the passed parent main window to
-        the corresponding child page widgets of this parent stack widget.
+        the corresponding child page widgets of this stack widget.
 
         Specifically, this method initializes the
         :attr:`_tree_item_to_stack_page` instance variable.
@@ -186,9 +191,9 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # Top-level tree widget associated with this stack widget.
         tree_widget = main_window.sim_conf_tree
 
-        # Generator iteratively yielding a 2-tuple of the name and value of each
-        # child page of this stack widget, matching all instance variables of
-        # this main window with names prefixed by an identifying substring.
+        # Generator iteratively yielding a 2-tuple of the name and value of
+        # each child page of this stack widget, matching all instance variables
+        # of this main window with names prefixed by an identifying substring.
         stack_pages = objiter.iter_vars_custom_simple_prefixed(
             obj=main_window, prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX)
 
@@ -199,7 +204,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             for stack_page_name, stack_page in stack_pages
         }
 
-        # Recursion function intentionally defined as a closure to permit the
+        # Recursive function intentionally defined as a closure to permit the
         # local variables defined above to be trivially and efficiently shared
         # between each recursive call of this function.
         @type_check
@@ -210,7 +215,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             '''
             Recursively map all child tree widget items of the passed parent
             tree widget item to the corresponding child page widgets of this
-            parent stack widget.
+            stack widget.
 
             Parameters
             ----------
@@ -219,20 +224,21 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             stack_page_name_prefix : str
                 Substring prefixing the names of all such child page widgets.
                 If this parent tree widget item is:
+
                 * The invisible placeholder root item, this is simply
                   :data:`SIM_CONF_STACK_PAGE_NAME_PREFIX`.
                 * Any other item (including top-level, mid-level, and leaf
-                  items) , this is the name of the child page widget
+                  items), this is the name of the child page widget
                   corresponding to this item suffixed by an underscore.
             '''
 
             # For the 0-based index of each child item of this parent item...
             #
             # Note that we intentionally iterate by tree widget items rather
-            # than stack widget pages here. Why? Because iterating by the latter
-            # would erroneously handle pages with no corresponding items, which
-            # currently exist (e.g., temporary scratchpad purposes *NOT*
-            # intended to be displayed to end users).
+            # than stack widget pages here. Why? Because iterating by the
+            # latter would erroneously handle pages with no corresponding
+            # items, which currently exist (e.g., temporary scratchpad purposes
+            # *NOT* intended to be displayed to end users).
             for tree_item_child_index in range(tree_item.childCount()):
                 # Current child item of this parent item.
                 tree_item_child = tree_item.child(tree_item_child_index)
@@ -248,8 +254,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
                 # Name of the corresponding child page, synthesized from the
                 # text of this child item as follows (in order):
                 #
-                # * Strip all whitespace from this child item's text (e.g., from
-                #   "File Management" to "FileManagement").
+                # * Strip all whitespace from this child item's text (e.g.,
+                #   from "File Management" to "FileManagement").
                 # * Prefix this child item's text by the identifying substring
                 #   prefixing this child page's name (e.g., from
                 #   "FileManagement" to 'sim_conf_stack_page_FileManagement').
@@ -260,7 +266,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
                 # Child page associated with this tree widget item if any or
                 # "None" otherwise.
-                stack_page = stack_page_name_to_value.get(stack_page_name, None)
+                stack_page = stack_page_name_to_value.get(
+                    stack_page_name, None)
 
                 #FIXME: Convert to a fatal exception after finalizing this GUI.
 
@@ -300,9 +307,10 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
                     _map_tree_item_children_to_stack_pages(
                         tree_item=tree_item_child,
 
-                        # Require the names of all child pages of this child page to
-                        # be prefixed by the name of this child page delimited by an
-                        # underscore, a simple convention that saves sanity.
+                        # Require the names of all child pages of this child
+                        # page to be prefixed by the name of this child page
+                        # delimited by an underscore, a simple convention that
+                        # saves sanity.
                         stack_page_name_prefix=stack_page_name + '_',
                     )
 
@@ -316,7 +324,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             stack_page_name_prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX,
         )
 
-    # ..................{ SLOTS ~ public                     }..................
+    # ..................{ SLOTS ~ public                    }..................
     # The following public slots are connected to from other widgets.
 
     @Slot(QTreeWidgetItem, QTreeWidgetItem)
@@ -326,8 +334,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         tree_item_prev: QTreeWidgetItem,
     ) -> None:
         '''
-        Switch to the child page widget of this stack widget associated with the
-        passed tree widget item clicked by the end user.
+        Switch to the child page widget of this stack widget associated with
+        the passed tree widget item clicked by the end user.
 
         Parameters
         ----------

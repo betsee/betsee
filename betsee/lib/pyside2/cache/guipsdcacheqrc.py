@@ -46,7 +46,7 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
 
     # If "pyside2-rcc" is *NOT* in the current ${PATH}, raise an exception.
     cmds.die_unless_command(
-        pathname='pyside2-rcc',
+        filename='pyside2-rcc',
         reason='(e.g., as package "pyside2-tools" not installed).')
 
     # If this input file does *NOT* exist, raise an exception.
