@@ -4,44 +4,14 @@
 # See "LICENSE" for further details.
 
 '''
-General-purpose :mod:`QTreeWidget` subclasses.
+General-purpose :class:`QTreeWidget` subclasses.
 '''
 
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import Signal, Slot
-from PySide2.QtWidgets import QHeaderView, QTreeWidget, QTreeWidgetItem
-from betse.util.type.types import type_check, GeneratorType
+from PySide2.QtWidgets import QHeaderView, QTreeWidget
+from betse.util.type.types import GeneratorType  # type_check,
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
-
-# ....................{ REMOVERS                          }....................
-@type_check
-def remove_item(item: QTreeWidgetItem) -> None:
-    '''
-    Remove the passed tree item from its parent tree item and hence the parent
-    tree transitively containing those items.
-
-    Parameters
-    ----------
-    item : QTreeWidgetItem
-        Tree item to be removed from its parent tree item and tree widget.
-
-    See Also
-    ----------
-    https://stackoverflow.com/a/8961820/2809027
-        StackOverflow answer strongly inspiring this implementation.
-    '''
-
-    # Defer heavyweight imports. Sadly, this submodule is only available under
-    # properly packaged unstable releases of "PySide2". *sigh*
-    from PySide2 import shiboken2
-
-    # Yes, this actually removes this item from its parent tree. Why? Because
-    # the high-level shiboken2.delete() function wraps the low-level C++
-    # "delete" operator. Naturally, the "QTreeWidgetItem" class overrides the
-    # "delete" operator to remove itself from its parent tree -- which, in C++,
-    # is the established means of doing so. Ergo, this is the established means
-    # of doing so in Python as well.
-    shiboken2.delete(item)
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
@@ -118,17 +88,12 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
             StackOverflow answer strongly inspiring this implementation.
         '''
 
+        # Avoid circular import dependencies.
+        from betsee.util.widget.stock.tree import guitreeitem
+
         # Root tree item of this tree widget.
-        item_root = self.invisibleRootItem()
+        root_item = self.invisibleRootItem()
 
-        # Number of top-level tree items (i.e., direct children of this parent
-        # root tree item).
-        items_top_count = item_root.childCount()
-
-        # Return a generator comprehension yielding...
-        return (
-            # Top-level tree item with the current 0-based index...
-            item_root.child(item_top_index)
-            # For the 0-based index of each top-level tree item.
-            for item_top_index in range(items_top_count)
-        )
+        # Return a generator comprehension yielding each top-level tree item
+        # (i.e., child tree item of this root tree item).
+        yield from guitreeitem.iter_child_items(root_item)

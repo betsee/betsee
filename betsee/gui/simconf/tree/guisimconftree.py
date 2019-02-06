@@ -13,12 +13,6 @@ simulation configuration.
 #"action_sim_conf_tree_item_append" and "action_sim_conf_tree_item_remove"
 #toolbar actions associated with this tree as follows:
 #
-#* Declare a new private "_tree_list_items" instance variable of this subclass,
-#  initialized to the empty set in the __init__() method: e.g.,
-#      self._tree_list_items = set()
-#  This variable contains all tree items that also masquerade as lists -- that
-#  is, that may dynamically have new child tree items added and existing child
-#  tree items removed from their subtree at runtime.
 #* Define a QBetseeTreeWidget.get_child_item() method returning the child tree
 #  item with the passed parent tree item whose text in the first column matches
 #  that of the passed string. This method should have signature resembling:
@@ -90,7 +84,8 @@ simulation configuration.
 from PySide2.QtWidgets import QMainWindow
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.stock.guitreewdg import QBetseeTreeWidget
+from betsee.util.widget.stock.tree import guitreeitem
+from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
 # ....................{ CLASSES                           }....................
 class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
@@ -105,13 +100,29 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     * Integration with the corresponding :class:`QStackedWidget`, exposing all
       low-level configuration settings for the high-level simulation feature
       currently selected from this tree.
+
+    Attributes
+    ----------
+    _items_list_root : set
+        Set of all tree items masquerading as **dynamic lists** (i.e., abstract
+        containers enabling users to interactively add new *and* remove
+        existing child tree items the :attr:`_items_list_leaf` set at runtime).
+    _items_list_leaf : set
+        Set of all tree items masquerading as **dynamic list items** (i.e.,
+        child tree items that may be interactively added *and* removed at
+        runtime from the parent tree items of the :attr:`_items_list_root`
+        set).
     '''
 
     # ..................{ INITIALIZERS                      }..................
-    # def __init__(self, *args, **kwargs) -> None:
-    #
-    #     # Initialize our superclass with all passed parameters.
-    #     super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
+
+        # Classify all instance variables for safety.
+        self._items_list_root = None
+        self._items_list_leaf = None
 
 
     # To avoid circular import dependencies, this parameter is validated to be

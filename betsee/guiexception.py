@@ -362,22 +362,6 @@ class BetseePySideSpinBoxException(BetseePySideWidgetException):
             'BetseePySideSpinBoxException', 'Spin Box Error')
 
 
-class BetseePySideTreeWidgetException(BetseePySideWidgetException):
-    '''
-    :class:`PySide2.QtWidgets.QTreeWidget`-specific exception.
-    '''
-
-    @property
-    def _title_default(self) -> str:
-
-        # Defer heavyweight imports *NOT* guaranteed to exist.
-        from PySide2.QtCore import QCoreApplication
-
-        # Translate this title.
-        return QCoreApplication.translate(
-            'BetseePySideTreeWidgetException', 'Tree Widget Error')
-
-
 class BetseePySideWindowException(BetseePySideWidgetException):
     '''
     :class:`PySide2.QtWidgets.QMainWindow`-specific exception.
@@ -392,6 +376,24 @@ class BetseePySideWindowException(BetseePySideWidgetException):
         # Translate this title.
         return QCoreApplication.translate(
             'BetseePySideWindowException', 'Window Error')
+
+# ....................{ EXCEPTIONS ~ psd : widget: betsee }....................
+class BetseePySideEditWidgetException(BetseePySideException):
+    '''
+    General-purpose exception applicable to application-specific editable
+    widgets (i.e., instances of the
+    :mod:`betsee.util.widget.abc.guiwdgabc.QBetseeObjectMixin` superclass).
+    '''
+
+    @property
+    def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
+        return QCoreApplication.translate(
+            'BetseePySideEditWidgetException', 'Editable Widget Error')
 
 # ....................{ EXCEPTIONS ~ psd : widget : enum  }....................
 #FIXME: Rename to "BetseePySideEnumWidgetException" for orthogonality.
@@ -443,12 +445,10 @@ class BetseePySideRadioButtonException(BetseePySideWidgetEnumException):
         return QCoreApplication.translate(
             'BetseePySideRadioButtonException', 'Radio Button Error')
 
-# ....................{ EXCEPTIONS ~ psd : widget: betsee }....................
-class BetseePySideEditWidgetException(BetseePySideException):
+# ....................{ EXCEPTIONS ~ psd : widget : tree  }....................
+class BetseePySideTreeWidgetException(BetseePySideWidgetException):
     '''
-    General-purpose exception applicable to application-specific editable
-    widgets (i.e., instances of the
-    :mod:`betsee.util.widget.abc.guiwdgabc.QBetseeObjectMixin` superclass).
+    :class:`PySide2.QtWidgets.QTreeWidget`-specific exception.
     '''
 
     @property
@@ -459,7 +459,25 @@ class BetseePySideEditWidgetException(BetseePySideException):
 
         # Translate this title.
         return QCoreApplication.translate(
-            'BetseePySideEditWidgetException', 'Editable Widget Error')
+            'BetseePySideTreeWidgetException', 'Tree Widget Error')
+
+
+class BetseePySideTreeWidgetItemException(BetseePySideWidgetException):
+    '''
+    :class:`PySide2.QtWidgets.QTreeWidgetItem`-specific exception.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
+        return QCoreApplication.translate(
+            'BetseePySideTreeWidgetException', 'Tree Widget Error')
+
+
 
 # ....................{ EXCEPTIONS ~ simmer               }....................
 class BetseeSimmerException(BetseePySideException):
