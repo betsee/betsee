@@ -66,65 +66,6 @@ def is_parent_item(item: QTreeWidgetItem) -> bool:
 
 # ....................{ GETTERS                           }....................
 @type_check
-def get_parent_item(item: QTreeWidgetItem) -> QTreeWidgetItem:
-    '''
-    Parent tree item of the passed child tree item if the latter has a parent
-    (i.e., is *not* a top-level tree item) *or* the **root tree item** (i.e.,
-    parent tree item of all top-level tree items) otherwise.
-
-    Caveats
-    ----------
-    **This higher-level function should always be called in lieu of the
-    low-level :meth:`QTreeWidgetItem.parent` method.** Whereas this function is
-    *always* returns the parent tree item of any child tree item, that method
-    only returns the parent tree item of non-top-level tree items; when passed
-    a top-level tree item, that method uselessly returns ``None``.
-
-    Parameters
-    ----------
-    child_item : QTreeWidgetItem
-        Child tree item to retrieve this parent tree item of.
-
-    Returns
-    ----------
-    QTreeWidgetItem
-        Either:
-
-        * If this child tree item is a top-level tree item, the root tree item
-          of the :class:`QTreeWidget` containing this item.
-        * Else, the parent tree item of this child tree item.
-
-    Raises
-    ----------
-    BetseePySideTreeWidgetItemException
-        If this child tree item is the root tree item and hence has no parent.
-
-    See Also
-    ----------
-    https://stackoverflow.com/a/12134662/2809027
-        StackOverflow answer strongly inspiring this implementation.
-    '''
-
-    # Root tree item of the tree widget containing this child tree item.
-    root_item = item.treeWidget().invisibleRootItem()
-
-    # If this child tree item is this root tree item and hence has no parent,
-    # raise an exception.
-    if item is root_item:
-        raise BetseePySideTreeWidgetItemException(QCoreApplication.translate(
-            'guitreeitem',
-            'Tree item parent not found '
-            '(i.e., due to being the root tree item).'))
-
-    # Parent tree item of this child tree item if this child is not already a
-    # top-level tree item *OR* the root tree item otherwise.
-    parent_item = item.parent() or root_item
-
-    # Return this item.
-    return parent_item
-
-
-@type_check
 def get_child_item_first(
     parent_item: QTreeWidgetItem, child_text: str) -> QTreeWidgetItem:
     '''
@@ -183,6 +124,65 @@ def get_child_item_first(
         'Parent tree item "{0}" contains no '
         'child tree item with first-column text "{1}".'.format(
             parent_item.text(0), child_text)))
+
+
+@type_check
+def get_parent_item(item: QTreeWidgetItem) -> QTreeWidgetItem:
+    '''
+    Parent tree item of the passed child tree item if the latter has a parent
+    (i.e., is *not* a top-level tree item) *or* the **root tree item** (i.e.,
+    parent tree item of all top-level tree items) otherwise.
+
+    Caveats
+    ----------
+    **This higher-level function should always be called in lieu of the
+    low-level :meth:`QTreeWidgetItem.parent` method.** Whereas this function is
+    *always* returns the parent tree item of any child tree item, that method
+    only returns the parent tree item of non-top-level tree items; when passed
+    a top-level tree item, that method uselessly returns ``None``.
+
+    Parameters
+    ----------
+    child_item : QTreeWidgetItem
+        Child tree item to retrieve this parent tree item of.
+
+    Returns
+    ----------
+    QTreeWidgetItem
+        Either:
+
+        * If this child tree item is a top-level tree item, the root tree item
+          of the :class:`QTreeWidget` containing this item.
+        * Else, the parent tree item of this child tree item.
+
+    Raises
+    ----------
+    BetseePySideTreeWidgetItemException
+        If this child tree item is the root tree item and hence has no parent.
+
+    See Also
+    ----------
+    https://stackoverflow.com/a/12134662/2809027
+        StackOverflow answer strongly inspiring this implementation.
+    '''
+
+    # Root tree item of the tree widget containing this child tree item.
+    root_item = item.treeWidget().invisibleRootItem()
+
+    # If this child tree item is this root tree item and hence has no parent,
+    # raise an exception.
+    if item is root_item:
+        raise BetseePySideTreeWidgetItemException(QCoreApplication.translate(
+            'guitreeitem',
+            'Tree item parent not found '
+            '(i.e., due to being the root tree item).'))
+
+    # Parent tree item of this child tree item if this child is not already a
+    # top-level tree item *OR* the root tree item otherwise.
+    parent_item = item.parent() or root_item
+
+    # Return this item.
+    return parent_item
 
 # ....................{ REMOVERS                          }....................
 @type_check

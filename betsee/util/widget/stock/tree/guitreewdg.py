@@ -8,9 +8,10 @@ General-purpose :class:`QTreeWidget` subclasses.
 '''
 
 # ....................{ IMPORTS                           }....................
-# from PySide2.QtCore import Signal, Slot
-from PySide2.QtWidgets import QHeaderView, QTreeWidget
-from betse.util.type.types import GeneratorType  # type_check,
+from PySide2.QtCore import QCoreApplication  # Signal, Slot
+from PySide2.QtWidgets import QHeaderView, QTreeWidget, QTreeWidgetItem
+from betse.util.type.types import type_check, GeneratorType
+from betsee.guiexception import BetseePySideTreeWidgetException
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                        }....................
@@ -26,6 +27,10 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
       for all columns whose content exceeds that column's width. For
       inexplicable reasons, this functionality has been seemingly intentionally
       omitted from the stock :class:`QTreeWidget`.
+    * **Tree item introspection,** including:
+
+      * Retrieval of arbitrary tree items from absolute text paths.
+      * Iteration over all top-level tree items.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -69,8 +74,83 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
     #     if column_count != 1:
     #         self.header().setStretchLastSection(True)
 
+    # ..................{ GETTERS                           }..................
+    @type_check
+    def get_item_from_text_path(self, *text_path: str) -> QTreeWidgetItem:
+        '''
+        First tree item with the passed **absolute first-column text path**
+        (i.e., sequence of one or more strings uniquely identifying this tree
+        item in this tree) if any *or* raise an exception otherwise (i.e., if
+        this tree contains no such item).
+
+        Each passed string is the **first-column text** (i.e., text in the
+        first column) of either the tree item to be returned *or* a parent tree
+        item of that item, such that:
+
+        #. The first passed string is the first-column text of the top-level
+           #tree item containing the tree item to be returned.
+        #. The second passed string is the first-column text of the child tree
+           item of the prior top-level tree item containing the tree item to be
+           returned.
+        #. The second-to-last passed string is the first-column text of the
+           parent tree item of the tree item to be returned.
+        #. The last passed string is the first-column text of the tree item to
+           be returned.
+
+        Caveats
+        ----------
+        **This function only returns the first such item satisfying this
+        path.** If this tree contains multiple items satisfying the same path,
+        this method silently ignores all but the first such item.
+
+        **This function performs a linear search through the items of this
+        tree** and hence exhibits ``O(n)`` worst-case time complexity, where
+        ``n`` is the number of items in this tree. While negligible in the
+        common case, this search may be a performance concern on large trees.
+
+        Parameters
+        ----------
+        text_path: Tuple[str]
+            Tuple of one or more first-column texts uniquely identifying the
+            tree item of this tree to be returned.
+
+        Returns
+        ----------
+        QTreeWidgetItem
+            First tree item satisfying this absolute first-column text path.
+
+        Raises
+        ----------
+        BetseePySideTreeWidgetException
+            If the passed ``text_path`` contains no strings.
+        BetseePySideTreeWidgetItemException
+            If this tree contains no tree item satisfying this path.
+        '''
+
+        # Avoid circular import dependencies.
+        from betsee.util.widget.stock.tree import guitreeitem
+
+        # If this text path is empty, raise an exception.
+        if not text_path:
+            raise BetseePySideTreeWidgetException(QCoreApplication.translate(
+                'QBetseeTreeWidget', 'Tree path empty.'))
+
+        # Current parent tree item of the next child tree item to be
+        # iteratively visited starting with the root tree item.
+        parent_item = self.invisibleRootItem()
+
+        # For each passed first-column text...
+        for child_item_text in text_path:
+            # Find the child with this text of the current parent tree item,
+            # replacing the latter with the former.
+            parent_item = guitreeitem.get_child_item_first(
+                parent_item=parent_item, child_text=child_item_text)
+
+        # Return the last parent tree item visited by the above iteration.
+        return parent_item
+
     # ..................{ ITERATORS                         }..................
-    def iter_items_top(self) -> GeneratorType:
+    def iter_top_items(self) -> GeneratorType:
         '''
         Generator iteratively yielding each **top-level tree item** (i.e.,
         :class:`QTreeWidgetItem` owned by this tree such that the parent item

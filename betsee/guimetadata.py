@@ -33,7 +33,6 @@ Human-readable name of the license this application is licensed under.
 # ....................{ PYTHON ~ version                  }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: Changes to this section *MUST* be synchronized with:
-# * The corresponding section of the "betsee.metadata" submodule.
 # * Front-facing documentation (e.g., "README.rst", "doc/md/INSTALL.md").
 # On bumping the minimum required version of Python, consider also documenting
 # the justification for doing so in the "Python Version" section of this
@@ -185,11 +184,8 @@ URL of this application's homepage.
 '''
 
 
-URL_DOWNLOAD = (
-    'https://gitlab.com/betse/betsee/repository/archive.tar.gz?ref=v{}'.format(
-        VERSION,
-    )
-)
+URL_DOWNLOAD = '{}/repository/archive.tar.gz?ref=v{}'.format(
+    URL_HOMEPAGE, VERSION)
 '''
 URL of the source tarball for the current version of this application.
 
@@ -236,15 +232,4 @@ corresponding XML-formatted UI file exported by the external Qt Designer GUI.
 This module is dynamically generated at runtime and hence may *not* yet exist,
 in which case the caller is assumed to safely generate this module before its
 first importation.
-'''
-
-# ....................{ METADATA ~ private                }....................
-_IS_TESTING = False
-'''
-``True`` only if the active Python interpreter is running a test session (e.g.,
-with the ``py.test`` test harness).
-
-This private global is subject to change and thus *not* intended to be publicly
-accessed. Consider calling the public :func:`betse.util.py.pys.is_testing`
-function instead.
 '''

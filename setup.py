@@ -58,12 +58,9 @@ engine optimization (SEO). In actuality, they do absolutely nothing.
 # "Programming Language :: Python :: "-prefixed strings are dynamically
 # appended to this list by the get_classifiers() function called below.
 _CLASSIFIERS = [
-    #FIXME: Replace with the following after the "1.0.0" release:
-    #    'Development Status :: 5 - Production/Stable',
-
     # PyPI-specific version type. The number specified here is a magic constant
     # with no relation to this application's version numbering scheme. *sigh*
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
 
     # Sublist of all supported platform-specific CLI and GUI components.
     'Environment :: MacOS X',
@@ -138,7 +135,7 @@ _SETUP_OPTIONS = {
     # Mandatory testing dependencies.
     'tests_require': guimetadeps.get_testing_mandatory_tuple(),
 
-    # ..................{ PACKAGES                           }..................
+    # ..................{ PACKAGES                          }..................
     # List of the fully-qualified names of all Python packages (i.e.,
     # directories containing zero or more Python modules) to be installed,
     # including the top-level application package and all subpackages of that
@@ -150,8 +147,8 @@ _SETUP_OPTIONS = {
     #   setuptools functionality required only for application installation.
     # * "build", caching both setuptools metadata and a complete copy of this
     #   package, required only by a prior application installation.
-    # * "freeze", providing PyInstaller-specific functionality required only for
-    #   application freezing (i.e., conversion into an executable binary).
+    # * "freeze", providing PyInstaller-specific functionality required only
+    #   for application freezing (i.e., conversion into an executable binary).
     #
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # WARNING: This inspection intentionally omits subdirectories containing no
@@ -167,7 +164,7 @@ _SETUP_OPTIONS = {
         'freeze',
     )),
 
-    # ..................{ PATHS                              }..................
+    # ..................{ PATHS                             }..................
     # Cross-platform script wrappers dynamically created at installation time.
     'entry_points': {
         # GUI-specific scripts.
@@ -187,11 +184,11 @@ _SETUP_OPTIONS = {
     # Data files are *NOT* Python modules and hence should *NOT* be embedded in
     # the Python package tree. Sadly, the "data_files" key supported by
     # setuptools for this purpose is *NOT* cross-platform-portable and is thus
-    # inherently broken. Why? Because this key either requires usage of absolute
-    # paths *OR* relative paths relative to absolute paths defined by
+    # inherently broken. Why? Because this key either requires usage of
+    # absolute paths *OR* relative paths relative to absolute paths defined by
     # "setup.cfg"; in either case, these paths are absolute. While the current
-    # platform could be detected and the corresponding absolute path embedded in
-    # 'data_files', that implementation would be inherently fragile. (That's
+    # platform could be detected and the corresponding absolute path embedded
+    # in 'data_files', that implementation would be inherently fragile. (That's
     # bad.) In lieu of sane setuptools support, we defer to the methodology
     # employed by everyone. Setuptools, your death is coming.
     'include_package_data': True,
@@ -207,11 +204,11 @@ _SETUP_OPTIONS = {
     # due to preemptive SIGKILLs), compressed archives are inherently fragile.
     'zip_safe': False,
 
-    # ..................{ COMMANDS                           }..................
+    # ..................{ COMMANDS                          }..................
     # Set of all custom setuptools subcommands specific to this makefile (e.g.,
     # "sudo python3 setup.py symlink"), defaulting to the empty set. Each
-    # subsequent call to the add_setup_commands() function iteratively performed
-    # below adds one or more such subcommands to this set.
+    # subsequent call to the add_setup_commands() function iteratively
+    # performed below adds one or more such subcommands to this set.
     'cmdclass': {},
 }
 '''
@@ -237,10 +234,10 @@ contains unrecognized keys. For safety, these keys are added to this dictionary
 instead.
 '''
 
-# ....................{ COMMANDS                           }....................
+# ....................{ COMMANDS                          }....................
 # Define all application-specific setuptools commands.
 for _setup_module in (beupbuild,):
     _setup_module.add_setup_commands(_SETUP_OPTIONS_CUSTOM, _SETUP_OPTIONS)
 
-# ....................{ SETUP                              }....................
+# ....................{ SETUP                             }....................
 setuptools.setup(**_SETUP_OPTIONS)

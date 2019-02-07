@@ -11,7 +11,7 @@ Application-specific exception hierarchy.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the
 # top-level of this module may import *ONLY* from submodules guaranteed to:
-# * Exist, including standard Python and BETSEE modules. This does *NOT*
+# * Exist, including standard Python and application modules. This does *NOT*
 #   include BETSE modules, which are *NOT* guaranteed to exist at this point.
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -38,7 +38,6 @@ side effects, we adopt the former approach.
 
 # ....................{ IMPORTS                           }....................
 import importlib, os, platform, shutil, subprocess, sys, time
-from betsee import guimetadata
 from distutils.errors import DistutilsFileError, DistutilsModuleError
 from distutils.version import StrictVersion
 from os import path

@@ -13,44 +13,8 @@ simulation configuration.
 #"action_sim_conf_tree_item_append" and "action_sim_conf_tree_item_remove"
 #toolbar actions associated with this tree as follows:
 #
-#* Define a QBetseeTreeWidget.get_child_item() method returning the child tree
-#  item with the passed parent tree item whose text in the first column matches
-#  that of the passed string. This method should have signature resembling:
-#      @type_check
-#      def get_child_item(
-#          self, parent_item: QTreeWidgetItem, child_text: str) -> QTreeWidgetItem:
-#  Naturally, a human-readable exception should be raised if this parent
-#  contains no such child.
 #* Define the "_tree_list_items" set. At the moment, this set should *ONLY*
-#  contain the tree item corresponding to the "Space/Tissue" tree item. Sadly,
-#  obtaining nested items by the text contained in their first column (i.e.,
-#  "Tissue", here) is rather fugly. While we could brute-force this query, it
-#  might be preferable to create and call a new
-#  QBetseeTreeWidget.get_item_from_text_path() method automating such querying
-#  with signature resembling:
-#      @type_check
-#      def get_item_from_text_path(self, *text_path: str) -> QTreeWidgetItem:
-#  In this case, that method would be called like so:
-#      self._tree_list_items = {self.get_item_from_text_path('Space', 'Tissue')}
-#  Sweet, right? That said, defining get_item_from_text_path() will probably
-#  prove non-trivial. The body of that method will probably need to iteratively
-#  (i.e., *NOT* recursively, which would probably be extreme overkill here and
-#  invite stack exhaustion issues) call the self.get_child_item() method with a
-#  "parent_item" parameter starting at the root item (i.e.,
-#  self.invisibleRootItem()). Something resembling:
-#
-#      if not text_path:
-#          raise SomeExceptionHere()
-#
-#      parent_item = self.invisibleRootItem()
-#
-#      for child_item_text in text_path:
-#          parent_item = self.get_child_item(
-#             parent_item=parent_item, child_text=child_item_text)
-#
-#      return parent_item
-#
-#  Surprisingly trivial, given the get_child_item() method.
+#  contain the tree item corresponding to the "Space/Tissue" tree item.
 #* Declare a new select_tree_item() slot resembling the existing
 #  QBetseeSimConfStackedWidget.switch_page_to_tree_item() slot but residing
 #  inside this subclass instead.
@@ -183,10 +147,10 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # whose corresponding stacked page has yet to be implemented) removed.
         # While extraneous, these items reside in the corresponding "betsee.ui"
         # file as a visual aid to streamline this transitional design phase.
-        items_top_todo = []
+        top_items_todo = []
 
         # For each top-level item of this tree widget...
-        for item_top in self.iter_items_top():
+        for top_item in self.iter_top_items():
             # If either:
             #
             # * One or more top-level placeholder items have been previously
@@ -197,23 +161,23 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             #
             # Then this is a top-level placeholder item. In either case, append
             # this item to this sequence.
-            if items_top_todo or item_top.text(0) == '--[TODO]--':
-                items_top_todo.append(item_top)
+            if top_items_todo or top_item.text(0) == '--[TODO]--':
+                top_items_todo.append(top_item)
 
         # Remove these items *AFTER* finding these items. While removing these
         # items during the above iteration would be preferable, doing so would
         # invite iteration desynchronization issues. Be safe... not sorry.
-        for item_top_todo in items_top_todo:
+        for top_item_todo in top_items_todo:
             # Log this removal.
             logs.log_debug(
                 'Removing top-level placeholder tree widget item "%s"...',
-                item_top_todo.text(0))
+                top_item_todo.text(0))
 
             # Remove this item. Ideally, we would call the
             # guitreewdg.remove_item() function here. Sadly, that function
             # requires "shiboken2" functionality unavailable under non-standard
             # (but common) PySide2 installations.
-            self.takeTopLevelItem(self.indexOfTopLevelItem(item_top_todo))
+            self.takeTopLevelItem(self.indexOfTopLevelItem(top_item_todo))
 
         # Expand all items of this tree widget to arbitrary depth *AFTER*
         # removing extraneous items above.
