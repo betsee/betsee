@@ -19,7 +19,7 @@ from PySide2.QtWidgets import QUndoStack
 from betse.util.io.log import logs
 from betse.util.py import pyident
 from betse.util.type.cls import classes
-from betse.util.type.text import strs
+from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideEditWidgetException
 

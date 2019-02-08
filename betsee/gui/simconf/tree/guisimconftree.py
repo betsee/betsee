@@ -8,47 +8,30 @@
 simulation configuration.
 '''
 
-#FIXME: Generalize the "QBetseeSimConfTreeWidget" subclass defined below to
-#elegantly allow this subclass to contextually enable and disable the
-#"action_sim_conf_tree_item_append" and "action_sim_conf_tree_item_remove"
-#toolbar actions associated with this tree as follows:
+#FIXME: Prepopulate the "_item_list_root_tissue" parent tree item with child
+#tree items whose names are the user-defined names of tissue profiles in the
+#current simulation subconfiguration. This implies, naturally, that:
 #
-#* Define the "_tree_list_items" set. At the moment, this set should *ONLY*
-#  contain the tree item corresponding to the "Space/Tissue" tree item.
-#* Declare a new select_tree_item() slot resembling the existing
-#  QBetseeSimConfStackedWidget.switch_page_to_tree_item() slot but residing
-#  inside this subclass instead.
-#* Connect the select_tree_item() slot to the "self.currentItemChanged" signal
-#  in the _init_connections() method.
-#* Define the the select_tree_item() slot as follows:
-#  * Toggle the "action_sim_conf_tree_item_append" action as follows:
-#    * If the passed "tree_item_curr" is in the "self._tree_list_items" set:
-#      * Enable the "action_sim_conf_tree_item_append" action.
-#    * Else:
-#      * Disable the "action_sim_conf_tree_item_append" action.
-#  * Toggle the "action_sim_conf_tree_item_remove" action as follows:
-#    * If the passed "tree_item_curr" is the child of an item in the
-#      "self._tree_list_items" set:
-#      * Enable the "action_sim_conf_tree_item_remove" action.
-#    * Else:
-#      * Disable the "action_sim_conf_tree_item_remove" action.
-#  Note that detecting whether the passed "tree_item_curr" is the child of an
-#  item in the "self._tree_list_items" set should simply be implemented via a
-#  brute-force search, for now. Efficiently implementing that search would
-#  require maintaining a separate "self._tree_list_child_items" set. Well, we
-#  suppose that wouldn't be terribly arduous, actually. Doing so would obviate
-#  the need for brute-force searching, which would probably simplify the
-#  resulting logic if anything. Very well: "self._tree_list_child_items" it is!
-#* Given the above, consider renaming these sets for disambiguity:
-#  * From "_tree_list_items" to "_items_list_root".
-#  * From "_tree_list_child_items" to "_items_list_leaf".
+#* This parent item should have no child items when no simulation configuration
+#  is currently open (e.g., at application startup).
+#* When a simulation configuration is opened, this parent should be
+#  prepopulated with such children. Doing so will require:
+#  * Defining a new set_sim_conf_filenam() slot of this tree. See the
+#    comparable main_window.set_sim_conf_filenam() slot for... pasting. The
+#    body of this slot should iterate over the
+#    "main_window.sim_conf.p.tissue_profiles" list, converting each such list
+#    item into a comparable child tree item of this parent tree item.
+#  * Connecting the "main_window.sim_conf.set_filename_signal" to this slot in
+#    the _init_connections() method of this tree.
+#
+#Fairly trivial, thankfully. Let us accomplish greatness together.
 
 # ....................{ IMPORTS                           }....................
-# from PySide2.QtCore import QCoreApplication  #, Slot
-from PySide2.QtWidgets import QMainWindow
+from PySide2.QtCore import Slot  # QCoreApplication,
+from PySide2.QtWidgets import QMainWindow, QTreeWidgetItem
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.stock.tree import guitreeitem
+# from betsee.util.widget.stock.tree import guitreeitem
 from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
 # ....................{ CLASSES                           }....................
@@ -65,17 +48,30 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
       low-level configuration settings for the high-level simulation feature
       currently selected from this tree.
 
-    Attributes
+    Attributes (Private: Items)
     ----------
-    _items_list_root : set
-        Set of all tree items masquerading as **dynamic lists** (i.e., abstract
-        containers enabling users to interactively add new *and* remove
-        existing child tree items the :attr:`_items_list_leaf` set at runtime).
     _items_list_leaf : set
         Set of all tree items masquerading as **dynamic list items** (i.e.,
         child tree items that may be interactively added *and* removed at
         runtime from the parent tree items of the :attr:`_items_list_root`
         set).
+    _items_list_root : set
+        Set of all tree items masquerading as **dynamic lists** (i.e., abstract
+        containers enabling users to interactively add new *and* remove
+        existing child tree items the :attr:`_items_list_leaf` set at runtime).
+    _item_list_root_tissue : QTreeWidgetItem
+        Tree item masquerading as a dynamic list of **tissue profiles** (i.e.,
+        simulation subconfigurations assigning a subset of the cell cluster the
+        same user-defined initial conditions).
+
+    Attributes (Private: Widgets)
+    ----------
+    _action_sim_conf_tree_item_append : QAction
+        Alias of the
+        :attr:`QBetseeMainWindow._action_sim_conf_tree_item_append` action.
+    _action_sim_conf_tree_item_remove : QAction
+        Alias of the
+        :attr:`QBetseeMainWindow._action_sim_conf_tree_item_remove` action.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -84,9 +80,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Classify all instance variables for safety.
-        self._items_list_root = None
-        self._items_list_leaf = None
+        # Initialize all instance variables to sane defaults.
+        self._items_list_leaf = set()
+        self._items_list_root = set()
+        self._item_list_root_tissue = None
+        self._action_sim_conf_tree_item_append = None
+        self._action_sim_conf_tree_item_remove = None
 
 
     # To avoid circular import dependencies, this parameter is validated to be
@@ -122,6 +121,13 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Log this initialization.
         logs.log_debug('Initializing top-level tree widget...')
 
+        # Define the set of all tree items masquerading as dynamic lists. Since
+        # this tree is empty at __init__() time, this definition is necessarily
+        # deferred until init() time.
+        self._item_list_root_tissue = self.get_item_from_text_path(
+            'Space', 'Tissue')
+        self._items_list_root.add(self._item_list_root_tissue)
+
         # Initialize all widgets pertaining to the state of this simulation
         # configuration *BEFORE* connecting all relevant signals and slots
         # typically expecting these widgets to be initialized.
@@ -142,6 +148,13 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this widget.
         '''
+
+        # Classify all instance variables of this main window subsequently
+        # required by this object.
+        self._action_sim_conf_tree_item_append = (
+            main_window.action_sim_conf_tree_item_append)
+        self._action_sim_conf_tree_item_remove = (
+            main_window.action_sim_conf_tree_item_remove)
 
         # Sequence of all placeholder top-level placeholder items (i.e., items
         # whose corresponding stacked page has yet to be implemented) removed.
@@ -195,8 +208,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
 
-        # When an item of this tree widget is clicked, switch to the associated
-        # page of this simulation configuration stack widget (if any).
+        # When an item of this tree widget is clicked:
+        #
+        # * Perform simulation-specific logic implemented by this subclass.
+        # * Switch to the associated page of this simulation configuration
+        #   stack widget (if any).
+        self.currentItemChanged.connect(self._select_tree_item)
         self.currentItemChanged.connect(
             main_window.sim_conf_stack.switch_page_to_tree_item)
 
@@ -206,3 +223,40 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Select this item *AFTER* connecting all relevant signals and slots,
         # ensuring that the corresponding slot is called.
         self.setCurrentItem(tree_item_first)
+
+    # ..................{ SLOTS                             }..................
+    @Slot(QTreeWidgetItem, QTreeWidgetItem)
+    def _select_tree_item(
+        self, item_curr: QTreeWidgetItem, item_prev: QTreeWidgetItem) -> None:
+        '''
+        Perform simulation-specific logic when the end user clicks the passed
+        currently selected tree widget item *after* having clicked the passed
+        previously selected tree widget item.
+
+        Specifically, this slot (in arbitrary order):
+
+        * Enables the dynamic list append action (i.e.,
+          :attr:`_action_sim_conf_tree_item_append`) *only* if this current
+          item is masquerading as a dynamic list.
+        * Enables the dynamic list removal action (i.e.,
+          :attr:`_action_sim_conf_tree_item_remove`) *only* if this current
+          item is masquerading as a dynamic list item.
+
+        Parameters
+        ----------
+        item_curr : QTreeWidgetItem
+            Current tree widget item clicked by the end user.
+        item_prev : QTreeWidgetItem
+            Previous tree widget item clicked by the end user.
+        '''
+
+        # Permit users to append new tree items to the dynamic list rooted at
+        # this current tree item only if the latter is a dynamic list.
+        self._action_sim_conf_tree_item_append.setEnabled(
+            item_curr in self._items_list_root)
+
+        # Permit users to remove this current tree item from its dynamic list
+        # rooted at the parent tree item of this item only if the latter is a
+        # dynamic list item.
+        self._action_sim_conf_tree_item_remove.setEnabled(
+            item_curr in self._items_list_leaf)

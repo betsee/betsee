@@ -10,6 +10,8 @@ General-purpose :class:`QTreeWidget` subclasses.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication  # Signal, Slot
 from PySide2.QtWidgets import QHeaderView, QTreeWidget, QTreeWidgetItem
+from betse.util.io.log import logs
+from betse.util.type.text.string import strjoin
 from betse.util.type.types import type_check, GeneratorType
 from betsee.guiexception import BetseePySideTreeWidgetException
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
@@ -129,6 +131,11 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
 
         # Avoid circular import dependencies.
         from betsee.util.widget.stock.tree import guitreeitem
+
+        # Log this query.
+        logs.log_debug(
+            'Retrieving tree "%s" item with path "%s"...',
+            self.obj_name, strjoin.join_on(*text_path, delimiter='/'))
 
         # If this text path is empty, raise an exception.
         if not text_path:

@@ -13,7 +13,7 @@ from PySide2.QtWidgets import QFileDialog
 from betse.util.path import dirs, pathnames, paths
 from betse.util.type.iterable import sequences
 from betse.util.type.numeric import bits
-from betse.util.type.text import strs
+from betse.util.type.text.string import strjoin
 from betse.util.type.types import (
     type_check,
     CallableTypes,
@@ -350,7 +350,7 @@ def _make_filetypes_filter(label_to_filetypes: MappingType) -> str:
     # For each such filetype...
     for filetypes_label, filetypes_iterable in label_to_filetypes.items():
         # String listing these filetypes, delimited by spaces and...
-        filetypes_listed = strs.join_on_space(
+        filetypes_listed = strjoin.join_on_space(
             # Prefixed by "*." for each filetype *NOT* equal to "*", as the
             # filetype "*.*" is more restrictive and hence less desirable
             # than the filetype "*".

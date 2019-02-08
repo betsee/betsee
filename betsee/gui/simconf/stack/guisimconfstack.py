@@ -15,7 +15,7 @@ from PySide2.QtCore import Slot  # QCoreApplication,
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
 from betse.util.type.obj import objiter
-from betse.util.type.text import strs
+from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
 from betsee.gui.window.guinamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
@@ -335,7 +335,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     ) -> None:
         '''
         Switch to the child page widget of this stack widget associated with
-        the passed tree widget item clicked by the end user.
+        the passed current tree widget item recently clicked by the end user
+        and passed previous tree widget item previously clicked by that user.
 
         Parameters
         ----------

@@ -17,7 +17,7 @@ from betsee.guiexception import BetseePySideTreeWidgetItemException
 
 # ....................{ EXCEPTIONS                        }....................
 @type_check
-def die_unless_parent_item(item: QTreeWidgetItem) -> bool:
+def die_unless_parent_item(item: QTreeWidgetItem) -> None:
     '''
     Raise an exception unless the passed tree item is a **parent tree item**
     (i.e., contains at least one child tree item).

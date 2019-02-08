@@ -305,13 +305,15 @@ class QBetseeSimConf(QBetseeControllerABC):
     # ..................{ SIGNALS                           }..................
     set_filename_signal = Signal(str)
     '''
-    Signal passed either the absolute path of the currently open YAML-formatted
+    Signal passed either the absolute filename of the currently open
     simulation configuration file if any *or* the empty string otherwise.
 
     This signal is typically emitted on the user:
 
-    * Opening a new simulation configuration.
-    * Closing a currently open simulation configuration.
+    * Opening a new simulation configuration, in which case this string is
+      guaranteed to the absolute filename of that file.
+    * Closing a currently open simulation configuration, in which case this
+      string is guaranteed to be the empty string.
     '''
 
 
