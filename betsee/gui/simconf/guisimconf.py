@@ -231,7 +231,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         to the high-level state of this simulation configuration.
         '''
 
-        # Connect each such action to this object's corresponding slot.
+        # Connect actions to corresponding slots on this object.
         self._action_make_sim.triggered.connect(self._make_sim)
         self._action_open_sim.triggered.connect(self._open_sim)
         self._action_close_sim.triggered.connect(self._close_sim)
@@ -246,21 +246,11 @@ class QBetseeSimConf(QBetseeControllerABC):
         # subsequent logic emits these signals and hence requires that these
         # connections be deterministically established *BEFORE* these signals
         # are emitted.
-        self.set_filename_signal.connect(main_window.set_sim_conf_filename)
-
-        #FIXME: Uncomment this *AFTER* defining the slot connected to here.
-        # self.set_filename_signal.connect(main_window.sim_cmd.set_sim_conf_filename)
         self.set_filename_signal.connect(self.set_filename)
+        # self.set_filename_signal.connect(
+        #     self._sim_conf_tree.set_sim_conf_filename)
         self.set_dirty_signal.connect(main_window.set_sim_conf_dirty)
         self.set_dirty_signal.connect(self.set_dirty)
-
-        # Set the state of all widgets dependent upon this simulation
-        # configuration state *AFTER* connecting all relavant signals and
-        # slots.  Initially, no simulation configuration has yet to be opened.
-        #
-        # Note that, as this slot only accepts strings, the empty string rather
-        # than "None" is intentionally passed for safety.
-        self.set_filename_signal.emit('')
 
     # ..................{ PROPERTIES ~ bool                 }..................
     @property
@@ -308,12 +298,12 @@ class QBetseeSimConf(QBetseeControllerABC):
     Signal passed either the absolute filename of the currently open
     simulation configuration file if any *or* the empty string otherwise.
 
-    This signal is typically emitted on the user:
+    This signal is typically emitted on the user either:
 
-    * Opening a new simulation configuration, in which case this string is
-      guaranteed to the absolute filename of that file.
-    * Closing a currently open simulation configuration, in which case this
-      string is guaranteed to be the empty string.
+    * Opening a new simulation configuration, in which case the emitted string
+      is guaranteed to the absolute filename of that file.
+    * Closing a currently open simulation configuration, in which case the
+      emitted string is guaranteed to be the empty string.
     '''
 
 
@@ -334,17 +324,20 @@ class QBetseeSimConf(QBetseeControllerABC):
     def set_filename(self, filename: str) -> None:
         '''
         Slot signalled on both the opening of a new simulation configuration
-        and closing of an open simulation configuration.
+        *and* closing of an open simulation configuration.
 
         Parameters
         ----------
-        filename : StrOrNoneTypes
-            Absolute path of the currently open YAML-formatted simulation
-            configuration file if any *or* the empty string otherwise (i.e., if
-            no such file is open).
+        filename : str
+            Either:
+
+            * If the user opened a new simulation configuration file, the
+              non-empty absolute filename of that file.
+            * If the user closed an open simulation configuration file, the
+              empty string.
         '''
 
-        # Notify all interested slots that no unsaved changes remain, regardless
+        # Notify all interested slots that no unsaved changes remain regardless
         # of whether a simulation configuration has just been opened or closed.
         self.set_dirty_signal.emit(False)
 
@@ -504,11 +497,8 @@ class QBetseeSimConf(QBetseeControllerABC):
             return
         # Else, these change have all been saved.
 
-        # Revert this configuration to the unloaded state.
-        self.p.unload()
-
-        # Notify all interested slots of this event.
-        self.set_filename_signal.emit('')
+        # Revert this high-level configuration to the unloaded state.
+        self.unload()
 
         # Update the status bar *AFTER* successfully completing this action.
         guiappstatus.show_status(QCoreApplication.translate(
@@ -580,9 +570,9 @@ class QBetseeSimConf(QBetseeControllerABC):
     @type_check
     def load(self, conf_filename: str) -> None:
         '''
-        Deserialize the passed low-level YAML-formatted simulation configuration
-        file into a high-level :class:`Parameters` object *and* signal all
-        connected slots of this event.
+        Deserialize the YAML-formatted simulation configuration file with the
+        passed filename into a high-level :class:`Parameters` object *and*
+        signal all connected slots of this event.
 
         Design
         ----------
@@ -597,7 +587,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         Parameters
         ----------
         conf_filename : str
-            Absolute path of this file.
+            Absolute filename of this file.
         '''
 
         # Deserialize this low-level file into a high-level configuration.
@@ -606,9 +596,38 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Signal all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
 
-        # Focus the top-level tree widget *AFTER* signaling and hence populating
-        # this tree widget to reflect the state of this configuration.
+        # Focus the top-level tree widget *AFTER* signaling (and hence
+        # prepopulating) that widget to reflect the current state of this
+        # configuration.
         self._sim_conf_tree.setFocus()
+
+
+    def unload(self) -> None:
+        '''
+        Deassociate the high-level :class:`Parameters` object from its formerly
+        deserialized YAML-formatted simulation configuration file (if any)
+        *and* signal all connected slots of this event.
+
+        Design
+        ----------
+        Although low-level, this method is publicly accessible to permit the
+        :class:`QBetseeMainWindow` class to handle the equally low-level
+        ``--sim-conf-number`` command-line option.
+
+        Note that, to avoid conflicts and confusion with ``close`` methods
+        declared throughout the Qt API (e.g., :meth:`QDialog.close`,
+        :meth:`QBuffer.close`), this method is intentionally *not* named
+        ``close``.
+        '''
+
+        # Revert this configuration to the unloaded state.
+        self.p.unload()
+
+        # Notify all interested slots of this event.
+        #
+        # Note that, as this slot only accepts strings, the empty string rather
+        # than "None" is intentionally passed for safety.
+        self.set_filename_signal.emit('')
 
     # ..................{ SAVERS                            }..................
     def save_if_dirty(self) -> bool:

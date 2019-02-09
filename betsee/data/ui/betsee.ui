@@ -23,8 +23,8 @@ Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
 * https://doc.qt.io/qt-5/stylesheet-syntax.html
   Reference documentation for Qt 5 stylesheets.
 * http://doc.qt.io/qt-5/stylesheet-syntax.html#conflict-resolution
-  &quot;Conflict Resolution&quot; subsection of the prior documentation, arguably the most
-  significant and least understood such subsection.
+  &quot;Conflict Resolution&quot; subsection of the prior documentation, arguably the
+  most significant and least understood such subsection.
 * http://doc.qt.io/qt-5/stylesheet-reference.html#list-of-sub-controls
   Reference documentation for Qt 5 stylesheet pseudo-states and subcontrols.
 */
@@ -50,7 +50,7 @@ Qt [Creator|Designer] to preserve the WYSIWYG metaphor.
  *   (Creator|Designer) in the first place.
  * * &quot;QScrollArea&quot; and &quot;QTabWidget&quot; children should be selected with the &quot; &quot;
  *   descendent selector rather than the &quot;&gt;&quot; child selector (e.g.,
- *   &quot;QScrollArea QGrouBox&quot; rather than &quot;QScrollArea &gt; QGrouBox&quot;). While the
+ *   &quot;QScrollArea QGroupBox&quot; rather than &quot;QScrollArea &gt; QGroupBox&quot;). While the
  *   latter is less ambiguous and hence preferable in the general case, QSS
  *   ignores *ALL* selectors of the form &quot;QScrollArea &gt;&quot;. Why? Just because.
  *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -129,7 +129,7 @@ QTreeWidget#sim_conf_tree QHeaderView::section {
  * but *NOT* by the more useful &quot;&gt;&quot; child selector; ergo, such pages are
  * unambiguously selectable only by dynamic properties. While stacked widget
  * pages are technically selectable by either selector, doing so is complicated
- * by the observation that &quot;QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox&quot;
+ * by observing that &quot;QStackedWidget#sim_conf_stack &gt; QWidget &gt; QGroupBox&quot;
  * actually selects such a page rather than a group box within such a page;
  * ergo, such pages are best selected by dynamic properties as well. For
  * orthogonality, these pages are all selectable by the following selector:
@@ -140,10 +140,10 @@ QTreeWidget#sim_conf_tree QHeaderView::section {
  *
  *     # Multiline selectors resembling the following...
  *     QStackedWidget#sim_conf &gt; QWidget &gt; QGroupBox,
- *     QTabWidget#sim_cmd &gt; QWidget &gt; QGroupBox {
+ *     QTabWidget#sim_tab &gt; QWidget &gt; QGroupBox {
  *
  *     # ...would be reducible to one-liner selectors resembling the following.
- *     :matches(QStackedWidget#sim_conf, QTabWidget#sim_cmd) &gt; QWidget &gt; QGroupBox {
+ *     :matches(QStackedWidget#sim_conf, QTabWidget#sim_tab) &gt; QWidget &gt; QGroupBox {
  *
  * Sadly, QSS currently only supports CSS2, which provides no comparable means
  * of grouping the &quot;, &quot; or operator to have higher precedence than the &quot;&gt;&quot;
@@ -236,7 +236,7 @@ QTreeWidget#sim_conf_tree {
      * Why? Because:
      *
      *     Is there a way to change the font-weight (or font-size minimum) of
-     *     the selected item in QListWidget? No, as such font style option
+     *     the selected item in QListWidget? No, as this font style option
      *     applies to QWidgets, so you could apply the font (or other like
      *     font-size) style option to the entire QWidget (QListWidget in this
      *     case) and not to special behavior of a derived QWidget i.e.
@@ -244,8 +244,7 @@ QTreeWidget#sim_conf_tree {
      */
     font-size: 12pt;
     qproperty-indentation: 26;
-}
-</string>
+}</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>

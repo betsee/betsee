@@ -16,8 +16,8 @@ class Ui_main_window(object):
 "* https://doc.qt.io/qt-5/stylesheet-syntax.html\n"
 "  Reference documentation for Qt 5 stylesheets.\n"
 "* http://doc.qt.io/qt-5/stylesheet-syntax.html#conflict-resolution\n"
-"  \"Conflict Resolution\" subsection of the prior documentation, arguably the most\n"
-"  significant and least understood such subsection.\n"
+"  \"Conflict Resolution\" subsection of the prior documentation, arguably the\n"
+"  most significant and least understood such subsection.\n"
 "* http://doc.qt.io/qt-5/stylesheet-reference.html#list-of-sub-controls\n"
 "  Reference documentation for Qt 5 stylesheet pseudo-states and subcontrols.\n"
 "*/\n"
@@ -43,7 +43,7 @@ class Ui_main_window(object):
 " *   (Creator|Designer) in the first place.\n"
 " * * \"QScrollArea\" and \"QTabWidget\" children should be selected with the \" \"\n"
 " *   descendent selector rather than the \">\" child selector (e.g.,\n"
-" *   \"QScrollArea QGrouBox\" rather than \"QScrollArea > QGrouBox\"). While the\n"
+" *   \"QScrollArea QGroupBox\" rather than \"QScrollArea > QGroupBox\"). While the\n"
 " *   latter is less ambiguous and hence preferable in the general case, QSS\n"
 " *   ignores *ALL* selectors of the form \"QScrollArea >\". Why? Just because.\n"
 " *!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
@@ -122,7 +122,7 @@ class Ui_main_window(object):
 " * but *NOT* by the more useful \">\" child selector; ergo, such pages are\n"
 " * unambiguously selectable only by dynamic properties. While stacked widget\n"
 " * pages are technically selectable by either selector, doing so is complicated\n"
-" * by the observation that \"QStackedWidget#sim_conf_stack > QWidget > QGroupBox\"\n"
+" * by observing that \"QStackedWidget#sim_conf_stack > QWidget > QGroupBox\"\n"
 " * actually selects such a page rather than a group box within such a page;\n"
 " * ergo, such pages are best selected by dynamic properties as well. For\n"
 " * orthogonality, these pages are all selectable by the following selector:\n"
@@ -133,10 +133,10 @@ class Ui_main_window(object):
 " *\n"
 " *     # Multiline selectors resembling the following...\n"
 " *     QStackedWidget#sim_conf > QWidget > QGroupBox,\n"
-" *     QTabWidget#sim_cmd > QWidget > QGroupBox {\n"
+" *     QTabWidget#sim_tab > QWidget > QGroupBox {\n"
 " *\n"
 " *     # ...would be reducible to one-liner selectors resembling the following.\n"
-" *     :matches(QStackedWidget#sim_conf, QTabWidget#sim_cmd) > QWidget > QGroupBox {\n"
+" *     :matches(QStackedWidget#sim_conf, QTabWidget#sim_tab) > QWidget > QGroupBox {\n"
 " *\n"
 " * Sadly, QSS currently only supports CSS2, which provides no comparable means\n"
 " * of grouping the \", \" or operator to have higher precedence than the \">\"\n"
@@ -229,7 +229,7 @@ class Ui_main_window(object):
 "     * Why? Because:\n"
 "     *\n"
 "     *     Is there a way to change the font-weight (or font-size minimum) of\n"
-"     *     the selected item in QListWidget? No, as such font style option\n"
+"     *     the selected item in QListWidget? No, as this font style option\n"
 "     *     applies to QWidgets, so you could apply the font (or other like\n"
 "     *     font-size) style option to the entire QWidget (QListWidget in this\n"
 "     *     case) and not to special behavior of a derived QWidget i.e.\n"
@@ -237,8 +237,7 @@ class Ui_main_window(object):
 "     */\n"
 "    font-size: 12pt;\n"
 "    qproperty-indentation: 26;\n"
-"}\n"
-"")
+"}")
         main_window.setUnifiedTitleAndToolBarOnMac(True)
         self.centralWidget = QtWidgets.QWidget(main_window)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -2941,15 +2940,15 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
 import betsee_rc
 

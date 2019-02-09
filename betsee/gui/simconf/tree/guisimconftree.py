@@ -23,6 +23,8 @@ simulation configuration.
 #    item into a comparable child tree item of this parent tree item.
 #  * Connecting the "main_window.sim_conf.set_filename_signal" to this slot in
 #    the _init_connections() method of this tree.
+#* When a simulation configuration is close, this parent should be cleared
+#  (i.e., all children of this parent should be removed).
 #
 #Fairly trivial, thankfully. Let us accomplish greatness together.
 
