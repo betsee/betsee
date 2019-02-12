@@ -184,32 +184,71 @@ def get_parent_item(item: QTreeWidgetItem) -> QTreeWidgetItem:
     # Return this item.
     return parent_item
 
-# ....................{ REMOVERS                          }....................
+# ....................{ DELETERS                          }....................
 @type_check
-def remove_item(item: QTreeWidgetItem) -> None:
+def delete_child_items(parent_item: QTreeWidgetItem) -> None:
     '''
-    Remove the passed tree item from its parent tree item and hence the parent
-    tree transitively containing those items.
+    Permanently delete *all* child tree items of the passed parent tree item.
+
+    Parameters
+    ----------
+    parent_item : QTreeWidgetItem
+        Parent tree item to delete all child tree items of.
+
+    See Also
+    ----------
+    :func:`delete_item`
+        Further details.
+    '''
+
+    # Iteratively delete each child of this parent.
+    #
+    # Note that calling the existing QTreeWidgetItem.takeChildren() method
+    # would be considerably more efficient, but would also fail to ensure that
+    # these items be scheduled for garbage collection. Which would be bad.
+    for child_item in iter_child_items(parent_item):
+        delete_item(child_item)
+
+# ....................{ DELETERS ~ item                   }....................
+@type_check
+def delete_item(item: QTreeWidgetItem) -> None:
+    '''
+    Permanently delete the passed tree item.
+
+    Specifically, this function (in order):
+
+    #. Removes this item from its parent tree item and hence the
+       :class:`QTreeWidget` containing both items.
+    #. Schedules this item for garbage collection.
 
     Caveats
     ----------
-    **This item may contain to consume.**
+    **This function should always be called in lieu of lower-level Qt methods
+    (e.g., :meth:`QTreeWidgetItem.removeChild`,
+    :meth:`QTreeWidgetItem.takeChild`, :meth:`QTreeWidgetItem.takeChildren`).**
+    Why? Because those methods are *not* guaranteed to schedule this item for
+    garbage collection. Hidden references to this item preventing Python from
+    garbage collecting this item may continue to silently persist -- notably,
+    circular references between this item and its child tree items (if any).
 
     Parameters
     ----------
     item : QTreeWidgetItem
-        Tree item to be removed from its parent tree item and tree widget.
+        Tree item to be deleted.
 
     Raises
     ----------
     BetseePySideTreeWidgetItemException
-        If this tree item is the root tree item and hence cannot be removed.
+        If this tree item is the root tree item and hence cannot be deleted.
 
     See Also
     ----------
     https://stackoverflow.com/a/8961820/2809027
-        StackOverflow answer strongly inspiring this implementation.
+        StackOverflow answer mildly inspiring this implementation.
     '''
+
+    # Log this deletion.
+    logs.log_debug('Deleting tree item "%s"...', item.text(0))
 
     # Parent item of the passed child item.
     parent_item = get_parent_item(item)
@@ -223,10 +262,10 @@ def remove_item(item: QTreeWidgetItem) -> None:
         # Import this submodule.
         from PySide2 import shiboken2
 
-        # Free all resources consumed by the passed item.
+        # Free all resources consumed by this item.
         #
-        # Yes, this recursively visits each transitive child of the passed item
-        # and both removes that child from its parent *AND* frees all resources
+        # Yes, this recursively visits each transitive child of this item and
+        # both removes that child from its parent *AND* frees all resources
         # consumed by that item. Why? Because the Python-level
         # shiboken2.delete() function wraps the C++-level "delete" operator.
         # Naturally, the "QTreeWidgetItem" class overrides the "delete"
@@ -234,26 +273,55 @@ def remove_item(item: QTreeWidgetItem) -> None:
         # the established means of doing so. Ergo, this is the established
         # means of doing so in Python as well.
         shiboken2.delete(item)
-    #FIXME: Non-ideal. This common edge case can be sanely handled by
-    #recursively iterating through all children of the passed tree item in a
-    #bottom-up fashion (i.e., starting with the leaf tree items of the subtree
-    #rooted at the passed tree item) and removing each such child from its
-    #parent tree item. Non-ideal, but certainly feasible.
+    # Else, the convenient deletion algorithm implemented by the
+    # technically optional "PySide2.shiboken2" submodule must be manually
+    # reimplemented here. (This is why we can't have good things.)
     #
-    #Why is this necessary? Because the QTreeWidgetItem.removeChild() method
-    #called above *ONLY* superficially removes that child from its parent, but
-    #does *NOT* recursively remove any children of that child. Since each child
-    #item internally retains a reference to its parent, failing to recursively
-    #remove all children of that child guarantees that Python's garbage
-    #collector will fail to free any resources consumed by that child. Woops.
-
-    # Else, resources consumed by the passed item cannot be freed. In this
-    # case, log a non-fatal warning.
-    else:
+    # If this item contains one or more children...
+    elif is_parent_item(item):
+        # Log a non-fatal warning of this inefficiency.
         logs.log_warning(
-            'Tree item "{}" not deletable '
-            '(i.e., as PySide2 submodule "shiboken2" not found.'.format(
-                item.text(0)))
+            'Suboptimally deleting subtree '
+            '(i.e., as PySide2 submodule "shiboken2" not found)...')
+
+        # Recursively delete the subtree rooted at the passed tree item.
+        _delete_item_subtree(item)
+    # Else, this item contains *NO* children. In this case, no warning or
+    # iterations need be performed. This item is childless and hence
+    # participates in no circular references, guaranteeing that this item will
+    # be scheduled for garbage collection shortly.
+
+
+@type_check
+def _delete_item_subtree(parent_item: QTreeWidgetItem) -> None:
+    '''
+    Recursively delete the **subtree** (i.e., abstract collection of one or
+    more tree items) rooted at the passed tree item.
+
+    This recursive function manually reimplements the convenient deletion
+    algorithm implemented by the technically optional :mod:`PySide2.shiboken2`
+    submodule. Specifically, this function (in order):
+
+    #. Removes all child tree items from this item.
+    #. Recursively calls this function on each such item.
+
+    Parameters
+    ----------
+    parent_item : QTreeWidgetItem
+        Tree item to recursively delete the entire subtree of.
+    '''
+
+    # Log this recursion.
+    logs.log_debug(
+        'Recursively deleting tree item "%s" subtree...', parent_item.text(0))
+
+    # Sequence of zero or more child tree items removed from this parent tree
+    # item, each possibly themselves containing child tree items.
+    child_items = parent_item.takeChildren()
+
+    # Recursively delete the subtree rooted at each such child.
+    for child_item in child_items:
+        _delete_item_subtree(child_item)
 
 # ....................{ ITERATORS                         }....................
 @type_check
@@ -262,22 +330,15 @@ def iter_child_items(parent_item: QTreeWidgetItem) -> GeneratorType:
     Generator iteratively yielding each child tree item of the passed parent
     tree item.
 
+    Parameters
+    ----------
+    parent_item : QTreeWidgetItem
+        Parent tree item to iterate all child tree items of.
+
     Yields
     ----------
     QTreeWidgetItem
         Current top-level tree item of this tree widget.
-
-    Remove the passed tree item from its parent tree item and hence the parent
-    tree transitively containing those items.
-
-    Caveats
-    ----------
-    **This item may contain to consume.**
-
-    Parameters
-    ----------
-    item : QTreeWidgetItem
-        Tree item to be removed from its parent tree item and tree widget.
     '''
 
     # Number of child tree items of this parent tree item.

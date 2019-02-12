@@ -8,32 +8,12 @@
 simulation configuration.
 '''
 
-#FIXME: Prepopulate the "_item_list_root_tissue" parent tree item with child
-#tree items whose names are the user-defined names of tissue profiles in the
-#current simulation subconfiguration. This implies, naturally, that:
-#
-#* This parent item should have no child items when no simulation configuration
-#  is currently open (e.g., at application startup).
-#* When a simulation configuration is opened, this parent should be
-#  prepopulated with such children. Doing so will require:
-#  * Defining a new set_sim_conf_filenam() slot of this tree. See the
-#    comparable main_window.set_sim_conf_filenam() slot for... pasting. The
-#    body of this slot should iterate over the
-#    "main_window.sim_conf.p.tissue_profiles" list, converting each such list
-#    item into a comparable child tree item of this parent tree item.
-#  * Connecting the "main_window.sim_conf.set_filename_signal" to this slot in
-#    the _init_connections() method of this tree.
-#* When a simulation configuration is close, this parent should be cleared
-#  (i.e., all children of this parent should be removed).
-#
-#Fairly trivial, thankfully. Let us accomplish greatness together.
-
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Slot  # QCoreApplication,
 from PySide2.QtWidgets import QMainWindow, QTreeWidgetItem
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-# from betsee.util.widget.stock.tree import guitreeitem
+from betsee.util.widget.stock.tree import guitreeitem
 from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
 # ....................{ CLASSES                           }....................
@@ -49,6 +29,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     * Integration with the corresponding :class:`QStackedWidget`, exposing all
       low-level configuration settings for the high-level simulation feature
       currently selected from this tree.
+
+    Attributes (Private)
+    ----------
+    _p : Parameters
+        High-level simulation configuration encapsulating a low-level
+        dictionary parsed from an even lower-level YAML-formatted file.
 
     Attributes (Private: Items)
     ----------
@@ -83,11 +69,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         super().__init__(*args, **kwargs)
 
         # Initialize all instance variables to sane defaults.
+        self._action_sim_conf_tree_item_append = None
+        self._action_sim_conf_tree_item_remove = None
         self._items_list_leaf = set()
         self._items_list_root = set()
         self._item_list_root_tissue = None
-        self._action_sim_conf_tree_item_append = None
-        self._action_sim_conf_tree_item_remove = None
+        self._p = None
 
 
     # To avoid circular import dependencies, this parameter is validated to be
@@ -123,13 +110,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Log this initialization.
         logs.log_debug('Initializing top-level tree widget...')
 
-        # Define the set of all tree items masquerading as dynamic lists. Since
-        # this tree is empty at __init__() time, this definition is necessarily
-        # deferred until init() time.
-        self._item_list_root_tissue = self.get_item_from_text_path(
-            'Space', 'Tissue')
-        self._items_list_root.add(self._item_list_root_tissue)
-
         # Initialize all widgets pertaining to the state of this simulation
         # configuration *BEFORE* connecting all relevant signals and slots
         # typically expecting these widgets to be initialized.
@@ -157,6 +137,14 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             main_window.action_sim_conf_tree_item_append)
         self._action_sim_conf_tree_item_remove = (
             main_window.action_sim_conf_tree_item_remove)
+        self._p = main_window.sim_conf.p
+
+        # Define the set of all tree items masquerading as dynamic lists. Since
+        # this tree is empty at __init__() time, this definition is necessarily
+        # deferred until init() time.
+        self._item_list_root_tissue = self.get_item_from_text_path(
+            'Space', 'Tissue')
+        self._items_list_root.add(self._item_list_root_tissue)
 
         # Sequence of all placeholder top-level placeholder items (i.e., items
         # whose corresponding stacked page has yet to be implemented) removed.
@@ -210,6 +198,10 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
 
+        # Connect custom signals to corresponding slots on this object.
+        main_window.sim_conf.set_filename_signal.connect(
+            self._set_sim_conf_filename)
+
         # When an item of this tree widget is clicked:
         #
         # * Perform simulation-specific logic implemented by this subclass.
@@ -227,6 +219,87 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         self.setCurrentItem(tree_item_first)
 
     # ..................{ SLOTS                             }..................
+    @Slot(str)
+    def _set_sim_conf_filename(self, sim_conf_filename: str) -> None:
+        '''
+        Slot signalled on the opening of a new simulation configuration *and*
+        closing of an open simulation configuration.
+
+        Parameters
+        ----------
+        filename : str
+            Either:
+
+            * If the user opened a new simulation configuration file, the
+              non-empty absolute filename of that file.
+            * If the user closed an open simulation configuration file, the
+              empty string.
+        '''
+
+        # If a simulation configuration is currently open...
+        if sim_conf_filename:
+            # Log this slot.
+            logs.log_debug('Prepopulating tissue profile tree items...')
+
+            # Current tissue profile tree item being added by the current step
+            # of the logic performed below.
+            child_item_curr = None
+
+            # 1-based index of this item.
+            child_item_curr_index = 1
+
+            # Human-readable first-column text of this item.
+            child_item_curr_text = None
+
+            # Previous tissue profile tree item added by the prior step of the
+            # logic performed below, localized to ensure that the current
+            # tissue profile tree item being added is preceded by this item.
+            child_item_prev = None
+
+            # For each tissue profile configured by this configuration...
+            for tissue_profile in self._p.tissue_profiles:
+                # If this is the first tissue profile tree item being added,
+                # add this item as the first child of its parent tree item.
+                if child_item_prev is None:
+                    child_item_curr = QTreeWidgetItem(
+                        self._item_list_root_tissue)
+                # Else, this any tissue profile tree item being added except
+                # the first, in which case some previously added item precedes
+                # this item. In that case, notify Qt of this ordering.
+                else:
+                    child_item_curr = QTreeWidgetItem(
+                        self._item_list_root_tissue, child_item_prev)
+
+                #FIXME: Ideally, this text would be HTML-formatted for improved
+                #legibility: e.g., as '{}. <b>{}</b>' instead. For unknown
+                #reasons, however, the Qt API provides no built-in means of
+                #formatting items as anything other than plaintext. Note that
+                #numerous StackOverflow questions and answers pertaining to
+                #this issue exist, but that no simple "silver bullet" appears
+                #to exist. PySide2-specific answers include:
+                #    https://stackoverflow.com/a/5443112/2809027
+                #    https://stackoverflow.com/a/38028318/2809027
+
+                # Human-readable first-column text of this item.
+                child_item_curr_text = (
+                    '{}. <b>{}</b>'.format(
+                        child_item_curr_index, tissue_profile.name))
+
+                # Set this tree item's first-column text to this text.
+                child_item_curr.setText(0, child_item_curr_text)
+
+                # Iterate the 1-based index for the next such item.
+                child_item_curr_index += 1
+        # Else, no simulation configuration is currently open. In this case...
+        else:
+            # Log this slot.
+            logs.log_debug('Depopulating tissue profile tree items...')
+
+            # Unconditionally delete all child tree items from the parent tree
+            # item of all tissue profile tree items.
+            guitreeitem.delete_child_items(self._item_list_root_tissue)
+
+
     @Slot(QTreeWidgetItem, QTreeWidgetItem)
     def _select_tree_item(
         self, item_curr: QTreeWidgetItem, item_prev: QTreeWidgetItem) -> None:

@@ -77,9 +77,12 @@ class QBetseeSimConf(QBetseeControllerABC):
     ----------
     p : Parameters
         High-level simulation configuration encapsulating a low-level
-        dictionary parsed from an even lower-level YAML-formatted file. By
-        design, this object is guaranteed to be a **singleton** (i.e., remain
-        the same object for the lifetime of this application).
+        dictionary parsed from an even lower-level YAML-formatted file. Since
+        this object is guaranteed to be a **singleton** (i.e., remain the same
+        object for the lifetime of this application), external callers are
+        encouraged to retain references to this singleton with the
+        :class:`QBetseeMainWindow` parameter passed to their respective
+        ``init()`` methods (e.g., ``self._p = main_window.sim_conf.p``).
     undo_stack : QBetseeUndoStackSimConf
         Undo stack for the currently open simulation configuration if any *or*
         the empty undo stack otherwise.
@@ -247,8 +250,6 @@ class QBetseeSimConf(QBetseeControllerABC):
         # connections be deterministically established *BEFORE* these signals
         # are emitted.
         self.set_filename_signal.connect(self.set_filename)
-        # self.set_filename_signal.connect(
-        #     self._sim_conf_tree.set_sim_conf_filename)
         self.set_dirty_signal.connect(main_window.set_sim_conf_dirty)
         self.set_dirty_signal.connect(self.set_dirty)
 
@@ -323,8 +324,8 @@ class QBetseeSimConf(QBetseeControllerABC):
     @Slot(str)
     def set_filename(self, filename: str) -> None:
         '''
-        Slot signalled on both the opening of a new simulation configuration
-        *and* closing of an open simulation configuration.
+        Slot signalled on the opening of a new simulation configuration *and*
+        closing of an open simulation configuration.
 
         Parameters
         ----------

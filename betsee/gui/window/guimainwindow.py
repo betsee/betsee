@@ -288,7 +288,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         # Connect custom signals to corresponding slots on this object.
-        self.sim_conf.set_filename_signal.connect(self.set_sim_conf_filename)
+        self.sim_conf.set_filename_signal.connect(self._set_sim_conf_filename)
 
         # Connect action signals to corresponding slots on this object.
         self.action_exit.triggered.connect(self.close)
@@ -462,10 +462,10 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
     # ..................{ SLOTS ~ sim conf                  }..................
     @Slot(str)
-    def set_sim_conf_filename(self, sim_conf_filename: str) -> None:
+    def _set_sim_conf_filename(self, sim_conf_filename: str) -> None:
         '''
-        Slot signalled on both the opening of a new simulation configuration
-        *and* closing of an open simulation configuration.
+        Slot signalled on the opening of a new simulation configuration *and*
+        closing of an open simulation configuration.
 
         Parameters
         ----------

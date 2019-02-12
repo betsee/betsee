@@ -358,7 +358,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             # Log a non-fatal warning.
             logs.log_warning(
                 'Simulation configuration-specific tree item "%s" '
-                'associated with no stacked page.', tree_item_curr.text())
+                'associated with no stacked page.', tree_item_curr.text(0))
 
             # Ignore this attempt to switch the child page widget.
             return
