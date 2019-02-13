@@ -445,6 +445,22 @@ class BetseePySideRadioButtonException(BetseePySideWidgetEnumException):
         return QCoreApplication.translate(
             'BetseePySideRadioButtonException', 'Radio Button Error')
 
+
+class BetseePySideQStackedWidgetException(BetseePySideWidgetException):
+    '''
+    :class:`PySide2.QtWidgets.QStackedWidget`-specific exception.
+    '''
+
+    @property
+    def _title_default(self) -> str:
+
+        # Defer heavyweight imports *NOT* guaranteed to exist.
+        from PySide2.QtCore import QCoreApplication
+
+        # Translate this title.
+        return QCoreApplication.translate(
+            'BetseePySideQStackedWidgetException', 'Stacked Widget Error')
+
 # ....................{ EXCEPTIONS ~ psd : widget : tree  }....................
 class BetseePySideTreeWidgetException(BetseePySideWidgetException):
     '''
@@ -475,9 +491,7 @@ class BetseePySideTreeWidgetItemException(BetseePySideWidgetException):
 
         # Translate this title.
         return QCoreApplication.translate(
-            'BetseePySideTreeWidgetException', 'Tree Widget Error')
-
-
+            'BetseePySideTreeWidgetItemException', 'Tree Widget Item Error')
 
 # ....................{ EXCEPTIONS ~ simmer               }....................
 class BetseeSimmerException(BetseePySideException):

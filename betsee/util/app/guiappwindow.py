@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,20 +8,20 @@ Submodule providing general-purpose access to the :class:`QMainWindow`
 singleton for this application.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QMainWindow
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideWindowException
 
-# ....................{ GLOBALS                            }....................
+# ....................{ GLOBALS                           }....................
 _MAIN_WINDOW = None
 '''
 Main window singleton widget for this application.
 '''
 
-# ....................{ GETTERS                            }....................
+# ....................{ GETTERS                           }....................
 def get_main_window() -> QMainWindow:
     '''
     Singleton main window widget for this application if already instantiated
@@ -56,7 +56,7 @@ def get_main_window() -> QMainWindow:
     # Else, this singleton has been instantiated. Return this singleton.
     return _MAIN_WINDOW
 
-# ....................{ SETTERS                            }....................
+# ....................{ SETTERS                           }....................
 @type_check
 def set_main_window(main_window: QMainWindow) -> None:
     '''
@@ -71,8 +71,8 @@ def set_main_window(main_window: QMainWindow) -> None:
     ----------
     BetseePySideWindowException
         If this widget has already been instantiated (i.e., if the
-        :class:`QApplication` singleton already defines the application-specific
-        ``betsee_main_window`` attribute).
+        :class:`QApplication` singleton already defines the
+        application-specific ``betsee_main_window`` attribute).
     '''
 
     # Globals modified below.
@@ -90,7 +90,7 @@ def set_main_window(main_window: QMainWindow) -> None:
     # Set this global.
     _MAIN_WINDOW = main_window
 
-# ....................{ UNSETTERS                          }....................
+# ....................{ UNSETTERS                         }....................
 @type_check
 def unset_main_window() -> None:
     '''

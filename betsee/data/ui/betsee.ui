@@ -639,7 +639,7 @@ QTreeWidget#sim_conf_tree {
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="sim_conf_stack_page_Paths">
         <layout class="QGridLayout" name="gridLayout_2">
@@ -1539,7 +1539,7 @@ differing concentrations.
 cytosolic ions in the concentrations specified below.
 &lt;/li&gt;&lt;/ul&gt;&lt;p&gt;
 All ion profiles contain an unidentified charge-balance anion denoted
-M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, as required for both simulation stability and correctness. 
+M&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;/sup&gt;, as required for both simulation stability and correctness.
 &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
@@ -2232,13 +2232,8 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
 Absolute or relative filename of the image mask whose pure-black pixels (i.e., pixels whose red, green, and blue color components are all 0) define the exterior shape of the entire cell cluster. This image &lt;i&gt;must&lt;/i&gt;:
 &lt;ul&gt;
-&lt;li&gt;Be square (i.e., have equal pixel dimensions).&lt;/li&gt;
+&lt;li&gt;Have the same width and height (i.e., be square).&lt;/li&gt;
 &lt;li&gt;Contain no alpha transparency layer.&lt;/li&gt;
-&lt;/ul&gt;
-To avoid rescaling issues, all such images &lt;i&gt;should&lt;/i&gt; also:
-&lt;ul&gt;
-&lt;li&gt;Be of the same filetype.&lt;/li&gt;
-&lt;li&gt;Have the same dimensions.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
@@ -2446,7 +2441,7 @@ Chloride (&lt;i&gt;Cl&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
 Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which chloride anions (&lt;i&gt;Cl&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
 &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_29">
+                 <layout class="QHBoxLayout" name="horizontalLayout_39">
                   <property name="leftMargin">
                    <number>0</number>
                   </property>
@@ -2467,7 +2462,7 @@ Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which chlorid
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLabel" name="label_94">
+                   <widget class="QLabel" name="label_57">
                     <property name="font">
                      <font>
                       <pointsize>12</pointsize>
@@ -2487,7 +2482,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="label_57">
+                <widget class="QLabel" name="label_58">
                  <property name="text">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
 Calcium (&lt;i&gt;Ca&lt;sup&gt;2+&lt;/sup&gt;&lt;/i&gt;):
@@ -2659,6 +2654,507 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             </item>
             <item>
              <spacer name="verticalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Space_Tissue_Item">
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <widget class="QGroupBox" name="groupBox_25">
+           <property name="toolTip">
+            <string>Custom tissue profile applied to only a subset of the cells in this cluster.</string>
+           </property>
+           <property name="title">
+            <string>Custom Tissue Profile</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QGroupBox" name="groupBox_26">
+              <property name="toolTip">
+               <string>General-purpose properties of this custom tissue profile.</string>
+              </property>
+              <property name="title">
+               <string>Tissue Properties</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_21">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_30">
+                 <property name="text">
+                  <string>Name:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QBetseeSimConfLineEdit" name="sim_conf_tis_custom_name">
+                 <property name="toolTip">
+                  <string>Arbitrary string uniquely identifying this custom tissue profile. This name must be unique to this profile (i.e., not shared with any other tissue profile).</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_27">
+              <property name="toolTip">
+               <string>Internal shape of this tissue inside the cell cluster.</string>
+              </property>
+              <property name="title">
+               <string>Cell Cluster Shape</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_22">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>Image mask:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QWidget" name="widget_35" native="true">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Absolute or relative filename of the image mask whose pure-black pixels (i.e., pixels whose red, green, and blue color components are all 0) define the internal shape of this tissue inside the cell cluster. This image &lt;i&gt;must&lt;/i&gt;:
+&lt;ul&gt;
+&lt;li&gt;Have the same filetype, width, and height as the image mask for the default tissue profile.&lt;/li&gt;
+&lt;li&gt;Have the same width and height (i.e., be square).&lt;/li&gt;
+&lt;li&gt;Contain no alpha transparency layer.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_36">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QBetseeSimConfPathnameImageLineEdit" name="sim_conf_tis_custom_image_line">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <horstretch>1</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="sim_conf_tis_custom_image_btn">
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string>Interactively browse the filesystem for this file.</string>
+                    </property>
+                    <property name="text">
+                     <string>Browse...</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QBetseeLabelImage" name="sim_conf_tis_custom_image_label">
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                  </font>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_28">
+              <property name="toolTip">
+               <string>Custom membrane diffusion constants for all cells selected by this custom tissue profile.</string>
+              </property>
+              <property name="title">
+               <string>Membrane Diffusion Constants</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_23">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_34">
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Sodium (&lt;i&gt;Na&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QWidget" name="widget_34" native="true">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which sodium cations (&lt;i&gt;Na&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_37">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_custom_mem_Na">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_35">
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_36">
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Potassium (&lt;i&gt;K&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QWidget" name="widget_36" native="true">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which potassium cations (&lt;i&gt;K&lt;sup&gt;+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_38">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_custom_mem_K">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_37">
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_38">
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Chloride (&lt;i&gt;Cl&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QWidget" name="widget_37" native="true">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which chloride anions (&lt;i&gt;Cl&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_40">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_custom_mem_Cl">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_39">
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_51">
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Calcium (&lt;i&gt;Ca&lt;sup&gt;2+&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QWidget" name="widget_38" native="true">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which calcium cations (&lt;i&gt;Ca&lt;sup&gt;2+&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_41">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_custom_mem_Ca">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_52">
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_53">
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Charge balance (&lt;i&gt;M&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QWidget" name="widget_39" native="true">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which charge balance anions (&lt;i&gt;M&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells. Charge balance anions are unidentified anions  dynamically fabricated by the simulator as necessary to preserve charge neutrality of the world as a whole.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_42">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_custom_mem_M">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_94">
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_96">
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Protein (&lt;i&gt;P&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;):
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QWidget" name="widget_40" native="true">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+Rate in meters squared per second [m&lt;sup&gt;2&lt;/sup&gt;/s] at which protein anions (&lt;i&gt;P&lt;sup&gt;-&lt;/sup&gt;&lt;/i&gt;) diffuse across the membranes of unselected cells.
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_43">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QBetseeSimConfDoubleSpinBox" name="sim_conf_tis_custom_mem_P">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_99">
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="text">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
+m&lt;sup&gt;2&lt;/sup&gt;/s
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_5">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>

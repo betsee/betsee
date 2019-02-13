@@ -290,8 +290,9 @@ class QBetseeSimConf(QBetseeControllerABC):
         '''
 
         if not self.is_open:
-            raise BetseeSimConfException(
-                'No simulation configuration currently open.')
+            raise BetseeSimConfException(QCoreApplication.translate(
+                'QBetseeSimConf',
+                'No simulation configuration currently open.'))
 
     # ..................{ SIGNALS                           }..................
     set_filename_signal = Signal(str)

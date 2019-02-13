@@ -281,9 +281,8 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
                 #    https://stackoverflow.com/a/38028318/2809027
 
                 # Human-readable first-column text of this item.
-                child_item_curr_text = (
-                    '{}. <b>{}</b>'.format(
-                        child_item_curr_index, tissue_profile.name))
+                child_item_curr_text = '{}. {}'.format(
+                    child_item_curr_index, tissue_profile.name)
 
                 # Set this tree item's first-column text to this text.
                 child_item_curr.setText(0, child_item_curr_text)
