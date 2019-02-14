@@ -957,19 +957,19 @@ class Ui_main_window(object):
         self.formLayout_8.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.widget_25)
         self.widget_3 = QtWidgets.QWidget(self.groupBox_17)
         self.widget_3.setObjectName("widget_3")
-        self.verticalLayout_25 = QtWidgets.QVBoxLayout(self.widget_3)
-        self.verticalLayout_25.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_25.setObjectName("verticalLayout_25")
+        self.horizontalLayout_29 = QtWidgets.QHBoxLayout(self.widget_3)
+        self.horizontalLayout_29.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_29.setObjectName("horizontalLayout_29")
         self.sim_conf_space_intra_lattice_hex = QtWidgets.QRadioButton(self.widget_3)
         self.sim_conf_space_intra_lattice_hex.setObjectName("sim_conf_space_intra_lattice_hex")
         self.sim_conf_space_intra_lattice_type = QBetseeSimConfEnumRadioButtonGroup(main_window)
         self.sim_conf_space_intra_lattice_type.setObjectName("sim_conf_space_intra_lattice_type")
         self.sim_conf_space_intra_lattice_type.addButton(self.sim_conf_space_intra_lattice_hex)
-        self.verticalLayout_25.addWidget(self.sim_conf_space_intra_lattice_hex)
+        self.horizontalLayout_29.addWidget(self.sim_conf_space_intra_lattice_hex)
         self.sim_conf_space_intra_lattice_square = QtWidgets.QRadioButton(self.widget_3)
         self.sim_conf_space_intra_lattice_square.setObjectName("sim_conf_space_intra_lattice_square")
         self.sim_conf_space_intra_lattice_type.addButton(self.sim_conf_space_intra_lattice_square)
-        self.verticalLayout_25.addWidget(self.sim_conf_space_intra_lattice_square)
+        self.horizontalLayout_29.addWidget(self.sim_conf_space_intra_lattice_square)
         self.formLayout_8.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.widget_3)
         self.verticalLayout_17.addWidget(self.groupBox_17)
         self.groupBox_16 = QtWidgets.QGroupBox(self.groupBox_53)
@@ -1216,11 +1216,11 @@ class Ui_main_window(object):
         self.verticalLayout_6.addItem(spacerItem3)
         self.verticalLayout_7.addWidget(self.groupBox_23)
         self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Space_Tissue)
-        self.sim_conf_stack_page_Space_Tissue_Item = QtWidgets.QWidget()
-        self.sim_conf_stack_page_Space_Tissue_Item.setObjectName("sim_conf_stack_page_Space_Tissue_Item")
-        self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.sim_conf_stack_page_Space_Tissue_Item)
+        self.sim_conf_stack_page_Space_Tissue_item = QtWidgets.QWidget()
+        self.sim_conf_stack_page_Space_Tissue_item.setObjectName("sim_conf_stack_page_Space_Tissue_item")
+        self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.sim_conf_stack_page_Space_Tissue_item)
         self.verticalLayout_8.setObjectName("verticalLayout_8")
-        self.groupBox_25 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Space_Tissue_Item)
+        self.groupBox_25 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Space_Tissue_item)
         self.groupBox_25.setProperty("is_page", True)
         self.groupBox_25.setObjectName("groupBox_25")
         self.verticalLayout_9 = QtWidgets.QVBoxLayout(self.groupBox_25)
@@ -1404,7 +1404,7 @@ class Ui_main_window(object):
         spacerItem4 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_9.addItem(spacerItem4)
         self.verticalLayout_8.addWidget(self.groupBox_25)
-        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Space_Tissue_Item)
+        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Space_Tissue_item)
         self.sim_conf_stack_page_DynamicChannels = QtWidgets.QWidget()
         self.sim_conf_stack_page_DynamicChannels.setObjectName("sim_conf_stack_page_DynamicChannels")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.sim_conf_stack_page_DynamicChannels)
@@ -2682,7 +2682,7 @@ class Ui_main_window(object):
         self.toolbar.addSeparator()
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(5)
+        self.sim_conf_stack.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(main_window)
 
     def retranslateUi(self, main_window):
@@ -3199,16 +3199,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
-from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.util.widget.stock.guilabel import QBetseeLabelImage
 from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

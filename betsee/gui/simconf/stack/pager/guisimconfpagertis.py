@@ -134,6 +134,25 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(
     pass
 
 # ....................{ SUBCLASSES ~ custom               }....................
+#FIXME: Generalize as follows for reusability and safety:
+#
+#* Define a new "betsee.util.widget.abc.control" subpackage.
+#* Move the existing "betsee.util.widget.abc.guicontrolabc" submodule into this
+#  subpackage.
+#* Define a new "betsee.util.widget.abc.control.guictlpager" subpackage.
+#* In this subpackage:
+#  * Define a new abstract "QBetseeStackedWidgetPagerABC" superclass ala:
+#      class QBetseeStackedWidgetPagerABC(QBetseeControllerABC):
+#          pass
+#  * Define a new abstract "QBetseeStackedWidgetPagerListItemMixin" interface
+#    containing at least:
+#      @abstractmethod
+#      def reinit(self, list_item_index: int) -> None:
+#          pass
+#* Refactor every existing stacked widget pager to subclass
+#  "QBetseeStackedWidgetPagerABC" rather than "QBetseeControllerABC".
+#* Additionally subclass the subclass defined here from
+#  "QBetseeStackedWidgetPagerListItemMixin".
 class QBetseeSimConfTissueCustomStackedWidgetPager(
     QBetseeSimConfTissueStackedWidgetPagerABC):
     '''
@@ -182,7 +201,7 @@ class QBetseeSimConfTissueCustomStackedWidgetPager(
     #Nice, eh?
 
     @type_check
-    def reinit(self) -> None:
+    def reinit(self, list_leaf_index: int) -> None:
 
         # Reinitialize our superclass with this application's main window.
         super().init(guiappwindow.get_main_window())

@@ -639,7 +639,7 @@ QTreeWidget#sim_conf_tree {
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="currentIndex">
-        <number>5</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="sim_conf_stack_page_Paths">
         <layout class="QGridLayout" name="gridLayout_2">
@@ -1981,19 +1981,7 @@ Initial extracellular concentration of the Cl&lt;sup&gt;&lt;b&gt;-&lt;/b&gt;&lt;
                  <property name="toolTip">
                   <string>Type of base cell lattice (i.e., uniform grid to which cells are situated before random lattice disorder is applied).</string>
                  </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_25">
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_29">
                   <item>
                    <widget class="QRadioButton" name="sim_conf_space_intra_lattice_hex">
                     <property name="toolTip">
@@ -2670,7 +2658,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Space_Tissue_Item">
+       <widget class="QWidget" name="sim_conf_stack_page_Space_Tissue_item">
         <layout class="QVBoxLayout" name="verticalLayout_8">
          <item>
           <widget class="QGroupBox" name="groupBox_25">

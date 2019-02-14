@@ -8,14 +8,15 @@ Top-level classes defining this application's main window.
 
 Motivation
 ----------
-To avoid collisions between the names assigned by PySide2's UI compiler (UIC)
-to widget variables owned by the current :class:`QBetseeMainWindow` instance,
-these names are typically prefixed by common substrings signifying ad-hoc
-namespaces. For example, all widgets with variable names prefixed by
-``sim_conf_stack_page_`` signify pages of the top-level stack widget.
+To avoid collisions between the names assigned by :mod:`PySide2`'s UI compiler
+(UIC) to widget variables owned by the current :class:`QBetseeMainWindow`
+instance, these names are typically prefixed or suffixed by common substrings
+signifying ad-hoc namespaces. For example, all widgets with variable names
+prefixed by :data:`SIM_CONF_STACK_PAGE_NAME_PREFIX` identify pages of the
+top-level stack widget.
 
-For maintainability, these prefixes are centralized here rather than
-chaotically dispersed throughout the codebase.
+For maintainability, these prefixes and suffixes are centralized here rather
+than chaotically dispersed throughout the codebase.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -27,6 +28,15 @@ chaotically dispersed throughout the codebase.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # ....................{ GLOBALS ~ sim conf                }....................
+SIM_CONF_STACK_PAGE_LIST_LEAF_NAME_SUFFIX = '_item'
+'''
+Substring suffixing the name of each :class:`QBetseeMainWindow` variable
+providing a **dynamic list item page** (i.e., page associated with zero or more
+tree items masquerading as list items) of the top-level stack widget for the
+main window.
+'''
+
+
 SIM_CONF_STACK_PAGE_NAME_PREFIX = 'sim_conf_stack_page_'
 '''
 Substring prefixing the name of each :class:`QBetseeMainWindow` variable
