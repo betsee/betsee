@@ -26,7 +26,7 @@ from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideQStackedWidgetException
 from betsee.gui.window.guinamespace import (
-    SIM_CONF_STACK_PAGE_LIST_LEAF_NAME_SUFFIX,
+    SIM_CONF_STACK_PAGE_ITEMIZED_NAME_SUFFIX,
     SIM_CONF_STACK_PAGE_NAME_PREFIX,
 )
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
@@ -86,8 +86,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         masquerading as a list dynamically defined at application runtime
         rather than statically defined via Qt (Creator|Designer)) of the
         :class:`QTreeWidget` associated with this stack widget to the
-        corresponding **dynamic list item page widget** (i.e., page configuring
-        tree items masquerading as list items) of this stack widget.
+        corresponding **itemized page widget** (i.e., page configuring tree
+        items masquerading as list items) of this stack widget.
 
     See Also
     ----------
@@ -287,7 +287,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
                 # masquerading as list items) if any.
                 stack_page_list_leaf_name = (
                     stack_page_name +
-                    SIM_CONF_STACK_PAGE_LIST_LEAF_NAME_SUFFIX)
+                    SIM_CONF_STACK_PAGE_ITEMIZED_NAME_SUFFIX)
 
                 # Stack page associated with this tree item if any *OR* "None"
                 # otherwise.

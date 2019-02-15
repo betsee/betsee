@@ -18,7 +18,7 @@ from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.io import guiclipboard
 from betsee.util.io.key import guifocus
 from betsee.util.type.guitype import QWidgetOrNoneTypes
-from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.control.guicontrolabc import QBetseeControllerABC
 
 # ....................{ CLASSES                            }....................
 class QBetseeMainClipboard(QBetseeControllerABC):

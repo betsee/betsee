@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,7 +7,7 @@
 :mod:`PySide2`-based stack widget page controllers specific to ions.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
 from betse.science.parameters import Parameters
@@ -15,17 +15,18 @@ from betse.science.config.confenum import IonProfileType
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betse.util.type.mapping.mapcls import OrderedArgsDict
-from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.control.guictlpagerabc import (
+    QBetseeStackedWidgetPagerABC)
 
-# ....................{ SUBCLASSES                         }....................
-class QBetseeSimConfIonStackedWidgetPager(QBetseeControllerABC):
+# ....................{ SUBCLASSES                        }....................
+class QBetseeSimConfIonStackedWidgetPager(QBetseeStackedWidgetPagerABC):
     '''
     :mod:`PySide2`-based stack widget page controller, connecting all editable
     widgets of the ion page with the corresponding low-level settings of the
     current simulation configuration.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def init(self, main_window: QMainWindow) -> None:
 

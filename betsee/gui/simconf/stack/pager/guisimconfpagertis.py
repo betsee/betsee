@@ -7,36 +7,67 @@
 :mod:`PySide2`-based stack widget page controllers specific to tissue profiles.
 '''
 
-#FIXME: Generalize the "QBetseeSimConfTissueStackedWidgetPagerABC" superclass
-#to non-default tissue profiles as follows:
-#
-#* Define the following new private abstract properties:
-#  * "_SIM_CONF_STACK_PAGE_NAME_PREFIX", redefined by subclasses as follows:
-#    * "QBetseeSimConfTissueDefaultStackedWidgetPager" should return
-#      "sim_conf_tis_default_" for this property.
-#    * "QBetseeSimConfTissueCustomStackedWidgetPager" should return
-#      "sim_conf_tis_custom_" for this property.
-#
-#See below for further FIXME commentary.
-
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
+from betse.exceptions import BetseMethodUnimplementedException
 from betse.lib.yaml.abc.yamlabc import YamlABC
-from betse.science.config.model.conftis import SimConfTissueDefault
+from betse.science.config.model.conftis import (
+    SimConfTissueDefault, SimConfTissueListItem)
 from betse.util.type.obj import objects
 # from betse.util.io.log import logs
-from betse.util.type.types import type_check
+from betse.util.type.types import type_check, ClassType
 from betsee.util.app import guiappwindow
-from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.control.guictlpagerabc import (
+    QBetseeStackedWidgetPagerABC,
+    QBetseeStackedWidgetPagerItemizedMixin
+)
 
 # ....................{ SUPERCLASSES                      }....................
-class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeControllerABC):
+class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
     '''
     Abstract base class of all tissue-specific stack widget page controller
     subclasses, connecting all editable widgets of the page with the
     corresponding low-level settings of the current simulation configuration.
     '''
+
+    # ..................{ SUBCLASS ~ properties             }..................
+    # Abstract properties required to be implemented by subclasses. Ideally,
+    # these methods would be decorated by our @abstractproperty decorator.
+    # Since doing so conflicts with metaclass semantics, these properties are
+    # instead defined as concrete methods raising exceptions here.
+
+    @property
+    def _WIDGET_NAME_PREFIX(self) -> str:
+        '''
+        Substring prefixing the name of all :class:`QBetseeMainWindow`
+        variables providing all child widgets of the top-level stack widget
+        page controlled by this pager.
+        '''
+
+        raise BetseMethodUnimplementedException()
+
+
+    @property
+    def _tissue_profile(self) -> ClassType:
+        '''
+        YAML-backed tissue profile subconfiguration (i.e., instance of the
+        :class:`SimConfTissueABC` superclass) specific to this pager.
+        '''
+
+        raise BetseMethodUnimplementedException()
+
+
+    #FIXME: Excise this in favor of simply retrieving
+    #"type(self._tissue_profile)". *sigh*
+    @property
+    def _tissue_profile_cls(self) -> ClassType:
+        '''
+        Type of the YAML-backed tissue profile subconfiguration (i.e., subclass
+        of the :class:`SimConfTissueABC` superclass) specific to this pager.
+        '''
+
+        raise BetseMethodUnimplementedException()
 
     # ..................{ INITIALIZERS                      }..................
     @type_check
@@ -48,24 +79,49 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeControllerABC):
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
 
+        # Names of instance variables of this main window whose values are
+        # child widgets of this page required below.
+        #
+        # Name of the widget editing this tissue's name.
+        widget_name = main_window.get_widget(
+            widget_name=self._WIDGET_NAME_PREFIX + 'name')
+
+        # Name of the widget editing the filename of this tissue's image mask.
+        widget_image_filename = main_window.get_widget(
+            widget_name=self._WIDGET_NAME_PREFIX + 'image_line')
+
+        # Name of the widget labelling the filename of this tissue's image mask.
+        widget_image_label = main_window.get_widget(
+            widget_name=self._WIDGET_NAME_PREFIX + 'image_label')
+
+        # Name of the widget enabling end users to interactively browse the
+        # local filesystem for the filename of this tissue's image mask.
+        widget_image_btn = main_window.get_widget(
+            widget_name=self._WIDGET_NAME_PREFIX + 'image_btn')
+
+        #FIXME: Generalize as follows:
+        #
+        #* Define a new abstract property "_tissue_profile" returning either
+        #  "sim_conf.p.tissue_default" or... something.
+
         # YAML-backed simulation subconfiguration whose class declares all
         # data descriptor-driven aliases referenced below.
         tissue_default = sim_conf.p.tissue_default
 
         # Initialize all general-purpose widgets on this page.
-        main_window.sim_conf_tis_default_name.init(
+        widget_name.init(
             sim_conf=sim_conf,
-            sim_conf_alias=SimConfTissueDefault.name,
+            sim_conf_alias=self._tissue_profile_cls.name,
             sim_conf_alias_parent=tissue_default,
         )
 
         # Initialize all filename-specific widgets on this page.
-        main_window.sim_conf_tis_default_image_line.init(
+        widget_image_filename.init(
             sim_conf=sim_conf,
-            sim_conf_alias=SimConfTissueDefault.picker_image_filename,
+            sim_conf_alias=self._tissue_profile_cls.picker_image_filename,
             sim_conf_alias_parent=tissue_default,
-            push_btn   =main_window.sim_conf_tis_default_image_btn,
-            image_label=main_window.sim_conf_tis_default_image_label,
+            push_btn=widget_image_btn,
+            image_label=widget_image_label,
         )
 
         # Initialize all ion-specific widgets on this page.
@@ -131,29 +187,19 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(
     the current simulation configuration.
     '''
 
-    pass
+    # ..................{ SUPERCLASS ~ properties           }..................
+    @property
+    def _WIDGET_NAME_PREFIX(self) -> str:
+        return 'sim_conf_tis_default_'
+
+
+    @property
+    def _tissue_profile_cls(self) -> ClassType:
+        return SimConfTissueDefault
 
 # ....................{ SUBCLASSES ~ custom               }....................
-#FIXME: Generalize as follows for reusability and safety:
-#
-#* Define a new "betsee.util.widget.abc.control" subpackage.
-#* Move the existing "betsee.util.widget.abc.guicontrolabc" submodule into this
-#  subpackage.
-#* Define a new "betsee.util.widget.abc.control.guictlpager" subpackage.
-#* In this subpackage:
-#  * Define a new abstract "QBetseeStackedWidgetPagerABC" superclass ala:
-#      class QBetseeStackedWidgetPagerABC(QBetseeControllerABC):
-#          pass
-#  * Define a new abstract "QBetseeStackedWidgetPagerListItemMixin" interface
-#    containing at least:
-#      @abstractmethod
-#      def reinit(self, list_item_index: int) -> None:
-#          pass
-#* Refactor every existing stacked widget pager to subclass
-#  "QBetseeStackedWidgetPagerABC" rather than "QBetseeControllerABC".
-#* Additionally subclass the subclass defined here from
-#  "QBetseeStackedWidgetPagerListItemMixin".
 class QBetseeSimConfTissueCustomStackedWidgetPager(
+    QBetseeStackedWidgetPagerItemizedMixin,
     QBetseeSimConfTissueStackedWidgetPagerABC):
     '''
     Custom tissue-specific stack widget page controller, connecting all
@@ -170,7 +216,17 @@ class QBetseeSimConfTissueCustomStackedWidgetPager(
     page is displayed to configure a specific custom tissue profile.
     '''
 
-    # ..................{ INITIALIZERS                      }..................
+    # ..................{ SUPERCLASS ~ properties           }..................
+    @property
+    def _WIDGET_NAME_PREFIX(self) -> str:
+        return 'sim_conf_tis_custom_'
+
+
+    @property
+    def _tissue_profile_cls(self) -> ClassType:
+        return SimConfTissueListItem
+
+    # ..................{ SUPERCLASS ~ initializers         }..................
     # Override the superclass init() method, which the reinit() method
     # subsequently calls immediately before this page is displayed to configure
     # a specific custom tissue profile, with a silent noop.
@@ -179,12 +235,15 @@ class QBetseeSimConfTissueCustomStackedWidgetPager(
         pass
 
 
-    #FIXME: Externally call this method immediately before this page is
-    #displayed to configure a specific custom tissue profile -- presumably from
-    #either the "guisimconftree" or "guisimconfstack" widgets.
+    @type_check
+    def reinit(self, list_leaf_index: int) -> None:
 
-    #FIXME: Define a corresponding deinit() method as well -- which should be
-    #called under at least the following circumstances:
+        # Reinitialize our superclass with this application's main window.
+        super().init(guiappwindow.get_main_window())
+
+
+    #FIXME: Implement us up.
+    #FIXME: Call this method under at least the following circumstances:
     #
     #* When the custom tissue profile currently associated with this stack page
     #  is removed. Note that this should cleanly generalize to handle both the
@@ -199,9 +258,6 @@ class QBetseeSimConfTissueCustomStackedWidgetPager(
     #  should be automatically switched to.
     #
     #Nice, eh?
+    def deinit(self) -> None:
 
-    @type_check
-    def reinit(self, list_leaf_index: int) -> None:
-
-        # Reinitialize our superclass with this application's main window.
-        super().init(guiappwindow.get_main_window())
+        pass

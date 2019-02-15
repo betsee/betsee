@@ -1,32 +1,35 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
-Abstract base classes of all :mod:`PySide2`-based controller subclasses.
+High-level **controller** (i.e., :mod:`PySide2`-based object controlling the
+flow of application execution ala the standard model-view-controller (MVC)
+paradigm) hierarchy.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QObject
 from PySide2.QtWidgets import QMainWindow
 from betse.util.type.types import type_check
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
-# ....................{ SUPERCLASSES                       }....................
+# ....................{ SUPERCLASSES                      }....................
 class QBetseeControllerABC(QBetseeObjectMixin, QObject):
     '''
-    Abstract base class of all :mod:`PySide2`-based controller subclasses in the
-    standard model-view-controller (MVC) understanding of that term.
+    Abstract base class of all **controller** (i.e., :mod:`PySide2`-based
+    object controlling the flow of application execution ala the standard
+    model-view-controller (MVC) paradigm) subclasses.
 
-    Each instance of this class is a controller encapsulating all abstract state
-    (including connective logic like signals and slots) required to sanely
-    display a separate physical view (i.e., widget). To minimally integrate with
-    Qt concurrency and signalling, this controller is a minimal :class:`QObject`
-    instance rather than a full-fledged :class:`QWidget` instance.
+    Each instance of this class is a controller encapsulating all abstract
+    state (including connective logic like signals and slots) required to
+    sanely display a separate physical view (i.e., widget). For integration
+    with Qt concurrency and signalling, this controller is a minimal
+    :class:`QObject` rather than full-fledged :class:`QWidget` instance.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     # To avoid circular import dependencies, this parameter is validated to be
     # an instance of the "QMainWindow" superclass rather than the expected
     # "QBetseeMainWindow" subclass of the "betsee.gui.window.guimainwindow"
@@ -40,8 +43,8 @@ class QBetseeControllerABC(QBetseeObjectMixin, QObject):
 
         To avoid circular references, this method is guaranteed to *not* retain
         a reference to this main window on returning. References to child
-        widgets (e.g., simulation configuration stack widget) of this window may
-        be retained, however.
+        widgets (e.g., simulation configuration stack widget) of this window
+        may be retained, however.
 
         Parameters
         ----------

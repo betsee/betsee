@@ -65,7 +65,7 @@ cached that module for the current user.
 # Accessing attributes of the "PySide2.QtCore.Qt" subpackage requires this
 # subpackage to be imported directly. Attributes are *NOT* importable from this
 # subpackage, contrary to pure-Python expectation.
-from PySide2.QtCore import Qt, Slot
+from PySide2.QtCore import QCoreApplication, Qt, Slot
 from PySide2.QtGui import QCloseEvent
 from PySide2.QtWidgets import QToolButton, QWidget
 from betse.util.io.log import logs
@@ -556,9 +556,10 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
 
         # If no such widget exists, raise an exception.
         if widget is None:
-            raise BetseePySideWindowException(
-                'Qt (Creator|Designer)-managed widget "{}" not found.'.format(
-                    widget_name))
+            raise BetseePySideWindowException(QCoreApplication.translate(
+                'QBetseeMainWindow',
+                'Qt (Creator|Designer)-managed widget "{0}" not found.'.format(
+                    widget_name)))
 
         # Return this widget.
         return widget

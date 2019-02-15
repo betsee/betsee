@@ -18,7 +18,7 @@ from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.phase.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerPhaseWorker
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind
-from betsee.util.widget.abc.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.control.guicontrolabc import QBetseeControllerABC
 from collections import deque
 
 # ....................{ TYPES                             }....................

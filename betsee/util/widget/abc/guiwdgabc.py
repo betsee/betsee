@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,13 +7,13 @@
 Abstract base classes of most application-specific widget subclasses.
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid circular import dependencies, avoid importing from *ANY*
 # application-specific submodules of this subpackage (i.e.,
 # "betsee.util.widget"). Since those submodules must *ALWAYS* be able to safely
 # import from this submodule, circularities are best avoided here.
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from PySide2.QtWidgets import QUndoStack
 from betse.util.io.log import logs
@@ -23,13 +23,13 @@ from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideEditWidgetException
 
-# ....................{ GLOBALS                            }....................
+# ....................{ GLOBALS                           }....................
 _OBJ_NAME_DEFAULT = 'N/A'
 '''
 Default Qt object name for all :class:`QBetseeObjectMixin` instances.
 '''
 
-# ....................{ MIXINS                             }....................
+# ....................{ MIXINS                            }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
@@ -47,7 +47,7 @@ class QBetseeObjectMixin(object):
         ``True`` only if this object's :meth:`init` method has been called.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
         '''
         Initialize this application-specific Qt object.
@@ -61,13 +61,13 @@ class QBetseeObjectMixin(object):
         ----------
         **Subclasses overriding this method should not attempt to accept
         subclass-specific parameters.** Due to the semantics of Python's
-        method-resolution order (MRO), accidentally violating this constraint is
-        guaranteed to raise non-human-readable exceptions at subclass
+        method-resolution order (MRO), accidentally violating this constraint
+        is guaranteed to raise non-human-readable exceptions at subclass
         instantiation time.
 
         Abstract base subclasses may trivially circumvent this constraint by
-        defining abstract properties which concrete subclasses then define. When
-        doing so, note that abstract methods should raise the
+        defining abstract properties which concrete subclasses then define.
+        When doing so, note that abstract methods should raise the
         :class:`BetseMethodUnimplementedException` exception rather than be
         decorated by the usual :meth:`abstractmethod` decorator -- which is
         *not* safely applicable to subclasses of this class.
@@ -126,9 +126,9 @@ class QBetseeObjectMixin(object):
         object's initialization has *not* already been finalized by a call to
         the :meth:`init` method).
 
-        This method safely wraps the :meth:`init` method, effectively squelching
-        the exception raised by that method when this object's initialization
-        has already been finalized.
+        This method safely wraps the :meth:`init` method, effectively
+        squelching the exception raised by that method when this object's
+        initialization has already been finalized.
 
         Parameters
         ----------
@@ -139,7 +139,7 @@ class QBetseeObjectMixin(object):
         if self._is_initted:
             self.init(*args, **kwargs)
 
-    # ..................{ PROPERTIES ~ read-only             }..................
+    # ..................{ PROPERTIES ~ read-only            }..................
     @property
     def is_initted(self) -> bool:
         '''
@@ -148,7 +148,7 @@ class QBetseeObjectMixin(object):
 
         return self._is_initted
 
-    # ..................{ PROPERTIES                         }..................
+    # ..................{ PROPERTIES                        }..................
     @property
     def obj_name(self) -> str:
         '''
@@ -173,7 +173,7 @@ class QBetseeObjectMixin(object):
 
         self.setObjectName(obj_name)
 
-    # ..................{ SETTERS                            }..................
+    # ..................{ SETTERS                           }..................
     def set_obj_name_from_class_name(self) -> None:
         '''
         Set the Qt-specific name of this object to the unqualified name of this
@@ -195,13 +195,13 @@ class QBetseeObjectMixin(object):
 
         Design
         ----------
-        This method is intentionally *not* called by the :meth:`__init__` method
-        to set this object's name to a (seemingly) sane default. Why? Because
-        numerous subclasses prefer to manually set this name. Unconditionally
-        calling this method for every subclass would have the undesirable side
-        effect of preventing this and other subclasses from detecting when the
-        object name has yet to be set (e.g., via a comparison against the
-        :data:`_OBJ_NAME_DEFAULT` default).
+        This method is intentionally *not* called by the :meth:`__init__`
+        method to set this object's name to a seemingly sane default. Why?
+        Because numerous subclasses prefer to manually set this name.
+        Unconditionally calling this method for every subclass would have the
+        undesirable side effect of preventing this and other subclasses from
+        detecting when the object name has yet to be set (e.g., via a
+        comparison against the :data:`_OBJ_NAME_DEFAULT` default).
         '''
 
         # Subclass of this object.
@@ -219,7 +219,7 @@ class QBetseeObjectMixin(object):
         # Set this object's name to this CamelCase converted into snake_case.
         self.obj_name = pyident.convert_camelcase_to_snakecase(cls_name)
 
-# ....................{ MIXINS ~ edit                      }....................
+# ....................{ MIXINS ~ edit                     }....................
 class QBetseeEditWidgetMixin(QBetseeObjectMixin):
     '''
     Abstract base class of most application-specific **editable widget** (i.e.,
@@ -229,14 +229,17 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
     Attributes
     ----------
     is_undo_cmd_pushable : bool
-        ``True`` only if undo commands are safely pushable from this widget onto
-        the undo stack *or* ``False`` when either:
+        ``True`` only if undo commands are safely pushable from this widget
+        onto the undo stack *or* ``False`` when either:
+
         * This widget's content is currently being programmatically populated.
         * A previous undo command is already being applied to this widget.
-        In both cases, changes to this widget's content are program- rather than
-        user-driven and hence are *NOT* safely undoable. If ``False``, widget
-        subclass slots intending to push an undo commands onto the undo stack
-        should instead (in order):
+
+        In both cases, changes to this widget's content are program- rather
+        than user-driven and hence are *NOT* safely undoable. If ``False``,
+        widget subclass slots intending to push an undo commands onto the undo
+        stack should instead (in order):
+
         * Temporarily avoid doing so for the duration of the current slot call,
           as doing so *could* induce infinite recursion.
         * Set ``self.is_undo_cmd_pushable = False`` to permit all subsequent
@@ -246,7 +249,7 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
         ``None`` otherwise.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed arguments.
@@ -255,13 +258,13 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
         # Unset the undo stack to which this widget pushes undo commands.
         self._unset_undo_stack()
 
-    # ..................{ UNDO STACK ~ set                   }..................
+    # ..................{ UNDO STACK ~ set                  }..................
     @type_check
     def _set_undo_stack(self, undo_stack: QUndoStack) -> None:
         '''
-        Set the undo stack to which this widget pushes undo commands, permitting
-        the :meth:`_push_undo_cmd_if_safe` method to pushing undo commands from
-        this widget onto this stack.
+        Set the undo stack to which this widget pushes undo commands,
+        permitting the :meth:`_push_undo_cmd_if_safe` method to pushing undo
+        commands from this widget onto this stack.
         '''
 
         # Classify all passed parameters.
@@ -284,11 +287,12 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
         # Undo commands are now safely pushable from this widget.
         self.is_undo_cmd_pushable = False
 
-    # ..................{ UNDO STACK ~ other                 }..................
+    # ..................{ UNDO STACK ~ other                }..................
     def _is_undo_stack_dirty(self) -> bool:
         '''
         ``True`` only if the undo stack associated with this widget is in the
-        **dirty state** (i.e., contains at least one undo command to be undone).
+        **dirty state** (i.e., contains at least one undo command to be
+        subsequently undone).
         '''
 
         return not self._undo_stack.isClean()

@@ -28,12 +28,12 @@ than chaotically dispersed throughout the codebase.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # ....................{ GLOBALS ~ sim conf                }....................
-SIM_CONF_STACK_PAGE_LIST_LEAF_NAME_SUFFIX = '_item'
+SIM_CONF_STACK_PAGE_ITEMIZED_NAME_SUFFIX = '_item'
 '''
 Substring suffixing the name of each :class:`QBetseeMainWindow` variable
-providing a **dynamic list item page** (i.e., page associated with zero or more
-tree items masquerading as list items) of the top-level stack widget for the
-main window.
+providing an **itemized page** (i.e., page associated with zero or more tree
+items masquerading as list items) of the top-level stack widget for the main
+window.
 '''
 
 
