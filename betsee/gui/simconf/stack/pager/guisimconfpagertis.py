@@ -10,13 +10,11 @@
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
-from betse.exceptions import BetseMethodUnimplementedException
-from betse.lib.yaml.abc.yamlabc import YamlABC
-from betse.science.config.model.conftis import (
-    SimConfTissueDefault, SimConfTissueListItem)
+from betse.science.config.model.conftis import SimConfTissueABC
 from betse.util.type.obj import objects
 # from betse.util.io.log import logs
-from betse.util.type.types import type_check, ClassType
+from betse.util.type.iterable import sequences
+from betse.util.type.types import type_check
 from betsee.util.app import guiappwindow
 from betsee.util.widget.abc.control.guictlpagerabc import (
     QBetseeStackedWidgetPagerABC,
@@ -31,151 +29,95 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
     corresponding low-level settings of the current simulation configuration.
     '''
 
-    # ..................{ SUBCLASS ~ properties             }..................
-    # Abstract properties required to be implemented by subclasses. Ideally,
-    # these methods would be decorated by our @abstractproperty decorator.
-    # Since doing so conflicts with metaclass semantics, these properties are
-    # instead defined as concrete methods raising exceptions here.
-
-    @property
-    def _WIDGET_NAME_PREFIX(self) -> str:
-        '''
-        Substring prefixing the name of all :class:`QBetseeMainWindow`
-        variables providing all child widgets of the top-level stack widget
-        page controlled by this pager.
-        '''
-
-        raise BetseMethodUnimplementedException()
-
-
-    @property
-    def _tissue_profile(self) -> ClassType:
-        '''
-        YAML-backed tissue profile subconfiguration (i.e., instance of the
-        :class:`SimConfTissueABC` superclass) specific to this pager.
-        '''
-
-        raise BetseMethodUnimplementedException()
-
-
-    #FIXME: Excise this in favor of simply retrieving
-    #"type(self._tissue_profile)". *sigh*
-    @property
-    def _tissue_profile_cls(self) -> ClassType:
-        '''
-        Type of the YAML-backed tissue profile subconfiguration (i.e., subclass
-        of the :class:`SimConfTissueABC` superclass) specific to this pager.
-        '''
-
-        raise BetseMethodUnimplementedException()
-
     # ..................{ INITIALIZERS                      }..................
     @type_check
-    def init(self, main_window: QMainWindow) -> None:
+    def init(
+        self,
+        main_window: QMainWindow,
+        widget_name_prefix: str,
+        tissue_profile: SimConfTissueABC,
+    ) -> None:
+        '''
+        Initialize this pager against the passed parent main window.
+
+        To avoid circular references, this method is guaranteed to *not* retain
+        a reference to this main window on returning. References to child
+        widgets (e.g., simulation configuration stack widget) of this window
+        may be retained, however.
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget
+            against which to initialize this pager.
+        widget_name_prefix : str
+            Substring prefixing the name of all instance variables of the
+            passed ``main_window`` whose values are all child widgets of the
+            page controlled by this pager.
+        tissue_profile : SimConfTissueABC
+            Current YAML-backed tissue profile subconfiguration (i.e.,
+            :class:`SimConfTissueABC` instance) associated with this page.
+        '''
 
         # Initialize our superclass with all passed parameters.
         super().init(main_window)
 
-        # Simulation configuration state object.
-        sim_conf = main_window.sim_conf
+        #FIXME: Consider shifting into BETSE itself -- perhaps in a new
+        #"betse.science.simulate.simion" submodule?
+        # Set of the abbreviated names of all available ions.
+        ION_NAMES = {'Na', 'K', 'Cl', 'Ca', 'M', 'P',}
 
-        # Names of instance variables of this main window whose values are
-        # child widgets of this page required below.
-        #
-        # Name of the widget editing this tissue's name.
+        # Type of this tissue profile.
+        tissue_profile_cls = type(tissue_profile)
+
+        # Widget editing this tissue's name.
         widget_name = main_window.get_widget(
-            widget_name=self._WIDGET_NAME_PREFIX + 'name')
+            widget_name=widget_name_prefix + 'name')
 
-        # Name of the widget editing the filename of this tissue's image mask.
+        # Widget editing the filename of this tissue's image mask.
         widget_image_filename = main_window.get_widget(
-            widget_name=self._WIDGET_NAME_PREFIX + 'image_line')
+            widget_name=widget_name_prefix + 'image_line')
 
-        # Name of the widget labelling the filename of this tissue's image mask.
+        # Widget labelling the filename of this tissue's image mask.
         widget_image_label = main_window.get_widget(
-            widget_name=self._WIDGET_NAME_PREFIX + 'image_label')
+            widget_name=widget_name_prefix + 'image_label')
 
-        # Name of the widget enabling end users to interactively browse the
-        # local filesystem for the filename of this tissue's image mask.
+        # Widget enabling end users to interactively browse the local
+        # filesystem for the filename of this tissue's image mask.
         widget_image_btn = main_window.get_widget(
-            widget_name=self._WIDGET_NAME_PREFIX + 'image_btn')
-
-        #FIXME: Generalize as follows:
-        #
-        #* Define a new abstract property "_tissue_profile" returning either
-        #  "sim_conf.p.tissue_default" or... something.
-
-        # YAML-backed simulation subconfiguration whose class declares all
-        # data descriptor-driven aliases referenced below.
-        tissue_default = sim_conf.p.tissue_default
+            widget_name=widget_name_prefix + 'image_btn')
 
         # Initialize all general-purpose widgets on this page.
         widget_name.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=self._tissue_profile_cls.name,
-            sim_conf_alias_parent=tissue_default,
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=tissue_profile_cls.name,
+            sim_conf_alias_parent=tissue_profile,
         )
 
         # Initialize all filename-specific widgets on this page.
         widget_image_filename.init(
-            sim_conf=sim_conf,
-            sim_conf_alias=self._tissue_profile_cls.picker_image_filename,
-            sim_conf_alias_parent=tissue_default,
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=tissue_profile_cls.picker_image_filename,
+            sim_conf_alias_parent=tissue_profile,
             push_btn=widget_image_btn,
             image_label=widget_image_label,
         )
 
-        # Initialize all ion-specific widgets on this page.
-        self._init_widgets_ion(
-            main_window=main_window, page_conf=tissue_default)
-
-
-    #FIXME: Can this be generalized to custom ion profiles as well?
-    def _init_widgets_ion(
-        self, main_window: QMainWindow, page_conf: YamlABC) -> None:
-        '''
-        Initialize all ion-specific widgets on this page.
-
-        Attributes
-        ----------
-        main_window : QMainWindow
-            Main window singleton.
-        page_conf : YamlABC
-            YAML-backed simulation subconfiguration specific to this page.
-        '''
-
-        #FIXME: Consider shifting into BETSE itself -- perhaps in a new
-        #"betse.science.simulate.simion" submodule?
-
-        # Set of the abbreviated names of all available ions.
-        ION_NAMES = {'Na', 'K', 'Cl', 'Ca', 'M', 'P',}
-
-        # Simulation configuration state object.
-        sim_conf = main_window.sim_conf
-
-        # For the abbreviated name of each supported ion...
+        # For the abbreviated name of each such ion...
         for ion_name in ION_NAMES:
-            # Name of the instance variable of the main window providing the
-            # widget on this page editing the default tissue profile's membrane
-            # diffusion constant for this ion.
-            ion_widget_name = 'sim_conf_tis_default_mem_' + ion_name
+            # Widget editing this ion's membrane diffusion constant.
+            ion_widget = main_window.get_widget(
+                widget_name='{}mem_{}'.format(widget_name_prefix, ion_name))
 
-            # Name of the data descriptor of the default tissue profile's class
-            # providing this membrane diffusion constant.
-            ion_descriptor_name = 'Dm_' + ion_name
-
-            # This widget.
-            ion_widget = objects.get_attr(
-                obj=main_window, attr_name=ion_widget_name)
-
-            # This data descriptor.
+            # Data descriptor of this tissue's class providing this constant.
             ion_descriptor = objects.get_attr(
-                obj=SimConfTissueDefault, attr_name=ion_descriptor_name)
+                obj=tissue_profile_cls, attr_name='Dm_' + ion_name)
 
             # Initialize this widget with this data descriptor.
             ion_widget.init(
-                sim_conf=sim_conf,
+                sim_conf=main_window.sim_conf,
                 sim_conf_alias=ion_descriptor,
-                sim_conf_alias_parent=page_conf,
+                sim_conf_alias_parent=tissue_profile,
             )
 
 # ....................{ SUBCLASSES ~ default              }....................
@@ -187,15 +129,16 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(
     the current simulation configuration.
     '''
 
-    # ..................{ SUPERCLASS ~ properties           }..................
-    @property
-    def _WIDGET_NAME_PREFIX(self) -> str:
-        return 'sim_conf_tis_default_'
+    # ..................{ INITIALIZERS                      }..................
+    @type_check
+    def init(self, main_window: QMainWindow) -> None:
 
-
-    @property
-    def _tissue_profile_cls(self) -> ClassType:
-        return SimConfTissueDefault
+        # Finalize the initialization of our superclass.
+        super().init(
+            main_window=main_window,
+            widget_name_prefix='sim_conf_tis_default_',
+            tissue_profile=main_window.sim_conf.p.tissue_default,
+        )
 
 # ....................{ SUBCLASSES ~ custom               }....................
 class QBetseeSimConfTissueCustomStackedWidgetPager(
@@ -216,30 +159,37 @@ class QBetseeSimConfTissueCustomStackedWidgetPager(
     page is displayed to configure a specific custom tissue profile.
     '''
 
-    # ..................{ SUPERCLASS ~ properties           }..................
-    @property
-    def _WIDGET_NAME_PREFIX(self) -> str:
-        return 'sim_conf_tis_custom_'
-
-
-    @property
-    def _tissue_profile_cls(self) -> ClassType:
-        return SimConfTissueListItem
-
     # ..................{ SUPERCLASS ~ initializers         }..................
     # Override the superclass init() method, which the reinit() method
     # subsequently calls immediately before this page is displayed to configure
     # a specific custom tissue profile, with a silent noop.
     @type_check
     def init(self, main_window: QMainWindow) -> None:
+
+        # Silently defer this finalization to the reinit() method.
         pass
 
 
     @type_check
-    def reinit(self, list_leaf_index: int) -> None:
+    def reinit(self, list_item_index: int) -> None:
 
-        # Reinitialize our superclass with this application's main window.
-        super().init(guiappwindow.get_main_window())
+        # Main window of this application.
+        main_window = guiappwindow.get_main_window()
+
+        # Sequence of all currently configured tissue profiles.
+        tissue_profiles = main_window.sim_conf.p.tissue_profiles
+
+        # If this index does *NOT* index this sequence, raise an exception.
+        sequences.die_unless_index(
+            sequence=tissue_profiles, index=list_item_index)
+        # Else, index indexes this sequence.
+
+        # Refinalize the initialization of our superclass.
+        super().init(
+            main_window=main_window,
+            widget_name_prefix='sim_conf_tis_custom_',
+            tissue_profile=tissue_profiles[list_item_index],
+        )
 
 
     #FIXME: Implement us up.

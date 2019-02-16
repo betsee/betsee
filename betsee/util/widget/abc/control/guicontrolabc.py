@@ -48,9 +48,9 @@ class QBetseeControllerABC(QBetseeObjectMixin, QObject):
 
         Parameters
         ----------
-        parent: QBetseeMainWindow
+        main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
-            against which to initialize this widget.
+            against which to initialize this controller.
         '''
 
         # Initialize our superclass.
