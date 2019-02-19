@@ -11,7 +11,7 @@
 from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
 from betse.science.parameters import Parameters
-from betse.science.config.confenum import IonProfileType
+from betse.science.enum.enumconf import IonProfileType
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betse.util.type.mapping.mapcls import OrderedArgsDict

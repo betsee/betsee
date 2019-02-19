@@ -11,6 +11,7 @@
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
 from betse.science.config.model.conftis import SimConfTissueABC
+from betse.science.enum import enumion
 from betse.util.type.obj import objects
 # from betse.util.io.log import logs
 from betse.util.type.iterable import sequences
@@ -62,11 +63,6 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
         # Initialize our superclass with all passed parameters.
         super().init(main_window)
 
-        #FIXME: Consider shifting into BETSE itself -- perhaps in a new
-        #"betse.science.simulate.simion" submodule?
-        # Set of the abbreviated names of all available ions.
-        ION_NAMES = {'Na', 'K', 'Cl', 'Ca', 'M', 'P',}
-
         # Type of this tissue profile.
         tissue_profile_cls = type(tissue_profile)
 
@@ -103,8 +99,8 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
             image_label=widget_image_label,
         )
 
-        # For the abbreviated name of each such ion...
-        for ion_name in ION_NAMES:
+        # For the abbreviated name of each supported ion...
+        for ion_name in enumion.iter_ion_names():
             # Widget editing this ion's membrane diffusion constant.
             ion_widget = main_window.get_widget(
                 widget_name='{}mem_{}'.format(widget_name_prefix, ion_name))

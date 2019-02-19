@@ -10,18 +10,11 @@ settings associated with a single simulation feature  of the current such
 configuration) facilities.
 '''
 
-#FIXME: Generalize as follows:
-#
-#* Implement the QBetseeSimConfTissueCustomStackedWidgetPager.reinit() method
-#  to accept a 0-based index, which that method should then internally use to
-#  access the current YAML-based tissue profile in the list
-#  "main_window.sim_conf.p.tissue_profiles".
-
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
-from betse.util.type.obj import objiter
+from betse.util.type.obj import objects, objiter
 from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideQStackedWidgetException
@@ -30,6 +23,8 @@ from betsee.gui.window.guinamespace import (
     SIM_CONF_STACK_PAGE_NAME_PREFIX,
 )
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.abc.control.guictlpagerabc import (
+    QBetseeStackedWidgetPagerItemizedMixin)
 from betsee.util.widget.stock.tree import guitreeitem
 
 # ....................{ CLASSES                           }....................
@@ -434,6 +429,38 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
                         'Tree item "{0}" stacked page not found.',
                         tree_item_list_leaf.text(0)))
             # Else, this page exists.
+
+            #FIXME: *OH, BOY.* Stacked page widgets are *NOT* pagers. The
+            #former are merely "QWidget" objects; the latter are full-fledged
+            #"QBetseeStackedWidgetPagerABC" objects. Where we reference
+            #"stack_page" below, we clearly mean the pager associated with that
+            #stack page. Unfortunately, there currently exists no means of
+            #establishing this association. Ergo, contemplate the following:
+            #
+            #* Declare a new "_stack_page_to_pager" instance variable
+            #  as a dictionary mapping from stack pages to controlling pagers.
+            #* Define this variable at initialization time, as this association
+            #  is statically rather than dynamically specified: e.g.,
+            #     self._stack_page_to_pager = {
+            #         'sim_conf_stack_page_Space_Tissue_item': (
+            #              QBetseeSimConfTissueCustomStackedWidgetPager(),
+            #         ),
+            #         ...
+            #     }
+            #* Extend the above definition to *ALL* such associations. Why?
+            #  Because doing so then permits us to remove the "_pagers"
+            #  variable -- which is unequivocally a good thing. Moreover, we're
+            #  likely to benefit from this association elsewhere in due time.
+            #* Replace all usage of "_pagers" with "_stack_page_to_pager".
+            #* Remove the "_pagers" variable.
+            #* Leverage this mapping here to obtain the desired pager.
+
+            # If this page is *NOT* itemized, raise an exception. For
+            # generality, this validation is deferred until *AFTER* the prior
+            # general-purpose validation has been performed.
+            objects.die_unless_instance(
+                obj=stack_page,
+                cls=QBetseeStackedWidgetPagerItemizedMixin)
 
             # 0-based index of the currently selected tree item in the dynamic
             # list of all children of the parent tree item of this item.

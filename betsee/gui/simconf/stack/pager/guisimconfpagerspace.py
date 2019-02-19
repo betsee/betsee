@@ -12,7 +12,7 @@ settings.
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
 from betse.science.parameters import Parameters
-from betse.science.config.confenum import CellLatticeType
+from betse.science.enum.enumconf import CellLatticeType
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.util.widget.abc.control.guictlpagerabc import (
