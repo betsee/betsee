@@ -10,7 +10,7 @@ functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
-from betse.science.phase.phaseenum import SimPhaseKind
+from betse.science.enum.enumphase import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type.iterable import tuples
 from betse.util.type.types import type_check, CallableTypes, QueueType
@@ -190,7 +190,7 @@ class QBetseeSimmerPhaser(QBetseeControllerABC):
 
         This method enqueues (i.e., pushes onto this queue) workers in
         simulation phase order, defined as the ordering of the members of the
-        :class:`betse.science.phase.phaseenum.SimPhaseKind` enumeration.
+        :class:`betse.science.enum.enumphase.SimPhaseKind` enumeration.
         Callers may safely run the simulation phases performed by these workers
         merely by sequentially assigning each worker enqueued in this queue to
         a thread via the

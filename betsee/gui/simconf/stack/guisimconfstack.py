@@ -17,7 +17,7 @@ from betse.util.io.log import logs
 from betse.util.type.obj import objects, objiter
 from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
-from betsee.guiexception import BetseePySideQStackedWidgetException
+from betsee.guiexception import BetseePySideStackedWidgetException
 from betsee.gui.window.guinamespace import (
     SIM_CONF_STACK_PAGE_ITEMIZED_NAME_SUFFIX,
     SIM_CONF_STACK_PAGE_NAME_PREFIX,
@@ -70,6 +70,14 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         accessed after instantiation, this simplistic scheme suffices.
     _sim_conf : QBetseeSimConf
         High-level object controlling simulation configuration state.
+    _stack_page_name_to_pager : dict
+        Dictionary mapping from the name of each page widget of this stack
+        widget to the **pager** (i.e., high-level object controlling the flow
+        of application execution for a page widget) controlling that widget.
+        While the principal role of this dictionary is that of a **pager
+        container** (i.e., container of all pager objects, preventing Python
+        from erroneously garbage collecting these objects), this dictionary's
+        secondary role as a pager mapper is no less mission critical.
     _tree_item_static_to_stack_page : dict
         Dictionary mapping from each **static tree item** (i.e., item
         statically defined via Qt (Creator|Designer) rather than dynamically
@@ -95,27 +103,6 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
-        # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
-
-        # Nullify all instance variables for safety.
-        self._pagers = None
-        self._sim_conf = None
-        self._tree_item_static_to_stack_page = None
-        self._tree_item_list_root_to_stack_page_list_leaf = None
-
-        # Instantiate all pages of this stack widget.
-        self._init_pagers()
-
-
-    @type_check
-    def _init_pagers(self) -> None:
-        '''
-        Instantiate each **page controller** (i.e., high-level
-        :mod:`PySide2`-based object encapsulating the internal state of a page
-        of this stack widget).
-        '''
-
         # Defer method-specific imports for maintainability.
         from betsee.gui.simconf.stack.pager.guisimconfpagerion import (
             QBetseeSimConfIonStackedWidgetPager)
@@ -130,15 +117,29 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             QBetseeSimConfTissueCustomStackedWidgetPager,
         )
 
-        # Tuple of all stack widget page controllers (in arbitrary order).
-        self._pagers = (
-            QBetseeSimConfIonStackedWidgetPager(),
-            QBetseeSimConfPathStackedWidgetPager(),
-            QBetseeSimConfSpaceStackedWidgetPager(),
-            QBetseeSimConfTimeStackedWidgetPager(),
-            QBetseeSimConfTissueDefaultStackedWidgetPager(),
-            QBetseeSimConfTissueCustomStackedWidgetPager(),
-        )
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
+
+        # Classify instance variables with sane defaults.
+        self._stack_page_name_to_pager = {
+            'sim_conf_stack_page_Ions': (
+                QBetseeSimConfIonStackedWidgetPager()),
+            'sim_conf_stack_page_Paths': (
+                QBetseeSimConfPathStackedWidgetPager()),
+            'sim_conf_stack_page_Space': (
+                QBetseeSimConfSpaceStackedWidgetPager()),
+            'sim_conf_stack_page_Space_Tissue': (
+                QBetseeSimConfTissueDefaultStackedWidgetPager()),
+            'sim_conf_stack_page_Space_Tissue_item': (
+                QBetseeSimConfTissueCustomStackedWidgetPager()),
+            'sim_conf_stack_page_Time': (
+                QBetseeSimConfTimeStackedWidgetPager()),
+        }
+        self._tree_item_static_to_stack_page = {}
+        self._tree_item_list_root_to_stack_page_list_leaf = {}
+
+        # Nullify all remaining instance variables for safety.
+        self._sim_conf = None
 
 
     # To avoid circular import dependencies, this parameter is validated to be
@@ -182,8 +183,9 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # Integrate this stack widget with this window's top-level tree widget.
         self._init_tree_to_stack(main_window)
 
-        # Initialize each page of this stack widget.
-        for pager in self._pagers:
+        # Initialize each pager controlling each page widget of this stack
+        # widget *AFTER* finalizing all other initialization above.
+        for pager in self._stack_page_name_to_pager.values():
             pager.init(main_window)
 
     # ..................{ INITIALIZERS ~ tree               }..................
@@ -203,10 +205,6 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         main_window : QBetseeMainWindow
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
-
-        # Initialize these dictionaries.
-        self._tree_item_static_to_stack_page = {}
-        self._tree_item_list_root_to_stack_page_list_leaf = {}
 
         # Generator iteratively yielding a 2-tuple of the name and value of
         # each child page of this stack widget, matching all instance variables
@@ -305,11 +303,11 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
                     logs.log_debug(
                         'Mapping tree item "%s" to stacked page "%s" '
                         'for list children...',
-                        child_item_text, stack_page_list_leaf)
+                        child_item_text, stack_page_list_leaf_name)
 
                     # Map this tree item to this stack page.
                     self._tree_item_list_root_to_stack_page_list_leaf[
-                        child_item] = stack_page
+                        child_item] = stack_page_list_leaf
 
                 # If a stack page is associated with this tree item...
                 if stack_page is not None:
@@ -392,7 +390,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
         Raises
         ----------
-        BetseePySideQStackedWidgetException
+        BetseePySideStackedWidgetException
             If no such page exists (e.g., due to this tree widget item being a
             placeholder container for child items for which pages do exist).
         '''
@@ -406,6 +404,9 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         if stack_page is None:
             # Currently selected tree item, renamed for clarity.
             tree_item_list_leaf = tree_item_curr
+
+            # First-column text of this item, equivalent to this item's name.
+            tree_item_list_leaf_name = tree_item_list_leaf.text(0)
 
             # Parent tree item of the currently selected tree item.
             #
@@ -423,43 +424,45 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
             # If no such page still exists, raise an exception.
             if stack_page is None:
-                raise BetseePySideQStackedWidgetException(
+                raise BetseePySideStackedWidgetException(
                     QCoreApplication.translate(
                         'QBetseeSimConfStackedWidget',
-                        'Tree item "{0}" stacked page not found.',
-                        tree_item_list_leaf.text(0)))
+                        'Tree item "{0}" stacked page not found.'.format(
+                            tree_item_list_leaf_name)))
             # Else, this page exists.
 
-            #FIXME: *OH, BOY.* Stacked page widgets are *NOT* pagers. The
-            #former are merely "QWidget" objects; the latter are full-fledged
-            #"QBetseeStackedWidgetPagerABC" objects. Where we reference
-            #"stack_page" below, we clearly mean the pager associated with that
-            #stack page. Unfortunately, there currently exists no means of
-            #establishing this association. Ergo, contemplate the following:
-            #
-            #* Declare a new "_stack_page_to_pager" instance variable
-            #  as a dictionary mapping from stack pages to controlling pagers.
-            #* Define this variable at initialization time, as this association
-            #  is statically rather than dynamically specified: e.g.,
-            #     self._stack_page_to_pager = {
-            #         'sim_conf_stack_page_Space_Tissue_item': (
-            #              QBetseeSimConfTissueCustomStackedWidgetPager(),
-            #         ),
-            #         ...
-            #     }
-            #* Extend the above definition to *ALL* such associations. Why?
-            #  Because doing so then permits us to remove the "_pagers"
-            #  variable -- which is unequivocally a good thing. Moreover, we're
-            #  likely to benefit from this association elsewhere in due time.
-            #* Replace all usage of "_pagers" with "_stack_page_to_pager".
-            #* Remove the "_pagers" variable.
-            #* Leverage this mapping here to obtain the desired pager.
+            # Name of this stack page.
+            stack_page_name = stack_page.objectName()
 
-            # If this page is *NOT* itemized, raise an exception. For
-            # generality, this validation is deferred until *AFTER* the prior
-            # general-purpose validation has been performed.
+            # Pager controlling this stack page if any *OR* "None" otherwise.
+            stack_page_pager = self._stack_page_name_to_pager.get(
+                stack_page_name, None)
+
+            # Log the reinitialization of this pager.
+            logs.log_debug(
+                'Reinitializing '
+                'tree item "%s" stacked page "%s" pager "%s"...',
+                tree_item_list_leaf_name,
+                stack_page_name,
+                objects.get_class_name_unqualified(stack_page_pager),
+            )
+
+            # If no such pager exists, raise an exception.
+            if stack_page_pager is None:
+                raise BetseePySideStackedWidgetException(
+                    QCoreApplication.translate(
+                        'QBetseeSimConfStackedWidget',
+                        'Stacked page "{0}" pager not found.'.format(
+                            stack_page_name)))
+            # Else, this pager exists.
+
+            # If this pager is *NOT* itemized, raise an exception. Only
+            # itemized pagers (i.e., instances of the general-purpose
+            # "QBetseeStackedWidgetPagerItemizedMixin" mixin) are permitted to
+            # control stack pages associated with list items; likewise, only
+            # itemized pagers define the reinit() method called below.
             objects.die_unless_instance(
-                obj=stack_page,
+                obj=stack_page_pager,
                 cls=QBetseeStackedWidgetPagerItemizedMixin)
 
             # 0-based index of the currently selected tree item in the dynamic
@@ -471,7 +474,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             # former synchronizes every editable widget on this page with the
             # current value of the corresponding setting in the currently open
             # simulation configuration.
-            stack_page.reinit(list_item_index=tree_item_list_leaf_index)
+            stack_page_pager.reinit(list_item_index=tree_item_list_leaf_index)
 
-        # Switch to this page -- which, by the above logic, necessarily exists.
+        # Switch to this page, which is now guaranteed to both exist *AND* have
+        # been reinitialized (if needed).
         self.setCurrentWidget(stack_page)

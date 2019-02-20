@@ -41,7 +41,7 @@ High-level **simulator** (i.e., :mod:`PySide2`-based object both displaying
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Slot  #QCoreApplication, QObject, Signal
-from betse.science.phase.phaseenum import SimPhaseKind
+from betse.science.enum.enumphase import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type.text.string import strs
 from betse.util.type.types import type_check

@@ -10,7 +10,7 @@ modelling and/or exporting by this simulator) functionality.
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QObject, Signal, Slot  # QCoreApplication,
-from betse.science.phase.phaseenum import SimPhaseKind
+from betse.science.enum.enumphase import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type import enums
 from betse.util.type.decorator.decmemo import property_cached

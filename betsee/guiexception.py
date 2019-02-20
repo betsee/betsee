@@ -446,7 +446,7 @@ class BetseePySideRadioButtonException(BetseePySideWidgetEnumException):
             'BetseePySideRadioButtonException', 'Radio Button Error')
 
 
-class BetseePySideQStackedWidgetException(BetseePySideWidgetException):
+class BetseePySideStackedWidgetException(BetseePySideWidgetException):
     '''
     :class:`PySide2.QtWidgets.QStackedWidget`-specific exception.
     '''
@@ -459,7 +459,7 @@ class BetseePySideQStackedWidgetException(BetseePySideWidgetException):
 
         # Translate this title.
         return QCoreApplication.translate(
-            'BetseePySideQStackedWidgetException', 'Stacked Widget Error')
+            'BetseePySideStackedWidgetException', 'Stacked Widget Error')
 
 # ....................{ EXCEPTIONS ~ psd : widget : tree  }....................
 class BetseePySideTreeWidgetException(BetseePySideWidgetException):
