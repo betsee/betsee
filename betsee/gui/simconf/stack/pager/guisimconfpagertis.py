@@ -34,9 +34,14 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
     @type_check
     def init(
         self,
+
+        # Mandatory parameters.
         main_window: QMainWindow,
         widget_name_prefix: str,
         tissue_profile: SimConfTissueABC,
+
+        # Optional parameters.
+        is_reinitable: bool = False,
     ) -> None:
         '''
         Initialize this pager against the passed parent main window.
@@ -58,10 +63,14 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
         tissue_profile : SimConfTissueABC
             Current YAML-backed tissue profile subconfiguration (i.e.,
             :class:`SimConfTissueABC` instance) associated with this page.
+        is_reinitable : bool
+            ``True`` only if this method may be safely called multiple times.
+            Defaults to ``False``.
         '''
 
         # Initialize our superclass with all passed parameters.
-        super().init(main_window)
+        super().init(
+            main_window=main_window, is_reinitable=is_reinitable)
 
         # Type of this tissue profile.
         tissue_profile_cls = type(tissue_profile)
@@ -88,6 +97,7 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
             sim_conf=main_window.sim_conf,
             sim_conf_alias=tissue_profile_cls.name,
             sim_conf_alias_parent=tissue_profile,
+            is_reinitable=is_reinitable,
         )
 
         # Initialize all filename-specific widgets on this page.
@@ -97,6 +107,7 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
             sim_conf_alias_parent=tissue_profile,
             push_btn=widget_image_btn,
             image_label=widget_image_label,
+            is_reinitable=is_reinitable,
         )
 
         # For the abbreviated name of each supported ion...
@@ -114,6 +125,7 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
                 sim_conf=main_window.sim_conf,
                 sim_conf_alias=ion_descriptor,
                 sim_conf_alias_parent=tissue_profile,
+                is_reinitable=is_reinitable,
             )
 
 # ....................{ SUBCLASSES ~ default              }....................
@@ -185,6 +197,7 @@ class QBetseeSimConfTissueCustomStackedWidgetPager(
             main_window=main_window,
             widget_name_prefix='sim_conf_tis_custom_',
             tissue_profile=tissue_profiles[list_item_index],
+            is_reinitable=True,
         )
 
 

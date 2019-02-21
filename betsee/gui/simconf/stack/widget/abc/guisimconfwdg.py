@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,12 +8,12 @@ Abstract base classes of all simulation configuration widget subclasses
 instantiated in pages of the top-level stack.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
-# ....................{ MIXINS                             }....................
+# ....................{ MIXINS                            }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
@@ -36,7 +36,7 @@ class QBetseeWidgetMixinSimConf(QBetseeObjectMixin):
         depends on the state of this low-level simulation configuration widget.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed arguments.
@@ -51,7 +51,7 @@ class QBetseeWidgetMixinSimConf(QBetseeObjectMixin):
         self,
         # To avoid circularity from the "QBetseeSimConf" class importing the
         # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
-        # importing instances of this class, this type is validated dynamically.
+        # importing instances of this class, this type is checked dynamically.
         sim_conf: 'betsee.gui.simconf.guisimconf.QBetseeSimConf',
     ) -> None:
         '''
@@ -83,7 +83,7 @@ class QBetseeWidgetMixinSimConf(QBetseeObjectMixin):
         logs.log_debug(
             'Initializing non-editable widget "%s"...', self.obj_name)
 
-        # Classify all passed parameters. Since the main window rather than this
-        # state object owns this widget, retaining a reference to this state
-        # object introduces no circularity and hence is safe. (That's nice.)
+        # Classify all passed parameters. Since the main window rather than
+        # this state object owns this widget, retaining a reference to this
+        # state object introduces no circularity and hence is safe.
         self._sim_conf = sim_conf

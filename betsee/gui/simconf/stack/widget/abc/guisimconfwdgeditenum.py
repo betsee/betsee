@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -10,7 +10,7 @@ widget subclasses instantiated in pages of the top-level stack.
 
 #FIXME: Don't neglect to submit our "uiparser.py" fix to upstream! Nargle!
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QObject  #, Signal, Slot
 # from betse.util.io.log import logs
 from betse.util.type.mapping import mappings
@@ -20,7 +20,7 @@ from betsee.guiexception import BetseePySideWidgetEnumException
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 
-# ....................{ MIXINS                             }....................
+# ....................{ MIXINS                            }....................
 class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
     '''
     Abstract base class of all **editable enumerative simulation configuration
@@ -31,16 +31,16 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
     Attributes
     ----------
     _enum_member_to_widget_value : MappingType
-        Dictionary mapping from each member of the enumeration constraining this
-        widget to the corresponding mutually exclusive value displayed by this
-        widget.
+        Dictionary mapping from each member of the enumeration constraining
+        this widget to the corresponding mutually exclusive value displayed by
+        this widget.
     _widget_value_to_enum_member : MappingType
         Dictionary mapping from each mutually exclusive value displayed by this
         widget to the corresponding member of the enumeration constraining this
         widget.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed arguments.
@@ -70,11 +70,11 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
         Raises
         ----------
         BetseMappingException
-            If this dictionary is *not* safely invertible (i.e., if any value of
-            this dictionary is non-uniquely assigned to two or more keys).
+            If this dictionary is *not* safely invertible (i.e., if any value
+            of this dictionary is non-uniquely assigned to two or more keys).
         BetseePySideRadioButtonException
-            If the number of members in this enumeration differs from the number
-            of members mapped by (i.e., of keys in) this dictionary.
+            If the number of members in this enumeration differs from the
+            number of members mapped by (i.e., of keys in) this dictionary.
         '''
 
         # Initialize our superclass with all remaining parameters.
@@ -104,17 +104,17 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
                 'number of mapped enumeration members {1}.'.format(
                     len(enum_type), len(enum_member_to_widget_value))))
 
-    # ..................{ PROPERTIES                         }..................
+    # ..................{ PROPERTIES                        }..................
     @property
     def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
 
-        # Enumeration types are subclasses of the "EnumClassType" superclass and
-        # instances of the "EnumType" type. Since the superclass
+        # Enumeration types are subclasses of the "EnumClassType" superclass
+        # and instances of the "EnumType" type. Since the superclass
         # _die_if_sim_conf_alias_type_invalid() method validates types with
         # issubclass() rather than isinstance(), the former type is returned.
         return EnumClassType
 
-    # ..................{ GETTERS                            }..................
+    # ..................{ GETTERS                           }..................
     def _get_alias_from_widget_value(self) -> object:
 
         # Currently displayed value of this widget.

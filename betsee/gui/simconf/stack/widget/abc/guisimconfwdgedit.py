@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
-Abstract base classes of all editable simulation configuration widget subclasses
-instantiated in pages of the top-level stack.
+Abstract base classes of all editable simulation configuration widget
+subclasses instantiated in pages of the top-level stack.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from betse.lib.yaml.abc.yamlabc import YamlABCOrNoneTypes
 from betse.lib.yaml.yamlalias import YamlAliasABC
@@ -18,7 +18,7 @@ from betse.util.type.types import type_check, ClassOrNoneTypes
 from betsee.guiexception import BetseePySideWidgetException
 from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
 
-# ....................{ MIXINS                             }....................
+# ....................{ MIXINS                            }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
@@ -49,7 +49,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         any *or* ``None`` otherwise.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed arguments.
@@ -69,12 +69,13 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         #
         # To avoid circularity from the "QBetseeSimConf" class importing the
         # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule
-        # importing instances of this class, this type is validated dynamically.
+        # importing instances of this class, this type is checked dynamically.
         sim_conf: 'betsee.gui.simconf.guisimconf.QBetseeSimConf',
         sim_conf_alias: YamlAliasABC,
 
         # Optional parameters.
         sim_conf_alias_parent: YamlABCOrNoneTypes = None,
+        *args, **kwargs
     ) -> None:
         '''
         Finalize the initialization of this widget.
@@ -95,14 +96,17 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
             parameter defaults to ``sim_conf.p`` (i.e., the top-level
             YAML-backed simulation configuration).
 
+        All remaining parameters are passed as is to the
+        :meth:`QBetseeEditWidgetMixin.init` method.
+
         See Also
         ----------
         :meth:`QBetseeWidgetMixinSimConf.init`
             Further details.
         '''
 
-        # Initialize our superclass.
-        super().init()
+        # Initialize our superclass with all remaining parameters.
+        super().init(*args, **kwargs)
 
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
@@ -117,26 +121,52 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         # connecting signals to slots pushing such commands.
         self._set_undo_stack(sim_conf.undo_stack)
 
-        # Classify all passed parameters. Since the main window rather than this
-        # state object owns this widget, retaining a reference to this state
-        # object introduces no circularity and hence is safe. (That's nice.)
+        # Classify all passed parameters. Since the main window rather than
+        # this state object owns this widget, retaining a reference to this
+        # state object introduces no circularity and hence is safe.
         self._sim_conf = sim_conf
 
         # Wrap the passed low-level data descriptor with a high-level wrapper
-        # bound to the "Parameters" instance associated with this GUI.
+        # bound to this parent simulation subconfiguration.
         self._sim_conf_alias = DataDescriptorBound(
             obj=sim_conf_alias_parent, data_desc=sim_conf_alias)
 
         # Type(s) required by this data descriptor if any or "None" otherwise.
         self._sim_conf_alias_type = sim_conf_alias.expr_alias_cls
 
-        # If these type(s) are unsupported by this subclass, raise an exception.
+        # If these type(s) are unsupported by this subclass, raise an
+        # exception.
         self._die_if_sim_conf_alias_type_invalid()
 
         # Populate this widget when opening a simulation configuration.
         self._sim_conf.set_filename_signal.connect(self._set_filename)
 
-    # ..................{ SUBCLASS ~ optional                }..................
+        # If this simulation configuration is already open, immediately
+        # populate this widget. Equivalently, if this widget is:
+        #
+        # * Static (i.e., initialized at application startup and hence
+        #   associated with only one data descriptor for the lifetime of this
+        #   application), this simulation configuration is guaranteed to *NOT*
+        #   be open here, in which case this branch is ignored.
+        # * Dynamic (i.e., repeatedly reinitialized during application runtime
+        #   and hence associated with multiple data descriptors over the
+        #   lifetime of this application), this simulation configuration is
+        #   likely to already be open here, in which case this branch is taken.
+        #
+        # Equivalently, if this widget is dynamic, populate this widget.
+        #
+        # Note that "self._sim_conf.set_filename_signal" is intentionally *NOT*
+        # signalled here, as doing so would incur negative side effects
+        # throughout the codebase unrelated to this widget's population.
+        if self._sim_conf.is_open:
+            # Log this population.
+            logs.log_debug(
+                'Repopulating dynamic editable widget "%s"...', self.obj_name)
+
+            # Populate this widget.
+            self._set_filename(self._sim_conf.filename)
+
+    # ..................{ SUBCLASS ~ optional               }..................
     # Subclasses may optionally reimplement the following methods.
 
     @property
@@ -204,7 +234,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
                     self._sim_conf_alias_type,
                     self._sim_conf_alias_type_strict,)))
 
-    # ..................{ PROPERTIES                         }..................
+    # ..................{ PROPERTIES                        }..................
     @property
     def _is_sim_open(self) -> bool:
         '''
@@ -213,35 +243,38 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
 
         return self._sim_conf is not None and self._sim_conf.is_open
 
-    # ..................{ SLOTS                              }..................
+    # ..................{ SLOTS                             }..................
     @Slot(str)
     def _set_filename(self, filename: str) -> None:
         '''
-        Slot signalled on both the opening of a new simulation configuration
-        and closing of an open simulation configuration.
+        Slot signalled on the opening of a new simulation configuration *and*
+        closing of an open simulation configuration.
 
         Design
         ----------
         Subclasses are recommended to override this method by (in order):
 
         #. Calling this superclass implementation.
-        #. If this filename is non-empty, populating this widget's contents with
-           the current value of the simulation configuration alias associated
-           with this widget.
+        #. If this filename is non-empty, populating this widget's contents
+           with the current value of the simulation configuration alias
+           associated with this widget.
 
         Parameters
         ----------
         filename : str
-            Absolute path of the currently open YAML-formatted simulation
-            configuration file if any *or* the empty string otherwise (i.e., if
-            no such file is open).
+            Either:
+
+            * If the user opened a new simulation configuration file, the
+              non-empty absolute filename of that file.
+            * If the user closed an open simulation configuration file, the
+              empty string.
         '''
 
         # Undo commands are safely pushable from this widget *ONLY* if a
         # simulation configuration is currently open.
         self.is_undo_cmd_pushable = bool(filename)
 
-    # ..................{ ENABLERS                           }..................
+    # ..................{ ENABLERS                          }..................
     def _update_sim_conf_dirty(self) -> None:
         '''
         Update the dirty state for the current simulation configuration if this

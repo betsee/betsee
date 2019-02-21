@@ -37,7 +37,7 @@ class QBetseeControllerABC(QBetseeObjectMixin, QObject):
     # module which imports the current submodule. Since this application only
     # contains one main window, this current validation suffices.
     @type_check
-    def init(self, main_window: QMainWindow) -> None:
+    def init(self, main_window: QMainWindow, *args, **kwargs) -> None:
         '''
         Initialize this controller against the passed parent main window.
 
@@ -51,7 +51,10 @@ class QBetseeControllerABC(QBetseeObjectMixin, QObject):
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this controller.
+
+        All remaining parameters are passed as is to the
+        :meth:`QBetseeObjectMixin.init` method.
         '''
 
-        # Initialize our superclass.
-        super().init()
+        # Initialize our superclass with all remaining parameters.
+        super().init(*args, **kwargs)

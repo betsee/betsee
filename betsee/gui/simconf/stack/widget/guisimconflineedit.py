@@ -218,21 +218,56 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
             label's pixmap is read from this filename. By convention, this
             label is typically situated below this line edit. To preserve this
             image's aspect ratio, this widget is required to be an instance of
-            the application-specific :class:`QBetseeLabelImage` class rather
-            than application-agnostic :class:`QLabel` class, which does *not*
+            the application-specific :class:`QBetseeLabelImage` class -- *not*
+            the application-agnostic :class:`QLabel` class, which fails to
             preserve this image's aspect ratio.
 
         All remaining parameters are passed as is to the superclass
         :meth:`QBetseeSimConfPathnameLineEditABC.init` method.
         '''
 
-        # Initialize our superclass with all remaining arguments.
+        # Finalize the initialization of the passed label "buddy" associated
+        # with this line edit *BEFORE* finalize the initialization of our
+        # superclass. Why? Doing so obviates subtle chicken-and-egg
+        # circularities within this initialization. Specifically:
+        #
+        # * super().init() calls...
+        # * QBetseeSimConfEditWidgetMixin.init(), which conditionally calls...
+        # * QBetseeSimConfEditScalarWidgetMixin._set_filename() if this is a
+        #   dynamic line edit (i.e., repeatedly reinitialized during
+        #   application runtime and hence associated with multiple data
+        #   descriptors over the lifetime of this application), which calls...
+        # * QBetseeSimConfEditScalarWidgetMixin._set_widget_to_alias_value(),
+        #   which calls...
+        # * self._get_widget_from_alias_value(), which attempts to access the
+        #   self._image_label.
+        #
+        # Note that, since this label is effectively a child of this line edit,
+        # initializing the former before the latter is only sensible.
+        self._init_label(image_label)
+
+        # Finalize the initialization of our superclass with all remaining
+        # variadic arguments.
         super().init(*args, **kwargs)
+
+
+    @type_check
+    def _init_label(self, image_label: QBetseeLabelImage) -> None:
+        '''
+        Finalize the initialization of the passed label "buddy" associated with
+        this line edit.
+
+        See Also
+        ----------
+        :meth:`init`
+            Further details.
+        '''
 
         # Classify all passed parameters.
         self._image_label = image_label
 
-        # Finalize the initialization of this widget if needed.
+        # Finalize the initialization of this widget if needed. Note that this
+        # finalization currently does little except validation.
         self._image_label.init_if_needed()
 
         # Instruct this label to auto-wrap long lines, required to display
@@ -331,7 +366,7 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
             init_pathname=init_pathname,
             parent_dirname=self._sim_conf.dirname)
 
-# ....................{ SUBCLASSES ~ pathname : subdir     }....................
+# ....................{ SUBCLASSES ~ pathname : subdir    }....................
 class QBetseeSimConfPathnameSubdirLineEdit(QBetseeSimConfPathnameLineEditABC):
     '''
     Simulation configuration-specific **subdirectory pathname** (i.e.,

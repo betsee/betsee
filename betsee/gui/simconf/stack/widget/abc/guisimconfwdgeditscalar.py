@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,7 +8,7 @@ Abstract base classes of all editable scalar simulation configuration widget
 subclasses instantiated in pages of the top-level stack.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Signal, Slot  # QCoreApplication
 from PySide2.QtWidgets import QUndoCommand
 from betse.exceptions import BetseMethodUnimplementedException
@@ -19,12 +19,12 @@ from betsee.gui.simconf.stack.widget.abc.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
 from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
 
-# ....................{ MIXINS                             }....................
+# ....................{ MIXINS                            }....................
 class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
     '''
     Abstract base class of all **editable scalar simulation configuration
-    widget** (i.e., widget interactively editing scalar simulation configuration
-    values stored in external YAML files) subclasses.
+    widget** (i.e., widget interactively editing scalar simulation
+    configuration values stored in external YAML files) subclasses.
 
     In this context, the term "scalar" encompasses all widget subclasses whose
     contents reduce to a single displayed value (e.g., integer, floating point
@@ -38,7 +38,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         possibly but *not* necessarily reflecting this widget's current state.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
         '''
         Initialize this editable scalar widget mixin.
@@ -65,14 +65,14 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         self._finalize_widget_change_signal.connect(
             self._set_alias_to_widget_value_if_sim_conf_open)
 
-    # ..................{ SUBCLASS ~ mandatory : property    }..................
+    # ..................{ SUBCLASS ~ mandatory : property   }..................
     # Subclasses are required to implement the following properties.
 
     @property
     def undo_synopsis(self) -> str:
         '''
-        Human-readable string synopsizing the operation performed by this scalar
-        widget, preferably as a single translated sentence fragment.
+        Human-readable string synopsizing the operation performed by this
+        scalar widget, preferably as a single translated sentence fragment.
         '''
 
         raise BetseMethodUnimplementedException()
@@ -89,10 +89,10 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         Caveats
         ----------
-        If this value is neither of the exact type(s) required by the simulation
-        configuration alias associated with this widget *nor* of a similar type
-        safely convertible into such a type, the subclass *must* redefine both
-        the :meth:`_get_alias_from_widget_value` and
+        If this value is neither of the exact type(s) required by the
+        simulation configuration alias associated with this widget *nor* of a
+        similar type safely convertible into such a type, the subclass *must*
+        redefine both the :meth:`_get_alias_from_widget_value` and
         :meth:`_get_widget_from_alias_value` methods to convert this value to
         and from such a type.
 
@@ -153,7 +153,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         raise BetseMethodUnimplementedException()
 
-    # ..................{ SUBCLASS ~ mandatory : method      }..................
+    # ..................{ SUBCLASS ~ mandatory : method     }..................
     # Subclasses are required to implement the following methods.
 
     def _reset_widget_value(self) -> None:
@@ -164,25 +164,26 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         For example, if this widget displays:
 
-        * A string value, this method should set this value to the empty string.
+        * A string value, this method should set this value to the empty
+          string.
         * A float value, this method should set this value to 0.0.
         * An integer value, this method should set this value to 0.
         '''
 
         raise BetseMethodUnimplementedException()
 
-    # ..................{ SLOTS                              }..................
+    # ..................{ SLOTS                             }..................
     @Slot(str)
     def _set_filename(self, filename: str) -> None:
 
-        # Call the superclass method first.
+        # Signal the superclass slot.
         super()._set_filename(filename)
 
         # Set the value displayed by this widget to the current value of this
         # simulation configuration alias.
         self._set_widget_to_alias_value(filename)
 
-    # ..................{ CONVERTERS ~ alias -> widget       }..................
+    # ..................{ CONVERTERS ~ alias -> widget      }..................
     # Called on opening and closing simulation configurations.
     @type_check
     def _set_widget_to_alias_value(self, filename: str) -> None:
@@ -234,8 +235,8 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
     def _get_widget_from_alias_value(self) -> object:
         '''
-        Value of the simulation configuration alias associated with this widget,
-        coerced into a type displayable by this widget.
+        Value of the simulation configuration alias associated with this
+        widget, coerced into a type displayable by this widget.
 
         This method is typically called *only* once per open simulation
         configuration file on the first loading of that file.
@@ -248,17 +249,17 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
 
         return self._sim_conf_alias.get()
 
-    # ..................{ CONVERTERS ~ widget -> alias       }..................
+    # ..................{ CONVERTERS ~ widget -> alias      }..................
     # Called on each user edit of this widget's value.
     @Slot()
     def _set_alias_to_widget_value_if_sim_conf_open(self) -> None:
         '''
-        Slot signalled on each finalized interactive user edit (and possibly but
-        *not* necessarily each non-interactive programmatic change) to the
+        Slot signalled on each finalized interactive user edit (and possibly
+        but *not* necessarily each non-interactive programmatic change) to the
         value displayed by this widget, setting the current value of the
         simulation configuration alias associated with this widget to this
-        widget's displayed value if a simulation configuration is currently open
-        *or* reduce to a noop otherwise.
+        widget's displayed value if a simulation configuration is currently
+        open *or* reduce to a noop otherwise.
 
         Design
         ----------
@@ -274,8 +275,8 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         this method is called by the
         :meth:`_set_alias_to_widget_value_if_sim_conf_open` method, typically
         called by the subclass implementation of this widget's main setter
-        method (e.g., :meth:`QLineEdit.setText`). This method should *always* be
-        called on each finalized widget change -- programmatic or otherwise.
+        method (e.g., :meth:`QLineEdit.setText`). This method should *always*
+        be called on each finalized widget change -- programmatic or otherwise.
         '''
 
         # logs.log_debug('In _set_alias_to_widget_value_if_sim_conf_open()...')
@@ -330,9 +331,9 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         Design
         ----------
         The default implementation should suffice for most subclasses. However,
-        subclasses for which the following test fails to validate that the value
-        displayed by this widget is of the type required by this simulation
-        configuration alias must override this method to do so in a
+        subclasses for which the following test fails to validate that the
+        value displayed by this widget is of the type required by this
+        simulation configuration alias must override this method to do so in a
         subclass-specific manner:
 
             >>> isinstance(self.widget_value, self._sim_conf_alias_type)
@@ -349,9 +350,9 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # configuration alias...
         if not isinstance(alias_value, alias_type):
             #FIXME: Non-ideal, obviously. Sadly, no better ideas come to mind.
-            # If this type is an tuple of such types (e.g., "NumericSimpleTypes")
-            # rather than a single type, arbitrarily coerce this value into the
-            # type selected by the first item of this tuple.
+            # If this type is a tuple of such types (e.g.,
+            # "NumericSimpleTypes") rather than a single type, arbitrarily
+            # coerce this value into the type at the first item of this tuple.
             if alias_type is tuple:
                 alias_type = alias_type[0]
 
@@ -361,7 +362,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # Return this coerced value.
         return alias_value
 
-# ....................{ SUBCLASSES                         }....................
+# ....................{ SUBCLASSES                        }....................
 class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
     '''
     Undo command generically applicable to all editable scalar simulation
@@ -376,13 +377,13 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
     Attributes
     ----------
     _value_new : object
-        New value replacing the prior value of the scalar widget associated with
-        this undo command.
+        New value replacing the prior value of the scalar widget associated
+        with this undo command.
     _value_old : object
         Prior value of the scalar widget associated with this undo command.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(
         self,
@@ -415,7 +416,7 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
         self._value_old = value_old
         self._value_new = widget.widget_value
 
-    # ..................{ SUPERCLASS ~ mandatory             }..................
+    # ..................{ SUPERCLASS ~ mandatory            }..................
     # Mandatory superclass methods required to be redefined by each subclass.
 
     def undo(self) -> None:
@@ -423,16 +424,16 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
         # Defer to our superclass first.
         super().undo()
 
-        # Undo the prior edit. To prevent infinite recursion, notify this widget
-        # that an undo command is now being applied to it.
+        # Undo the prior edit. To prevent infinite recursion, notify this
+        # widget that an undo command is now being applied to it.
         with self._in_undo_cmd():
             self._widget.widget_value = self._value_old
 
             #FIXME: This focus attempt almost certainly fails across pages. If
             #this is the case, a sane general-purpose solution would be to
             #iteratively search up from the parent of this widget to the
-            #eventual page of the "QStackedWidget" object containing this widget
-            #and then switch to that.
+            #eventual page of the "QStackedWidget" object containing this
+            #widget and then switch to that.
             # self._widget.setFocus(Qt.OtherFocusReason)
 
 
@@ -446,7 +447,7 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
             self._widget.widget_value = self._value_new
             # self._widget.setFocus(Qt.OtherFocusReason)
 
-    # ..................{ SUPERCLASS ~ optional              }..................
+    # ..................{ SUPERCLASS ~ optional             }..................
     # Optional superclass methods permitted to be redefined by each subclass.
 
     def mergeWith(self, prior_undo_cmd: QUndoCommand) -> bool:
@@ -485,9 +486,9 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
         ):
             return False
 
-        # Else, these commands are safely mergeable. Do so by replacing the
-        # prior value of this scalar widget stored with this undo command by the
-        # prior value of this scalar widget stored with this prior undo command.
+        # Else, these commands are safely mergeable. Replace the prior value of
+        # this scalar widget stored with this undo command by the prior value
+        # of this scalar widget stored with this prior undo command.
         self._value_old = prior_undo_cmd._value_old
 
         # Report success.

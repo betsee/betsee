@@ -15,6 +15,7 @@ Abstract base classes of most application-specific widget subclasses.
 # import from this submodule, circularities are best avoided here.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QUndoStack
 from betse.util.io.log import logs
 from betse.util.py import pyident
@@ -91,12 +92,28 @@ class QBetseeObjectMixin(object):
             self.obj_name = _OBJ_NAME_DEFAULT
 
 
-    def init(self) -> None:
+    @type_check
+    def init(self, is_reinitable: bool = False) -> None:
         '''
         Finalize the initialization of this Qt object.
 
         This method is principally intended to simplify the implementation of
         subclasses overriding this method with subclass-specific finalization.
+
+        Parameters
+        ----------
+        is_reinitable : bool
+            ``True`` only if this method may be safely called multiple times.
+            Specifically, if this boolean is:
+
+            * ``True``, this object is assumed to be **static** (i.e.,
+              initialized only once at application startup), in which case the
+              second call to this method raises an exception.
+            * ``False``, this object is assumed to be **dynamic** (i.e.,
+              repeatedly reinitialized during application runtime), in which
+              case *no* repeated calls to this method raise an exception.
+
+            Defaults to ``False``.
 
         Raises
         ----------
@@ -110,11 +127,12 @@ class QBetseeObjectMixin(object):
         if self.obj_name != _OBJ_NAME_DEFAULT:
             logs.log_debug('Initializing object "%s"...', self.obj_name)
 
-        # If this object's initialization has already been finalized, raise an
-        # exception.
-        if self._is_initted:
-            raise BetseePySideEditWidgetException(
-                'Object "{}" already initialized.'.format(self.obj_name))
+        # If this method may *NOT* be safely called multiple times but this is
+        # the second call to this method, raise an exception.
+        if not is_reinitable and self._is_initted:
+            raise BetseePySideEditWidgetException(QCoreApplication.translate(
+                'QBetseeObjectMixin',
+                'Object "{0}" already initialized.'.format(self.obj_name)))
 
         # Record this object's initialization to now have been finalized.
         self._is_initted = True
@@ -139,16 +157,7 @@ class QBetseeObjectMixin(object):
         if self._is_initted:
             self.init(*args, **kwargs)
 
-    # ..................{ PROPERTIES ~ read-only            }..................
-    @property
-    def is_initted(self) -> bool:
-        '''
-        ``True`` only if this object's :meth:`init` method has been called.
-        '''
-
-        return self._is_initted
-
-    # ..................{ PROPERTIES                        }..................
+    # ..................{ PROPERTIES ~ str : obj name       }..................
     @property
     def obj_name(self) -> str:
         '''
