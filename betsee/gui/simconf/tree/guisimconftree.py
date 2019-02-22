@@ -8,15 +8,25 @@
 simulation configuration.
 '''
 
+#FIXME: Unconditionally set a suitable new SVG-based icon on all child tree
+#items masquerading as dynamic list items (e.g., custom tissue profiles). A
+#simple circular bullet point image might suffice.
+
+#FIXME: Permit the "_action_sim_conf_tree_item_append" and
+#"_action_sim_conf_tree_item_remove" operations to be undone. Doing so will
+#probably prove non-trivial and has thus been deferred in favour of more
+#low-hanging and/or mission-critical fruit.
+
 # ....................{ IMPORTS                           }....................
-from PySide2.QtCore import Slot  # QCoreApplication,
+from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QTreeWidgetItem
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
+from betsee.guiexception import BetseePySideTreeWidgetException
 from betsee.util.widget.stock.tree import guitreeitem
 from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
-# ....................{ CLASSES                           }....................
+# ....................{ SUBCLASSES                        }....................
 class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     '''
     :mod:`PySide2`-based tree widget exposing all high-level features of the
@@ -38,15 +48,18 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
     Attributes (Private: Items)
     ----------
+    _items_list : set
+        Set of all tree items masquerading as either dynamic lists *or* items
+        of such lists. Equivalently, this set is the union of the
+        :attr:`_items_list_leaf` and :attr:`_items_list_root` sets.
     _items_list_leaf : set
         Set of all tree items masquerading as **dynamic list items** (i.e.,
-        child tree items that may be interactively added *and* removed at
-        runtime from the parent tree items of the :attr:`_items_list_root`
-        set).
+        child tree items that may be interactively added to *and* removed from
+        the parent tree items of the :attr:`_items_list_root` set at runtime).
     _items_list_root : set
         Set of all tree items masquerading as **dynamic lists** (i.e., abstract
-        containers enabling users to interactively add new *and* remove
-        existing child tree items the :attr:`_items_list_leaf` set at runtime).
+        containers permitting child tree items to be interactively added to
+        *and* removed from the :attr:`_items_list_leaf` set at runtime).
     _item_list_root_tissue : QTreeWidgetItem
         Tree item masquerading as a dynamic list of **tissue profiles** (i.e.,
         simulation subconfigurations assigning a subset of the cell cluster the
@@ -71,6 +84,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Initialize all instance variables to sane defaults.
         self._action_sim_conf_tree_item_append = None
         self._action_sim_conf_tree_item_remove = None
+        self._items_list = set()
         self._items_list_leaf = set()
         self._items_list_root = set()
         self._item_list_root_tissue = None
@@ -140,11 +154,9 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         self._p = main_window.sim_conf.p
 
         # Define the set of all tree items masquerading as dynamic lists. Since
-        # this tree is empty at __init__() time, this definition is necessarily
-        # deferred until init() time.
-        self._item_list_root_tissue = self.get_item_from_text_path(
-            'Space', 'Tissue')
-        self._items_list_root.add(self._item_list_root_tissue)
+        # this tree is empty at __init__() time, this initialization is
+        # necessarily deferred until init() time.
+        self._init_items_list_root()
 
         # Sequence of all placeholder top-level placeholder items (i.e., items
         # whose corresponding stacked page has yet to be implemented) removed.
@@ -198,6 +210,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             Parent :class:`QMainWindow` widget to initialize this widget with.
         '''
 
+        # Connect action signals to corresponding slots on this object.
+        self._action_sim_conf_tree_item_append.triggered.connect(
+            self._append_tree_item)
+        self._action_sim_conf_tree_item_remove.triggered.connect(
+            self._remove_tree_item)
+
         # Connect custom signals to corresponding slots on this object.
         main_window.sim_conf.set_filename_signal.connect(
             self._set_sim_conf_filename)
@@ -218,7 +236,102 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # ensuring that the corresponding slot is called.
         self.setCurrentItem(tree_item_first)
 
-    # ..................{ SLOTS                             }..................
+    # ..................{ INITIALIZERS ~ set                }..................
+    def _init_items_list_root(self) -> None:
+        '''
+        Define the set of all tree items masquerading as dynamic lists (i.e.,
+        :attr:`_items_list_root`) *and* references to these items (e.g.,
+        :attr:`_item_list_root_tissue`).
+        '''
+
+        # Preserve references to all tree items masquerading as dynamic lists.
+        self._item_list_root_tissue = self.get_item_from_text_path(
+            'Space', 'Tissue')
+
+        # Define the set of all such items.
+        self._items_list_root.add(self._item_list_root_tissue)
+
+    # ..................{ INITIALIZERS ~ set : leaf         }..................
+    def _init_items_list_leaf(self) -> None:
+        '''
+        Append one child tree item masquerading as a dynamic list item to its
+        parent tree item masquerading as a dynamic list for each YAML-backed
+        simulation subconfiguration of this newly opened simulation
+        configuration file
+        '''
+
+        # Log this slot.
+        logs.log_debug('Prepopulating dynamic child tree items...')
+
+        # Current tissue profile tree item being added by the current step
+        # of the logic performed below.
+        child_item_curr = None
+
+        # 1-based index of this item.
+        child_item_curr_index = 1
+
+        # Human-readable first-column text of this item.
+        child_item_curr_text = None
+
+        # Previous tissue profile tree item added by the prior step of the
+        # logic performed below.
+        child_item_prev = None
+
+        # For each tissue profile configured by this configuration...
+        for tissue_profile in self._p.tissue_profiles:
+            # If this is the first tissue profile tree item being added,
+            # add this item as the first child of its parent tree item.
+            if child_item_prev is None:
+                child_item_curr = QTreeWidgetItem(
+                    self._item_list_root_tissue)
+            # Else, this any tissue profile tree item being added except
+            # the first, in which case some previously added item precedes
+            # this item. In that case, notify Qt of this ordering.
+            else:
+                child_item_curr = QTreeWidgetItem(
+                    self._item_list_root_tissue, child_item_prev)
+
+            #FIXME: Ideally, this text would be HTML-formatted for improved
+            #legibility: e.g., as '{}. <b>{}</b>' instead. For unknown
+            #reasons, however, the Qt API provides no built-in means of
+            #formatting items as anything other than plaintext. Note that
+            #numerous StackOverflow questions and answers pertaining to
+            #this issue exist, but that no simple "silver bullet" appears
+            #to exist. PySide2-specific answers include:
+            #    https://stackoverflow.com/a/5443112/2809027
+            #    https://stackoverflow.com/a/38028318/2809027
+
+            # Human-readable first-column text of this item.
+            child_item_curr_text = '{}. {}'.format(
+                child_item_curr_index, tissue_profile.name)
+
+            # Set this tree item's first-column text to this text.
+            child_item_curr.setText(0, child_item_curr_text)
+
+            # Iterate the 1-based index for the next such item.
+            child_item_curr_index += 1
+
+            # Add this child item to the set of all tree items masquerading
+            # as dynamic list items *AFTER* successfully making this item.
+            self._items_list_leaf.add(child_item_curr)
+
+
+    def _deinit_items_list_leaf(self) -> None:
+        '''
+        Remove all child tree items masquerading as dynamic list items.
+        '''
+
+        # Log this slot.
+        logs.log_debug('Depopulating dynamic child tree items...')
+
+        # Delete all child tree items masquerading as dynamic list items
+        # from their parent tree items.
+        guitreeitem.delete_child_items(self._item_list_root_tissue)
+
+        # Reduce the set of all such child tree items to the empty set.
+        self._items_list_leaf = set()
+
+    # ..................{ SLOTS ~ sim conf                  }..................
     @Slot(str)
     def _set_sim_conf_filename(self, sim_conf_filename: str) -> None:
         '''
@@ -236,76 +349,25 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
               empty string.
         '''
 
-        # If a simulation configuration is currently open...
+        # If a simulation configuration is currently open, append one child
+        # tree item masquerading as a dynamic list item to its parent tree item
+        # masquerading as a dynamic list for each YAML-backed simulation
+        # subconfiguration of this newly opened simulation configuration file.
         if sim_conf_filename:
-            # Log this slot.
-            logs.log_debug('Prepopulating tissue profile tree items...')
-
-            # Current tissue profile tree item being added by the current step
-            # of the logic performed below.
-            child_item_curr = None
-
-            # 1-based index of this item.
-            child_item_curr_index = 1
-
-            # Human-readable first-column text of this item.
-            child_item_curr_text = None
-
-            # Previous tissue profile tree item added by the prior step of the
-            # logic performed below, localized to ensure that the current
-            # tissue profile tree item being added is preceded by this item.
-            child_item_prev = None
-
-            # For each tissue profile configured by this configuration...
-            for tissue_profile in self._p.tissue_profiles:
-                # If this is the first tissue profile tree item being added,
-                # add this item as the first child of its parent tree item.
-                if child_item_prev is None:
-                    child_item_curr = QTreeWidgetItem(
-                        self._item_list_root_tissue)
-                # Else, this any tissue profile tree item being added except
-                # the first, in which case some previously added item precedes
-                # this item. In that case, notify Qt of this ordering.
-                else:
-                    child_item_curr = QTreeWidgetItem(
-                        self._item_list_root_tissue, child_item_prev)
-
-                #FIXME: Ideally, this text would be HTML-formatted for improved
-                #legibility: e.g., as '{}. <b>{}</b>' instead. For unknown
-                #reasons, however, the Qt API provides no built-in means of
-                #formatting items as anything other than plaintext. Note that
-                #numerous StackOverflow questions and answers pertaining to
-                #this issue exist, but that no simple "silver bullet" appears
-                #to exist. PySide2-specific answers include:
-                #    https://stackoverflow.com/a/5443112/2809027
-                #    https://stackoverflow.com/a/38028318/2809027
-
-                # Human-readable first-column text of this item.
-                child_item_curr_text = '{}. {}'.format(
-                    child_item_curr_index, tissue_profile.name)
-
-                # Set this tree item's first-column text to this text.
-                child_item_curr.setText(0, child_item_curr_text)
-
-                # Iterate the 1-based index for the next such item.
-                child_item_curr_index += 1
-        # Else, no simulation configuration is currently open. In this case...
+            self._init_items_list_leaf()
+        # Else, no simulation configuration is currently open. In this case,
+        # remove all child tree items masquerading as dynamic list items.
         else:
-            # Log this slot.
-            logs.log_debug('Depopulating tissue profile tree items...')
+            self._deinit_items_list_leaf()
 
-            # Unconditionally delete all child tree items from the parent tree
-            # item of all tissue profile tree items.
-            guitreeitem.delete_child_items(self._item_list_root_tissue)
-
-
+    # ..................{ SLOTS ~ item                      }..................
     @Slot(QTreeWidgetItem, QTreeWidgetItem)
     def _select_tree_item(
         self, item_curr: QTreeWidgetItem, item_prev: QTreeWidgetItem) -> None:
         '''
-        Perform simulation-specific logic when the end user clicks the passed
-        currently selected tree widget item *after* having clicked the passed
-        previously selected tree widget item.
+        Slot signalled on the end user clicking the passed currently selected
+        tree widget item *after* having clicked the passed previously selected
+        tree widget item.
 
         Specifically, this slot (in arbitrary order):
 
@@ -325,12 +387,152 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         '''
 
         # Permit users to append new tree items to the dynamic list rooted at
-        # this current tree item only if the latter is a dynamic list.
+        # either:
+        #
+        # * The currently selected tree item if this item is a dynamic list.
+        # * The parent tree item of the currently selected tree item if the
+        #   latter is masquerading as a dynamic list item.
+        #
+        # Note that the union of these two sets is inefficiently recreated on
+        # each invocation of this slot (which is clearly non-ideal), since the
+        # maintenance of an instance variable preserving this union across all
+        # modifications to these two sets incurs an even higher cost in both
+        # inefficiency *AND* maintenance burden (which is much less non-ideal).
+        # In short, do *NOT* attempt to institute the following anywhere:
+        #     self._items_list = self._items_list_root | self._items_list_leaf
+        #
+        # We tried that already. The results were insane. Now, we are sane.
         self._action_sim_conf_tree_item_append.setEnabled(
-            item_curr in self._items_list_root)
+            item_curr in self._items_list_root | self._items_list_leaf)
 
         # Permit users to remove this current tree item from its dynamic list
-        # rooted at the parent tree item of this item only if the latter is a
-        # dynamic list item.
+        # rooted at the parent tree item of this item only if the latter is
+        # masquerading as a dynamic list item.
+        #
+        # While feasible, extending this operation to the entire dynamic list
+        # (e.g., via a similar test as performed above) would obliterate an
+        # entire list.
         self._action_sim_conf_tree_item_remove.setEnabled(
             item_curr in self._items_list_leaf)
+
+
+    #FIXME: Create and append a new child item as detailed below.
+    #FIXME: Create and append a new YAML-backed simulation subconfiguration
+    # (e.g., another tissue profile) to the simulation subconfiguration
+    # associated with this parent item, initialized with sane defaults.
+    #FIXME: Switch to the page widget of the top-level stack widget responsible
+    #for modifying this new simulation subconfiguration.
+    @Slot()
+    def _append_tree_item(self) -> None:
+        '''
+        Slot signalled on the end user clicking the toolbar button associated
+        with the :attr:`_action_sim_conf_tree_item_append` action, appending a
+        new child item to the subtree of this tree widget rooted at the
+        currently selected parent item.
+
+        By design, the :meth:`_select_tree_item` slot guarantees this slot to
+        be enabled only under the following conditions:
+
+        * A tree item is currently selected.
+        * The currently selected tree item is masquerading as either a:
+
+          * **Dynamic list** (i.e., abstract container permitting child items
+            to be interactively added to *and* removed from this parent item at
+            runtime), in which case a new child item is appended to this parent
+            item.
+          * **Dynamic list item** (i.e., child item of such a container), in
+            which case a new child item is appended to the parent item of this
+            existing child item.
+
+        In either case, this method (in order):
+
+        #. Creates and appends a new child item as detailed above.
+        #. Creates and appends a new YAML-backed simulation subconfiguration
+           (e.g., another tissue profile) to the simulation subconfiguration
+           associated with this parent item, initialized with sane defaults.
+        #. Switches to the page widget of the top-level stack widget
+           responsible for editing this new simulation subconfiguration.
+        '''
+
+        # Currently selected tree item.
+        #
+        # Note that this item is guaranteed to exist thanks to the contractual
+        # guarantee established by the _select_tree_item() slot, implying this
+        # getter is guaranteed to *NOT* raise exceptions.
+        item_curr = self.get_item_current()
+
+        # Parent tree item to append a new child tree item to. Specifically:
+        parent_item_curr = None
+
+        # If the currently selected tree item is masquerading as a dynamic
+        # list, set the parent tree item to this item.
+        if item_curr in self._items_list_root:
+            parent_item_curr = item_curr
+        # Else, the currently selected tree item is *NOT* masquerading as a
+        # dynamic list. In this case...
+        else:
+            # If the currently selected tree item is *NOT* masquerading as a
+            # dynamic list item, raise an exception.
+            if item_curr not in self._items_list_leaf:
+                raise BetseePySideTreeWidgetException(
+                    QCoreApplication.translate(
+                        'QBetseeSimConfTreeWidget',
+                        'Tree item "{0}" not a '
+                        'dynamic list or dynamic list item.'.format(
+                            item_curr)))
+
+            # Else, the currently selected tree item is masquerading as a
+            # dynamic list item. In this case, set the parent tree item to the
+            # parent of the currently selected tree item.
+            parent_item_curr = guitreeitem.get_parent_item(item_curr)
+
+        # Log this appending.
+        logs.log_debug(
+            'Appending child tree item to tree item "%s"...',
+            parent_item_curr.text(0))
+
+
+    #FIXME: Implement us up as documented below.
+    @Slot()
+    def _remove_tree_item(self) -> None:
+        '''
+        Slot signalled on the end user clicking the toolbar button associated
+        with the :attr:`_action_sim_conf_tree_item_remove` action, removing an
+        existing child item from the subtree of this tree widget rooted at the
+        currently selected parent item.
+
+        By design, the :meth:`_select_tree_item` slot guarantees this slot to
+        be enabled only under the following conditions:
+
+        * A tree item is currently selected.
+        * The currently selected tree item is masquerading as a **dynamic list
+          item** (i.e., child item of such a container), in which case that
+          child item is removed from its parent item.
+
+        In either case, this method (in order):
+
+        #. Removes the existing child item as detailed above.
+        #. Removes the existing YAML-backed simulation subconfiguration
+           previously associated with this child item.
+        #. Switches:
+
+           * From the currently selected page widget of the top-level stack
+             widget, previously responsible for editing this child item.
+           * To either:
+
+             * If this child item is *not* the first child item of its parent
+               item and thus preceded by one or more siblings, the page widget
+               associated with the child item preceding this child item.
+             * Else, the page widget associated with the parent of this child
+               item.
+        '''
+
+        # Currently selected tree item.
+        #
+        # Note that this item is guaranteed to exist thanks to the contractual
+        # guarantee established by the _select_tree_item() slot, implying this
+        # getter is guaranteed to *NOT* raise exceptions.
+        item_curr = self.get_item_current()
+
+        # Log this removal.
+        logs.log_debug('Removing child tree item "%s"...', item_curr.text(0))

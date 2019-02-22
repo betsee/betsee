@@ -7,6 +7,10 @@
 :mod:`PySide2`-based stack widget page controllers specific to tissue profiles.
 '''
 
+#FIXME: Add support to the "QBetseeSimConfTissueCustomStackedWidgetPager"
+#subclass for all YAML-based data descriptors specific to the
+#"betse.science.config.model.conftis.SimConfTissueListItem" subclass.
+
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow

@@ -31,8 +31,13 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
       omitted from the stock :class:`QTreeWidget`.
     * **Tree item introspection,** including:
 
+      * Retrieval of the currently selected tree item if any in a safe manner.
       * Retrieval of arbitrary tree items from absolute text paths.
       * Iteration over all top-level tree items.
+
+    Note that the default value of the :meth:`selectionMode` property is
+    :attr:`QAbstractItemView.SingleSelection`, implying that only one tree item
+    may be concurrently selected by default.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -77,6 +82,46 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
     #         self.header().setStretchLastSection(True)
 
     # ..................{ GETTERS                           }..................
+    def get_item_current(self) -> QTreeWidgetItem:
+        '''
+        **Currently selected tree item** (i.e., tree item that currently has
+        the keyboard focus) if any *or* raise an exception otherwise (i.e., if
+        no tree item currently has the keyboard focus).
+
+        Caveats
+        ----------
+        **This method ignores other tree items that have been selected but do
+        not currently have the keyboard focus.** If the current selection mode
+        for this tree widget is single (i.e., the value of the
+        :meth:`selectionMode` property is
+        :attr:`QAbstractItemView.SingleSelection`), this distinction is
+        meaningless, as the currently selected tree item is guaranteed to have
+        the keyboard focus. In all other cases, the more general-purpose
+        :meth:`selectedItems` property should typically be called instead.
+
+        Returns
+        ----------
+        QTreeWidgetItem
+            Currently selected tree item.
+
+        Raises
+        ----------
+        BetseePySideTreeWidgetException
+            If no tree item currently has the keyboard focus.
+        '''
+
+        # Tree item that currently has the keyboard focus.
+        item_current = self.currentItem()
+
+        # If no such item exists, raise an exception.
+        if item_current is None:
+            raise BetseePySideTreeWidgetException(QCoreApplication.translate(
+                'QBetseeTreeWidget', 'No tree item selected.'))
+
+        # Return this item.
+        return item_current
+
+
     @type_check
     def get_item_from_text_path(self, *text_path: str) -> QTreeWidgetItem:
         '''
@@ -124,7 +169,7 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
         Raises
         ----------
         BetseePySideTreeWidgetException
-            If the passed ``text_path`` contains no strings.
+            If the passed ``text_path`` parameter is empty.
         BetseePySideTreeWidgetItemException
             If this tree contains no tree item satisfying this path.
         '''
