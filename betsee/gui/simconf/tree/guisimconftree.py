@@ -20,7 +20,9 @@ simulation configuration.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QTreeWidgetItem
+from betse.lib.yaml.abc.yamllistabc import YamlList  #, YamlListItemNamedABC
 from betse.util.io.log import logs
+from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideTreeWidgetException
 from betsee.util.widget.stock.tree import guitreeitem
@@ -46,12 +48,17 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         High-level simulation configuration encapsulating a low-level
         dictionary parsed from an even lower-level YAML-formatted file.
 
-    Attributes (Private: Items)
+    Attributes (Private: Items: Dictionary)
     ----------
-    _items_list : set
-        Set of all tree items masquerading as either dynamic lists *or* items
-        of such lists. Equivalently, this set is the union of the
-        :attr:`_items_list_leaf` and :attr:`_items_list_root` sets.
+    _item_list_root_to_yaml_list : dict
+        Dictionary mapping from each tree item masquerading as a dynamic list
+        to the YAML-backed list subconfiguration of the currently open
+        simulation configuration underlying that item. For simplicity, this
+        dictionary remains defined as is even if no simulation configuration is
+        open. See the :attr:`_items_list_root` set for further details.
+
+    Attributes (Private: Items: Set)
+    ----------
     _items_list_leaf : set
         Set of all tree items masquerading as **dynamic list items** (i.e.,
         child tree items that may be interactively added to *and* removed from
@@ -81,12 +88,19 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Initialize all instance variables to sane defaults.
-        self._action_sim_conf_tree_item_append = None
-        self._action_sim_conf_tree_item_remove = None
-        self._items_list = set()
+        # Initialize instance variables with sane defaults.
+        #
+        # Note that nullifying these variables (i.e., initializing these
+        # variables to "None") raises exceptions from slots called early in
+        # application startup expecting these variables to be non-"None". This
+        # includes the critical _select_tree_item() slot.
+        self._item_list_root_to_yaml_list = {}
         self._items_list_leaf = set()
         self._items_list_root = set()
+
+        # Nullify all remaining instance variables for safety.
+        self._action_sim_conf_tree_item_append = None
+        self._action_sim_conf_tree_item_remove = None
         self._item_list_root_tissue = None
         self._p = None
 
@@ -153,9 +167,11 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             main_window.action_sim_conf_tree_item_remove)
         self._p = main_window.sim_conf.p
 
-        # Define the set of all tree items masquerading as dynamic lists. Since
-        # this tree is empty at __init__() time, this initialization is
-        # necessarily deferred until init() time.
+        # Define the set of all tree items masquerading as dynamic lists
+        # *AFTER* classifying all instance variables of this main window.
+        #
+        # Note that, as this tree widget is empty at __init__() time, this
+        # initialization is necessarily deferred until init() time.
         self._init_items_list_root()
 
         # Sequence of all placeholder top-level placeholder items (i.e., items
@@ -249,7 +265,14 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             'Space', 'Tissue')
 
         # Define the set of all such items.
-        self._items_list_root.add(self._item_list_root_tissue)
+        self._items_list_root = {
+            self._item_list_root_tissue,
+        }
+
+        # Define the dictionary mapping all such items to YAML-backed lists.
+        self._item_list_root_to_yaml_list = {
+            self._item_list_root_tissue: self._p.tissue_profiles,
+        }
 
     # ..................{ INITIALIZERS ~ set : leaf         }..................
     def _init_items_list_leaf(self) -> None:
@@ -263,57 +286,17 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Log this slot.
         logs.log_debug('Prepopulating dynamic child tree items...')
 
-        # Current tissue profile tree item being added by the current step
-        # of the logic performed below.
-        child_item_curr = None
+        # Initialize the set of all such child tree items to the empty set.
+        self._items_list_leaf = set()
 
-        # 1-based index of this item.
-        child_item_curr_index = 1
-
-        # Human-readable first-column text of this item.
-        child_item_curr_text = None
-
-        # Previous tissue profile tree item added by the prior step of the
-        # logic performed below.
-        child_item_prev = None
-
-        # For each tissue profile configured by this configuration...
+        # For each tissue profile configured by this configuration, create and
+        # append a new child tree item associated with this profile to the
+        # existing parent tree item of such items.
         for tissue_profile in self._p.tissue_profiles:
-            # If this is the first tissue profile tree item being added,
-            # add this item as the first child of its parent tree item.
-            if child_item_prev is None:
-                child_item_curr = QTreeWidgetItem(
-                    self._item_list_root_tissue)
-            # Else, this any tissue profile tree item being added except
-            # the first, in which case some previously added item precedes
-            # this item. In that case, notify Qt of this ordering.
-            else:
-                child_item_curr = QTreeWidgetItem(
-                    self._item_list_root_tissue, child_item_prev)
-
-            #FIXME: Ideally, this text would be HTML-formatted for improved
-            #legibility: e.g., as '{}. <b>{}</b>' instead. For unknown
-            #reasons, however, the Qt API provides no built-in means of
-            #formatting items as anything other than plaintext. Note that
-            #numerous StackOverflow questions and answers pertaining to
-            #this issue exist, but that no simple "silver bullet" appears
-            #to exist. PySide2-specific answers include:
-            #    https://stackoverflow.com/a/5443112/2809027
-            #    https://stackoverflow.com/a/38028318/2809027
-
-            # Human-readable first-column text of this item.
-            child_item_curr_text = '{}. {}'.format(
-                child_item_curr_index, tissue_profile.name)
-
-            # Set this tree item's first-column text to this text.
-            child_item_curr.setText(0, child_item_curr_text)
-
-            # Iterate the 1-based index for the next such item.
-            child_item_curr_index += 1
-
-            # Add this child item to the set of all tree items masquerading
-            # as dynamic list items *AFTER* successfully making this item.
-            self._items_list_leaf.add(child_item_curr)
+            self._make_item_list_leaf(
+                item_list_root=self._item_list_root_tissue,
+                item_list_leaf_name=tissue_profile.name,
+            )
 
 
     def _deinit_items_list_leaf(self) -> None:
@@ -330,6 +313,74 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
         # Reduce the set of all such child tree items to the empty set.
         self._items_list_leaf = set()
+
+    # ..................{ MAKERS                            }..................
+    @type_check
+    def _make_item_list_leaf(
+        self,
+        item_list_root: QTreeWidgetItem,
+        item_list_leaf_name: str,
+    ) -> QTreeWidgetItem:
+        '''
+        Create and append a new child tree item masquerading as a dynamic list
+        item to the existing list of child items maintained by the passed
+        parent tree item masquerading as a dynamic list, returning this new
+        child tree item.
+
+        Parameters
+        ----------
+        item_list_root : QTreeWidgetItem
+            Parent tree item masquerading as a dynamic list to append this new
+            child tree item.
+        item_list_leaf_name : str
+            First-column text of the new child tree item to be created.
+
+        Returns
+        ----------
+        QTreeWidgetItem
+            New child tree item created by this method.
+
+        See Also
+        ----------
+        :attr:`_items_list_leaf`
+            Further details.
+        '''
+
+        # New child tree item masquerading as a dynamic list item of this
+        # existing parent tree item, implicitly appended by this constructor as
+        # the last child of this parent. Thanks, Qt API! You did something.
+        item_list_leaf = QTreeWidgetItem(item_list_root)
+
+        # 1-based index of this child item in this parent item's list.
+        #
+        # Note that, while the item_list_root.indexOfChild(item_list_leaf)
+        # method could also be called here, doing so would yield the same
+        # result with considerably worse time complexity. Hence, we don't.
+        item_list_leaf_index = item_list_root.childCount()
+
+        #FIXME: Ideally, this text would be HTML-formatted for improved
+        #legibility: e.g., as '{}. <b>{}</b>' instead. For unknown
+        #reasons, however, the Qt API provides no built-in means of
+        #formatting items as anything other than plaintext. Note that
+        #numerous StackOverflow questions and answers pertaining to
+        #this issue exist, but that no simple "silver bullet" appears
+        #to exist. PySide2-specific answers include:
+        #    https://stackoverflow.com/a/5443112/2809027
+        #    https://stackoverflow.com/a/38028318/2809027
+
+        # Human-readable first-column text of this child item.
+        item_list_leaf_text = '{}. {}'.format(
+            item_list_leaf_index, item_list_leaf_name)
+
+        # Set this child item's first-column text to this text.
+        item_list_leaf.setText(0, item_list_leaf_text)
+
+        # Add this child item to the set of all tree items masquerading
+        # as dynamic list items *AFTER* successfully making this item.
+        self._items_list_leaf.add(item_list_leaf)
+
+        # Return this child item.
+        return item_list_leaf
 
     # ..................{ SLOTS ~ sim conf                  }..................
     @Slot(str)
@@ -415,13 +466,8 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         self._action_sim_conf_tree_item_remove.setEnabled(
             item_curr in self._items_list_leaf)
 
-
-    #FIXME: Create and append a new child item as detailed below.
-    #FIXME: Create and append a new YAML-backed simulation subconfiguration
-    # (e.g., another tissue profile) to the simulation subconfiguration
-    # associated with this parent item, initialized with sane defaults.
-    #FIXME: Switch to the page widget of the top-level stack widget responsible
-    #for modifying this new simulation subconfiguration.
+    # ..................{ SLOTS ~ item : append             }..................
+    #FIXME: Consider splitting up into more compartmentalized submethods.
     @Slot()
     def _append_tree_item(self) -> None:
         '''
@@ -446,13 +492,16 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
         In either case, this method (in order):
 
-        #. Creates and appends a new child item as detailed above.
         #. Creates and appends a new YAML-backed simulation subconfiguration
            (e.g., another tissue profile) to the simulation subconfiguration
            associated with this parent item, initialized with sane defaults.
+        #. Creates and appends a new child item as detailed above.
         #. Switches to the page widget of the top-level stack widget
            responsible for editing this new simulation subconfiguration.
         '''
+
+        # Log the subsequent operation.
+        logs.log_debug('Appending child tree item...')
 
         # Currently selected tree item.
         #
@@ -462,12 +511,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         item_curr = self.get_item_current()
 
         # Parent tree item to append a new child tree item to. Specifically:
-        parent_item_curr = None
+        item_list_root = None
 
         # If the currently selected tree item is masquerading as a dynamic
         # list, set the parent tree item to this item.
         if item_curr in self._items_list_root:
-            parent_item_curr = item_curr
+            item_list_root = item_curr
         # Else, the currently selected tree item is *NOT* masquerading as a
         # dynamic list. In this case...
         else:
@@ -484,14 +533,67 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             # Else, the currently selected tree item is masquerading as a
             # dynamic list item. In this case, set the parent tree item to the
             # parent of the currently selected tree item.
-            parent_item_curr = guitreeitem.get_parent_item(item_curr)
+            item_list_root = guitreeitem.get_parent_item(item_curr)
 
-        # Log this appending.
+        # First-column text of this parent tree item.
+        item_list_root_name = item_list_root.text(0)
+
+        # Log the subsequent operation.
         logs.log_debug(
-            'Appending child tree item to tree item "%s"...',
-            parent_item_curr.text(0))
+            'Appending child list item to parent tree item "%s" YAML list...',
+            item_list_root_name)
 
+        # YAML-backed list subconfiguration underlying this dynamic list.
+        yaml_list = self._item_list_root_to_yaml_list.get(
+            item_list_root, None)
 
+        # If this object is *NOT* a YAML-backed list subconfiguration and
+        # hence does *NOT* define the append_default() method called below,
+        # raise an exception.
+        objects.die_unless_instance(obj=yaml_list, cls=YamlList)
+
+        # YAML-backed list item subconfiguration created and appended to this
+        # YAML-backed list subconfiguration. Note that, by the implementation
+        # of each YamlListItemABC.make_default() method underlying this
+        # creation, the name of this item is guaranteed to be unique across all
+        # existing list items.
+        yaml_list_item = yaml_list.append_default()
+
+        #FIXME: *UGH.* There currently exists no uniform YAML API defining a
+        #simple "name" property. Given that, here is what we're going to do:
+        #
+        #* In the "betse.lib.yaml.abc.yamllistabc" submodule:
+        #  * Define a new "YamlListItemNamedABC" subclass.
+        #  * Subclass the "YamlListItemTypedABC" subclass and others from that
+        #    subclass.
+        #* Import the "YamlListItemNamedABC" subclass above.
+        #* Test for that subclass below.
+
+        # If this object is *NOT* a YAML-backed typed list item
+        # subconfiguration and hence does *NOT* define the "name" property
+        # accessed below, raise an exception.
+        # objects.die_unless_instance(
+        #     obj=yaml_list_item, cls=YamlListItemTypedABC)
+
+        # Log the subsequent operation.
+        logs.log_debug(
+            'Appending child list item to parent tree item "%s"...',
+            item_list_root_name)
+
+        # New child tree item masquerading as a dynamic list item of this
+        # existing parent tree item, appended as the last such child of this
+        # existing parent and associated with this subconfiguration.
+        item_list_leaf = self._make_item_list_leaf(
+            item_list_root=item_list_root,
+            item_list_leaf_name=yaml_list_item.name,
+        )
+
+        # Programmatically select this new child tree item, implicitly
+        # signalling the _select_tree_item() slot and hence switching to the
+        # stack page associated with this item.
+        self.setCurrentItem(item_list_leaf)
+
+    # ..................{ SLOTS ~ item : remove             }..................
     #FIXME: Implement us up as documented below.
     @Slot()
     def _remove_tree_item(self) -> None:
@@ -511,9 +613,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
         In either case, this method (in order):
 
-        #. Removes the existing child item as detailed above.
-        #. Removes the existing YAML-backed simulation subconfiguration
-           previously associated with this child item.
         #. Switches:
 
            * From the currently selected page widget of the top-level stack
@@ -525,6 +624,9 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
                associated with the child item preceding this child item.
              * Else, the page widget associated with the parent of this child
                item.
+        #. Removes the existing YAML-backed simulation subconfiguration
+           previously associated with this child item.
+        #. Removes the existing child item as detailed above.
         '''
 
         # Currently selected tree item.
