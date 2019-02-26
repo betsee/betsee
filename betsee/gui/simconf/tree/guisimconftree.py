@@ -20,11 +20,13 @@ simulation configuration.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QTreeWidgetItem
-from betse.lib.yaml.abc.yamllistabc import YamlList  #, YamlListItemNamedABC
+from betse.lib.yaml.abc.yamllistabc import YamlList
+from betse.lib.yaml.abc.yamlmixin import YamlNamedMixin
 from betse.util.io.log import logs
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
-from betsee.guiexception import BetseePySideTreeWidgetException
+from betsee.guiexception import (
+    BetseePySideTreeWidgetException, BetseePySideTreeWidgetItemException)
 from betsee.util.widget.stock.tree import guitreeitem
 from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
@@ -252,6 +254,228 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # ensuring that the corresponding slot is called.
         self.setCurrentItem(tree_item_first)
 
+    # ..................{ SLOTS ~ sim conf                  }..................
+    @Slot(str)
+    def _set_sim_conf_filename(self, sim_conf_filename: str) -> None:
+        '''
+        Slot signalled on the opening of a new simulation configuration *and*
+        closing of an open simulation configuration.
+
+        Parameters
+        ----------
+        filename : str
+            Either:
+
+            * If the user opened a new simulation configuration file, the
+              non-empty absolute filename of that file.
+            * If the user closed an open simulation configuration file, the
+              empty string.
+        '''
+
+        # If a simulation configuration is currently open, append one child
+        # tree item masquerading as a dynamic list item to its parent tree item
+        # masquerading as a dynamic list for each YAML-backed simulation
+        # subconfiguration of this newly opened simulation configuration file.
+        if sim_conf_filename:
+            self._init_items_list_leaf()
+        # Else, no simulation configuration is currently open. In this case,
+        # remove all child tree items masquerading as dynamic list items.
+        else:
+            self._deinit_items_list_leaf()
+
+    # ..................{ SLOTS ~ item                      }..................
+    @Slot(QTreeWidgetItem, QTreeWidgetItem)
+    def _select_tree_item(
+        self, item_curr: QTreeWidgetItem, item_prev: QTreeWidgetItem) -> None:
+        '''
+        Slot signalled on the end user clicking the passed currently selected
+        tree widget item *after* having clicked the passed previously selected
+        tree widget item.
+
+        Specifically, this slot (in arbitrary order):
+
+        * Enables the dynamic list append action (i.e.,
+          :attr:`_action_sim_conf_tree_item_append`) *only* if this current
+          item is masquerading as a dynamic list.
+        * Enables the dynamic list removal action (i.e.,
+          :attr:`_action_sim_conf_tree_item_remove`) *only* if this current
+          item is masquerading as a dynamic list item.
+
+        Parameters
+        ----------
+        item_curr : QTreeWidgetItem
+            Current tree widget item clicked by the end user.
+        item_prev : QTreeWidgetItem
+            Previous tree widget item clicked by the end user.
+        '''
+
+        # Permit users to append new tree items to the dynamic list rooted at
+        # either:
+        #
+        # * The currently selected tree item if this item is a dynamic list.
+        # * The parent tree item of the currently selected tree item if the
+        #   latter is masquerading as a dynamic list item.
+        #
+        # Note that the union of these two sets is inefficiently recreated on
+        # each invocation of this slot (which is clearly non-ideal), since the
+        # maintenance of an instance variable preserving this union across all
+        # modifications to these two sets incurs an even higher cost in both
+        # inefficiency *AND* maintenance burden (which is much less non-ideal).
+        # In short, do *NOT* attempt to institute the following anywhere:
+        #     self._items_list = self._items_list_root | self._items_list_leaf
+        #
+        # We tried that already. The results were insane. Now, we are sane.
+        self._action_sim_conf_tree_item_append.setEnabled(
+            item_curr in self._items_list_root | self._items_list_leaf)
+
+        # Permit users to remove this current tree item from its dynamic list
+        # rooted at the parent tree item of this item only if the latter is
+        # masquerading as a dynamic list item.
+        #
+        # While feasible, extending this operation to the entire dynamic list
+        # (e.g., via a similar test as performed above) would obliterate an
+        # entire list.
+        self._action_sim_conf_tree_item_remove.setEnabled(
+            item_curr in self._items_list_leaf)
+
+    # ..................{ SLOTS ~ item : append             }..................
+    @Slot()
+    def _append_tree_item(self) -> None:
+        '''
+        Slot signalled on the end user clicking the toolbar button associated
+        with the :attr:`_action_sim_conf_tree_item_append` action, appending a
+        new child item to the subtree of this tree widget rooted at the
+        currently selected parent item.
+
+        By design, the :meth:`_select_tree_item` slot guarantees this slot to
+        be enabled only under the following conditions:
+
+        * A tree item is currently selected.
+        * The currently selected tree item is masquerading as either a:
+
+          * **Dynamic list** (i.e., abstract container permitting child items
+            to be interactively added to *and* removed from this parent item at
+            runtime), in which case a new child item is appended to this parent
+            item.
+          * **Dynamic list item** (i.e., child item of such a container), in
+            which case a new child item is appended to the parent item of this
+            existing child item.
+
+        In either case, this method (in order):
+
+        #. Creates and appends a new YAML-backed simulation subconfiguration
+           (e.g., another tissue profile) to the simulation subconfiguration
+           associated with this parent item, initialized with sane defaults.
+        #. Creates and appends a new child item as detailed above.
+        #. Switches to the page widget of the top-level stack widget
+           responsible for editing this new simulation subconfiguration.
+        '''
+
+        # Log the subsequent operation.
+        logs.log_debug('Appending child tree item...')
+
+        # Currently selected tree item.
+        #
+        # Note that this item is guaranteed to exist thanks to the contractual
+        # guarantee established by the _select_tree_item() slot, implying this
+        # getter is guaranteed to *NOT* raise exceptions.
+        item_curr = self.get_item_current()
+
+        # Parent tree item to append a new child tree item to. Specifically:
+        item_list_root = self._get_item_list_root(item_list=item_curr)
+
+        # First-column text of this parent tree item.
+        item_list_root_name = item_list_root.text(0)
+
+        # Log the subsequent operation.
+        logs.log_debug(
+            'Appending child list item to parent tree item "%s" YAML list...',
+            item_list_root_name)
+
+        # YAML-backed list subconfiguration underlying this dynamic list.
+        yaml_list = self._item_list_root_to_yaml_list.get(
+            item_list_root, None)
+
+        # If this object is *NOT* a YAML-backed list subconfiguration and
+        # hence does *NOT* define the append_default() method called below,
+        # raise an exception.
+        objects.die_unless_instance(obj=yaml_list, cls=YamlList)
+
+        # YAML-backed list item subconfiguration created and appended to this
+        # YAML-backed list subconfiguration. Note that, by the implementation
+        # of each YamlListItemABC.make_default() method underlying this
+        # creation, the name of this item is guaranteed to be unique across all
+        # existing list items.
+        yaml_list_item = yaml_list.append_default()
+
+        # If this object is *NOT* a YAML-backed named configuration and hence
+        # does *NOT* define the "name" property, raise an exception.
+        objects.die_unless_instance(obj=yaml_list_item, cls=YamlNamedMixin)
+
+        # Log the subsequent operation.
+        logs.log_debug(
+            'Appending child list item to parent tree item "%s"...',
+            item_list_root_name)
+
+        # New child tree item masquerading as a dynamic list item of this
+        # existing parent tree item, appended as the last such child of this
+        # existing parent and associated with this subconfiguration.
+        item_list_leaf = self._make_item_list_leaf(
+            item_list_root=item_list_root,
+            item_list_leaf_name=yaml_list_item.name,
+        )
+
+        # Programmatically select this new child tree item, implicitly
+        # signalling the _select_tree_item() slot and hence switching to the
+        # stack page associated with this item.
+        self.setCurrentItem(item_list_leaf)
+
+    # ..................{ SLOTS ~ item : remove             }..................
+    #FIXME: Implement us up as documented below.
+    @Slot()
+    def _remove_tree_item(self) -> None:
+        '''
+        Slot signalled on the end user clicking the toolbar button associated
+        with the :attr:`_action_sim_conf_tree_item_remove` action, removing an
+        existing child item from the subtree of this tree widget rooted at the
+        currently selected parent item.
+
+        By design, the :meth:`_select_tree_item` slot guarantees this slot to
+        be enabled only under the following conditions:
+
+        * A tree item is currently selected.
+        * The currently selected tree item is masquerading as a **dynamic list
+          item** (i.e., child item of such a container), in which case that
+          child item is removed from its parent item.
+
+        In either case, this method (in order):
+
+        #. Switches:
+
+           * From the currently selected page widget of the top-level stack
+             widget, previously responsible for editing this child item.
+           * To either:
+
+             * If this child item is *not* the first child item of its parent
+               item and thus preceded by one or more siblings, the page widget
+               associated with the child item preceding this child item.
+             * Else, the page widget associated with the parent of this child
+               item.
+        #. Removes the existing YAML-backed simulation subconfiguration
+           previously associated with this child item.
+        #. Removes the existing child item as detailed above.
+        '''
+
+        # Currently selected tree item.
+        #
+        # Note that this item is guaranteed to exist thanks to the contractual
+        # guarantee established by the _select_tree_item() slot, implying this
+        # getter is guaranteed to *NOT* raise exceptions.
+        item_curr = self.get_item_current()
+
+        # Log this removal.
+        logs.log_debug('Removing child tree item "%s"...', item_curr.text(0))
+
     # ..................{ INITIALIZERS ~ set                }..................
     def _init_items_list_root(self) -> None:
         '''
@@ -382,259 +606,59 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Return this child item.
         return item_list_leaf
 
-    # ..................{ SLOTS ~ sim conf                  }..................
-    @Slot(str)
-    def _set_sim_conf_filename(self, sim_conf_filename: str) -> None:
+    # ..................{ GETTERS                           }..................
+    @type_check
+    def _get_item_list_root(
+        self, item_list: QTreeWidgetItem) -> QTreeWidgetItem:
         '''
-        Slot signalled on the opening of a new simulation configuration *and*
-        closing of an open simulation configuration.
+        Tree item masquerading as a dynamic list for the passed tree item.
 
         Parameters
         ----------
-        filename : str
+        item_list : QTreeWidgetItem
+            Tree item to return the tree item masquerading as a dynamic list.
+
+        Returns
+        ----------
+        QTreeWidgetItem
             Either:
 
-            * If the user opened a new simulation configuration file, the
-              non-empty absolute filename of that file.
-            * If the user closed an open simulation configuration file, the
-              empty string.
-        '''
+            * If the passed tree item is a parent tree item masquerading as a
+              dynamic list, this item as is.
+            * if the passed tree item is a child tree item masquerading as a
+              dynamic list item, the parent tree item of this child.
 
-        # If a simulation configuration is currently open, append one child
-        # tree item masquerading as a dynamic list item to its parent tree item
-        # masquerading as a dynamic list for each YAML-backed simulation
-        # subconfiguration of this newly opened simulation configuration file.
-        if sim_conf_filename:
-            self._init_items_list_leaf()
-        # Else, no simulation configuration is currently open. In this case,
-        # remove all child tree items masquerading as dynamic list items.
-        else:
-            self._deinit_items_list_leaf()
-
-    # ..................{ SLOTS ~ item                      }..................
-    @Slot(QTreeWidgetItem, QTreeWidgetItem)
-    def _select_tree_item(
-        self, item_curr: QTreeWidgetItem, item_prev: QTreeWidgetItem) -> None:
-        '''
-        Slot signalled on the end user clicking the passed currently selected
-        tree widget item *after* having clicked the passed previously selected
-        tree widget item.
-
-        Specifically, this slot (in arbitrary order):
-
-        * Enables the dynamic list append action (i.e.,
-          :attr:`_action_sim_conf_tree_item_append`) *only* if this current
-          item is masquerading as a dynamic list.
-        * Enables the dynamic list removal action (i.e.,
-          :attr:`_action_sim_conf_tree_item_remove`) *only* if this current
-          item is masquerading as a dynamic list item.
-
-        Parameters
+        Raises
         ----------
-        item_curr : QTreeWidgetItem
-            Current tree widget item clicked by the end user.
-        item_prev : QTreeWidgetItem
-            Previous tree widget item clicked by the end user.
+        BetseePySideTreeWidgetItemException
+            If the passed tree item is neither a parent tree item masquerading
+            as a dynamic list *nor* a child tree item masquerading as a dynamic
+            list item (i.e., child of such a parent).
         '''
 
-        # Permit users to append new tree items to the dynamic list rooted at
-        # either:
-        #
-        # * The currently selected tree item if this item is a dynamic list.
-        # * The parent tree item of the currently selected tree item if the
-        #   latter is masquerading as a dynamic list item.
-        #
-        # Note that the union of these two sets is inefficiently recreated on
-        # each invocation of this slot (which is clearly non-ideal), since the
-        # maintenance of an instance variable preserving this union across all
-        # modifications to these two sets incurs an even higher cost in both
-        # inefficiency *AND* maintenance burden (which is much less non-ideal).
-        # In short, do *NOT* attempt to institute the following anywhere:
-        #     self._items_list = self._items_list_root | self._items_list_leaf
-        #
-        # We tried that already. The results were insane. Now, we are sane.
-        self._action_sim_conf_tree_item_append.setEnabled(
-            item_curr in self._items_list_root | self._items_list_leaf)
-
-        # Permit users to remove this current tree item from its dynamic list
-        # rooted at the parent tree item of this item only if the latter is
-        # masquerading as a dynamic list item.
-        #
-        # While feasible, extending this operation to the entire dynamic list
-        # (e.g., via a similar test as performed above) would obliterate an
-        # entire list.
-        self._action_sim_conf_tree_item_remove.setEnabled(
-            item_curr in self._items_list_leaf)
-
-    # ..................{ SLOTS ~ item : append             }..................
-    #FIXME: Consider splitting up into more compartmentalized submethods.
-    @Slot()
-    def _append_tree_item(self) -> None:
-        '''
-        Slot signalled on the end user clicking the toolbar button associated
-        with the :attr:`_action_sim_conf_tree_item_append` action, appending a
-        new child item to the subtree of this tree widget rooted at the
-        currently selected parent item.
-
-        By design, the :meth:`_select_tree_item` slot guarantees this slot to
-        be enabled only under the following conditions:
-
-        * A tree item is currently selected.
-        * The currently selected tree item is masquerading as either a:
-
-          * **Dynamic list** (i.e., abstract container permitting child items
-            to be interactively added to *and* removed from this parent item at
-            runtime), in which case a new child item is appended to this parent
-            item.
-          * **Dynamic list item** (i.e., child item of such a container), in
-            which case a new child item is appended to the parent item of this
-            existing child item.
-
-        In either case, this method (in order):
-
-        #. Creates and appends a new YAML-backed simulation subconfiguration
-           (e.g., another tissue profile) to the simulation subconfiguration
-           associated with this parent item, initialized with sane defaults.
-        #. Creates and appends a new child item as detailed above.
-        #. Switches to the page widget of the top-level stack widget
-           responsible for editing this new simulation subconfiguration.
-        '''
-
-        # Log the subsequent operation.
-        logs.log_debug('Appending child tree item...')
-
-        # Currently selected tree item.
-        #
-        # Note that this item is guaranteed to exist thanks to the contractual
-        # guarantee established by the _select_tree_item() slot, implying this
-        # getter is guaranteed to *NOT* raise exceptions.
-        item_curr = self.get_item_current()
-
-        # Parent tree item to append a new child tree item to. Specifically:
+        # Parent tree item to be returned.
         item_list_root = None
 
-        # If the currently selected tree item is masquerading as a dynamic
-        # list, set the parent tree item to this item.
-        if item_curr in self._items_list_root:
-            item_list_root = item_curr
-        # Else, the currently selected tree item is *NOT* masquerading as a
-        # dynamic list. In this case...
+        # If the passed item is masquerading as a dynamic list, this is the
+        # parent tree item to return.
+        if item_list in self._items_list_root:
+            item_list_root = item_list
+        # Else, the passed item is *NOT* masquerading as a dynamic list. In
+        # this case...
         else:
-            # If the currently selected tree item is *NOT* masquerading as a
-            # dynamic list item, raise an exception.
-            if item_curr not in self._items_list_leaf:
-                raise BetseePySideTreeWidgetException(
+            # If this item is *NOT* masquerading as a dynamic list item, raise
+            # an exception.
+            if item_list not in self._items_list_leaf:
+                raise BetseePySideTreeWidgetItemException(
                     QCoreApplication.translate(
                         'QBetseeSimConfTreeWidget',
                         'Tree item "{0}" not a '
                         'dynamic list or dynamic list item.'.format(
-                            item_curr)))
+                            item_list)))
 
-            # Else, the currently selected tree item is masquerading as a
-            # dynamic list item. In this case, set the parent tree item to the
-            # parent of the currently selected tree item.
-            item_list_root = guitreeitem.get_parent_item(item_curr)
+            # Else, this item is masquerading as a dynamic list item. In this
+            # case, the parent of this item is the parent tree item to return.
+            item_list_root = guitreeitem.get_parent_item(item_list)
 
-        # First-column text of this parent tree item.
-        item_list_root_name = item_list_root.text(0)
-
-        # Log the subsequent operation.
-        logs.log_debug(
-            'Appending child list item to parent tree item "%s" YAML list...',
-            item_list_root_name)
-
-        # YAML-backed list subconfiguration underlying this dynamic list.
-        yaml_list = self._item_list_root_to_yaml_list.get(
-            item_list_root, None)
-
-        # If this object is *NOT* a YAML-backed list subconfiguration and
-        # hence does *NOT* define the append_default() method called below,
-        # raise an exception.
-        objects.die_unless_instance(obj=yaml_list, cls=YamlList)
-
-        # YAML-backed list item subconfiguration created and appended to this
-        # YAML-backed list subconfiguration. Note that, by the implementation
-        # of each YamlListItemABC.make_default() method underlying this
-        # creation, the name of this item is guaranteed to be unique across all
-        # existing list items.
-        yaml_list_item = yaml_list.append_default()
-
-        #FIXME: *UGH.* There currently exists no uniform YAML API defining a
-        #simple "name" property. Given that, here is what we're going to do:
-        #
-        #* In the "betse.lib.yaml.abc.yamllistabc" submodule:
-        #  * Define a new "YamlListItemNamedABC" subclass.
-        #  * Subclass the "YamlListItemTypedABC" subclass and others from that
-        #    subclass.
-        #* Import the "YamlListItemNamedABC" subclass above.
-        #* Test for that subclass below.
-
-        # If this object is *NOT* a YAML-backed typed list item
-        # subconfiguration and hence does *NOT* define the "name" property
-        # accessed below, raise an exception.
-        # objects.die_unless_instance(
-        #     obj=yaml_list_item, cls=YamlListItemTypedABC)
-
-        # Log the subsequent operation.
-        logs.log_debug(
-            'Appending child list item to parent tree item "%s"...',
-            item_list_root_name)
-
-        # New child tree item masquerading as a dynamic list item of this
-        # existing parent tree item, appended as the last such child of this
-        # existing parent and associated with this subconfiguration.
-        item_list_leaf = self._make_item_list_leaf(
-            item_list_root=item_list_root,
-            item_list_leaf_name=yaml_list_item.name,
-        )
-
-        # Programmatically select this new child tree item, implicitly
-        # signalling the _select_tree_item() slot and hence switching to the
-        # stack page associated with this item.
-        self.setCurrentItem(item_list_leaf)
-
-    # ..................{ SLOTS ~ item : remove             }..................
-    #FIXME: Implement us up as documented below.
-    @Slot()
-    def _remove_tree_item(self) -> None:
-        '''
-        Slot signalled on the end user clicking the toolbar button associated
-        with the :attr:`_action_sim_conf_tree_item_remove` action, removing an
-        existing child item from the subtree of this tree widget rooted at the
-        currently selected parent item.
-
-        By design, the :meth:`_select_tree_item` slot guarantees this slot to
-        be enabled only under the following conditions:
-
-        * A tree item is currently selected.
-        * The currently selected tree item is masquerading as a **dynamic list
-          item** (i.e., child item of such a container), in which case that
-          child item is removed from its parent item.
-
-        In either case, this method (in order):
-
-        #. Switches:
-
-           * From the currently selected page widget of the top-level stack
-             widget, previously responsible for editing this child item.
-           * To either:
-
-             * If this child item is *not* the first child item of its parent
-               item and thus preceded by one or more siblings, the page widget
-               associated with the child item preceding this child item.
-             * Else, the page widget associated with the parent of this child
-               item.
-        #. Removes the existing YAML-backed simulation subconfiguration
-           previously associated with this child item.
-        #. Removes the existing child item as detailed above.
-        '''
-
-        # Currently selected tree item.
-        #
-        # Note that this item is guaranteed to exist thanks to the contractual
-        # guarantee established by the _select_tree_item() slot, implying this
-        # getter is guaranteed to *NOT* raise exceptions.
-        item_curr = self.get_item_current()
-
-        # Log this removal.
-        logs.log_debug('Removing child tree item "%s"...', item_curr.text(0))
+        # Return this parent tree item.
+        return item_list_root

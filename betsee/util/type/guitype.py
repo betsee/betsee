@@ -20,6 +20,7 @@ from PySide2.QtWidgets import (
     QLabel,
     QProgressBar,
     QWidget,
+    QTreeWidgetItem,
 )
 from betse.util.type.types import NoneType, NoneTypes
 from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
@@ -67,6 +68,14 @@ QAbstractEventDispatcherOrNoneTypes = (QAbstractEventDispatcher, NoneType)
 Tuple of both the :mod:`PySide2`-based event dispatcher type *and* the type of
 the singleton ``None`` object.
 '''
+
+
+QTreeWidgetItemOrNoneTypes = (QTreeWidgetItem, NoneType)
+'''
+Tuple of both the :mod:`PySide2`-based tree widget item type *and* the type of
+the singleton ``None`` object.
+'''
+
 
 QVariantOrNoneTypes = QVariantTypes + NoneTypes
 '''
