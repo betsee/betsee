@@ -235,24 +235,15 @@ def get_parent_item_or_none(
         # If this item belongs to such a tree...
         if tree_widget is not None:
             # Root tree item of this tree, which is guaranteed to exist.
-            root_item = tree_widget.invisibleRootItem()
+            #
+            # Indeed, since this child tree item has no explicit parent but
+            # belongs to a tree widget, this child tree item *MUST* necessarily
+            # be a child of this root tree item and hence itself be a top-level
+            # tree item of this tree widget.
+            parent_item = tree_widget.invisibleRootItem()
 
-            #FIXME: This doesn't quite seem right. If this tree item belongs to
-            #a tree, shouldn't it necessarily be the case that this child tree
-            #item is a top-level tree item of this tree widget? If so, we
-            #should instead perform logic resembling:
-            #if root_item.indexOfChild(child_item):
-            #    parent_item = root_item
-            #else:
-            #    raise HorrifyingException('UGH!')
-
-            # If this child tree item is a top-level tree item of this tree
-            # widget, the parent of this child is this root.
-            if root_item.indexOfChild(child_item):
-                parent_item = root_item
-            # Else, things have gone horribly awry. It's unclear exactly how a
-            # tree item that belongs to a tree can have no parent, but Qt
-            # probably permits this. Somehow. So, do nothing.
+            # Assert this to be the case for safety.
+            assert parent_item.indexOfChild(child_item) != -1
 
     # Return this item if any *OR* "None" otherwise.
     return parent_item

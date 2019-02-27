@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -9,7 +9,7 @@ transparently supporting copying, cutting, and pasting into and from the
 platform-specific system clipboard) subclasses.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Qt, QEvent
 from PySide2.QtGui import QKeyEvent
 from PySide2.QtWidgets import QApplication
@@ -17,7 +17,7 @@ from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.type.obj import objects
 # from betse.util.type.types import type_check
 
-# ....................{ MIXINS                             }....................
+# ....................{ MIXINS                            }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
 # widgets also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
@@ -37,7 +37,7 @@ class QBetseeClipboardWidgetMixin(object):
     typically be subclassed *first* rather than *last* in subclasses.
     '''
 
-    # ..................{ SUBCLASS ~ mandatory : method      }..................
+    # ..................{ SUBCLASS ~ mandatory : method     }..................
     # Subclasses are required to implement the following methods.
 
     def copy_selection_to_clipboard(self) -> None:
@@ -64,8 +64,8 @@ class QBetseeClipboardWidgetMixin(object):
     def paste_clipboard_to_selection(self) -> None:
         '''
         Paste the contents of the system clipboard over this widget's **current
-        selection** (i.e., currently selected subset of this widget's value(s)),
-        silently replacing the prior selection if any.
+        selection** (i.e., currently selected subset of this widget's
+        value(s)), silently replacing the prior selection if any.
         '''
 
         raise BetseMethodUnimplementedException()
@@ -74,8 +74,8 @@ class QBetseeClipboardWidgetMixin(object):
 class QBetseeClipboardScalarWidgetMixin(QBetseeClipboardWidgetMixin):
     '''
     Abstract base class of all **scalar clipboardable widget** (i.e., scalar
-    :mod:`PySide2` widget transparently supporting copying, cutting, and pasting
-    into and from the platform-specific system clipboard) subclasses.
+    :mod:`PySide2` widget transparently supporting copying, cutting, and
+    pasting into and from the platform-specific system clipboard) subclasses.
 
     In this context, the term "scalar" encompasses all widget subclasses whose
     contents reduce to a single displayed value (e.g., integer, floating point
@@ -98,14 +98,14 @@ class QBetseeClipboardScalarWidgetMixin(QBetseeClipboardWidgetMixin):
     neither, this base class silently reduces to a noop.
     '''
 
-    # ..................{ SUPERCLASS ~ mandatory : method    }..................
+    # ..................{ SUPERCLASS ~ mandatory : method   }..................
     def copy_selection_to_clipboard(self) -> None:
 
         # If this subclass provides explicit clipboard support, prefer that.
-        if objects.is_method(self, 'copy'):
+        if objects.has_method(self, 'copy'):
             self.copy()
-        # Else, assume (without evidence, of course) that this subclass supports
-        # the standard keyboard shortcuts. In this case, queue up a key event
+        # Else, assume (without evidence) that this subclass supports the
+        # standard keyboard shortcuts. In this case, queue up a key event
         # submitting the appropriate keyboard shortcut to this widget.
         else:
             QApplication.postEvent(self, QKeyEvent(
@@ -114,7 +114,7 @@ class QBetseeClipboardScalarWidgetMixin(QBetseeClipboardWidgetMixin):
 
     def cut_selection_to_clipboard(self) -> None:
 
-        if objects.is_method(self, 'cut'):
+        if objects.has_method(self, 'cut'):
             self.cut()
         else:
             QApplication.postEvent(self, QKeyEvent(
@@ -123,7 +123,7 @@ class QBetseeClipboardScalarWidgetMixin(QBetseeClipboardWidgetMixin):
 
     def paste_clipboard_to_selection(self) -> None:
 
-        if objects.is_method(self, 'paste'):
+        if objects.has_method(self, 'paste'):
             self.paste()
         else:
             QApplication.postEvent(self, QKeyEvent(
