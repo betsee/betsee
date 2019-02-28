@@ -6064,7 +6064,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
   <customwidget>
    <class>QBetseeLabelImage</class>
    <extends>QLabel</extends>
-   <header>betsee/util/widget/stock/guilabel.h</header>
+   <header>betsee/util/widget/stock/label/guilabelimage.h</header>
   </customwidget>
   <customwidget>
    <class>QBetseeSimmerTabWidget</class>

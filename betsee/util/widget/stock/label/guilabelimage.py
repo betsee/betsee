@@ -4,7 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-General-purpose :mod:`QLabel` subclasses.
+**Image label** (i.e., :mod:`QLabel`-based widgets natively preserving the
+aspect ratios of all images added to these widgets) facilities.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -17,8 +18,6 @@ from betse.util.path import pathnames, paths
 from betse.util.type.cls import classes
 from betse.util.type.text import mls
 from betse.util.type.types import type_check
-from betsee.util.path import guifiletype
-from betsee.util.widget import guiwdg
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                        }....................
@@ -150,6 +149,9 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
             If this widget is *not* contained in a :class:`QScrollArea` widget.
             See the class docstring for commentary.
         '''
+
+        # Avoid circular import dependencies.
+        from betsee.util.widget import guiwdg
 
         # Finalize the initialization of our superclass.
         super().init()
@@ -334,6 +336,9 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         filename : str
             Absolute or relative filename of the image to be loaded.
         '''
+
+        # Avoid circular import dependencies.
+        from betsee.util.path import guifiletype
 
         # Basename of this image's filename.
         basename = pathnames.get_basename(filename)

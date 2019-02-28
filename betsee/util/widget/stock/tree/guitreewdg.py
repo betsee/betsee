@@ -7,6 +7,31 @@
 General-purpose :class:`QTreeWidget` subclasses.
 '''
 
+#FIXME: Show connective branch lines (i.e., icons resembling the traditional
+#Unicode box-drawing characters "├" and "│") to the left of each tree row. Note
+#that most Qt styles *EXCEPT* the default Fusion default already define a
+#qss-formatted stylesheet showing these lines by default. Since Fusion does
+#not, however, we'll be required to do so manually. Note, however, that there
+#appear to exist no well-defined solutions for doing so. The closest
+#approximation that we could uncover is this Qt forum thread:
+#    https://forum.qt.io/topic/77061/qtreewidget-with-connecting-lines-for-the-tree-branches/3
+#...which leads directly to:
+#    https://doc.qt.io/qt-5/stylesheet-examples.html#customizing-qtreeview
+#
+#There are numerous outstanding issues with the example provided by the latter
+#link, including:
+#
+#* Usage of rasterized PNG icons rather than vectorized SVG icons, thus
+#  ensuring pixellation on high-resolution displays.
+#* Failure to properly style the background colours of the pseudo-states of
+#  the "QTreeView::branch" state, requiring that we do so.
+#
+#Certainly, these issues can be resolved. Is doing so worthwhile, however? One
+#reasonable alternative would be to entirely replace our current usage of
+#Fusion with an existing third-party stylesheet -- which would then implicitly
+#resolve this entire discussion. For further details, see "FIXME:" commentary
+#in the "betse.gui.guimain" submodule.
+
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication  # Signal, Slot
 from PySide2.QtWidgets import QHeaderView, QTreeWidget, QTreeWidgetItem
@@ -24,6 +49,13 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
 
     This application-specific widget augments the :class:`QTreeWidget` class
     with additional support for:
+
+    * **Animations,** all of which are sufficiently aesthetic *and* minimally
+      intrusive to warrant unconditionally enabling. Presumably for backward
+      compatibility, these animations are disabled by the :class:`QTreeView`
+      superclass by default. These include animations of:
+
+      * The expansion and collapsing of tree branches.
 
     * **Horizontal scrollbars,** automatically displaying horizontal scrollbars
       for all columns whose content exceeds that column's width. For
@@ -45,6 +77,9 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
 
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
+
+        # Enable all tree animations by default.
+        self.setAnimated(True)
 
         # Header view for this tree.
         header_view = self.header()

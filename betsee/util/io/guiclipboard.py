@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
 Application-wide **clipboard** (i.e., platform-specific system clipboard with
-which arbitrary strings may be copied and cut to and pasted from) functionality.
+which arbitrary strings may be copied and cut to and pasted from)
+functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
 from PySide2.QtGui import QClipboard, QGuiApplication
 from betse.util.type.decorator.decmemo import func_cached
 from betsee.guiexception import BetseePySideClipboardException
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ EXCEPTIONS                        }....................
 def die_unless_clipboard_text() -> None:
     '''
     Raise an exception unless the system clipboard's plaintext buffer is
@@ -40,7 +41,7 @@ def die_unless_clipboard_text() -> None:
                 'System clipboard text buffer empty.'),
         )
 
-# ....................{ TESTERS                            }....................
+# ....................{ TESTERS                           }....................
 def is_clipboard_text() -> bool:
     '''
     ``True`` only if the system clipboard's plaintext buffer is currently empty
@@ -50,7 +51,7 @@ def is_clipboard_text() -> bool:
 
     return not not get_clipboard().text()
 
-# ....................{ GETTERS                            }....................
+# ....................{ GETTERS                           }....................
 @func_cached
 def get_clipboard() -> QClipboard:
     '''

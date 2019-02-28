@@ -422,8 +422,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # existing parent and associated with this subconfiguration.
         item_list_leaf = self._make_item_list_leaf(
             item_list_root=item_list_root,
-            item_list_leaf_name=yaml_list_item.name,
-        )
+            item_list_leaf_name=yaml_list_item.name)
 
         # Programmatically select this new child tree item, implicitly
         # signalling the _select_tree_item() slot and hence switching to the
@@ -432,6 +431,11 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
     # ..................{ SLOTS ~ item : remove             }..................
     #FIXME: Implement us up as documented below.
+    #FIXME: Note that permitting arbitrary dynamic list items to be removed (as
+    #we obviously must) requires reordering the first-column text of all
+    #subsequent items -- which is fairly awful, frankly. Consider dispensing
+    #with the current 1-based index prefixing such items.
+
     @Slot()
     def _remove_tree_item(self) -> None:
         '''
@@ -461,6 +465,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
                associated with the child item preceding this child item.
              * Else, the page widget associated with the parent of this child
                item.
+
         #. Removes the existing YAML-backed simulation subconfiguration
            previously associated with this child item.
         #. Removes the existing child item as detailed above.
@@ -575,29 +580,10 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # the last child of this parent. Thanks, Qt API! You did something.
         item_list_leaf = QTreeWidgetItem(item_list_root)
 
-        # 1-based index of this child item in this parent item's list.
-        #
-        # Note that, while the item_list_root.indexOfChild(item_list_leaf)
-        # method could also be called here, doing so would yield the same
-        # result with considerably worse time complexity. Hence, we don't.
-        item_list_leaf_index = item_list_root.childCount()
-
-        #FIXME: Ideally, this text would be HTML-formatted for improved
-        #legibility: e.g., as '{}. <b>{}</b>' instead. For unknown
-        #reasons, however, the Qt API provides no built-in means of
-        #formatting items as anything other than plaintext. Note that
-        #numerous StackOverflow questions and answers pertaining to
-        #this issue exist, but that no simple "silver bullet" appears
-        #to exist. PySide2-specific answers include:
-        #    https://stackoverflow.com/a/5443112/2809027
-        #    https://stackoverflow.com/a/38028318/2809027
-
-        # Human-readable first-column text of this child item.
-        item_list_leaf_text = '{}. {}'.format(
-            item_list_leaf_index, item_list_leaf_name)
+        #FIXME: Set an appropriate icon as well.
 
         # Set this child item's first-column text to this text.
-        item_list_leaf.setText(0, item_list_leaf_text)
+        item_list_leaf.setText(0, item_list_leaf_name)
 
         # Add this child item to the set of all tree items masquerading
         # as dynamic list items *AFTER* successfully making this item.

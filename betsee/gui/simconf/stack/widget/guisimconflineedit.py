@@ -18,7 +18,7 @@ from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
     QBetseeClipboardScalarWidgetMixin)
-from betsee.util.widget.stock.guilabel import QBetseeLabelImage
+from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeSimConfLineEdit(

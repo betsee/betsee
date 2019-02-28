@@ -28,6 +28,37 @@ Root-level classes defining this application's graphical user interface (GUI).
 #What, exactly, is this "way"? If undocumented, let's file an issue requesting
 #clarification. First grep the issue tracker for "detect module".
 
+#FIXME: Consider switching from the default Qt 5.x stylesheet (i.e., Fusion) to
+#a third-party Qt 5.x-compatible stylesheet -- ideally supporting both light
+#and dark variants of the same theme. A cursory inspection of the field yields
+#the following themes satisfying these constraints:
+#
+#* https://github.com/XLTools/BreezeStyleSheets, as introduced by this
+#  authoritative StackOverflow answer:
+#      https://stackoverflow.com/a/48256803/2809027
+#  Note the permissive MIT license, provisions for both light and dark
+#  variants, and the shockingly aesthetic results. In particular, the dark
+#  variant would elevate our entire UI to a pleasantly modernist look and feel.
+#
+#Note that as these are third-party stylesheets that would require manual
+#embedding within our application, some care will need to be taken to avoid
+#desynchronization issues. Most of these stylesheets are still actively
+#maintained, which is essential to achieving a uniform look and feel across all
+#supported platforms. To do so, consider the following heuristic:
+#
+#* If the mtime (i.e., modification time) of any embedded stylesheet is less
+#  than the current timestamp minus six months (i.e., if this stylesheet was
+#  last modified more than six months ago) *AND* the current "--cache-policy"
+#  is effectively "dev" (i.e., this is a development installation), log a
+#  prominent non-fatal warning instructing the current developer to manually
+#  resolve this solution -- presumably by manually retrieving local copies of
+#  the most recent stable releases of these remote stylesheets and replacing
+#  their BETSEE-embedded copies with the contents of those releases.
+#
+#Note that automating the above would technically be feasible but absolutely
+#*NOT* a good idea, given that issues requiring manual attention may be
+#introduced by the update process.
+
 #FIXME: To simplify future localization efforts, all human-readable strings to
 #be displayed should be filtered through the Qt tr() or translate() methods.
 #Note that the external "pyside2-lupdate" command will probably need to be
