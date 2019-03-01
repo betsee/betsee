@@ -230,7 +230,7 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
         for child_item_text in text_path:
             # Find the child with this text of the current parent tree item,
             # replacing the latter with the former.
-            parent_item = guitreeitem.get_child_item_first(
+            parent_item = guitreeitem.get_child_item_with_text_first(
                 parent_item=parent_item, child_text=child_item_text)
 
         # Return the last parent tree item visited by the above iteration.

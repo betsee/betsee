@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,7 +7,7 @@
 High-level application clipboard functionality.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QObject, Slot
 from PySide2.QtWidgets import QWidget
 from betsee.util.app import guiapp
@@ -20,7 +20,7 @@ from betsee.util.io.key import guifocus
 from betsee.util.type.guitype import QWidgetOrNoneTypes
 from betsee.util.widget.abc.control.guicontrolabc import QBetseeControllerABC
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 class QBetseeMainClipboard(QBetseeControllerABC):
     '''
     High-level **clipboarder** (i.e., :mod:`PySide2`-based object encapsulating
@@ -57,7 +57,7 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         Alias of the :attr:`QBetseeMainWindow.action_paste` action.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -85,8 +85,8 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         pertains to the high-level state of the system clipboard.
 
         To avoid circular references, this method is guaranteed to *not* retain
-        references to this main window on returning. References to child widgets
-        (e.g., actions) of this window may be retained, however.
+        references to this main window on returning. References to child
+        widgets (e.g., actions) of this window may be retained, however.
 
         Parameters
         ----------
@@ -101,8 +101,8 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         # Log this initialization.
         logs.log_debug('Sanitizing system clipboard state...')
 
-        # Classify actions subsequently required by this object. Since this main
-        # window owns this object, since weak references are unsafe in a
+        # Classify actions subsequently required by this object. Since this
+        # main window owns this object, since weak references are unsafe in a
         # multi-threaded GUI context, and since circular references are bad,
         # this object does *NOT* retain a reference to this main window.
         self._action_copy  = main_window.action_copy
@@ -133,11 +133,11 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         clipboard.dataChanged.connect(self._clipboard_text_set)
 
         # Set the state of all widgets dependent upon this simulation
-        # configuration state *AFTER* connecting all relavant signals and slots.
-        # Initially, no widget has yet to be focused.
+        # configuration state *AFTER* connecting all relavant signals and
+        # slots. Initially, no widget has yet to be focused.
         self._widget_focus_set(None, None)
 
-    # ..................{ SLOTS ~ state                      }..................
+    # ..................{ SLOTS ~ state                     }..................
     #FIXME: Is this slot's macOS-specific caveat (see docstring below) actually
     #an issue? Only if Qt actually ignores rather than defers clipboard changes
     #that occur when this application is *NOT* the active application. In that
@@ -148,8 +148,8 @@ class QBetseeMainClipboard(QBetseeControllerABC):
     def _clipboard_text_set(self) -> None:
         '''
         Slot signalled when any text is copied or cut into the system
-        clipboard's plaintext buffer by any application in the current windowing
-        session (including the current application).
+        clipboard's plaintext buffer by any application in the current
+        windowing session (including the current application).
 
         Caveats
         ----------
@@ -157,8 +157,8 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         the documentation for the :attr:`QClipboard.dataChanged` signal:
 
              On macOS and with Qt version 4.3 or higher, clipboard changes made
-             by other applications will only be detected when the application is
-             activated.
+             by other applications will only be detected when the application
+             is activated.
         '''
 
         # Currently focused widget if any or None otherwise.
@@ -175,9 +175,10 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         widget_focused_new: QWidgetOrNoneTypes,
     ) -> None:
         '''
-        Slot signalled when an application widget loses and/or gains interactive
-        keyboard input focus (e.g., due to the tab-key being pressed, this
-        widget being clicked, or this main window being made active).
+        Slot signalled when an application widget loses and/or gains
+        interactive keyboard input focus (e.g., due to the tab-key being
+        pressed, this widget being clicked, or this main window being made
+        active).
 
         The slot is signalled *after* both widgets have been notified of this
         :class:`QFocusEvent`.
@@ -190,11 +191,11 @@ class QBetseeMainClipboard(QBetseeControllerABC):
             Previously focused widget if any *or* ``None`` otherwise.
         '''
 
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # WARNING: This is a fundamentally fragile slot. Exceptions accidentally
-        # raised by this slot's implementation may induce infinite recursion.
-        # See the "except" block below for further commentary.
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # WARNING: This is a fundamentally fragile slot. Exceptions
+        # accidentally raised by this slot's implementation may induce infinite
+        # recursion. See the "except" block below for further commentary.
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         # Attempt to...
         try:
@@ -227,9 +228,10 @@ class QBetseeMainClipboard(QBetseeControllerABC):
             # empty but subsequently copied or cut into with a non-empty string
             # by any application (including the current application), the state
             # of this action would be desynchronized from the state of this
-            # buffer. To circumvent these issues, the _clipboard_text_set() slot
-            # defers to this slot on each change to the state of this buffer and
-            # hence guarantees this logic to be reevaluated as needed.
+            # buffer. To circumvent these issues, the _clipboard_text_set()
+            # slot defers to this slot on each change to the state of this
+            # buffer and hence guarantees this logic to be reevaluated as
+            # needed.
             self._action_paste.setEnabled(
                 is_widget_focused_clipboardable and
                 guiclipboard.is_clipboard_text())
@@ -244,7 +246,8 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         # * This exception is propagated up to the default exception handler.
         # * This handler displays a PySide2 widget graphically presenting this
         #   exception to the user.
-        # * This widget implicitly obtains the interactive keyboard input focus.
+        # * This widget implicitly obtains the interactive keyboard input
+        #   focus.
         # * This focus change invokes the signal connected to this slot.
         # * This slot raises an exception.
         #
@@ -257,7 +260,7 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         #   singleton from signalling *ANY* other slots -- which is even more
         #   heavy-handed and hence undesirable than the current approach.
         except:
-            # Application singleton, localized to avoid retaining references..
+            # Application singleton, localized to avoid retaining references.
             gui_app = guiapp.get_app()
 
             # Disconnect this signal from this slot... *PERMANENTLY.*
@@ -266,7 +269,7 @@ class QBetseeMainClipboard(QBetseeControllerABC):
             # Propagate this exception up the callstack.
             raise
 
-    # ..................{ SLOTS ~ action                     }..................
+    # ..................{ SLOTS ~ action                    }..................
     @Slot()
     def _copy_widget_focused_selection_to_clipboard(self) -> None:
         '''
@@ -291,11 +294,11 @@ class QBetseeMainClipboard(QBetseeControllerABC):
     @Slot()
     def _cut_widget_focused_selection_to_clipboard(self) -> None:
         '''
-        Slot invoked in response to a user-driven request to **cut** (i.e., copy
-        and then remove as a single atomic operation) the currently focused
-        widget's **current selection** (i.e., currently selected subset of this
-        widget's value(s)) to the clipboard's plaintext buffer, silently
-        replacing the prior contents if any.
+        Slot invoked in response to a user-driven request to **cut** (i.e.,
+        copy and then remove as a single atomic operation) the currently
+        focused widget's **current selection** (i.e., currently selected subset
+        of this widget's value(s)) to the clipboard's plaintext buffer,
+        silently replacing the prior contents if any.
         '''
 
         # If no clipboardable widget is currently focused, raise an exception.
@@ -315,8 +318,8 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         '''
         Slot invoked in response to a user-driven request to paste the contents
         of the system clipboard over the currently focused widget's **current
-        selection** (i.e., currently selected subset of this widget's value(s)),
-        silently replacing the prior selection if any.
+        selection** (i.e., currently selected subset of this widget's
+        value(s)), silently replacing the prior selection if any.
         '''
 
         # If no clipboardable widget is currently focused, raise an exception.
@@ -330,7 +333,7 @@ class QBetseeMainClipboard(QBetseeControllerABC):
         # Paste the clipboard over this widget's current selection.
         self._widget_focused_if_any.paste_clipboard_to_selection()
 
-    # ..................{ EXCEPTIONS                         }..................
+    # ..................{ EXCEPTIONS                        }..................
     def _die_unless_widget_focused_clipboardable(self) -> None:
         '''
         Raise an exception unless an application-specific widget transparently
@@ -343,11 +346,12 @@ class QBetseeMainClipboard(QBetseeControllerABC):
             If *no* widget is currently focused.
         BetseePySideClipboardException
             If a widget is currently focused but this widget is *not* an
-            application-specific editable widget supporting clipboard operation.
+            application-specific editable widget supporting clipboard
+            operation.
         '''
 
-        # If this widget is *NOT* an application-specific editable widget, raise
-        # an exception.
+        # If this widget is *NOT* an application-specific editable widget,
+        # raise an exception.
         if not self._is_widget_focused_clipboardable():
             raise BetseePySideClipboardException(QCoreApplication.translate(
                 'QBetseeMainClipboard',
@@ -356,7 +360,7 @@ class QBetseeMainClipboard(QBetseeControllerABC):
                 'whose "is_clipboardable" property is True).'.format(
                     self._widget_focused_if_any)))
 
-    # ..................{ TESTERS                            }..................
+    # ..................{ TESTERS                           }..................
     @type_check
     def _is_widget_focused_clipboardable(self) -> bool:
         '''

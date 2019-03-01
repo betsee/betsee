@@ -8,10 +8,6 @@
 simulation configuration.
 '''
 
-#FIXME: Unconditionally set a suitable new SVG-based icon on all child tree
-#items masquerading as dynamic list items (e.g., custom tissue profiles). A
-#simple circular bullet point image might suffice.
-
 #FIXME: Permit the "_action_sim_conf_tree_item_append" and
 #"_action_sim_conf_tree_item_remove" operations to be undone. Doing so will
 #probably prove non-trivial and has thus been deferred in favour of more
@@ -25,8 +21,8 @@ from betse.lib.yaml.abc.yamlmixin import YamlNamedMixin
 from betse.util.io.log import logs
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
-from betsee.guiexception import (
-    BetseePySideTreeWidgetException, BetseePySideTreeWidgetItemException)
+from betsee.guiexception import BetseePySideTreeWidgetItemException  # BetseePySideTreeWidgetException,
+from betsee.gui.data import guidataicon
 from betsee.util.widget.stock.tree import guitreeitem
 from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
@@ -431,10 +427,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
     # ..................{ SLOTS ~ item : remove             }..................
     #FIXME: Implement us up as documented below.
-    #FIXME: Note that permitting arbitrary dynamic list items to be removed (as
-    #we obviously must) requires reordering the first-column text of all
-    #subsequent items -- which is fairly awful, frankly. Consider dispensing
-    #with the current 1-based index prefixing such items.
 
     @Slot()
     def _remove_tree_item(self) -> None:
@@ -580,7 +572,8 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # the last child of this parent. Thanks, Qt API! You did something.
         item_list_leaf = QTreeWidgetItem(item_list_root)
 
-        #FIXME: Set an appropriate icon as well.
+        # Set this child item's first-column icon to a bullet point.
+        item_list_leaf.setIcon(0, guidataicon.get_icon_dot())
 
         # Set this child item's first-column text to this text.
         item_list_leaf.setText(0, item_list_leaf_name)

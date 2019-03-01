@@ -9,7 +9,7 @@ High-level :class:`QTreeWidgetItem` functionality.
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication
-from PySide2.QtWidgets import QTreeWidgetItem
+from PySide2.QtWidgets import QTreeWidgetItem, QTreeWidgetItemIterator
 from betse.util.io.log import logs
 from betse.util.py.module import pymodname
 from betse.util.type.types import type_check, GeneratorType
@@ -67,7 +67,63 @@ def is_parent_item(item: QTreeWidgetItem) -> bool:
 
 # ....................{ GETTERS                           }....................
 @type_check
-def get_child_item_first(
+def get_item_preceding_or_none(
+    item: QTreeWidgetItem) -> QTreeWidgetItemOrNoneTypes:
+    '''
+    Tree item preceding the passed tree item in the tree widget containing that
+    tree item if the passed tree item is *not* the first top-level item of this
+    tree widget *or* ``None`` otherwise (i.e., if this is the first top-level
+    item of this tree widget).
+
+    Specifically, this function returns:
+
+    * If the passed tree item has a **preceding sibling** (i.e., a child tree
+      item with the same parent tree item as the passed tree item whose index
+      in the parent is one less than that of the passed tree item), this
+      sibling.
+    * Else if the passed tree item has a **non-root parent** (i.e., a parent
+      tree item that is *not* the invisible root tree item of this tree widget,
+      in which case the passed tree item is *not* a top-level tree item), this
+      parent.
+    * Else, the passed tree item is the first top-level tree item of this tree
+      widget, in which case an exception is raised.
+
+    Parameters
+    ----------
+    item : QTreeWidgetItem
+        Tree item to retrieve the preceding tree item of.
+
+    Returns
+    ----------
+    QTreeWidgetItem
+        Tree item preceding the passed tree item.
+    '''
+
+    # Tree item iterator iterating from this tree item.
+    item_iter = QTreeWidgetItemIterator(item, QTreeWidgetItemIterator.All)
+
+    # Iterate this iterator to the tree item preceding this tree item if any
+    # *OR* silently fail (without raising an exception) otherwise.
+    #
+    # Yes, this is balls crazy. Yes, this works as expected. Why? Because the
+    # "QTreeWidgetItemIterator" API was designed from the arguably arcane C++
+    # perspective. In C++, overloading mathematical operators to perform
+    # non-mathematical iteration (commonly referred to as "pointer
+    # arithmetic") is a standard idiom. In Python, the corresponding operation
+    # is fundamentally non-Pythonic and hence divorced from anything resembling
+    # sanity. For further details, see the PySide2-specific documentation at:
+    #     https://doc.qt.io/qtforpython/PySide2/QtWidgets/QTreeWidgetItemIterator.html
+    item_iter -= 1
+
+    # Tree item preceding the passed tree item if any *OR* "None" otherwise.
+    item_preceding = item_iter.value()
+
+    # Return this object.
+    return item_preceding
+
+# ....................{ GETTERS ~ text                    }....................
+@type_check
+def get_child_item_with_text_first(
     parent_item: QTreeWidgetItem, child_text: str) -> QTreeWidgetItem:
     '''
     First child tree item with the passed **first-column text** (i.e., text in
