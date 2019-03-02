@@ -31,7 +31,7 @@ configuration files) functionality.
 #* In the __init__() and/or init() methods of this class:
 #  * Create a new "_path_watcher" variable of type "QFileSystemWatcher".
 #  * Connect the fileChanged() signal of this variable.
-#* In the set_filename() slot:
+#* In the _on_filename_set() slot:
 #  * When a new simulation configuration is opened (i.e., "filename" is
 #    non-empty), call the "self._path_watcher.addPath(filename)" method.
 #  * When an open simulation configuration is closed (i.e., "filename" is
@@ -249,9 +249,13 @@ class QBetseeSimConf(QBetseeControllerABC):
         # subsequent logic emits these signals and hence requires that these
         # connections be deterministically established *BEFORE* these signals
         # are emitted.
-        self.set_filename_signal.connect(self.set_filename)
+        self.set_filename_signal.connect(self._on_filename_set)
+        self.set_dirty_signal.connect(self._on_dirty_set)
+
+        #FIXME: The "QBetseeMainWindow" widget should establish this connection
+        #itself. We're fairly certain we resolved all outstanding issues
+        #preventing this from previously happening; see to it now, please.
         self.set_dirty_signal.connect(main_window.set_sim_conf_dirty)
-        self.set_dirty_signal.connect(self.set_dirty)
 
     # ..................{ PROPERTIES ~ bool                 }..................
     @property
@@ -261,6 +265,35 @@ class QBetseeSimConf(QBetseeControllerABC):
         '''
 
         return self.p.is_loaded
+
+    # ..................{ PROPERTIES ~ dirty                }..................
+    @property
+    def is_dirty(self) -> bool:
+        '''
+        ``True`` only if a simulation configuration is currently open *and*
+        this configuration is **dirty** (i.e., has unsaved changes).
+        '''
+
+        return self._is_dirty
+
+
+    @is_dirty.setter
+    @type_check
+    def is_dirty(self, is_dirty: bool) -> None:
+        '''
+        Set whether or not the current simulation configuration is **dirty**
+        (i.e., open and with unsaved changes).
+
+        Parameters
+        -----------
+        is_dirty : bool
+            ``True`` only if this configuration is dirty.
+        '''
+
+        # Notify all interested slots of this change. Note that doing so
+        # implicitly signals the _on_dirty_set() slot classifying the passed
+        # parameter *ONLY* if this parameter passes sanity checks.
+        self.set_dirty_signal.emit(is_dirty)
 
     # ..................{ PROPERTIES ~ str                  }..................
     @property
@@ -309,6 +342,8 @@ class QBetseeSimConf(QBetseeControllerABC):
     '''
 
 
+    #FIXME: Refactor all calls to set_dirty_signal.emit() to instead set the
+    #"is_dirty" property.
     set_dirty_signal = Signal(bool)
     '''
     Signal passed a single boolean on the currently open simulation
@@ -319,11 +354,17 @@ class QBetseeSimConf(QBetseeControllerABC):
     This signal is typically emitted on each user edit of the contents of any
     widget owned by the top-level simulation configuration tree or stack
     widgets, implying a modification to this simulation configuration.
+
+    Caveats
+    ----------
+    External callers are encouraged to emit this signal by setting the
+    high-level :meth:`is_dirty` property rather than explicitly emitting
+    signals by calling the low-level :meth:`Signal.emit` method of this signal.
     '''
 
     # ..................{ SLOTS ~ state                     }..................
     @Slot(str)
-    def set_filename(self, filename: str) -> None:
+    def _on_filename_set(self, filename: str) -> None:
         '''
         Slot signalled on the opening of a new simulation configuration *and*
         closing of an open simulation configuration.
@@ -341,11 +382,11 @@ class QBetseeSimConf(QBetseeControllerABC):
 
         # Notify all interested slots that no unsaved changes remain regardless
         # of whether a simulation configuration has just been opened or closed.
-        self.set_dirty_signal.emit(False)
+        self.is_dirty = False
 
 
     @Slot(bool)
-    def set_dirty(self, is_dirty: bool) -> None:
+    def _on_dirty_set(self, is_dirty: bool) -> None:
         '''
         Slot signalled on each change of the **dirty state** (i.e., existence
         of unsaved in-memory changes) of the currently open simulation
@@ -360,7 +401,21 @@ class QBetseeSimConf(QBetseeControllerABC):
         is_dirty : bool
             ``True`` only if a simulation configuration is currently open *and*
             this configuration is **dirty** (i.e., has unsaved changes).
+
+        Raises
+        ----------
+        BetseeSimConfException
+            If ``is_dirty`` is ``True`` while no simulation configuration file
+            is currently open (i.e., :meth:`is_open` is ``False``).
         '''
+
+        # Log this slot.
+        logs.log_debug('Setting application dirty bit to "%r"...', is_dirty)
+
+        # If the caller requested that the dirty bit be enabled while no
+        # simulation configuration file is currently open, raise an exception.
+        if is_dirty:
+            self.die_unless_open()
 
         # Classify this parameter.
         self._is_dirty = is_dirty

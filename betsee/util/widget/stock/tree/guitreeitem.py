@@ -67,6 +67,41 @@ def is_parent_item(item: QTreeWidgetItem) -> bool:
 
 # ....................{ GETTERS                           }....................
 @type_check
+def get_item_preceding(item: QTreeWidgetItem) -> QTreeWidgetItemOrNoneTypes:
+    '''
+    Tree item preceding the passed tree item in the tree widget containing that
+    tree item if the passed tree item is *not* the first top-level item of this
+    tree widget *or* raise an exception otherwise (i.e., if this is the first
+    top-level item of this tree widget).
+
+    Raises
+    ----------
+    BetseePySideTreeWidgetItemException
+        If the passed tree item is the first top-level item of its tree widget.
+
+    See Also
+    ----------
+    :func:`get_item_preceding_or_none`
+        Further details.
+    '''
+
+    # Tree item preceding this tree item if any *OR* "None" otherwise.
+    item_preceding = get_item_preceding_or_none(item)
+
+    # If no such item exists, raise an exception.
+    if item_preceding is None:
+        raise BetseePySideTreeWidgetItemException(QCoreApplication.translate(
+            'guitreeitem',
+            'Tree item "{0}" preceded by no tree item '
+            '(i.e., due to being the first top-level tree item).'.format(
+                item.text(0))))
+    # Else, this item exists.
+
+    # Return this item.
+    return item_preceding
+
+
+@type_check
 def get_item_preceding_or_none(
     item: QTreeWidgetItem) -> QTreeWidgetItemOrNoneTypes:
     '''

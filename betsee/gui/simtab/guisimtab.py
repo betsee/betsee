@@ -108,10 +108,6 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
             Initialized parent :class:`QMainWindow` widget.
         '''
 
-        # Classify all instance variables of this main window subsequently
-        # required by this object.
-        # self._action_make_sim     = main_window.action_make_sim
-
         # Initialize the simulator.
         self.simmer.init(main_window=main_window)
 
@@ -129,20 +125,6 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
         main_window : QMainWindow
             Initialized parent :class:`QMainWindow` widget.
         '''
-
-        # Connect each such action to this object's corresponding slot.
-        # self._action_make_sim.triggered.connect(self._make_sim)
-
-        # Connect this object's signals to all corresponding slots.
-        # self.set_filename_signal.connect(self.set_filename)
-
-        # Set the state of all widgets dependent upon this simulation
-        # subcommand state *AFTER* connecting all relavant signals and slots.
-        # Initially, no simulation subcommands have yet to be queued or run.
-        #
-        # Note that, as this slot only accepts strings, the empty string rather
-        # than "None" is intentionally passed for safety.
-        # self.set_filename_signal.emit('')
 
         pass
 
@@ -173,92 +155,3 @@ class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):
 
         # Halt the simulator if currently running.
         self.simmer.halt_work()
-
-    # ..................{ PROPERTIES ~ bool                 }..................
-    # @property
-    # def is_open(self) -> bool:
-    #     '''
-    #     ``True`` only if a simulation configuration file is currently open.
-    #     '''
-    #
-    #     return self.p.is_loaded
-
-    # ..................{ PROPERTIES ~ str                  }..................
-    # @property
-    # def dirname(self) -> StrOrNoneTypes:
-    #     '''
-    #     Absolute path of the directory containing the currently open
-    #     simulation configuration file if any *or* ``None`` otherwise.
-    #     '''
-    #
-    #     return self.p.conf_dirname
-
-    # ..................{ EXCEPTIONS                        }..................
-    # def die_unless_open(self) -> bool:
-    #     '''
-    #     Raise an exception unless a simulation configuration file is currently
-    #     open.
-    #     '''
-    #
-    #     if not self.is_open:
-    #         raise BetseeSimConfException(
-    #             'No simulation configuration currently open.')
-
-    # ..................{ SIGNALS                           }..................
-    # set_filename_signal = Signal(str)
-    # '''
-    # Signal passed either the absolute path of the currently open YAML-formatted
-    # simulation configuration file if any *or* the empty string otherwise.
-    #
-    # This signal is typically emitted on the user:
-    #
-    # * Opening a new simulation configuration.
-    # * Closing a currently open simulation configuration.
-    # '''
-
-    # ..................{ SLOTS ~ state                     }..................
-    # @Slot(str)
-    # def set_filename(self, filename: str) -> None:
-    #     '''
-    #     Slot signalled on both the opening of a new simulation configuration
-    #     and closing of an open simulation configuration.
-    #
-    #     Parameters
-    #     ----------
-    #     filename : StrOrNoneTypes
-    #         Absolute path of the currently open YAML-formatted simulation
-    #         configuration file if any *or* the empty string otherwise (i.e., if
-    #         no such file is open).
-    #     '''
-    #
-    #     # Notify all interested slots that no unsaved changes remain, regardless
-    #     # of whether a simulation configuration has just been opened or closed.
-    #     self.set_dirty_signal.emit(False)
-
-    # ..................{ SLOTS ~ action                    }..................
-    # @Slot()
-    # def _open_sim(self) -> None:
-    #     '''
-    #     Slot invoked on the user requesting that the currently open simulation
-    #     configuration if any be closed and an existing external simulation
-    #     configuration be opened.
-    #     '''
-    #
-    #     # Absolute path of an existing YAML-formatted simulation configuration
-    #     # file selected by the user.
-    #     conf_filename = self._show_dialog_sim_conf_open()
-    #
-    #     # If the user canceled this dialog, silently noop.
-    #     if conf_filename is None:
-    #         return
-    #     # Else, the user did *NOT* cancel this dialog.
-    #
-    #     # Close the currently open simulation configuration if any.
-    #     self._close_sim()
-    #
-    #     # Deserialize this low-level file into a high-level configuration.
-    #     self.load(conf_filename)
-    #
-    #     # Update the status bar *AFTER* successfully completing this action.
-    #     self._status_bar.showMessage(QCoreApplication.translate(
-    #         'QBetseeSimConf', 'Simulation opened.'))

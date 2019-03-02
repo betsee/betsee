@@ -11,6 +11,38 @@
 #subclass for all YAML-based data descriptors specific to the
 #"betse.science.config.model.conftis.SimConfTissueListItem" subclass.
 
+#FIXME: We're not quite done here. Yet again, there exists a desynchronization
+#issue between the "QBetseeSimConfTissueCustomStackedWidgetPager" subclass and
+#the "QBetseeSimConfTreeWidget" subclass. Namely, when the end user attempts to
+#interactively rename the currently selected tissue profile via the
+#corresponding line edit widget, we need to:
+#
+#* Explicitly validate that this profile's new name does *NOT* collide with
+#  that of any other existing tissue profile -- either default or custom.
+#* If this profile's new name does collide:
+#  * Display a non-fatal warning dialog that name collisions are prohibited.
+#  * Implicitly revert this profile's name to the prior name (e.g., by
+#    leveraging our existing undo functionality), thus guaranteeing no
+#    collisions.
+
+#FIXME: We're not quite done here. There currently exists a desynchronization
+#issue between the "QBetseeSimConfTissueCustomStackedWidgetPager" subclass and
+#the "QBetseeSimConfTreeWidget" subclass. Namely, when the name of the
+#currently selected tissue profile is interactively renamed by the end user via
+#the corresponding line edit widget, the first-column text of the corresponding
+#tree item of the tree widget must *ALSO* be renamed. To do so, we'll probably
+#want to define a new custom slot connected to a signal of this line edit
+#widget signalled on changes. The question, of course, is where that slot
+#should reside: in the "QBetseeSimConfTissueCustomStackedWidgetPager" subclass,
+#in the "QBetseeSimConfTreeWidget" subclass, or elsewhere (e.g., in the
+#"QBetseeSimConfStackedWidget" subclass)?
+#
+#Ultimately, that slot will need to map from the current stacked widget page to
+#the corresponding tree widget item and hence should probably be defined in the
+#subclass that has direct access to internal dictionaries mapping between tree
+#widget items and stacked widget pages -- so, possibly in the
+#"QBetseeSimConfStackedWidget" subclass. Consider it up, please.
+
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
