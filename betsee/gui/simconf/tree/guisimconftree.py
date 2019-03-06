@@ -9,6 +9,12 @@ simulation configuration.
 '''
 
 #FIXME: Permit the "_action_sim_conf_tree_item_append" and
+#"_action_sim_conf_tree_item_remove" operations to be triggered via a popup
+#mena displayed when tree items supporting those operations are right-clicked.
+#This should be largely trivial given that these operations have already been
+#implemented but are currently only triggered by the "+" and "-" buttons.
+
+#FIXME: Permit the "_action_sim_conf_tree_item_append" and
 #"_action_sim_conf_tree_item_remove" operations to be undone. Doing so will
 #probably prove non-trivial and has thus been deferred in favour of more
 #low-hanging and/or mission-critical fruit.

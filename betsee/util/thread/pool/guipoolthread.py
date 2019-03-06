@@ -12,7 +12,7 @@ exactly one :class:`QRunnable`-based worker at a given time) classes.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QThreadPool
 from betse.util.io.log import logs
-from betse.util.type.iterable import iterables
+from betse.util.type.iterable import itertest
 from betse.util.type.types import type_check, IterableTypes
 from betsee.guiexception import BetseePySideThreadException
 from betsee.util.type.guitype import QThreadPoolOrNoneTypes
@@ -179,7 +179,7 @@ def halt_workers(
     logs.log_debug('Halting thread pool...')
 
     # If any such worker is *NOT* a worker, raise an exception.
-    iterables.die_unless_items_instance_of(
+    itertest.die_unless_items_instance_of(
         iterable=workers, cls=QBetseeThreadPoolWorker)
 
     # Default this thread pool to the singleton thread pool if needed.
