@@ -14,7 +14,7 @@ from betse.science.parameters import Parameters
 from betse.science.enum.enumconf import IonProfileType
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betse.util.type.mapping.mapcls import OrderedArgsDict
+from betse.util.type.iterable.mapping.mapcls import OrderedArgsDict
 from betsee.util.widget.abc.control.guictlpagerabc import (
     QBetseeStackedWidgetPagerABC)
 

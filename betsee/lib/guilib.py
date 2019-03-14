@@ -26,7 +26,7 @@ any such dependencies.
 
 from betse.lib import libs as betse_libs
 # from betse.util.io.log import logs
-from betse.util.type.mapping import mappings
+from betse.util.type.iterable.mapping import mappings
 from betse.util.type.types import type_check
 from betsee import guimetadeps
 

@@ -13,7 +13,7 @@ widget subclasses instantiated in pages of the top-level stack.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QObject  #, Signal, Slot
 # from betse.util.io.log import logs
-from betse.util.type.mapping import mappings
+from betse.util.type.iterable.mapping import mappings
 from betse.util.type.types import (
     type_check, ClassOrNoneTypes, EnumClassType, MappingType)
 from betsee.guiexception import BetseePySideWidgetEnumException

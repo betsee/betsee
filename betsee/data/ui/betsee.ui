@@ -353,6 +353,90 @@ QTreeWidget#sim_conf_tree {
          </item>
          <item>
           <property name="text">
+           <string>Export</string>
+          </property>
+          <property name="toolTip">
+           <string>Exports (e.g., plots, animations) exportable from this simulation.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../qrc/betsee.qrc">
+            <normaloff>:/icon/open_iconic/external-link.svg</normaloff>:/icon/open_iconic/external-link.svg</iconset>
+          </property>
+          <item>
+           <property name="text">
+            <string>CSV</string>
+           </property>
+           <property name="toolTip">
+            <string>Comma-separated value (CSV) files exportable from this simulation.</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../qrc/betsee.qrc">
+             <normaloff>:/icon/open_iconic/spreadsheet.svg</normaloff>:/icon/open_iconic/spreadsheet.svg</iconset>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Plot</string>
+           </property>
+           <property name="toolTip">
+            <string>Plots (i.e., image files visualizing simulation results) exportable from this simulation.</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../qrc/betsee.qrc">
+             <normaloff>:/icon/open_iconic/image.svg</normaloff>:/icon/open_iconic/image.svg</iconset>
+           </property>
+           <item>
+            <property name="text">
+             <string>Cell Cluster</string>
+            </property>
+            <property name="toolTip">
+             <string>Cell cluster plots (i.e., image files visualizing simulation results for all cells simultaneously) exportable from this simulation.</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../qrc/betsee.qrc">
+              <normaloff>:/icon/entypo+/network.svg</normaloff>:/icon/entypo+/network.svg</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Single Cell</string>
+            </property>
+            <property name="toolTip">
+             <string>Cell cluster plots (i.e., image files visualizing simulation results for only a single cell) exportable from this simulation.</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../qrc/betsee.qrc">
+              <normaloff>:/icon/entypo+/line-graph.svg</normaloff>:/icon/entypo+/line-graph.svg</iconset>
+            </property>
+           </item>
+          </item>
+          <item>
+           <property name="text">
+            <string>Animation</string>
+           </property>
+           <property name="toolTip">
+            <string>Animations (i.e., video files visualizing simulation results) exportable from this simulation.</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../qrc/betsee.qrc">
+             <normaloff>:/icon/open_iconic/video.svg</normaloff>:/icon/open_iconic/video.svg</iconset>
+           </property>
+           <item>
+            <property name="text">
+             <string>Cell Cluster</string>
+            </property>
+            <property name="toolTip">
+             <string>Cell cluster animations (i.e., video files visualizing simulation results for all cells simultaneously) exportable from this simulation.</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../qrc/betsee.qrc">
+              <normaloff>:/icon/entypo+/network.svg</normaloff>:/icon/entypo+/network.svg</iconset>
+            </property>
+           </item>
+          </item>
+         </item>
+         <item>
+          <property name="text">
            <string>Paths</string>
           </property>
           <property name="toolTip">
@@ -454,15 +538,6 @@ QTreeWidget#sim_conf_tree {
           <property name="icon">
            <iconset>
             <normaloff>://icon/betsee/advanced.svg</normaloff>://icon/betsee/advanced.svg</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Results</string>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/bars.svg</normaloff>://icon/open_iconic/bars.svg</iconset>
           </property>
          </item>
          <item>
@@ -639,7 +714,7 @@ QTreeWidget#sim_conf_tree {
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>13</number>
        </property>
        <widget class="QWidget" name="sim_conf_stack_page_Paths">
         <layout class="QGridLayout" name="gridLayout_2">
