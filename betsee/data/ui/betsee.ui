@@ -305,30 +305,6 @@ QTreeWidget#sim_conf_tree {
          </column>
          <item>
           <property name="text">
-           <string>Space</string>
-          </property>
-          <property name="toolTip">
-           <string>Spatial properties of this simulation.</string>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
-          </property>
-          <item>
-           <property name="text">
-            <string>Tissue</string>
-           </property>
-           <property name="toolTip">
-            <string>Tissue (i.e., regions of the cell cluster whose cells all share the same initial conditions) simulated by this simulation.</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
-           </property>
-          </item>
-         </item>
-         <item>
-          <property name="text">
            <string>Time</string>
           </property>
           <property name="toolTip">
@@ -341,15 +317,39 @@ QTreeWidget#sim_conf_tree {
          </item>
          <item>
           <property name="text">
-           <string>Ions</string>
+           <string>Space</string>
           </property>
           <property name="toolTip">
-           <string>Ions (i.e., bioelectrically charged atoms and molecules) simulated by this simulation.</string>
+           <string>Spatial properties of this simulation.</string>
           </property>
           <property name="icon">
            <iconset>
-            <normaloff>://icon/entypo+/sports-club.svg</normaloff>://icon/entypo+/sports-club.svg</iconset>
+            <normaloff>://icon/betsee/chemical.svg</normaloff>://icon/betsee/chemical.svg</iconset>
           </property>
+          <item>
+           <property name="text">
+            <string>Ions</string>
+           </property>
+           <property name="toolTip">
+            <string>Ions (i.e., bioelectrically charged atoms and molecules) simulated by this simulation.</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>://icon/entypo+/sports-club.svg</normaloff>://icon/entypo+/sports-club.svg</iconset>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Tissue</string>
+           </property>
+           <property name="toolTip">
+            <string>Tissue (i.e., regions of the cell cluster whose cells all share the same initial conditions) simulated by this simulation.</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>://icon/open_iconic/aperture.svg</normaloff>://icon/open_iconic/aperture.svg</iconset>
+           </property>
+          </item>
          </item>
          <item>
           <property name="text">

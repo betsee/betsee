@@ -55,7 +55,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
     SIMMER_STATE_TO_PROACTOR_SUBSTATUS,
     SIMMER_STATES_HALTING,
 )
-from betsee.util.widget.abc.control.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.control.guictlabc import QBetseeControllerABC
 
 # ....................{ CLASSES                           }....................
 class QBetseeSimmer(QBetseeControllerABC):

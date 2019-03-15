@@ -4,7 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based stack widget page controllers specific to ions.
+**Ionic simulation configuration pager** (i.e., :mod:`PySide2`-based controller
+for stack widget pages specific to ionic settings) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -15,15 +16,15 @@ from betse.science.enum.enumconf import IonProfileType
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betse.util.type.iterable.mapping.mapcls import OrderedArgsDict
-from betsee.util.widget.abc.control.guictlpagerabc import (
-    QBetseeStackedWidgetPagerABC)
+from betsee.util.widget.abc.control.guictlpageabc import (
+    QBetseePagerABC)
 
 # ....................{ SUBCLASSES                        }....................
-class QBetseeSimConfIonStackedWidgetPager(QBetseeStackedWidgetPagerABC):
+class QBetseeSimConfPagerIon(QBetseePagerABC):
     '''
-    :mod:`PySide2`-based stack widget page controller, connecting all editable
-    widgets of the ion page with the corresponding low-level settings of the
-    current simulation configuration.
+    **Ionic simulation configuration pager** (i.e., :mod:`PySide2`-based
+    controller connecting all editable widgets of the ionic stack widget page
+    with corresponding settings of the current simulation configuration).
     '''
 
     # ..................{ INITIALIZERS                      }..................

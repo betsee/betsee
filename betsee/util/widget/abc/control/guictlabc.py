@@ -35,7 +35,7 @@ class QBetseeControllerABC(QBetseeObjectMixin, QObject):
     # "QBetseeMainWindow" subclass of the "betsee.gui.window.guimainwindow"
     # submodule. Why? Because the latter imports the cached "betsee_ui.py"
     # module which imports the current submodule. Since this application only
-    # contains one main window, this current validation suffices.
+    # contains one main window, this currently suffices.
     @type_check
     def init(self, main_window: QMainWindow, *args, **kwargs) -> None:
         '''

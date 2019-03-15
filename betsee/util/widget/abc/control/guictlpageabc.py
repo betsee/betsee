@@ -10,37 +10,33 @@ application execution for a single page of a :mod:`QStackedWidget`) hierarchy.
 
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QObject
+from PySide2.QtWidgets import QMainWindow
 from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.control.guicontrolabc import QBetseeControllerABC
-
-# ....................{ SUPERCLASSES                      }....................
-# This class is currently a trivial placeholder intended to eventually
-# centralize common behaviour shared between all stacked widget pagers.
-class QBetseeStackedWidgetPagerABC(QBetseeControllerABC):
-    '''
-    Abstract base class of all **stacked widget pager** (i.e., controller
-    controlling the flow of application execution for a single page of a
-    :mod:`QStackedWidget`) subclasses.
-    '''
-
-    pass
+from betsee.util.widget.abc.control.guictlabc import QBetseeControllerABC
 
 # ....................{ MIXINS                            }....................
 # To avoid metaclass conflicts with the "QObject" base class inherited by all
 # objects also inheriting this base class, this base class *CANNOT* be
 # associated with another metaclass (e.g., "abc.ABCMeta").
-class QBetseeStackedWidgetPagerItemizedMixin(object):
+class QBetseePagerItemizedMixin(object):
     '''
-    Mixin of all **dynamic list item stacked widget pager** (i.e., controller
+    Mixin of all **itemized stacked widget pager** (i.e., controller
     controlling the flow of application execution for a single page of a
-    :mod:`QStackedWidget` associated with zero or more tree items of a
-    :mod:`QTreeWidget`, each of which masquerades as a list item dynamically
-    defined at runtime) subclasses.
+    stacked widget associated with zero or more tree items of a tree widget
+    masquerading as list items dynamically defined at runtime) subclasses.
 
     This class is suitable for use as a multiple-inheritance mixin. To preserve
     the expected method resolution order (MRO) semantics, this class should
     typically be inherited *first* rather than *last* in subclasses.
+
+    See Also
+    ----------
+    :class:`QBetseePagerItemizedABC`
+        Abstract base class conveniently mixing this mixin with the lower-level
+        abstract base :class:`QBetseePagerABC` class. Where
+        feasible, subclasses should typically inherit from this higher-level
+        superclass rather than this lower-level mixin.
     '''
 
     # ..................{ SUBCLASS                          }..................
@@ -50,20 +46,26 @@ class QBetseeStackedWidgetPagerItemizedMixin(object):
     # instead defined as concrete methods raising exceptions here.
 
     @type_check
-    def reinit(self, list_item_index: int) -> None:
+    def reinit(self, main_window: QMainWindow, list_item_index: int) -> None:
         '''
         Reassociate this pager with the **dynamic list item** (i.e., tree item
         of a :mod:`QTreeWidget` masquerading as a list item dynamically defined
-        at runtime) with the passed index.
+        at runtime) with the passed index against the passed parent main
+        window.
 
         This method is typically called by the parent object owning this pager
         (e.g., :mod:`QStackedWidget`) from a slot signalled immediately
         *before* the page controlled by this pager is switched to, ensuring
         that page to be prepopulated *before* being displayed.
 
+        To avoid circular references, this method is guaranteed to *not* retain
+        a reference to this main window on returning. References to child
+        widgets (e.g., simulation configuration stack widget) of this window
+        may be retained, however.
+
         Design
         ----------
-        Subclasses are required to redefine this pseudo-abstract method
+        Subclasses are required to redefine this quasi-abstract method
         *without* calling this superclass implementation, which unconditionally
         raises an exception to enforce such redefinition.
 
@@ -74,6 +76,9 @@ class QBetseeStackedWidgetPagerItemizedMixin(object):
 
         Parameters
         ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget
+            against which to initialize this controller.
         list_item_index: int
             0-based index of the list item to reassociate this pager with.
         '''
@@ -81,6 +86,27 @@ class QBetseeStackedWidgetPagerItemizedMixin(object):
         raise BetseMethodUnimplementedException()
 
 
+    #FIXME: Consider excising this method -- which we initially assumed to be
+    #required but which we currently call nowhere, suggesting this assumption
+    #to have been just that.
+    #FIXME: In the unlikely edge case that we do actually require this method,
+    #we clearly do so only for a proper subset of subclasses. In other words,
+    #this method appears to be strictly optional. Given that:
+    #
+    #* Revise the default implementation to simply log this deinitialization
+    #  rather than raising a fatal exception.
+    #* Actually call this method elsewhere (e.g., in the "guisimconfstack"
+    #  submodule) under at least the following circumstances:
+    #  * When the low-level YAML-backed list item currently associated with
+    #    this stack page is removed. Note that this should cleanly generalize
+    #    to handle both the explicit removal of a single such item by the end
+    #    user *AND* the closure of the current simulation configuration file.
+    #    Ergo, we should *NOT* to manually handle such closure; detecting the
+    #    condition when the item currently associated with this stack page is
+    #    removed should thus gracefully scale to all possible cases. When this
+    #    condition occurs *AND* this stack page is currently displayed, the
+    #    parent page (which is guaranteed to exist) should be automatically
+    #    switched to.
     def deinit(self) -> None:
         '''
         Deassociate this pager from the **dynamic list item** (i.e., tree item
@@ -107,3 +133,27 @@ class QBetseeStackedWidgetPagerItemizedMixin(object):
         '''
 
         raise BetseMethodUnimplementedException()
+
+# ....................{ SUPERCLASSES                      }....................
+# This class is currently a trivial placeholder intended to eventually
+# centralize common behaviour shared between all stacked widget pagers.
+class QBetseePagerABC(QBetseeControllerABC):
+    '''
+    Abstract base class of all **stacked widget pager** (i.e., controller
+    controlling the flow of application execution for a single page of a
+    :mod:`QStackedWidget`) subclasses.
+    '''
+
+    pass
+
+
+class QBetseePagerItemizedABC(QBetseePagerItemizedMixin, QBetseePagerABC):
+    '''
+    Abstract base class of all **itemized stacked widget pager** (i.e.,
+    controller controlling the flow of application execution for a single page
+    of a stacked widget associated with zero or more tree items of a tree
+    widget masquerading as list items dynamically defined at runtime)
+    subclasses.
+    '''
+
+    pass

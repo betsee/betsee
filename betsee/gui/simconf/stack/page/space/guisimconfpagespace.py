@@ -4,8 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based stack widget page controllers specific to spatial
-settings.
+**Spatial simulation configuration pager** (i.e., :mod:`PySide2`-based
+controller for stack widget pages specific to spatial settings) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -15,15 +15,15 @@ from betse.science.parameters import Parameters
 from betse.science.enum.enumconf import CellLatticeType
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.control.guictlpagerabc import (
-    QBetseeStackedWidgetPagerABC)
+from betsee.util.widget.abc.control.guictlpageabc import (
+    QBetseePagerABC)
 
 # ....................{ SUBCLASSES                        }....................
-class QBetseeSimConfSpaceStackedWidgetPager(QBetseeStackedWidgetPagerABC):
+class QBetseeSimConfSpaceStackedWidgetPager(QBetseePagerABC):
     '''
-    :mod:`PySide2`-based stack widget page controller, connecting all editable
-    widgets of the spatial page with the corresponding low-level settings of
-    the current simulation configuration.
+    **Spatial simulation configuration pager** (i.e., :mod:`PySide2`-based
+    controller connecting all editable widgets of the spatial stack widget page
+    with corresponding settings of the current simulation configuration).
     '''
 
     # ..................{ INITIALIZERS                      }..................

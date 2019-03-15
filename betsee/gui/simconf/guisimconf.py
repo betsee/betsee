@@ -58,7 +58,7 @@ from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.util.app import guiappstatus
 from betsee.util.io import guimessage
 from betsee.util.path import guifile
-from betsee.util.widget.abc.control.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.control.guictlabc import QBetseeControllerABC
 
 # ....................{ CLASSES                           }....................
 class QBetseeSimConf(QBetseeControllerABC):

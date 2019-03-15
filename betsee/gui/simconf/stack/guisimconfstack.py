@@ -22,9 +22,10 @@ from betsee.gui.window.guinamespace import (
     SIM_CONF_STACK_PAGE_ITEMIZED_NAME_SUFFIX,
     SIM_CONF_STACK_PAGE_NAME_PREFIX,
 )
+from betsee.util.app import guiappwindow
 from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
-from betsee.util.widget.abc.control.guictlpagerabc import (
-    QBetseeStackedWidgetPagerItemizedMixin)
+from betsee.util.widget.abc.control.guictlpageabc import (
+    QBetseePagerItemizedMixin)
 from betsee.util.widget.stock.tree import guitreeitem
 
 # ....................{ CLASSES                           }....................
@@ -104,17 +105,17 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     def __init__(self, *args, **kwargs) -> None:
 
         # Defer method-specific imports for maintainability.
-        from betsee.gui.simconf.stack.pager.guisimconfpagerion import (
-            QBetseeSimConfIonStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagerpath import (
-            QBetseeSimConfPathStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagerspace import (
+        from betsee.gui.simconf.stack.page.guisimconfpagepath import (
+            QBetseeSimConfPagerPath)
+        from betsee.gui.simconf.stack.page.guisimconfpagetime import (
+            QBetseeSimConfPagerTime)
+        from betsee.gui.simconf.stack.page.space.guisimconfpageion import (
+            QBetseeSimConfPagerIon)
+        from betsee.gui.simconf.stack.page.space.guisimconfpagespace import (
             QBetseeSimConfSpaceStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagertime import (
-            QBetseeSimConfTimeStackedWidgetPager)
-        from betsee.gui.simconf.stack.pager.guisimconfpagertis import (
-            QBetseeSimConfTissueDefaultStackedWidgetPager,
-            QBetseeSimConfTissueCustomStackedWidgetPager,
+        from betsee.gui.simconf.stack.page.space.guisimconfpagetis import (
+            QBetseeSimConfPagerTissueDefault,
+            QBetseeSimConfPagerTissueCustom,
         )
 
         # Initialize our superclass with all passed parameters.
@@ -123,17 +124,17 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # Classify instance variables with sane defaults.
         self._stack_page_name_to_pager = {
             'sim_conf_stack_page_Ions': (
-                QBetseeSimConfIonStackedWidgetPager()),
+                QBetseeSimConfPagerIon()),
             'sim_conf_stack_page_Paths': (
-                QBetseeSimConfPathStackedWidgetPager()),
+                QBetseeSimConfPagerPath()),
             'sim_conf_stack_page_Space': (
                 QBetseeSimConfSpaceStackedWidgetPager()),
             'sim_conf_stack_page_Space_Tissue': (
-                QBetseeSimConfTissueDefaultStackedWidgetPager()),
+                QBetseeSimConfPagerTissueDefault()),
             'sim_conf_stack_page_Space_Tissue_item': (
-                QBetseeSimConfTissueCustomStackedWidgetPager()),
+                QBetseeSimConfPagerTissueCustom()),
             'sim_conf_stack_page_Time': (
-                QBetseeSimConfTimeStackedWidgetPager()),
+                QBetseeSimConfPagerTime()),
         }
         self._tree_item_static_to_stack_page = {}
         self._tree_item_list_root_to_stack_page_list_leaf = {}
@@ -458,12 +459,11 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
             # If this pager is *NOT* itemized, raise an exception. Only
             # itemized pagers (i.e., instances of the general-purpose
-            # "QBetseeStackedWidgetPagerItemizedMixin" mixin) are permitted to
+            # "QBetseePagerItemizedMixin" mixin) are permitted to
             # control stack pages associated with list items; likewise, only
             # itemized pagers define the reinit() method called below.
             objects.die_unless_instance(
-                obj=stack_page_pager,
-                cls=QBetseeStackedWidgetPagerItemizedMixin)
+                obj=stack_page_pager, cls=QBetseePagerItemizedMixin)
 
             # 0-based index of the currently selected tree item in the dynamic
             # list of all children of the parent tree item of this item.
@@ -474,7 +474,9 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             # former synchronizes every editable widget on this page with the
             # current value of the corresponding setting in the currently open
             # simulation configuration.
-            stack_page_pager.reinit(list_item_index=tree_item_list_leaf_index)
+            stack_page_pager.reinit(
+                main_window=guiappwindow.get_main_window(),
+                list_item_index=tree_item_list_leaf_index)
 
         # Switch to this page, which is now guaranteed to both exist *AND* have
         # been reinitialized (if needed).

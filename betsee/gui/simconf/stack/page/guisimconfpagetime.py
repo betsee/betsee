@@ -4,8 +4,8 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based stack widget page controllers specific to temporal
-settings.
+**Temporal simulation configuration pager** (i.e., :mod:`PySide2`-based
+controller for stack widget pages specific to temporal settings) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -14,15 +14,15 @@ from PySide2.QtWidgets import QMainWindow
 from betse.science.parameters import Parameters
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.control.guictlpagerabc import (
-    QBetseeStackedWidgetPagerABC)
+from betsee.util.widget.abc.control.guictlpageabc import (
+    QBetseePagerABC)
 
 # ....................{ SUBCLASSES                        }....................
-class QBetseeSimConfTimeStackedWidgetPager(QBetseeStackedWidgetPagerABC):
+class QBetseeSimConfPagerTime(QBetseePagerABC):
     '''
-    :mod:`PySide2`-based stack widget page controller, connecting all editable
-    widgets of the temporal page with the corresponding low-level settings of
-    the current simulation configuration.
+    **Temporal simulation configuration pager** (i.e., :mod:`PySide2`-based
+    controller connecting all editable widgets of the temporal stack widget
+    page with corresponding settings of the current simulation configuration).
     '''
 
     # ..................{ INITIALIZERS                      }..................

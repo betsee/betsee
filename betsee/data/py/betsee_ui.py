@@ -273,20 +273,20 @@ class Ui_main_window(object):
         self.sim_conf_tree.setObjectName("sim_conf_tree")
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon1 = QtGui.QIcon()
-        icon1.addFile("://icon/betsee/chemical.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addFile("://icon/open_iconic/clock.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         item_0.setIcon(0, icon1)
-        item_1 = QtWidgets.QTreeWidgetItem(item_0)
+        item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon2 = QtGui.QIcon()
-        icon2.addFile("://icon/open_iconic/aperture.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item_1.setIcon(0, icon2)
-        item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
+        icon2.addFile("://icon/betsee/chemical.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        item_0.setIcon(0, icon2)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
         icon3 = QtGui.QIcon()
-        icon3.addFile("://icon/open_iconic/clock.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item_0.setIcon(0, icon3)
-        item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
+        icon3.addFile("://icon/entypo+/sports-club.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        item_1.setIcon(0, icon3)
+        item_1 = QtWidgets.QTreeWidgetItem(item_0)
         icon4 = QtGui.QIcon()
-        icon4.addFile("://icon/entypo+/sports-club.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        item_0.setIcon(0, icon4)
+        icon4.addFile("://icon/open_iconic/aperture.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        item_1.setIcon(0, icon4)
         item_0 = QtWidgets.QTreeWidgetItem(self.sim_conf_tree)
         icon5 = QtGui.QIcon()
         icon5.addFile(":/icon/open_iconic/external-link.svg", QtCore.QSize(), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -2711,35 +2711,35 @@ class Ui_main_window(object):
         self.sim_conf_tree.headerItem().setText(0, QtWidgets.QApplication.translate("main_window", "Configuration", None, -1))
         __sortingEnabled = self.sim_conf_tree.isSortingEnabled()
         self.sim_conf_tree.setSortingEnabled(False)
-        self.sim_conf_tree.topLevelItem(0).setText(0, QtWidgets.QApplication.translate("main_window", "Space", None, -1))
-        self.sim_conf_tree.topLevelItem(0).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Tissue", None, -1))
-        self.sim_conf_tree.topLevelItem(1).setText(0, QtWidgets.QApplication.translate("main_window", "Time", None, -1))
-        self.sim_conf_tree.topLevelItem(2).setText(0, QtWidgets.QApplication.translate("main_window", "Ions", None, -1))
-        self.sim_conf_tree.topLevelItem(3).setText(0, QtWidgets.QApplication.translate("main_window", "Export", None, -1))
-        self.sim_conf_tree.topLevelItem(3).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "CSV", None, -1))
-        self.sim_conf_tree.topLevelItem(3).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Plot", None, -1))
-        self.sim_conf_tree.topLevelItem(3).child(1).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Cell Cluster", None, -1))
-        self.sim_conf_tree.topLevelItem(3).child(1).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Single Cell", None, -1))
-        self.sim_conf_tree.topLevelItem(3).child(2).setText(0, QtWidgets.QApplication.translate("main_window", "Animation", None, -1))
-        self.sim_conf_tree.topLevelItem(3).child(2).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Cell Cluster", None, -1))
-        self.sim_conf_tree.topLevelItem(4).setText(0, QtWidgets.QApplication.translate("main_window", "Paths", None, -1))
-        self.sim_conf_tree.topLevelItem(5).setText(0, QtWidgets.QApplication.translate("main_window", "--[TODO]--", None, -1))
-        self.sim_conf_tree.topLevelItem(6).setText(0, QtWidgets.QApplication.translate("main_window", "Dynamic Channels", None, -1))
-        self.sim_conf_tree.topLevelItem(7).setText(0, QtWidgets.QApplication.translate("main_window", "Interventions", None, -1))
-        self.sim_conf_tree.topLevelItem(8).setText(0, QtWidgets.QApplication.translate("main_window", "Junctions", None, -1))
-        self.sim_conf_tree.topLevelItem(9).setText(0, QtWidgets.QApplication.translate("main_window", "Network", None, -1))
-        self.sim_conf_tree.topLevelItem(9).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Substances", None, -1))
-        self.sim_conf_tree.topLevelItem(9).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Reactions", None, -1))
-        self.sim_conf_tree.topLevelItem(9).child(2).setText(0, QtWidgets.QApplication.translate("main_window", "Transporters", None, -1))
-        self.sim_conf_tree.topLevelItem(9).child(3).setText(0, QtWidgets.QApplication.translate("main_window", "Channels", None, -1))
-        self.sim_conf_tree.topLevelItem(9).child(4).setText(0, QtWidgets.QApplication.translate("main_window", "Modulators", None, -1))
-        self.sim_conf_tree.topLevelItem(10).setText(0, QtWidgets.QApplication.translate("main_window", "Additional Physics", None, -1))
-        self.sim_conf_tree.topLevelItem(11).setText(0, QtWidgets.QApplication.translate("main_window", "Tools", None, -1))
-        self.sim_conf_tree.topLevelItem(12).setText(0, QtWidgets.QApplication.translate("main_window", "Advanced", None, -1))
-        self.sim_conf_tree.topLevelItem(13).setText(0, QtWidgets.QApplication.translate("main_window", "Data Export", None, -1))
-        self.sim_conf_tree.topLevelItem(14).setText(0, QtWidgets.QApplication.translate("main_window", "Line Plots", None, -1))
-        self.sim_conf_tree.topLevelItem(15).setText(0, QtWidgets.QApplication.translate("main_window", "2D Plots", None, -1))
-        self.sim_conf_tree.topLevelItem(16).setText(0, QtWidgets.QApplication.translate("main_window", "Animations", None, -1))
+        self.sim_conf_tree.topLevelItem(0).setText(0, QtWidgets.QApplication.translate("main_window", "Time", None, -1))
+        self.sim_conf_tree.topLevelItem(1).setText(0, QtWidgets.QApplication.translate("main_window", "Space", None, -1))
+        self.sim_conf_tree.topLevelItem(1).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Ions", None, -1))
+        self.sim_conf_tree.topLevelItem(1).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Tissue", None, -1))
+        self.sim_conf_tree.topLevelItem(2).setText(0, QtWidgets.QApplication.translate("main_window", "Export", None, -1))
+        self.sim_conf_tree.topLevelItem(2).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "CSV", None, -1))
+        self.sim_conf_tree.topLevelItem(2).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Plot", None, -1))
+        self.sim_conf_tree.topLevelItem(2).child(1).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Cell Cluster", None, -1))
+        self.sim_conf_tree.topLevelItem(2).child(1).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Single Cell", None, -1))
+        self.sim_conf_tree.topLevelItem(2).child(2).setText(0, QtWidgets.QApplication.translate("main_window", "Animation", None, -1))
+        self.sim_conf_tree.topLevelItem(2).child(2).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Cell Cluster", None, -1))
+        self.sim_conf_tree.topLevelItem(3).setText(0, QtWidgets.QApplication.translate("main_window", "Paths", None, -1))
+        self.sim_conf_tree.topLevelItem(4).setText(0, QtWidgets.QApplication.translate("main_window", "--[TODO]--", None, -1))
+        self.sim_conf_tree.topLevelItem(5).setText(0, QtWidgets.QApplication.translate("main_window", "Dynamic Channels", None, -1))
+        self.sim_conf_tree.topLevelItem(6).setText(0, QtWidgets.QApplication.translate("main_window", "Interventions", None, -1))
+        self.sim_conf_tree.topLevelItem(7).setText(0, QtWidgets.QApplication.translate("main_window", "Junctions", None, -1))
+        self.sim_conf_tree.topLevelItem(8).setText(0, QtWidgets.QApplication.translate("main_window", "Network", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(0).setText(0, QtWidgets.QApplication.translate("main_window", "Substances", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(1).setText(0, QtWidgets.QApplication.translate("main_window", "Reactions", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(2).setText(0, QtWidgets.QApplication.translate("main_window", "Transporters", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(3).setText(0, QtWidgets.QApplication.translate("main_window", "Channels", None, -1))
+        self.sim_conf_tree.topLevelItem(8).child(4).setText(0, QtWidgets.QApplication.translate("main_window", "Modulators", None, -1))
+        self.sim_conf_tree.topLevelItem(9).setText(0, QtWidgets.QApplication.translate("main_window", "Additional Physics", None, -1))
+        self.sim_conf_tree.topLevelItem(10).setText(0, QtWidgets.QApplication.translate("main_window", "Tools", None, -1))
+        self.sim_conf_tree.topLevelItem(11).setText(0, QtWidgets.QApplication.translate("main_window", "Advanced", None, -1))
+        self.sim_conf_tree.topLevelItem(12).setText(0, QtWidgets.QApplication.translate("main_window", "Data Export", None, -1))
+        self.sim_conf_tree.topLevelItem(13).setText(0, QtWidgets.QApplication.translate("main_window", "Line Plots", None, -1))
+        self.sim_conf_tree.topLevelItem(14).setText(0, QtWidgets.QApplication.translate("main_window", "2D Plots", None, -1))
+        self.sim_conf_tree.topLevelItem(15).setText(0, QtWidgets.QApplication.translate("main_window", "Animations", None, -1))
         self.sim_conf_tree.setSortingEnabled(__sortingEnabled)
         self.log_label.setText(QtWidgets.QApplication.translate("main_window", "Log Messages", None, -1))
         self.groupBox_50.setTitle(QtWidgets.QApplication.translate("main_window", "Path Settings", None, -1))
@@ -3227,16 +3227,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
 from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

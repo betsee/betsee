@@ -42,7 +42,7 @@ from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.types import type_check  #, StrOrNoneTypes
 from betsee.guiexception import BetseeSimmerException
 from betsee.gui.simtab.run.guisimrunstate import SimmerState
-from betsee.util.widget.abc.control.guicontrolabc import QBetseeControllerABC
+from betsee.util.widget.abc.control.guictlabc import QBetseeControllerABC
 
 # ....................{ SUPERCLASSES                      }....................
 class QBetseeSimmerStatefulABC(QBetseeControllerABC):

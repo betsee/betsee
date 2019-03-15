@@ -4,15 +4,16 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based stack widget page controllers specific to tissue profiles.
+**Tissue simulation configuration pager** (i.e., :mod:`PySide2`-based
+controller for stack widget pages specific to tissue profiles) functionality.
 '''
 
-#FIXME: Add support to the "QBetseeSimConfTissueCustomStackedWidgetPager"
+#FIXME: Add support to the "QBetseeSimConfPagerTissueCustom"
 #subclass for all YAML-based data descriptors specific to the
 #"betse.science.config.model.conftis.SimConfTissueListItem" subclass.
 
 #FIXME: We're not quite done here. Yet again, there exists a desynchronization
-#issue between the "QBetseeSimConfTissueCustomStackedWidgetPager" subclass and
+#issue between the "QBetseeSimConfPagerTissueCustom" subclass and
 #the "QBetseeSimConfTreeWidget" subclass. Namely, when the end user attempts to
 #interactively rename the currently selected tissue profile via the
 #corresponding line edit widget, we need to:
@@ -26,14 +27,14 @@
 #    collisions.
 
 #FIXME: We're not quite done here. There currently exists a desynchronization
-#issue between the "QBetseeSimConfTissueCustomStackedWidgetPager" subclass and
+#issue between the "QBetseeSimConfPagerTissueCustom" subclass and
 #the "QBetseeSimConfTreeWidget" subclass. Namely, when the name of the
 #currently selected tissue profile is interactively renamed by the end user via
 #the corresponding line edit widget, the first-column text of the corresponding
 #tree item of the tree widget must *ALSO* be renamed. To do so, we'll probably
 #want to define a new custom slot connected to a signal of this line edit
 #widget signalled on changes. The question, of course, is where that slot
-#should reside: in the "QBetseeSimConfTissueCustomStackedWidgetPager" subclass,
+#should reside: in the "QBetseeSimConfPagerTissueCustom" subclass,
 #in the "QBetseeSimConfTreeWidget" subclass, or elsewhere (e.g., in the
 #"QBetseeSimConfStackedWidget" subclass)?
 #
@@ -52,18 +53,16 @@ from betse.util.type.obj import objects
 # from betse.util.io.log import logs
 from betse.util.type.iterable import sequences
 from betse.util.type.types import type_check
-from betsee.util.app import guiappwindow
-from betsee.util.widget.abc.control.guictlpagerabc import (
-    QBetseeStackedWidgetPagerABC,
-    QBetseeStackedWidgetPagerItemizedMixin
-)
+from betsee.util.widget.abc.control.guictlpageabc import (
+    QBetseePagerABC, QBetseePagerItemizedMixin)
 
 # ....................{ SUPERCLASSES                      }....................
-class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
+class QBetseeSimConfPagerTissueABC(QBetseePagerABC):
     '''
-    Abstract base class of all tissue-specific stack widget page controller
-    subclasses, connecting all editable widgets of the page with the
-    corresponding low-level settings of the current simulation configuration.
+    Abstract base class of all **tissue simulation configuration pager** (i.e.,
+    :mod:`PySide2`-based controller connecting all editable widgets of the
+    tissue stack widget page with corresponding settings of the current
+    simulation configuration) subclasses.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -105,8 +104,7 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
         '''
 
         # Initialize our superclass with all passed parameters.
-        super().init(
-            main_window=main_window, is_reinitable=is_reinitable)
+        super().init(main_window=main_window, is_reinitable=is_reinitable)
 
         # Type of this tissue profile.
         tissue_profile_cls = type(tissue_profile)
@@ -165,12 +163,12 @@ class QBetseeSimConfTissueStackedWidgetPagerABC(QBetseeStackedWidgetPagerABC):
             )
 
 # ....................{ SUBCLASSES ~ default              }....................
-class QBetseeSimConfTissueDefaultStackedWidgetPager(
-    QBetseeSimConfTissueStackedWidgetPagerABC):
+class QBetseeSimConfPagerTissueDefault(QBetseeSimConfPagerTissueABC):
     '''
-    Default tissue-specific stack widget page controller, connecting all
-    editable widgets of the page with the corresponding low-level settings of
-    the current simulation configuration.
+    **Default tissue simulation configuration pager** (i.e.,
+    :mod:`PySide2`-based controller connecting all editable widgets of the
+    default tissue profile-specific stack widget page with corresponding
+    settings of the current simulation configuration).
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -185,22 +183,20 @@ class QBetseeSimConfTissueDefaultStackedWidgetPager(
         )
 
 # ....................{ SUBCLASSES ~ custom               }....................
-class QBetseeSimConfTissueCustomStackedWidgetPager(
-    QBetseeStackedWidgetPagerItemizedMixin,
-    QBetseeSimConfTissueStackedWidgetPagerABC):
+class QBetseeSimConfPagerTissueCustom(
+    QBetseePagerItemizedMixin, QBetseeSimConfPagerTissueABC):
     '''
-    Custom tissue-specific stack widget page controller, connecting all
-    editable widgets of the page with the corresponding low-level settings of
-    the current simulation configuration.
+    **Custom tissue simulation configuration pager** (i.e.,
+    :mod:`PySide2`-based controller connecting all editable widgets of the
+    stack widget page applicable to a single custom tissue profile with
+    corresponding settings of the current simulation configuration).
 
-    Design
-    ----------
     **This controller implements the well-known flyweight design pattern.**
     Specifically, this single controller is shared between the zero or more
     custom tissue profiles configured for this simulation and hence *cannot* be
-    implicitly initialized at application startup but must instead be
+    implicitly initialized at application startup. Instead, this controller is
     explicitly reinitialized in an on-the-fly manner immediately before this
-    page is displayed to configure a specific custom tissue profile.
+    page is displayed to edit a single such profile.
     '''
 
     # ..................{ SUPERCLASS ~ initializers         }..................
@@ -215,44 +211,17 @@ class QBetseeSimConfTissueCustomStackedWidgetPager(
 
 
     @type_check
-    def reinit(self, list_item_index: int) -> None:
+    def reinit(self, main_window: QMainWindow, list_item_index: int) -> None:
 
-        # Main window of this application.
-        main_window = guiappwindow.get_main_window()
-
-        # Sequence of all currently configured tissue profiles.
-        tissue_profiles = main_window.sim_conf.p.tissue_profiles
-
-        # If this index does *NOT* index this sequence, raise an exception.
-        sequences.die_unless_index(
-            sequence=tissue_profiles, index=list_item_index)
-        # Else, index indexes this sequence.
+        # Tissue profile currently controlled by this pager.
+        tissue_profile = sequences.get_index(
+            sequence=main_window.sim_conf.p.tissue_profiles,
+            index=list_item_index)
 
         # Refinalize the initialization of our superclass.
         super().init(
             main_window=main_window,
             widget_name_prefix='sim_conf_tis_custom_',
-            tissue_profile=tissue_profiles[list_item_index],
+            tissue_profile=tissue_profile,
             is_reinitable=True,
         )
-
-
-    #FIXME: Implement us up.
-    #FIXME: Call this method under at least the following circumstances:
-    #
-    #* When the custom tissue profile currently associated with this stack page
-    #  is removed. Note that this should cleanly generalize to handle both the
-    #  explicit removal of a single custom tissue profile by the end user *AND*
-    #  the closure of the current simulation configuration file. Ergo, we
-    #  should *NOT* to manually handle such closure; detecting the condition
-    #  when the custom tissue profile currently associated with this stack page
-    #  is removed should thus gracefully scale to all possible cases.
-    #
-    #  When this condition occurs *AND* this stack page is currently displayed,
-    #  the default tissue profile stack page (which is guaranteed to exist)
-    #  should be automatically switched to.
-    #
-    #Nice, eh?
-    def deinit(self) -> None:
-
-        pass
