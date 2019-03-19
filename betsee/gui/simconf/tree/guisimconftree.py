@@ -19,6 +19,16 @@ simulation configuration.
 #probably prove non-trivial and has thus been deferred in favour of more
 #low-hanging and/or mission-critical fruit.
 
+#FIXME: Conditionally grey out the names (i.e., first-column text) of dynamic
+#tree list items that are currently disabled. Specifically, if the YAML-backed
+#list item subconfiguration underlying any such tree item is an instance of the
+#"YamlBooledMixin" *AND* the current value of the "is_enabled" data descriptor
+#of this subconfiguration is "False", the name of this tree item should be
+#selectively greyed out. Implementing this properly will require connecting a
+#the "checked" (...or something) signal of the checkbox widget of the pager
+#controlling the corresponding stacked widget page with a new custom slot of
+#this tree widget. (Everything has its price.)
+
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QTreeWidgetItem

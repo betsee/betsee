@@ -5,7 +5,7 @@
 
 '''
 Abstract base classes of all editable enumerative simulation configuration
-widget subclasses instantiated in pages of the top-level stack.
+widget subclasses instantiated in pages of the top-level stacked widget.
 '''
 
 #FIXME: Don't neglect to submit our "uiparser.py" fix to upstream! Nargle!
@@ -91,8 +91,8 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
 
         # Enumeration constraining this simulation configuration alias. Note
         # that this type need *NOT* validated here, as the
-        # _sim_conf_alias_type_strict() property instructs our superclass to do
-        # so already.
+        # _sim_conf_alias_type_strict() property implemented below already
+        # instructs our superclass to do so.
         enum_type = self._sim_conf_alias.data_desc.expr_alias_cls
 
         # If the number of members in this enumeration differs from the number
@@ -121,8 +121,8 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
         widget_value = self.widget_value
 
         # If this value corresponds to no enumeration member, raise an
-        # exception. While this should *NEVER* be the case, should should never
-        # be a word.
+        # exception. While this should *NEVER* be the case, "should" should
+        # never be a valid word.
         if widget_value not in self._widget_value_to_enum_member:
             # Human-readable description of this value.
             widget_value_label = widget_value
@@ -138,7 +138,7 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
                 'Widget value "{0}" unrecognized.'.format(
                     widget_value_label)))
 
-        # Return the enumeration member corresponding to this button.
+        # Return the enumeration member corresponding to this widget's value.
         return self._widget_value_to_enum_member[widget_value]
 
 
@@ -148,12 +148,13 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
         enum_member = self._sim_conf_alias.get()
 
         # If this is *NOT* a member of this enumeration, raise an exception.
-        # While this should *NEVER* be the case, should should never be a word.
+        # While this should *NEVER* be the case, "never" should never be a
+        # valid word.
         if enum_member not in self._enum_member_to_widget_value:
             raise BetseePySideWidgetEnumException(QCoreApplication.translate(
                 'QBetseeSimConfEditEnumWidgetMixin',
                 'Enumeration member "{0}" unrecognized.'.format(
                     str(enum_member))))
 
-        # Return the radio button corresponding to this member.
+        # Return this widget's value corresponding to this member.
         return self._enum_member_to_widget_value[enum_member]

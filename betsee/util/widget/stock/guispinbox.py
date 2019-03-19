@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,7 +7,7 @@
 General-purpose :mod:`QAbstractSpinBox` widget subclasses.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QValidator
 from PySide2.QtWidgets import QDoubleSpinBox
@@ -15,7 +15,7 @@ from betse.util.type.numeric import floats
 from betse.util.type.text import regexes
 from betse.util.type.types import type_check
 
-# ....................{ SUBCLASSES                         }....................
+# ....................{ SUBCLASSES                        }....................
 class QBetseeDoubleSpinBox(QDoubleSpinBox):
     '''
     :mod:`QDoubleSpinBox`-based widget optimized for intelligent display of
@@ -32,8 +32,8 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
     Attributes
     ----------
     _validator : QBetseeDoubleValidator
-        Application-specific validator validating floating point numbers in both
-        decimal and scientific notation.
+        Application-specific validator validating floating point numbers in
+        both decimal and scientific notation.
 
     See Also
     ----------
@@ -41,7 +41,7 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
         Blog post partially inspiring this implementation.
     '''
 
-    # ..................{ CONSTANTS                          }..................
+    # ..................{ CONSTANTS                         }..................
     SINGLE_STEP_DEFAULT = 1.0
     '''
     Default Qt value for the :meth:`singleStep` property.
@@ -51,7 +51,7 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
     this property has been specified or not.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed parameters.
@@ -64,17 +64,17 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
         # arbitrary maximum of 99.99, an insane default with no correspondence
         # to actual reality.
         #
-        # By contrast, we silently permit Qt to retains its default behaviour of
-        # constraining displayed floating point numbers to a minimum of 0, a
+        # By contrast, we silently permit Qt to retains its default behaviour
+        # of constraining displayed floating point numbers to a minimum of 0, a
         # sane default given the inability of most measurable physical
         # quantities to "go negative."
         #
-        # Note that overriding the default maximum here still permits callers to
-        # override this with a widget- or subclass-specific maximum. Hence, this
-        # override has *NO* unintended or harmful side effects.
+        # Note that overriding the default maximum here still permits callers
+        # to override this with a widget- or subclass-specific maximum. Hence,
+        # this override has *NO* unintended or harmful side effects.
         self.setMaximum(floats.FLOAT_MAX)
 
-    # ..................{ VALIDATORS                         }..................
+    # ..................{ VALIDATORS                        }..................
     # See the "QBetseeDoubleValidator" class for commentary.
 
     def validate(self, text: str, char_index: int) -> QValidator.State:
@@ -83,7 +83,7 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
     def fixup(self, text: str) -> str:
         return self._validator.fixup(text)
 
-    # ..................{ VALIDATORS                         }..................
+    # ..................{ VALIDATORS                        }..................
     def valueFromText(self, text: str) -> float:
         '''
         Floating point number converted from the passed human-readable string.
@@ -101,7 +101,7 @@ class QBetseeDoubleSpinBox(QDoubleSpinBox):
         # "{:g}" format specifier is preferred.
         return floats.to_str(number)
 
-# ....................{ SUBCLASSES ~ validator             }....................
+# ....................{ SUBCLASSES ~ validator            }....................
 class QBetseeDoubleValidator(QValidator):
     '''
     Validator enabling the :mod:`QBetseeDoubleSpinBox` widget to input and
@@ -122,14 +122,14 @@ class QBetseeDoubleValidator(QValidator):
         Blog post partially inspiring this implementation.
     '''
 
-    # ..................{ CONSTANTS                          }..................
+    # ..................{ CONSTANTS                         }..................
     _CHARS_NONDIGIT = {'e', 'E', '.', '-', '+'}
     '''
     Set of all permissible non-digit characters in floating point numbers in
     either decimal or scientific notation.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed parameters.
@@ -140,7 +140,7 @@ class QBetseeDoubleValidator(QValidator):
         # called fixup() method.
         self._float_regex = floats.get_float_regex()
 
-    # ..................{ VALIDATORS                         }..................
+    # ..................{ VALIDATORS                        }..................
     @type_check
     def validate(self, text: str, char_index: int) -> QValidator.State:
         '''
@@ -199,12 +199,14 @@ class QBetseeDoubleValidator(QValidator):
         Specifically, this function returns:
 
         * The first substring in this invalid input matching a floating point
-          number in either decimal or scientific notation if this input contains
-          such a substring. In this case, the returned string is valid.
+          number in either decimal or scientific notation if this input
+          contains such a substring. In this case, the returned string is
+          guaranteeably valid.
         * The empty string otherwise. In this case, the returned string is
-          merely intermediate.
+          *not* guaranteeably valid and hence is merely intermediate.
 
         In either case, the returned string is guaranteed *not* to be invalid.
+        Of course, this does *not* guarantee this string to be valid.
 
         Parameters
         ----------
