@@ -1454,6 +1454,18 @@ class Ui_main_window(object):
         self.sim_conf_exp_colormap_sequential = QtWidgets.QComboBox(self.groupBox_55)
         self.sim_conf_exp_colormap_sequential.setObjectName("sim_conf_exp_colormap_sequential")
         self.formLayout_24.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_colormap_sequential)
+        self.label_102 = QtWidgets.QLabel(self.groupBox_55)
+        self.label_102.setObjectName("label_102")
+        self.formLayout_24.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_102)
+        self.sim_conf_exp_colormap_gj = QtWidgets.QComboBox(self.groupBox_55)
+        self.sim_conf_exp_colormap_gj.setObjectName("sim_conf_exp_colormap_gj")
+        self.formLayout_24.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_colormap_gj)
+        self.label_103 = QtWidgets.QLabel(self.groupBox_55)
+        self.label_103.setObjectName("label_103")
+        self.formLayout_24.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_103)
+        self.sim_conf_exp_colormap_grn = QtWidgets.QComboBox(self.groupBox_55)
+        self.sim_conf_exp_colormap_grn.setObjectName("sim_conf_exp_colormap_grn")
+        self.formLayout_24.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_colormap_grn)
         self.verticalLayout_25.addWidget(self.groupBox_55)
         spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_25.addItem(spacerItem5)
@@ -3073,10 +3085,14 @@ class Ui_main_window(object):
         self.groupBox_54.setTitle(QtWidgets.QApplication.translate("main_window", "Export Settings", None, -1))
         self.groupBox_55.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Matplotlib colormaps (i.e., predefined linear-segmented gradients) mapping arbitrary cell data to color values in exported plots and animations. See also <a href=\"https://matplotlib.org/tutorials/colors/colormaps.html\">\"Choosing Colormaps in Matplotlib\"</a> for detailed discussion.</p></body></html>", None, -1))
         self.groupBox_55.setTitle(QtWidgets.QApplication.translate("main_window", "Matplotlib Colormaps", None, -1))
-        self.label_100.setText(QtWidgets.QApplication.translate("main_window", "Diverging colormap:", None, -1))
+        self.label_100.setText(QtWidgets.QApplication.translate("main_window", "Diverging:", None, -1))
         self.sim_conf_exp_colormap_diverging.setToolTip(QtWidgets.QApplication.translate("main_window", "Diverging colormap mapping zero-centered cell data (i.e., data deviating both above and below 0 in approximately equal measure) to color values in exported plots and animations. Since most cell data is zero-centered, this is effectively the default colormap.", None, -1))
-        self.label_101.setText(QtWidgets.QApplication.translate("main_window", "Sequential colormap:", None, -1))
+        self.label_101.setText(QtWidgets.QApplication.translate("main_window", "Sequential:", None, -1))
         self.sim_conf_exp_colormap_sequential.setToolTip(QtWidgets.QApplication.translate("main_window", "Sequential colormap mapping zero-based cell data (i.e., data strictly increasing from 0 to positive infinity) to color values in exported plots and animations. Since most vectorial cell data (e.g., deformations, fluid flow, electromagnetic currents and fields) is zero-based, this is effectively the default colormap for such data.", None, -1))
+        self.label_102.setText(QtWidgets.QApplication.translate("main_window", "Gap junction:", None, -1))
+        self.sim_conf_exp_colormap_gj.setToolTip(QtWidgets.QApplication.translate("main_window", "Gap junction colormap mapping gap junction data (e.g., gap junction currents) to color values in exported plots and animations.", None, -1))
+        self.label_103.setText(QtWidgets.QApplication.translate("main_window", "Gene regulatory network:", None, -1))
+        self.sim_conf_exp_colormap_grn.setToolTip(QtWidgets.QApplication.translate("main_window", "Gene regulatory network (GRN) colormap mapping GRN data (e.g., concentration nodes of reaction network graphs) to color values in exported plots and animations.", None, -1))
         self.groupBox_DynamicChannels.setTitle(QtWidgets.QApplication.translate("main_window", "Dynamic Channels", None, -1))
         self.radioButton.setText(QtWidgets.QApplication.translate("main_window", "Turn On", None, -1))
         self.label_15.setText(QtWidgets.QApplication.translate("main_window", "Channel Class:", None, -1))
@@ -3266,16 +3282,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
-from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
+from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

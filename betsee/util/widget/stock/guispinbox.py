@@ -18,8 +18,8 @@ from betse.util.type.types import type_check
 # ....................{ SUBCLASSES                        }....................
 class QBetseeDoubleSpinBox(QDoubleSpinBox):
     '''
-    :mod:`QDoubleSpinBox`-based widget optimized for intelligent display of
-    floating point numbers.
+    General-purpose :mod:`QDoubleSpinBox`-based widget optimized for contextual
+    display and validation of floating point numbers.
 
     This application-specific widget augments the stock :class:`QDoubleSpinBox`
     widget with additional support for scientific notation, permitting *only*

@@ -8,9 +8,6 @@
 controller for stack widget pages specific to export settings) functionality.
 '''
 
-#FIXME: Implement this submodule, which currently only serves as a placeholder
-#facade implementation to avoid raising disruptive exceptions at runtime.
-
 #FIXME: Below the combobox selecting each colormap on the page controlled by
 #this pager, visually display a line segment depicting the perceptual gradiant
 #implemented by that colormap. Fortunately, this is considerably more trivial
