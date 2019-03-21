@@ -24,9 +24,9 @@ controller for stack widget pages specific to export settings) functionality.
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
-# from betse.science.parameters import Parameters
-# from betse.science.enum.enumconf import CellLatticeType
+from betse.science.parameters import Parameters
 # from betse.util.io.log import logs
+from betse.lib.matplotlib import mplcolormap
 from betse.util.type.types import type_check
 from betsee.util.widget.abc.control.guictlpageabc import QBetseePagerABC
 
@@ -48,6 +48,15 @@ class QBetseeSimConfPagerExport(QBetseePagerABC):
         # Simulation configuration state object.
         sim_conf = main_window.sim_conf
 
-        # Initialize all widgets on this page.
-        # main_window.sim_conf_space_intra_cell_radius.init(
-        #     sim_conf=sim_conf, sim_conf_alias=Parameters.cell_radius)
+        # Sequence of the names of all colormaps currently registered with
+        # matplotlib (in sorted lexicographic order).
+        colormap_names = mplcolormap.iter_colormap_names()
+
+        #FIXME: Initialize all remaining widgets *AFTER* this is worky.
+
+        # Initialize all colormap combobox widgets on this page.
+        main_window.sim_conf_exp_colormap_diverging.init(
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.colormap_diverging_name,
+            items_iconless_text=colormap_names,
+        )

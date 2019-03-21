@@ -934,7 +934,7 @@ class Ui_main_window(object):
         self.label_14.setFont(font)
         self.label_14.setObjectName("label_14")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_14)
-        self.sim_conf_ion_profile = QBetseeSimConfEnumComboBox(self.groupBox_20)
+        self.sim_conf_ion_profile = QBetseeSimConfComboBoxEnum(self.groupBox_20)
         self.sim_conf_ion_profile.setObjectName("sim_conf_ion_profile")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sim_conf_ion_profile)
         self.widget_24 = QtWidgets.QWidget(self.groupBox_20)
@@ -1445,7 +1445,7 @@ class Ui_main_window(object):
         self.label_100 = QtWidgets.QLabel(self.groupBox_55)
         self.label_100.setObjectName("label_100")
         self.formLayout_24.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_100)
-        self.sim_conf_exp_colormap_diverging = QtWidgets.QComboBox(self.groupBox_55)
+        self.sim_conf_exp_colormap_diverging = QBetseeSimConfComboBoxSequence(self.groupBox_55)
         self.sim_conf_exp_colormap_diverging.setObjectName("sim_conf_exp_colormap_diverging")
         self.formLayout_24.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_colormap_diverging)
         self.label_101 = QtWidgets.QLabel(self.groupBox_55)
@@ -2866,7 +2866,7 @@ class Ui_main_window(object):
         self.sim_conf_space_extra_is_ecm.setToolTip(QtWidgets.QApplication.translate("main_window", "Enable the extracellular matrix (ECM), simulating the environmental spaces surrounding each cell in the cluster? Disabling this substantially reduces simulation accuracy at a substantial reduction in space and time costs.", None, -1))
         self.groupBox_52.setTitle(QtWidgets.QApplication.translate("main_window", "Ions", None, -1))
         self.groupBox_20.setToolTip(QtWidgets.QApplication.translate("main_window", "Predefined ion profiles enabling ions in typical combinations at typical initial concentrations.", None, -1))
-        self.groupBox_20.setTitle(QtWidgets.QApplication.translate("main_window", "Preset", None, -1))
+        self.groupBox_20.setTitle(QtWidgets.QApplication.translate("main_window", "Ion Presets", None, -1))
         self.label_14.setText(QtWidgets.QApplication.translate("main_window", "Ion profile:", None, -1))
         self.sim_conf_ion_profile.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>\n"
 "Type of ion profile (i.e., predefined set of all extracellular and cytosolic\n"
@@ -3282,16 +3282,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit
 from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxEnum, QBetseeSimConfComboBoxSequence
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfEnumComboBox
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

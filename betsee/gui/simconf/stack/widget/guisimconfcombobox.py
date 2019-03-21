@@ -9,116 +9,92 @@
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Signal  #, Slot
-from PySide2.QtWidgets import QComboBox
 # from betse.util.io.log import logs
 # from betse.util.type.iterable import iterables
 from betse.util.type.types import type_check  #, EnumClassType
 # from betsee.guiexception import BetseePySideComboBoxException
 from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditenum import (
     QBetseeSimConfEditEnumWidgetMixin)
+from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
+    QBetseeSimConfEditScalarWidgetMixin)
+from betsee.util.widget.stock.guicombobox import QBetseeComboBox
 from collections import OrderedDict
 
-# ....................{ SUBCLASSES                        }....................
-#FIXME: Generalize as follows:
-#
-#* Define a new "class QBetseeComboBox(QComboBox)" subclass in that submodule.
-#  In this class:
-#  * Copy the __init__() method defined below.
-#  * Define a new add_items_iconless() method resembling:
-    # def add_items_iconless(items_text: SequenceTypes) -> None:
-    #     '''
-    #     Add **icon-less items** (i.e., plaintext combobox items with *no*
-    #     corresponding icons) with the passed text to this combobox after the
-    #     index of this combobox defined by the :meth:`insertPolicy` property,
-    #     defaulting to appending these items *after* any existing items of
-    #     this combobox.
-    #     '''
-    #
-    #     #FIXME: Explicitly detect the following types of duplicates:
-    #     #
-    #     #* Duplicate strings in the passed sequence.
-    #     #* Strings in the passed sequence that are already existing items of
-    #     #  this combobox.
-    #     #
-    #     #Consider efficient solutions elegantly handling both cases. If any
-    #     #duplicate is detected, raise an exception. Note that this *MUST* be
-    #     #done explicitly. The "QComboBox" class itself is sadly of no use here.
-    #     #Note the documentation of the seemingly relevant (but ultimately
-    #     #irrelevant) "duplicatesEnabled" property:
-    #     #
-    #     #    Note that it is always possible to programmatically insert duplicate items into the combobox.
-    #
-    #     # Sequence of the human-readable text of all combo box items.
-    #     #
-    #     # Since a view of ordered dictionary values is a valid sequence, the
-    #     # QComboBox.addItems() method passed this sequence below should
-    #     # technically accept this view *WITHOUT* requiring explicit coercion
-    #     # into a tuple. It does not, raising the following exception on
-    #     # attempting to do so:
-    #     #
-    #     #    TypeError: 'PySide2.QtWidgets.QComboBox.addItems' called with wrong argument types:
-    #     #      PySide2.QtWidgets.QComboBox.addItems(ValuesView)
-    #     #    Supported signatures:
-    #     #      PySide2.QtWidgets.QComboBox.addItems(QStringList)
-    #     #
-    #     # Presumably, the underlying bindings generator (i.e., Shiboken2) only
-    #     # implicitly coerces tuples and lists into "QStringList" instances.
-    #     # Curiously, generic sequences appear to remain unsupported.
-    #     if not isinstance(items_text, (tuple, list)):
-    #         items_text = tuple(items_text)
-    #
-    #     # Populate the contents of this combo box from this sequence.
-    #     self.addItems(items_text)
-#  * Define a new init() method resembling:
-#     def init(
-#         self, items_iconless_text: SequenceOrNoneTypes, *args, **kwargs) -> None:
-#
-#         if items_iconless_text is not None:
-#             self.add_items_iconless(items_iconless_text)
-#* Define a new
-#  "class QBetseeSimConfComboBoxABC(QBetseeComboBox)" superclass in this
-#  submodule here, copying all of the "MIXIN" subsections below. This may or
-#  may not be feasible due to diamond inheritance issues. If generalization
-#  ultimately proves infeasible, simply copy-and-paste. *shrug*
-#* Define a new
-#  "class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC)" subclass
-#  in this submodule here. The implementation of this subclass may reduce to
-#  simply "pass". If that's the case, consider renaming the
-#  "QBetseeSimConfComboBoxABC" superclass to "QBetseeSimConfComboBoxSequence"
-#  and dispensing with this placeholder subclass entirely.
-#* Rename the "QBetseeSimConfEnumComboBox" subclass defined below to
-#  "QBetseeSimConfComboBoxEnum" for orthogonality.
-#* Refactor this subclass to inherit "QBetseeSimConfComboBoxABC" if feasible.
-
-class QBetseeSimConfEnumComboBox(
-    QBetseeSimConfEditEnumWidgetMixin, QComboBox):
+# ....................{ SUBCLASSES ~ sequence             }....................
+class QBetseeSimConfComboBoxABC(
+    QBetseeSimConfEditScalarWidgetMixin, QBetseeComboBox):
     '''
-    Simulation configuration-specific combo box widget, permitting high-level
-    enumeration members backed by low-level raw strings in external simulation
-    configuration files to be interactively edited.
+    Abstract base class of all **simulation configuration combo box widget**
+    (i.e., :class:`QComboBox` widget transparently mapping from arbitrary
+    objects defined by the currently open simulation configuration file to
+    human-readable items of this combo box) subclasses.
+    '''
 
-    See Also
-    ----------
-    :class:`QBetseeSimConfEnumRadioButtonGroup`
-        Alternate simulation configuration-specific widget subclass similarly
-        enabling high-level enumeration members to be interactively edited.
-        That subclass is both less cumbersome to initialize *and* preferable
-        from the user experience (UX) perspective for sufficiently small
-        enumerations (e.g., containing five or fewer members).
+    # ..................{ MIXIN ~ property : read-only      }..................
+    @property
+    def undo_synopsis(self) -> str:
+        return QCoreApplication.translate(
+            'QBetseeSimConfComboBoxEnum', 'changes to a combo box')
+
+
+    @property
+    def _finalize_widget_change_signal(self) -> Signal:
+        return self.currentIndexChanged
+
+    # ..................{ MIXIN ~ property : value          }..................
+    @property
+    def widget_value(self) -> int:
+        return self.currentIndex()
+
+
+    @widget_value.setter
+    @type_check
+    def widget_value(self, widget_value: int) -> None:
+
+        # Set this widget's displayed value to the passed value by calling the
+        # setCurrentIndex() method of our superclass rather than this subclass,
+        # preventing infinite recursion. (See the superclass method docstring.)
+        super().setCurrentIndex(widget_value)
+
+
+    def _reset_widget_value(self) -> None:
+
+        # Reset this combo box by arbitrarily selecting its first item. Note
+        # this is distinct from the clear() method defined by our superclass,
+        # removing all existing items from this combo box. Calling that method
+        # would be highly undesirable here.
+        self.widget_value = 0
+
+# ....................{ SUBCLASSES ~ sequence             }....................
+#FIXME: Implement this subclass. See the "QBetseeSimConfEditEnumWidgetMixin"
+#superclass for relevant inspiration. We'll probably want to implement a
+#similar approach, including:
+#
+#* A new "_item_text_to_widget_value" dictionary.
+#* A new "_widget_value_to_item_text" *LIST*. Note the "*LIST*" here and that
+#  this is *NOT* strictly required, as the same mapping is trivially defined by
+#  the QComboBox.itemText() method.
+class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
+    '''
+    **Simulation configuration combo box widget** (i.e., :class:`QComboBox`
+    widget transparently mapping to human-readable items of this combo box from
+    strings defined by the currently open simulation configuration file
+    residing in a sequence of all possible such strings).
+    '''
+
+    pass
+
+# ....................{ SUBCLASSES ~ enum                 }....................
+class QBetseeSimConfComboBoxEnum(
+    QBetseeSimConfEditEnumWidgetMixin, QBetseeSimConfComboBoxABC):
+    '''
+    **Simulation configuration enumeration-backed combo box widget** (i.e.,
+    :class:`QComboBox` widget transparently mapping to human-readable items of
+    this combo box from enumeration members defined by the currently open
+    simulation configuration file).
     '''
 
     # ..................{ INITIALIZERS                      }..................
-    def __init__(self, *args, **kwargs) -> None:
-
-        # Initialize our superclass with all passed arguments.
-        super().__init__(*args, **kwargs)
-
-        # Disable editability, preventing users from manually editing item
-        # text. While our superclass already disables editability by default,
-        # this is sufficiently vital to warrant doing so explicitly.
-        self.setEditable(False)
-
-
     @type_check
     def init(
         self, enum_member_to_item_text: OrderedDict, *args, **kwargs) -> None:
@@ -156,64 +132,18 @@ class QBetseeSimConfEnumComboBox(
                 enum_member_to_item_text.keys())
         }
 
-        # Initialize our superclass with all such parameters.
+        # Sequence of the human-readable text of all combo box items.
+        #
+        # Ideally, any view of ordered dictionary values would be a valid
+        # sequence implementing the "collections.abc.Sequence" interface.
+        # Inexplicably, this is *NOT* the case. Since the subsequently called
+        # QBetseeComboBox.add_items_iconless() method requires a valid
+        # sequence, we have no choice but to force this to be the case.
+        items_text = tuple(enum_member_to_item_text.values())
+
+        # Finalize the initialization of all superclasses of this subclass.
         super().init(
             *args,
             enum_member_to_widget_value=enum_member_to_widget_value,
+            items_iconless_text=items_text,
             **kwargs)
-
-        # Sequence of the human-readable text of all combo box items.
-        #
-        # Since a view of ordered dictionary values is a valid sequence, the
-        # QComboBox.addItems() method passed this sequence below should
-        # technically accept this view *WITHOUT* requiring explicit coercion
-        # into a tuple. It does not, raising the following exception on
-        # attempting to do so:
-        #
-        #    TypeError: 'PySide2.QtWidgets.QComboBox.addItems' called with wrong argument types:
-        #      PySide2.QtWidgets.QComboBox.addItems(ValuesView)
-        #    Supported signatures:
-        #      PySide2.QtWidgets.QComboBox.addItems(QStringList)
-        #
-        # Presumably, the underlying bindings generator (i.e., Shiboken2) only
-        # implicitly coerces tuples and lists into "QStringList" instances.
-        # Curiously, generic sequences appear to remain unsupported.
-        items_text = tuple(enum_member_to_item_text.values())
-
-        # Populate the contents of this combo box from this sequence.
-        self.addItems(items_text)
-
-    # ..................{ MIXIN ~ property : read-only      }..................
-    @property
-    def undo_synopsis(self) -> str:
-        return QCoreApplication.translate(
-            'QBetseeSimConfEnumComboBox', 'changes to a combo box')
-
-
-    @property
-    def _finalize_widget_change_signal(self) -> Signal:
-        return self.currentIndexChanged
-
-    # ..................{ MIXIN ~ property : value          }..................
-    @property
-    def widget_value(self) -> int:
-        return self.currentIndex()
-
-
-    @widget_value.setter
-    @type_check
-    def widget_value(self, widget_value: int) -> None:
-
-        # Set this widget's displayed value to the passed value by calling the
-        # setCurrentIndex() method of our superclass rather than this subclass,
-        # preventing infinite recursion. (See the superclass method docstring.)
-        super().setCurrentIndex(widget_value)
-
-
-    def _reset_widget_value(self) -> None:
-
-        # Reset this combo box by arbitrarily selecting its first item. Note
-        # this is distinct from the clear() method defined by our superclass,
-        # removing all existing items from this combo box. Calling that method
-        # would be highly undesirable here.
-        self.widget_value = 0

@@ -1867,7 +1867,7 @@ QTreeWidget#sim_conf_tree {
                <string>Predefined ion profiles enabling ions in typical combinations at typical initial concentrations.</string>
               </property>
               <property name="title">
-               <string>Preset</string>
+               <string>Ion Presets</string>
               </property>
               <layout class="QFormLayout" name="formLayout_2">
                <item row="0" column="0">
@@ -1883,7 +1883,7 @@ QTreeWidget#sim_conf_tree {
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QBetseeSimConfEnumComboBox" name="sim_conf_ion_profile">
+                <widget class="QBetseeSimConfComboBoxEnum" name="sim_conf_ion_profile">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;
 Type of ion profile (i.e., predefined set of all extracellular and cytosolic
@@ -3268,7 +3268,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QComboBox" name="sim_conf_exp_colormap_diverging">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_exp_colormap_diverging">
                  <property name="toolTip">
                   <string>Diverging colormap mapping zero-centered cell data (i.e., data deviating both above and below 0 in approximately equal measure) to color values in exported plots and animations. Since most cell data is zero-centered, this is effectively the default colormap.</string>
                  </property>
@@ -6225,7 +6225,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    <header>betsee/gui/simconf/stack/widget/guisimconfcheckbox.h</header>
   </customwidget>
   <customwidget>
-   <class>QBetseeSimConfEnumComboBox</class>
+   <class>QBetseeSimConfComboBoxEnum</class>
    <extends>QComboBox</extends>
    <header>betsee/gui/simconf/stack/widget/guisimconfcombobox.h</header>
   </customwidget>
@@ -6254,6 +6254,11 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
    <class>QBetseeProgressBar</class>
    <extends>QProgressBar</extends>
    <header>betsee/util/widget/stock/guiprogressbar.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QBetseeSimConfComboBoxSequence</class>
+   <extends>QComboBox</extends>
+   <header>betsee/gui/simconf/stack/widget/guisimconfcombobox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

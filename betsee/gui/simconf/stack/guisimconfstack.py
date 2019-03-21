@@ -109,6 +109,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             QBetseeSimConfPagerPath)
         from betsee.gui.simconf.stack.page.guisimconfpagetime import (
             QBetseeSimConfPagerTime)
+        from betsee.gui.simconf.stack.page.export.guisimconfpageexport import (
+            QBetseeSimConfPagerExport)
         from betsee.gui.simconf.stack.page.space.guisimconfpageion import (
             QBetseeSimConfPagerIon)
         from betsee.gui.simconf.stack.page.space.guisimconfpagespace import (
@@ -123,12 +125,14 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
         # Classify instance variables with sane defaults.
         self._stack_page_name_to_pager = {
-            'sim_conf_stack_page_Ions': (
-                QBetseeSimConfPagerIon()),
+            'sim_conf_stack_page_Export': (
+                QBetseeSimConfPagerExport()),
             'sim_conf_stack_page_Paths': (
                 QBetseeSimConfPagerPath()),
             'sim_conf_stack_page_Space': (
                 QBetseeSimConfSpaceStackedWidgetPager()),
+            'sim_conf_stack_page_Space_Ions': (
+                QBetseeSimConfPagerIon()),
             'sim_conf_stack_page_Space_Tissue': (
                 QBetseeSimConfPagerTissueDefault()),
             'sim_conf_stack_page_Space_Tissue_item': (

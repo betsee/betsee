@@ -8,8 +8,6 @@ Abstract base classes of all editable enumerative simulation configuration
 widget subclasses instantiated in pages of the top-level stacked widget.
 '''
 
-#FIXME: Don't neglect to submit our "uiparser.py" fix to upstream! Nargle!
-
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QObject  #, Signal, Slot
 # from betse.util.io.log import logs

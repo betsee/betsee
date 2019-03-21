@@ -8,85 +8,20 @@ General-purpose :mod:`QComboBox` widget subclasses.
 '''
 
 # ....................{ IMPORTS                           }....................
-from PySide2.QtCore import QCoreApplication  #, Signal, Slot
+# from PySide2.QtCore import QCoreApplication  #, Signal, Slot
 from PySide2.QtWidgets import QComboBox
 # from betse.util.io.log import logs
-from betse.util.type.iterable import itertest
-from betse.util.type.types import type_check, SequenceTypes
+from betse.util.type.iterable import iterables, itertest
+from betse.util.type.types import (
+    type_check,
+    GeneratorType,
+    SequenceTypes,
+    SequenceOrNoneTypes,
+    SequenceStandardTypes,
+)
 # from betsee.guiexception import BetseePySideComboBoxException
 
 # ....................{ SUBCLASSES                        }....................
-#FIXME: Generalize as follows:
-#
-#* Define a new "class QBetseeComboBox(QComboBox)" subclass in that submodule.
-#  In this class:
-#  * Copy the __init__() method defined below.
-#  * Define a new add_items_iconless() method resembling:
-    # def add_items_iconless(items_text: SequenceTypes) -> None:
-    #     '''
-    #     Add **icon-less items** (i.e., plaintext combo box items with *no*
-    #     corresponding icons) with the passed text to this combo box after the
-    #     index of this combo box defined by the :meth:`insertPolicy` property,
-    #     defaulting to appending these items *after* any existing items of
-    #     this combo box.
-    #     '''
-    #
-    #     #FIXME: Explicitly detect the following types of duplicates:
-    #     #
-    #     #* Duplicate strings in the passed sequence.
-    #     #* Strings in the passed sequence that are already existing items of
-    #     #  this combo box.
-    #     #
-    #     #Consider efficient solutions elegantly handling both cases. If any
-    #     #duplicate is detected, raise an exception. Note that this *MUST* be
-    #     #done explicitly. The "QComboBox" class itself is sadly of no use here.
-    #     #Note the documentation of the seemingly relevant (but ultimately
-    #     #irrelevant) "duplicatesEnabled" property:
-    #     #
-    #     #    Note that it is always possible to programmatically insert duplicate items into the combo box.
-    #
-    #     # Sequence of the human-readable text of all combo box items.
-    #     #
-    #     # Since a view of ordered dictionary values is a valid sequence, the
-    #     # QComboBox.addItems() method passed this sequence below should
-    #     # technically accept this view *WITHOUT* requiring explicit coercion
-    #     # into a tuple. It does not, raising the following exception on
-    #     # attempting to do so:
-    #     #
-    #     #    TypeError: 'PySide2.QtWidgets.QComboBox.addItems' called with wrong argument types:
-    #     #      PySide2.QtWidgets.QComboBox.addItems(ValuesView)
-    #     #    Supported signatures:
-    #     #      PySide2.QtWidgets.QComboBox.addItems(QStringList)
-    #     #
-    #     # Presumably, the underlying bindings generator (i.e., Shiboken2) only
-    #     # implicitly coerces tuples and lists into "QStringList" instances.
-    #     # Curiously, generic sequences appear to remain unsupported.
-    #     if not isinstance(items_text, (tuple, list)):
-    #         items_text = tuple(items_text)
-    #
-    #     # Populate the contents of this combo box from this sequence.
-    #     self.addItems(items_text)
-#  * Define a new init() method resembling:
-#     def init(
-#         self, items_iconless_text: SequenceOrNoneTypes, *args, **kwargs) -> None:
-#
-#         if items_iconless_text is not None:
-#             self.add_items_iconless(items_iconless_text)
-#* Define a new
-#  "class QBetseeSimConfComboBoxABC(QBetseeComboBox)" superclass in this
-#  submodule here, copying all of the "MIXIN" subsections below. This may or
-#  may not be feasible due to diamond inheritance issues. If generalization
-#  ultimately proves infeasible, simply copy-and-paste. *shrug*
-#* Define a new
-#  "class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC)" subclass
-#  in this submodule here. The implementation of this subclass may reduce to
-#  simply "pass". If that's the case, consider renaming the
-#  "QBetseeSimConfComboBoxABC" superclass to "QBetseeSimConfComboBoxSequence"
-#  and dispensing with this placeholder subclass entirely.
-#* Rename the "QBetseeSimConfEnumComboBox" subclass defined below to
-#  "QBetseeSimConfComboBoxEnum" for orthogonality.
-#* Refactor this subclass to inherit "QBetseeSimConfComboBoxABC" if feasible.
-
 class QBetseeComboBox(QComboBox):
     '''
     General-purpose :mod:`QComboBox`-based widget implementing a mildly more
@@ -118,7 +53,7 @@ class QBetseeComboBox(QComboBox):
         # Disable duplicability, preventing users from manually duplicating
         # text across multiple items. Since editability is already disabled by
         # default, this admittedly produces no effect. *shrug*
-        self.duplicatesEnabled(False)
+        self.setDuplicatesEnabled(False)
 
 
     @type_check
@@ -167,25 +102,32 @@ class QBetseeComboBox(QComboBox):
             Sequence of the text of each item to be added to this combo box.
         '''
 
-        #FIXME: Explicitly detect the following types of duplicates by calling
-        #the itertest.is_items_unique() function here:
-        #
-        #* Duplicate strings in the passed sequence.
-        #* Strings in the passed sequence that are already existing items of
-        #  this combo box.
-        #
-        #Consider efficient solutions elegantly handling both cases. If any
-        #duplicate is detected, raise an exception. Note that this *MUST* be
-        #done explicitly. The "QComboBox" class itself is sadly of no use here.
-        #Note the documentation of the seemingly relevant (but ultimately
-        #irrelevant) "duplicatesEnabled" property:
-        #
-        #    Note that it is always possible to programmatically insert duplicate items into the combobox.
+        # Iterable aggregating both the passed and existing iterables of combo
+        # box item text, optimizing the subsequent validation of uniqueness.
+        items_all_text = iterables.iter_items(
+            items_text, self.iter_items_text())
 
-        # Sequence of the human-readable text of all combo box items.
+        # If at least one combo box item text of the passed iterable duplicates
+        # other combo box item text of either the passed or existing iterables
+        # of such text, raise an exception.
         #
-        # Since a view of ordered dictionary values is a valid sequence, the
-        # QComboBox.addItems() method passed this sequence below should
+        # Note that this constraint *MUST* be validated explicitly, as the
+        # stock "QComboBox" superclass provides no such validation. Notably,
+        # official documentation for the seemingly relevant (but ultimately
+        # irrelevant) "duplicatesEnabled" property reads:
+        #
+        #    Note that it is always possible to programmatically insert
+        #    duplicate items into the combobox.
+        itertest.die_unless_items_unique(items_all_text)
+
+        # If the passed sequence is neither a standard "list" nor "tuple",
+        # coerce this sequence into the latter. Why? Because inadequacies in
+        # the Qt API inherited by PySide2.
+        #
+        # Consider a view of ordered dictionary values (i.e., instance of the
+        # "collections.abc.ValuesView" interface instantiated and returned by
+        # the OrderedDict.values() method). This view is a valid sequence. In
+        # theory, the QComboBox.addItems() method passed this sequence should
         # technically accept this view *WITHOUT* requiring explicit coercion
         # into a tuple. It does not, raising the following exception on
         # attempting to do so:
@@ -198,8 +140,30 @@ class QBetseeComboBox(QComboBox):
         # Presumably, the underlying bindings generator (i.e., Shiboken2) only
         # implicitly coerces tuples and lists into "QStringList" instances.
         # Curiously, generic sequences appear to remain unsupported.
-        if not isinstance(items_text, (tuple, list)):
+        if not isinstance(items_text, SequenceStandardTypes):
             items_text = tuple(items_text)
 
-        # Populate the contents of this combo box from this sequence.
+        # Add these icon-less items to this combo box.
         self.addItems(items_text)
+
+    # ..................{ ITERATORS                         }..................
+    @type_check
+    def iter_items_text(self) -> GeneratorType:
+        '''
+        Generator iteratively yielding the human-readable text associated with
+        each item of this combo box.
+
+        Yields
+        ----------
+        str
+            Human-readable text associated with the currently iterated item of
+            this combo box.
+        '''
+
+        # Return a generator comprehension yielding...
+        return (
+            # The text associated with this item...
+            self.itemText(item_index)
+            # For the 0-based index of each item of this combo box.
+            for item_index in range(self.count())
+        )

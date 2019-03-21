@@ -93,7 +93,7 @@ class QBetseeObjectMixin(object):
 
 
     @type_check
-    def init(self, is_reinitable: bool = False) -> None:
+    def init(self, is_reinitable: bool = False, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this Qt object.
 
@@ -114,6 +114,10 @@ class QBetseeObjectMixin(object):
               case *no* repeated calls to this method raise an exception.
 
             Defaults to ``False``.
+
+        All remaining parameters are passed as is to the :meth:`init`
+        implementations of all other superclasses and mixins participating in
+        the current method resolution order (MRO).
 
         Raises
         ----------

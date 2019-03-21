@@ -101,12 +101,12 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         simulation configuration. In particular, these two values are typically
         but *not* necessarily of the same type.
 
-        For example, for the :class:`QBetseeSimConfEnumComboBox` subclass:
+        For example, for the :class:`QBetseeSimConfComboBoxEnum` subclass:
 
-        * The high-level :meth:`QBetseeSimConfEnumComboBox.widget_value`
+        * The high-level :meth:`QBetseeSimConfComboBoxEnum.widget_value`
           property returns an integer (i.e., the 0-based index of the currently
           selected item in that combo box).
-        * The low-level :meth:`QBetseeSimConfEnumComboBox._sim_conf_alias.get`
+        * The low-level :meth:`QBetseeSimConfComboBoxEnum._sim_conf_alias.get`
           getter returns the enumeration member corresponding to this item.
         '''
 
@@ -433,7 +433,8 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
             #this is the case, a sane general-purpose solution would be to
             #iteratively search up from the parent of this widget to the
             #eventual page of the "QStackedWidget" object containing this
-            #widget and then switch to that.
+            #widget and then switch to that... for certain definitions of
+            #"sane," of course. There's a reason we have yet to implement this.
             # self._widget.setFocus(Qt.OtherFocusReason)
 
 
@@ -485,6 +486,8 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
             self._widget == prior_undo_cmd._widget
         ):
             return False
+
+        #FIXME: Log this to determine whether this actually works as desired.
 
         # Else, these commands are safely mergeable. Replace the prior value of
         # this scalar widget stored with this undo command by the prior value
