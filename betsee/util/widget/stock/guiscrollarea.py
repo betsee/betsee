@@ -15,8 +15,8 @@ from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
 # ....................{ SUBCLASSES                        }....................
 class QBetseeScrollImage(QBetseeObjectMixin, QScrollArea):
     '''
-    :mod:`QScrollArea`-based widget (pre)viewing a single image within a
-    :mod:`QScrollArea`.
+    General-purpose :mod:`QScrollArea` widget optimized for (pre)viewing
+    exactly one image.
 
     This widget augments the stock :class:`QScrollArea` widget with:
 

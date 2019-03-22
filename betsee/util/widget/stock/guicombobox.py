@@ -10,7 +10,7 @@ General-purpose :mod:`QComboBox` widget subclasses.
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication  #, Signal, Slot
 from PySide2.QtWidgets import QComboBox
-# from betse.util.io.log import logs
+from betse.util.io.log import logs
 from betse.util.type.iterable import iterables, itertest
 from betse.util.type.types import (
     type_check,
@@ -20,12 +20,12 @@ from betse.util.type.types import (
     SequenceStandardTypes,
 )
 # from betsee.guiexception import BetseePySideComboBoxException
+from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
 
 # ....................{ SUBCLASSES                        }....................
-class QBetseeComboBox(QComboBox):
+class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
     '''
-    General-purpose :mod:`QComboBox`-based widget implementing a mildly more
-    Pythonic API.
+    General-purpose :mod:`QComboBox` widget implementing a Pythonic API.
 
     Caveats
     ----------
@@ -58,9 +58,7 @@ class QBetseeComboBox(QComboBox):
 
     @type_check
     def init(
-        self,
-        items_iconless_text: SequenceOrNoneTypes = None,
-        *args, **kwargs
+        self, items_iconless_text: SequenceOrNoneTypes = None, *args, **kwargs
     ) -> None:
         '''
         Finalize the initialization of this widget.
@@ -69,15 +67,18 @@ class QBetseeComboBox(QComboBox):
         ----------
         items_iconless_text : SequenceOrNoneTypes
             Sequence of **icon-less item text** (i.e., human-readable text of
-            combo box items with *no* corresponding icons) to prepopulate this
-            combo box with. Defaults to ``None``, in which case this combo box
-            initially contains no items and is thus empty.
+            every initial combo box item *without* corresponding icons) to
+            prepopulate this combo box with. Defaults to ``None``, in which
+            case this combo box initially contains no items and is thus empty.
 
         All remaining parameters are passed as is to the superclass method.
         '''
 
         # Finalize the initialization of our superclass.
         super().init(*args, **kwargs)
+
+        # Log this finalization.
+        logs.log_debug('Initializing combo box "%s"...', self.obj_name)
 
         # If prepopulating this combo box with icon-less items, do so.
         if items_iconless_text is not None:
@@ -101,6 +102,11 @@ class QBetseeComboBox(QComboBox):
         items_text : SequenceTypes
             Sequence of the text of each item to be added to this combo box.
         '''
+
+        # Log this addition.
+        logs.log_debug(
+            'Adding %d items to combo box "%s"...',
+            len(items_text), self.obj_name)
 
         # Iterable aggregating both the passed and existing iterables of combo
         # box item text, optimizing the subsequent validation of uniqueness.

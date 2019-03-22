@@ -52,11 +52,24 @@ class QBetseeSimConfPagerExport(QBetseePagerABC):
         # matplotlib (in sorted lexicographic order).
         colormap_names = mplcolormap.iter_colormap_names()
 
-        #FIXME: Initialize all remaining widgets *AFTER* this is worky.
-
         # Initialize all colormap combobox widgets on this page.
         main_window.sim_conf_exp_colormap_diverging.init(
             sim_conf=sim_conf,
             sim_conf_alias=Parameters.colormap_diverging_name,
+            items_iconless_text=colormap_names,
+        )
+        main_window.sim_conf_exp_colormap_sequential.init(
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.colormap_sequential_name,
+            items_iconless_text=colormap_names,
+        )
+        main_window.sim_conf_exp_colormap_gj.init(
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.colormap_gj_name,
+            items_iconless_text=colormap_names,
+        )
+        main_window.sim_conf_exp_colormap_grn.init(
+            sim_conf=sim_conf,
+            sim_conf_alias=Parameters.colormap_grn_name,
             items_iconless_text=colormap_names,
         )

@@ -1451,19 +1451,19 @@ class Ui_main_window(object):
         self.label_101 = QtWidgets.QLabel(self.groupBox_55)
         self.label_101.setObjectName("label_101")
         self.formLayout_24.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_101)
-        self.sim_conf_exp_colormap_sequential = QtWidgets.QComboBox(self.groupBox_55)
+        self.sim_conf_exp_colormap_sequential = QBetseeSimConfComboBoxSequence(self.groupBox_55)
         self.sim_conf_exp_colormap_sequential.setObjectName("sim_conf_exp_colormap_sequential")
         self.formLayout_24.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_colormap_sequential)
         self.label_102 = QtWidgets.QLabel(self.groupBox_55)
         self.label_102.setObjectName("label_102")
         self.formLayout_24.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_102)
-        self.sim_conf_exp_colormap_gj = QtWidgets.QComboBox(self.groupBox_55)
+        self.sim_conf_exp_colormap_gj = QBetseeSimConfComboBoxSequence(self.groupBox_55)
         self.sim_conf_exp_colormap_gj.setObjectName("sim_conf_exp_colormap_gj")
         self.formLayout_24.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_colormap_gj)
         self.label_103 = QtWidgets.QLabel(self.groupBox_55)
         self.label_103.setObjectName("label_103")
         self.formLayout_24.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_103)
-        self.sim_conf_exp_colormap_grn = QtWidgets.QComboBox(self.groupBox_55)
+        self.sim_conf_exp_colormap_grn = QBetseeSimConfComboBoxSequence(self.groupBox_55)
         self.sim_conf_exp_colormap_grn.setObjectName("sim_conf_exp_colormap_grn")
         self.formLayout_24.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_colormap_grn)
         self.verticalLayout_25.addWidget(self.groupBox_55)
@@ -3282,16 +3282,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit
 from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxSequence, QBetseeSimConfComboBoxEnum
 from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxEnum, QBetseeSimConfComboBoxSequence
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

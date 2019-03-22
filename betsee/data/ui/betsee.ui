@@ -3282,7 +3282,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QComboBox" name="sim_conf_exp_colormap_sequential">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_exp_colormap_sequential">
                  <property name="toolTip">
                   <string>Sequential colormap mapping zero-based cell data (i.e., data strictly increasing from 0 to positive infinity) to color values in exported plots and animations. Since most vectorial cell data (e.g., deformations, fluid flow, electromagnetic currents and fields) is zero-based, this is effectively the default colormap for such data.</string>
                  </property>
@@ -3296,7 +3296,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QComboBox" name="sim_conf_exp_colormap_gj">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_exp_colormap_gj">
                  <property name="toolTip">
                   <string>Gap junction colormap mapping gap junction data (e.g., gap junction currents) to color values in exported plots and animations.</string>
                  </property>
@@ -3310,7 +3310,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QComboBox" name="sim_conf_exp_colormap_grn">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_exp_colormap_grn">
                  <property name="toolTip">
                   <string>Gene regulatory network (GRN) colormap mapping GRN data (e.g., concentration nodes of reaction network graphs) to color values in exported plots and animations.</string>
                  </property>

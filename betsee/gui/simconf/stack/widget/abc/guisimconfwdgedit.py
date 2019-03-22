@@ -86,7 +86,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
             High-level state of the currently open simulation configuration.
         sim_conf_alias : YamlAliasABC
             Low-level data descriptor bound to the simulation configuration
-            option edited by this widget, typically a
+            setting edited by this widget -- typically a
             :class:`betse.science.params.Parameters`-specific class variable
             assigned the return value of the
             :func:`betse.science.config.confabc.yaml_alias` function.
@@ -172,21 +172,34 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
     @property
     def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
         '''
-        Superclass of all low-level values defined by the simulation
-        configuration associated with this widget if this widget is strictly
-        constrained to values of only a single type *or* ``None`` otherwise
-        (i.e., if this widget loosely displays values satisfying any one of
-        several different types).
+        Type of the simulation configuration setting edited by this widget if
+        this widget is strictly constrained to values of only a single type
+        *or* ``None`` otherwise (i.e., if this widget permissively displays
+        values satisfying any one of several different types).
 
         By default, this method returns ``None``.
 
         Caveats
         ----------
-        This low-level type is simulation configuration-specific and hence
-        distinct from the high-level type(s) of all :mod:`PySide2`-specific
-        scalar values displayed by this widget. See the
-        :meth:`QBetseeSimConfEditScalarWidgetMixin.widget_value` property for
-        discussion of the distinction between these two related types.
+        **Subclasses must override either this or the comparable
+        :meth:`_die_if_sim_conf_alias_type_invalid` method.** Specifically, any
+        subclass *not* already overriding this method must override the
+        :meth:`_die_if_sim_conf_alias_type_invalid` method instead.
+        Non-compliant subclasses overriding neither method will fail to
+        validate the type of the current value of this simulation
+        configuration setting, inviting subtle runtime type errors.
+
+        See Also
+        ----------
+        :meth:`QBetseeSimConfEditScalarWidgetMixin.widget_value`
+            Downstream property whose docstring documents the distinction
+            between the following two related types:
+
+            * The low-level type of all possible values of this simulation
+              configuration setting returned by this method.
+            * The high-level type of all possible :mod:`PySide2`-specific
+              scalar values displayed by this widget *not* returned by this
+              method.
         '''
 
         return None

@@ -14,11 +14,12 @@ from PySide2.QtWidgets import QDoubleSpinBox
 from betse.util.type.numeric import floats
 from betse.util.type.text import regexes
 from betse.util.type.types import type_check
+from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
 
 # ....................{ SUBCLASSES                        }....................
-class QBetseeDoubleSpinBox(QDoubleSpinBox):
+class QBetseeDoubleSpinBox(QBetseeEditWidgetMixin, QDoubleSpinBox):
     '''
-    General-purpose :mod:`QDoubleSpinBox`-based widget optimized for contextual
+    General-purpose :mod:`QDoubleSpinBox` widget optimized for contextual
     display and validation of floating point numbers.
 
     This application-specific widget augments the stock :class:`QDoubleSpinBox`
