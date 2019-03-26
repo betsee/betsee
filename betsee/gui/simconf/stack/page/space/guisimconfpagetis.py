@@ -60,9 +60,9 @@ from betsee.util.widget.abc.control.guictlpageabc import (
 class QBetseeSimConfPagerTissueABC(QBetseePagerABC):
     '''
     Abstract base class of all **tissue simulation configuration pager** (i.e.,
-    :mod:`PySide2`-based controller connecting all editable widgets of the
-    tissue stack widget page with corresponding settings of the current
-    simulation configuration) subclasses.
+    :mod:`PySide2`-based controller connecting all editable widgets of a
+    stack widget page applicable to tissue profiles of a particular type with
+    corresponding settings of the current simulation configuration) subclasses.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -167,7 +167,7 @@ class QBetseeSimConfPagerTissueDefault(QBetseeSimConfPagerTissueABC):
     '''
     **Default tissue simulation configuration pager** (i.e.,
     :mod:`PySide2`-based controller connecting all editable widgets of the
-    default tissue profile-specific stack widget page with corresponding
+    stack widget page for the default tissue profile with corresponding
     settings of the current simulation configuration).
     '''
 
@@ -188,7 +188,7 @@ class QBetseeSimConfPagerTissueCustom(
     '''
     **Custom tissue simulation configuration pager** (i.e.,
     :mod:`PySide2`-based controller connecting all editable widgets of the
-    stack widget page applicable to a single custom tissue profile with
+    stack widget page for the currently selected custom tissue profile with
     corresponding settings of the current simulation configuration).
 
     **This controller implements the well-known flyweight design pattern.**

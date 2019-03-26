@@ -19,7 +19,7 @@ from betsee.util.widget.abc.control.guictlpageabc import (
     QBetseePagerABC)
 
 # ....................{ SUBCLASSES                        }....................
-class QBetseeSimConfSpaceStackedWidgetPager(QBetseePagerABC):
+class QBetseeSimConfPagerSpace(QBetseePagerABC):
     '''
     **Spatial simulation configuration pager** (i.e., :mod:`PySide2`-based
     controller connecting all editable widgets of the spatial stack widget page

@@ -24,12 +24,12 @@ from betsee.util.widget.abc.control.guictlpageabc import (
     QBetseePagerABC, QBetseePagerItemizedABC)
 
 # ....................{ SUBCLASSES                        }....................
-class QBetseeSimConfPagerCSVs(QBetseePagerABC):
+class QBetseeSimConfPagerCSV(QBetseePagerABC):
     '''
     **CSV exports simulation configuration pager** (i.e., :mod:`PySide2`-based
-    controller connecting all editable widgets of the stack widget page
-    applicable to *all* comma-separated value (CSV) exports with corresponding
-    settings of the current simulation configuration).
+    controller connecting all editable widgets of the stack widget page for
+    *all* comma-separated value (CSV) exports with corresponding settings of
+    the current simulation configuration).
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -48,12 +48,12 @@ class QBetseeSimConfPagerCSVs(QBetseePagerABC):
         #     sim_conf=sim_conf, sim_conf_alias=Parameters.init_time_total)
 
 
-class QBetseeSimConfPagerCSV(QBetseePagerItemizedABC):
+class QBetseeSimConfPagerCSVExport(QBetseePagerItemizedABC):
     '''
     **CSV export simulation configuration pager** (i.e., :mod:`PySide2`-based
-    controller connecting all editable widgets of the stack widget page
-    applicable to a single comma-separated value (CSV) export with
-    corresponding settings of the current simulation configuration).
+    controller connecting all editable widgets of the stack widget page for the
+    currently selected comma-separated value (CSV) export with corresponding
+    settings of the current simulation configuration).
 
     **This controller implements the well-known flyweight design pattern.**
     Specifically, this single controller is shared between the zero or more CSV
@@ -90,6 +90,17 @@ class QBetseeSimConfPagerCSV(QBetseePagerItemizedABC):
 
         # Type of this CSV export.
         csv_export_cls = type(csv_export)
+
+        #FIXME: Obtain this sequence from the
+        #"from betse.science.pipe.export.pipeexpcsv import SimPipeExportCSVs"
+        #pipeline. To do so, we'll probably want to define a new
+        #SimPipeABC.iter_runners_metadata_kind() iterator returning a
+        #*SEQUENCE* of the "kind" instance variables of all runner metadata (in
+        #sorted lexicographic order). Trivial to define, happily.
+
+        # Sequence of the names of all colormaps currently registered with
+        # matplotlib (in sorted lexicographic order).
+        # colormap_names = mplcolormap.iter_colormap_names()
 
         # Widget editing this CSV export's name.
         widget_name = main_window.get_widget(

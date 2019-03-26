@@ -714,7 +714,7 @@ QTreeWidget#sim_conf_tree {
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="currentIndex">
-        <number>6</number>
+        <number>8</number>
        </property>
        <widget class="QWidget" name="sim_conf_stack_page_Time">
         <layout class="QGridLayout" name="gridLayout_3">
@@ -3321,6 +3321,311 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             </item>
             <item>
              <spacer name="verticalSpacer_20">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_CSV">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_52">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_56">
+           <property name="toolTip">
+            <string>Settings applied to all comma-separated value (CSV) exports.</string>
+           </property>
+           <property name="title">
+            <string>CSV Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_26">
+            <item>
+             <widget class="QGroupBox" name="groupBox_57">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QFormLayout" name="formLayout_25"/>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_29">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_CSV_item">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_57">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_66">
+           <property name="toolTip">
+            <string>Settings unique to this comma-separated value (CSV) export.</string>
+           </property>
+           <property name="title">
+            <string>CSV Export</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_31">
+            <item>
+             <widget class="QGroupBox" name="groupBox_67">
+              <property name="toolTip">
+               <string>General-purpose properties of this comma-separated value (CSV) export.</string>
+              </property>
+              <property name="title">
+               <string>Export Properties</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_30">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_104">
+                 <property name="text">
+                  <string>Name:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="lineEdit">
+                 <property name="toolTip">
+                  <string>Arbitrary string uniquely identifying this comma-separated value (CSV) export. This name must be unique to this CSV export (i.e., not shared with any other CSV export).</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="comboBox_5">
+                 <property name="toolTip">
+                  <string>Type of comma-separated value (CSV) data to export.</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_105">
+                 <property name="text">
+                  <string>Type:</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_41">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_53">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_58">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Animation Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_27">
+            <item>
+             <widget class="QGroupBox" name="groupBox_59">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QFormLayout" name="formLayout_26"/>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_37">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation_Cluster">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_54">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_60">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Cell Cluster Animation Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_28">
+            <item>
+             <widget class="QGroupBox" name="groupBox_61">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QFormLayout" name="formLayout_27"/>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_38">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cluster">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_55">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_62">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Cell Cluster Plot Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_29">
+            <item>
+             <widget class="QGroupBox" name="groupBox_63">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QFormLayout" name="formLayout_28"/>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_39">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Single">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_56">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_64">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Single-cell Plot Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_30">
+            <item>
+             <widget class="QGroupBox" name="groupBox_65">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QFormLayout" name="formLayout_29"/>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_40">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>

@@ -111,10 +111,12 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             QBetseeSimConfPagerTime)
         from betsee.gui.simconf.stack.page.export.guisimconfpageexport import (
             QBetseeSimConfPagerExport)
+        from betsee.gui.simconf.stack.page.export.guisimconfpagecsv import (
+            QBetseeSimConfPagerCSV, QBetseeSimConfPagerCSVExport)
         from betsee.gui.simconf.stack.page.space.guisimconfpageion import (
             QBetseeSimConfPagerIon)
         from betsee.gui.simconf.stack.page.space.guisimconfpagespace import (
-            QBetseeSimConfSpaceStackedWidgetPager)
+            QBetseeSimConfPagerSpace)
         from betsee.gui.simconf.stack.page.space.guisimconfpagetis import (
             QBetseeSimConfPagerTissueDefault,
             QBetseeSimConfPagerTissueCustom,
@@ -125,20 +127,18 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
         # Classify instance variables with sane defaults.
         self._stack_page_name_to_pager = {
-            'sim_conf_stack_page_Export': (
-                QBetseeSimConfPagerExport()),
-            'sim_conf_stack_page_Paths': (
-                QBetseeSimConfPagerPath()),
-            'sim_conf_stack_page_Space': (
-                QBetseeSimConfSpaceStackedWidgetPager()),
-            'sim_conf_stack_page_Space_Ions': (
-                QBetseeSimConfPagerIon()),
+            'sim_conf_stack_page_Export': QBetseeSimConfPagerExport(),
+            'sim_conf_stack_page_Export_CSV': QBetseeSimConfPagerCSV(),
+            'sim_conf_stack_page_Export_CSV_item': (
+                QBetseeSimConfPagerCSVExport()),
+            'sim_conf_stack_page_Paths': QBetseeSimConfPagerPath(),
+            'sim_conf_stack_page_Space': QBetseeSimConfPagerSpace(),
+            'sim_conf_stack_page_Space_Ions': QBetseeSimConfPagerIon(),
             'sim_conf_stack_page_Space_Tissue': (
                 QBetseeSimConfPagerTissueDefault()),
             'sim_conf_stack_page_Space_Tissue_item': (
                 QBetseeSimConfPagerTissueCustom()),
-            'sim_conf_stack_page_Time': (
-                QBetseeSimConfPagerTime()),
+            'sim_conf_stack_page_Time': QBetseeSimConfPagerTime(),
         }
         self._tree_item_static_to_stack_page = {}
         self._tree_item_list_root_to_stack_page_list_leaf = {}
