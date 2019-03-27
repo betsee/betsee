@@ -8,6 +8,69 @@
 simulation configuration.
 '''
 
+#FIXME: Decouple the "QBetseeSimConfTreeWidget" from *ALL* hardcoded logic
+#associating dynamic tree list items with corresponding stack widget pages and
+#YAML-backed subconfigurations. Ideally, all such logic should be centralized
+#into the specific "QBetseePagerItemizedMixin" subclass controlling all
+#editable widgets for these subconfigurations (e.g.,
+#"QBetseeSimConfPagerTissueCustom" for tissue profiles). To do so:
+#
+#* Define a new abstract QBetseePagerItemizedMixin.tree_parent_item_text_path()
+#  property returning an iterable of strings providing the path to the
+#  corresponding parent tree item (e.g., "('Space', 'Tissue')" for the
+#  QBetseeSimConfPagerTissueCustom.tree_parent_item_text_path()
+#  implementation).
+#  * Alternately, it might be feasible to programmatically synthesize this path
+#    from the object name of each such pager (e.g., converting
+#    "sim_conf_stack_page_Space_Tissue_item" into "('Space', 'Tissue')").
+#    Indeed, perhaps the latter approach, yes? Note, however, that the private
+#    "QBetseeSimConfStackedWidget._stack_page_name_to_pager" dictionary
+#    currently maintains the mapping required to perform this synthesis. We'd
+#    probably want to at least publicize that dictionary for use elsewhere.
+#  * On second thought, belay that. The former approach is explicit and hence
+#    substantially more pragmatic. Perhaps more importantly, the latter
+#    approach suffers a number of profound disadvantages in that the conversion
+#    from human-readable tree item first-column text to machine-readable stack
+#    widget object names does *NOT* losslessly generalize. In particular, while
+#    the former may contain arbitrary characters (including punctuation and
+#    Unicode characters), it's likely that the latter is confined to a proper
+#    subset of the Unicode set -- possibly even to ASCII. Ergo, an explicit
+#    mapping is substantially more general and hence superior. Let's go with
+#    QBetseePagerItemizedMixin.tree_parent_item_text_path(), please.
+#* Define a new abstract
+#  "def QBetseePagerItemizedMixin.get_yaml_list(p: Parameters) -> YamlList"
+#  method returning the YAML-backed subconfiguration managed by this pager.
+#  Note that passing "p: Parameters" is probably unnecessary, as the pager can
+#  simply preserve a reference to the desired "YamlList" in its init() method.
+#  Ergo, this method may be safely reducible to a property resembling:
+#    def QBetseePagerItemizedMixin.yaml_list(self) -> YamlList:
+#* Refactor the QBetseePagerItemizedMixin.reinit() method to have a signature
+#  resembling:
+#    def reinit(self, main_window: QMainWindow, yaml_list_item: YamlABC) -> None:
+#  That is, the reinit() method should be passed the actual YAML-backed list
+#  item of interest rather than merely the index of that item. To do so,
+#  existing callers of this method should instead:
+#  * Obtain this list item from this index with  logic resembling:
+#        yaml_list_item = sequences.get_index(
+#            sequence=pager.yaml_list,
+#            index=yaml_list_item_index)
+#    Note use of the previously defined "QBetseePagerItemizedMixin.yaml_list"
+#    property.
+#  * Pass this "yaml_list_item" to this method.
+#* Consider renaming the "QBetseePagerItemizedMixin" and
+#  "QBetseePagerItemizedABC" classes to "QBetseePagerYamlListItemMixin" and
+#  "QBetseePagerYamlListItemABC" for disambiguity. The previously defined
+#  "QBetseePagerItemizedMixin.yaml_list" makes this fairly essential.
+#* Refactor the QBetseeSimConfTreeWidget._init_items_list_root() and
+#  QBetseeSimConfTreeWidget._init_items_list_leaf() methods to dynamically
+#  leverage the properties defined above to programmatically perform the
+#  equivalent logic in a non-hardcoded manner. Doing so sanely will probably
+#  necessitate iterating over the items of the
+#  "QBetseeSimConfStackedWidget._stack_page_name_to_pager" dictionary (which,
+#  again, should probably be publicized) such that, for each such item, if that
+#  item implements the "QBetseePagerItemizedMixin" interface, accessing the
+#  properties defined above to perform the requisite logic.
+
 #FIXME: Permit the "_action_sim_conf_tree_item_append" and
 #"_action_sim_conf_tree_item_remove" operations to be triggered via a popup
 #mena displayed when tree items supporting those operations are right-clicked.
@@ -62,6 +125,17 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     _sim_conf : QBetseeSimConf
         High-level object controlling simulation configuration state.
 
+    Attributes (Private: Items)
+    ----------
+    _item_list_root_csv : QTreeWidgetItem
+        Tree item masquerading as a dynamic list of **comma-separated value
+        (CSV) exports** (i.e., simulation subconfigurations exporting
+        simulation results to CSV files).
+    _item_list_root_tissue : QTreeWidgetItem
+        Tree item masquerading as a dynamic list of **tissue profiles** (i.e.,
+        simulation subconfigurations assigning a subset of the cell cluster the
+        same user-defined initial conditions).
+
     Attributes (Private: Items: Dictionary)
     ----------
     _item_list_root_to_yaml_list : dict
@@ -81,10 +155,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         Set of all tree items masquerading as **dynamic lists** (i.e., abstract
         containers permitting child tree items to be interactively added to
         *and* removed from the :attr:`_items_list_leaf` set at runtime).
-    _item_list_root_tissue : QTreeWidgetItem
-        Tree item masquerading as a dynamic list of **tissue profiles** (i.e.,
-        simulation subconfigurations assigning a subset of the cell cluster the
-        same user-defined initial conditions).
 
     Attributes (Private: Widgets)
     ----------
@@ -115,6 +185,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Nullify all remaining instance variables for safety.
         self._action_sim_conf_tree_item_append = None
         self._action_sim_conf_tree_item_remove = None
+        self._item_list_root_csv = None
         self._item_list_root_tissue = None
         self._sim_conf = None
 
@@ -259,7 +330,8 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         self.currentItemChanged.connect(
             main_window.sim_conf_stack.switch_page_to_tree_item)
 
-        # First item of this tree widget.
+        # First item of this tree widget. Note that, by design, this item is
+        # guaranteed to exist.
         tree_item_first = self.topLevelItem(0)
 
         # Select this item *AFTER* connecting all relevant signals and slots,
@@ -416,10 +488,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # existing list items.
         yaml_list_item = yaml_list.append_default()
 
-        # If this object is *NOT* a YAML-backed named configuration and hence
-        # does *NOT* define the "name" property, raise an exception.
-        objects.die_unless_instance(obj=yaml_list_item, cls=YamlNamedMixin)
-
         # Log the subsequent operation.
         logs.log_debug(
             'Appending child list item to parent tree item "%s"...',
@@ -429,8 +497,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # existing parent tree item, appended as the last such child of this
         # existing parent and associated with this subconfiguration.
         item_list_leaf = self._make_item_list_leaf(
-            item_list_root=item_list_root,
-            item_list_leaf_name=yaml_list_item.name)
+            item_list_root=item_list_root, yaml_list_item=yaml_list_item)
 
         # Programmatically select this new child tree item, implicitly
         # signalling the _select_tree_item() slot and hence switching to the
@@ -582,19 +649,21 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         :attr:`_item_list_root_tissue`).
         '''
 
-        # Preserve references to all tree items masquerading as dynamic lists.
+        # Tree items masquerading as dynamic lists, classified to enable
+        # subsequent reuse by the _init_items_list_leaf() method.
+        self._item_list_root_csv = self.get_item_from_text_path(
+            'Export', 'CSV')
         self._item_list_root_tissue = self.get_item_from_text_path(
             'Space', 'Tissue')
 
-        # Define the set of all such items.
-        self._items_list_root = {
-            self._item_list_root_tissue,
-        }
-
-        # Define the dictionary mapping all such items to YAML-backed lists.
+        # Dictionary mapping all such items to YAML-backed lists.
         self._item_list_root_to_yaml_list = {
+            self._item_list_root_csv:    self._sim_conf.p.csv.csvs_after_sim,
             self._item_list_root_tissue: self._sim_conf.p.tissue_profiles,
         }
+
+        # Set of all such items.
+        self._items_list_root = set(self._item_list_root_to_yaml_list.keys())
 
     # ..................{ INITIALIZERS ~ set : leaf         }..................
     def _init_items_list_leaf(self) -> None:
@@ -611,14 +680,23 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Initialize the set of all such child tree items to the empty set.
         self._items_list_leaf = set()
 
-        # For each tissue profile configured by this configuration, create and
-        # append a new child tree item associated with this profile to the
-        # existing parent tree item of such items.
-        for tissue_profile in self._sim_conf.p.tissue_profiles:
-            self._make_item_list_leaf(
-                item_list_root=self._item_list_root_tissue,
-                item_list_leaf_name=tissue_profile.name,
-            )
+        # For each parent tree item masquerading as a dynamic list and the
+        # YAML-backed subconfiguration providing this dynamic list...
+        for item_list_root, yaml_list in (
+            self._item_list_root_to_yaml_list.items()):
+            # If this parent already contains one or more children, raise an
+            # exception. This method requires prior logic (e.g., the related
+            # _deinit_items_list_leaf() method) to have deleted all prior
+            # children if any from this parent.
+            guitreeitem.die_if_parent_item(item_list_root)
+
+            # For each existing YAML-backed list item of this dynamic list...
+            for yaml_list_item in yaml_list:
+                # Create and append a new child tree item associated with this
+                # list item to this parent tree item.
+                self._make_item_list_leaf(
+                    item_list_root=item_list_root,
+                    yaml_list_item=yaml_list_item)
 
 
     def _deinit_items_list_leaf(self) -> None:
@@ -629,9 +707,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Log this slot.
         logs.log_debug('Depopulating dynamic child tree items...')
 
-        # Delete all child tree items masquerading as dynamic list items
-        # from their parent tree items.
-        guitreeitem.delete_child_items(self._item_list_root_tissue)
+        # For each parent tree item masquerading as a dynamic list and the
+        # YAML-backed subconfiguration providing this dynamic list...
+        for item_list_root in self._items_list_root:
+            # Delete all child tree items masquerading as dynamic list items
+            # from this parent tree item.
+            guitreeitem.delete_child_items(item_list_root)
 
         # Reduce the set of all such child tree items to the empty set.
         self._items_list_leaf = set()
@@ -641,21 +722,22 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     def _make_item_list_leaf(
         self,
         item_list_root: QTreeWidgetItem,
-        item_list_leaf_name: str,
+        yaml_list_item: YamlNamedMixin,
     ) -> QTreeWidgetItem:
         '''
-        Create and append a new child tree item masquerading as a dynamic list
-        item to the existing list of child items maintained by the passed
-        parent tree item masquerading as a dynamic list, returning this new
-        child tree item.
+        Create and append a new child tree item masquerading as the passed
+        YAML-backed dynamic list item to the existing sequence of child tree
+        items maintained by the passed parent tree item masquerading as a
+        dynamic list, returning this new child tree item.
 
         Parameters
         ----------
         item_list_root : QTreeWidgetItem
             Parent tree item masquerading as a dynamic list to append this new
             child tree item.
-        item_list_leaf_name : str
-            First-column text of the new child tree item to be created.
+        yaml_list_item : YamlNamedMixin
+            YAML-backed list item to be masqueraded by this new child tree
+            item.
 
         Returns
         ----------
@@ -676,8 +758,9 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Set this child item's first-column icon to a bullet point.
         item_list_leaf.setIcon(0, guidataicon.get_icon_dot())
 
-        # Set this child item's first-column text to this text.
-        item_list_leaf.setText(0, item_list_leaf_name)
+        # Set this child item's first-column text to the human-readable name of
+        # this YAML-backed list item.
+        item_list_leaf.setText(0, yaml_list_item.name)
 
         # Add this child item to the set of all tree items masquerading
         # as dynamic list items *AFTER* successfully making this item.

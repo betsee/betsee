@@ -9,14 +9,15 @@ for stack widget pages specific to comma-separated value (CSV) exports)
 functionality.
 '''
 
-#FIXME: Implement this submodule, which currently only serves as a placeholder
-#facade implementation to avoid raising disruptive exceptions at runtime.
+#FIXME: Generalize the concrete "QBetseeSimConfPagerCSV" subclass into a new
+#"QBetseeSimConfPagerExportABC" superclass supporting all possible types of
+#export list items and refactor "QBetseeSimConfPagerCSV" to subclass that
+#superclass instead. See the "guisimconfpagetis" submodule for similar logic.
 
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
-from betse.science.parameters import Parameters
-# from betse.science.enum.enumconf import CellLatticeType
+from betse.science.pipe.export.pipeexpcsv import SimPipeExportCSVs
 # from betse.util.io.log import logs
 from betse.util.type.iterable import sequences
 from betse.util.type.types import type_check
@@ -79,37 +80,38 @@ class QBetseeSimConfPagerCSVExport(QBetseePagerItemizedABC):
     #         sim_conf=sim_conf, sim_conf_alias=Parameters.cell_radius)
 
 
-    #FIXME: Reinitialize all remaining widgets (if any) on this page.
     @type_check
     def reinit(self, main_window: QMainWindow, list_item_index: int) -> None:
 
         # CSV export currently controlled by this pager.
         csv_export = sequences.get_index(
-            sequence=main_window.sim_conf.csv.csvs_after_sim,
+            sequence=main_window.sim_conf.p.csv.csvs_after_sim,
             index=list_item_index)
 
-        # Type of this CSV export.
+        # Type of this export.
         csv_export_cls = type(csv_export)
 
-        #FIXME: Obtain this sequence from the
-        #"from betse.science.pipe.export.pipeexpcsv import SimPipeExportCSVs"
-        #pipeline. To do so, we'll probably want to define a new
-        #SimPipeABC.iter_runners_metadata_kind() iterator returning a
-        #*SEQUENCE* of the "kind" instance variables of all runner metadata (in
-        #sorted lexicographic order). Trivial to define, happily.
+        # Sequence of the types of all such exporters supported by the pipeline
+        # of these exporters (in sorted lexicographic order).
+        exporters_kind = SimPipeExportCSVs.iter_runners_metadata_kind()
 
-        # Sequence of the names of all colormaps currently registered with
-        # matplotlib (in sorted lexicographic order).
-        # colormap_names = mplcolormap.iter_colormap_names()
-
-        # Widget editing this CSV export's name.
+        # Widgets editing this export's name and type.
         widget_name = main_window.get_widget(
             widget_name='sim_conf_csv_item_name')
+        widget_kind = main_window.get_widget(
+            widget_name='sim_conf_csv_item_kind')
 
         # Initialize all general-purpose widgets on this page.
         widget_name.init(
             sim_conf=main_window.sim_conf,
             sim_conf_alias=csv_export_cls.name,
             sim_conf_alias_parent=csv_export,
+            is_reinitable=True,
+        )
+        widget_kind.init(
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=csv_export_cls.kind,
+            sim_conf_alias_parent=csv_export,
+            items_iconless_text=exporters_kind,
             is_reinitable=True,
         )

@@ -9,7 +9,7 @@
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Signal  #, Slot
-# from betse.util.io.log import logs
+from betse.util.io.log import logs
 from betse.util.type.types import (
     type_check, ClassOrNoneTypes, SequenceTypes)
 from betsee.guiexception import BetseePySideComboBoxException
@@ -121,8 +121,9 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
             number of members mapped by (i.e., of keys in) this dictionary.
         '''
 
-        # Initialize our superclass with all passed parameters.
-        super().init(*args, items_iconless_text=items_iconless_text, **kwargs)
+        # Log this initialization.
+        logs.log_debug(
+            'Initializing sequential combo box "%s"...', self.obj_name)
 
         # 0-based index of the last such item.
         self._item_index_max = len(items_iconless_text)
@@ -133,6 +134,20 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
             for item_index, item_text in enumerate(items_iconless_text)
         }
 
+        # Initialize our superclass with all passed parameters *AFTER*
+        # classifying the above instance variables. Why? Obscure
+        # chicken-and-egg issues, of course. Specifically:
+        #
+        # * The QBetseeSimConfEditWidgetMixin.init() method calls...
+        # * The QBetseeSimConfEditScalarWidgetMixin._set_filename() method,
+        #   which calls...
+        # * The
+        #   QBetseeSimConfEditScalarWidgetMixin._set_widget_to_alias_value()
+        #   method, which calls...
+        # * The _get_widget_from_alias_value() method defined by this subclass,
+        #   which expects the above instance variables to be non-None.
+        super().init(*args, items_iconless_text=items_iconless_text, **kwargs)
+
     # ..................{ PROPERTIES                        }..................
     @property
     def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
@@ -140,6 +155,9 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
 
     # ..................{ GETTERS                           }..................
     def _get_alias_from_widget_value(self) -> object:
+
+        # If this object has yet to be initialized, raise an exception.
+        self.die_unless_initted()
 
         # 0-based index of the currently displayed item of this combo box.
         item_index = self.widget_value
@@ -164,6 +182,9 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
 
 
     def _get_widget_from_alias_value(self) -> object:
+
+        # If this object has yet to be initialized, raise an exception.
+        self.die_unless_initted()
 
         # Current value of this simulation configuration alias. If this method
         # does *NOT* subsequnetly raise an exception, this is guaranteed to be
@@ -221,6 +242,10 @@ class QBetseeSimConfComboBoxEnum(
             If the number of members in this enumeration differs from the
             number of members mapped by (i.e., of keys in) this dictionary.
         '''
+
+        # Log this initialization.
+        logs.log_debug(
+            'Initializing enumerated combo box "%s"...', self.obj_name)
 
         # Dictionary mapping from each enumeration member to the corresponding
         # mutually exclusive value displayed by this widget -- which, in this

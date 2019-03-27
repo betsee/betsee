@@ -22,7 +22,7 @@ from betse.util.py import pyident
 from betse.util.type.cls import classes
 from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
-from betsee.guiexception import BetseePySideEditWidgetException
+from betsee.guiexception import BetseePySideWidgetException
 
 # ....................{ GLOBALS                           }....................
 _OBJ_NAME_DEFAULT = 'N/A'
@@ -121,7 +121,7 @@ class QBetseeObjectMixin(object):
 
         Raises
         ----------
-        BetseePySideEditWidgetException
+        BetseePySideWidgetException
             If this method has already been called for this object, preventing
             objects from being erroneously refinalized.
         '''
@@ -133,10 +133,8 @@ class QBetseeObjectMixin(object):
 
         # If this method may *NOT* be safely called multiple times but this is
         # the second call to this method, raise an exception.
-        if not is_reinitable and self._is_initted:
-            raise BetseePySideEditWidgetException(QCoreApplication.translate(
-                'QBetseeObjectMixin',
-                'Object "{0}" already initialized.'.format(self.obj_name)))
+        if not is_reinitable:
+            self.die_if_initted()
 
         # Record this object's initialization to now have been finalized.
         self._is_initted = True
@@ -185,6 +183,49 @@ class QBetseeObjectMixin(object):
         '''
 
         self.setObjectName(obj_name)
+
+    # ..................{ EXCEPTIONS                        }..................
+    def die_if_initted(self) -> None:
+        '''
+        Raise an exception if this object's initialization has already been
+        finalized (i.e., this object's :meth:`init` method has already been
+        externally called).
+
+        Raises
+        ----------
+        BetseePySideWidgetException
+            If this object's initialization has already been finalized.
+        '''
+
+        # If this object's initialization has already been finalized, raise an
+        # exception
+        if self._is_initted:
+            raise BetseePySideWidgetException(QCoreApplication.translate(
+                'QBetseeObjectMixin',
+                'Object "{0}" already initialized.'.format(self.obj_name)))
+
+
+    def die_unless_initted(self) -> None:
+        '''
+        Raise an exception unless this object's initialization has already been
+        finalized (i.e., this object's :meth:`init` method has already been
+        externally called).
+
+        Equivalently, this method raises an exception if this object's
+        initialization has yet to be finalized.
+
+        Raises
+        ----------
+        BetseePySideWidgetException
+            If this object's initialization has yet to be finalized.
+        '''
+
+        # If this object's initialization has yet to be finalized, raise an
+        # exception
+        if not self._is_initted:
+            raise BetseePySideWidgetException(QCoreApplication.translate(
+                'QBetseeObjectMixin',
+                'Object "{0}" uninitialized.'.format(self.obj_name)))
 
     # ..................{ SETTERS                           }..................
     def set_obj_name_from_class_name(self) -> None:

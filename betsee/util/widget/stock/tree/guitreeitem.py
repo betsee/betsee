@@ -18,6 +18,32 @@ from betsee.util.type.guitype import QTreeWidgetItemOrNoneTypes
 
 # ....................{ EXCEPTIONS                        }....................
 @type_check
+def die_if_parent_item(item: QTreeWidgetItem) -> None:
+    '''
+    Raise an exception if the passed tree item is a **parent tree item** (i.e.,
+    contains at least one child tree item).
+
+    Parameters
+    ----------
+    item : QTreeWidgetItem
+        Tree item to be tested.
+
+    Raises
+    ----------
+    BetseePySideTreeWidgetItemException
+        If this tree item contains one or more child tree items.
+    '''
+
+    # If this tree item is already a parent, raise an exception.
+    if is_parent_item(item):
+        raise BetseePySideTreeWidgetItemException(QCoreApplication.translate(
+            'guitreeitem',
+            'Tree item "{0}" already a parent '
+            '(i.e., contains {1} child tree items).'.format(
+                item.text(0), item.childCount())))
+
+
+@type_check
 def die_unless_parent_item(item: QTreeWidgetItem) -> None:
     '''
     Raise an exception unless the passed tree item is a **parent tree item**
@@ -31,10 +57,10 @@ def die_unless_parent_item(item: QTreeWidgetItem) -> None:
     item : QTreeWidgetItem
         Tree item to be tested.
 
-    Returns
+    Raises
     ----------
-    bool
-        ``True`` only if this tree item contains at least one child tree item.
+    BetseePySideTreeWidgetItemException
+        If this tree item contains no child tree items.
     '''
 
     # If this tree item is *NOT* a parent, raise an exception.
