@@ -294,10 +294,10 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
         widget subclass slots intending to push an undo commands onto the undo
         stack should instead (in order):
 
-        * Temporarily avoid doing so for the duration of the current slot call,
-          as doing so *could* induce infinite recursion.
-        * Set ``self.is_undo_cmd_pushable = False`` to permit all subsequent
-          slot calls to push undo commands onto the undo stack.
+        #. Temporarily avoid doing so for the duration of the current slot
+           call, as doing so *could* induce infinite recursion.
+        #. Set ``self.is_undo_cmd_pushable = True`` to permit all subsequent
+           slot calls to push undo commands onto the undo stack.
     _undo_stack : QUndoStack
         Undo stack to which this widget pushes undo commands if any *or*
         ``None`` otherwise.

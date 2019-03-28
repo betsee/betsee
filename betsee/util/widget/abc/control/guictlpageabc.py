@@ -83,7 +83,18 @@ class QBetseePagerItemizedMixin(object):
             0-based index of the list item to reassociate this pager with.
         '''
 
-        raise BetseMethodUnimplementedException()
+        #FIXME: This method *MUST* now be called from all subclasses.
+
+        # Reinitialize all subclasses in method-resolution order (MRO).
+        super().reinit(
+            main_window=main_window, list_item_index=list_item_index)
+
+        #FIXME: This is unlikely to be the right thing to do. We don't want to
+        #destroy the entire stack -- merely prohibit undo commands from being
+        #pushed during the duration of this method. How do we resolve this
+        #elsewhere currently?
+        # Unset the undo stack to which this widget pushes undo commands.
+        # self._unset_undo_stack()
 
 
     #FIXME: Consider excising this method -- which we initially assumed to be

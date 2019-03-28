@@ -75,9 +75,12 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
 
     Attributes
     ----------
+    _item_index_min : int
+        0-based index of the last combo box item at initialization time (i.e.,
+        the time of the :meth:`init` call) with respect to negative indexing.
     _item_index_max : int
         0-based index of the last combo box item at initialization time (i.e.,
-        the time of the :meth:`init` call).
+        the time of the :meth:`init` call) with respect to positive indexing.
     _item_text_to_index : MappingType
         Dictionary mapping from the text to 0-based index of each combo box
         item at initialization time (i.e., the time of the :meth:`init` call).
@@ -90,6 +93,7 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
         super().__init__(*args, **kwargs)
 
         # Nullify all instance variables for safety.
+        self._item_index_min = None
         self._item_index_max = None
         self._item_text_to_index = None
 
@@ -125,8 +129,9 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
         logs.log_debug(
             'Initializing sequential combo box "%s"...', self.obj_name)
 
-        # 0-based index of the last such item.
-        self._item_index_max = len(items_iconless_text)
+        # Range of 0-based indices accepted by this combo box.
+        self._item_index_min = -len(items_iconless_text)
+        self._item_index_max = len(items_iconless_text) - 1
 
         # Dictionary mapping from the text to 0-based index of each such item.
         self._item_text_to_index = {
@@ -168,12 +173,12 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
         # This unlikely edge case can occur when external callers
         # programmatically modify the content or composition of combo box items
         # after the init() method has been called.
-        if not (0 <= item_index <= self._item_index_max):
+        if not (self._item_index_min <= item_index <= self._item_index_max):
             raise BetseePySideComboBoxException(QCoreApplication.translate(
                 'QBetseeSimConfComboBoxSequence',
                 'Combo box item index "{0}" invalid '
-                '(i.e., not in [0, {1}]).'.format(
-                    item_index, self._item_index_max)))
+                '(i.e., not in [{1}, {2}]).'.format(
+                    item_index, self._item_index_min, self._item_index_max)))
 
         # Return the human-readable text of this item. Since this method did
         # *NOT* raise an exception, this is guaranteed to be a valid value for

@@ -44,6 +44,7 @@ simulation configuration.
 #  simply preserve a reference to the desired "YamlList" in its init() method.
 #  Ergo, this method may be safely reducible to a property resembling:
 #    def QBetseePagerItemizedMixin.yaml_list(self) -> YamlList:
+#  See the existing QBetseeSimConfPagerExportABC.yaml_list() property, please.
 #* Refactor the QBetseePagerItemizedMixin.reinit() method to have a signature
 #  resembling:
 #    def reinit(self, main_window: QMainWindow, yaml_list_item: YamlABC) -> None:

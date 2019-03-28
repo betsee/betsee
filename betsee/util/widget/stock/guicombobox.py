@@ -108,10 +108,10 @@ class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
             'Adding %d items to combo box "%s"...',
             len(items_text), self.obj_name)
 
-        # Iterable aggregating both the passed and existing iterables of combo
+        # Tuple aggregating both the passed and existing iterables of combo
         # box item text, optimizing the subsequent validation of uniqueness.
-        items_all_text = iterables.iter_items(
-            items_text, self.iter_items_text())
+        items_all_text = tuple(iterables.iter_items(
+            items_text, self.iter_items_text()))
 
         # If at least one combo box item text of the passed iterable duplicates
         # other combo box item text of either the passed or existing iterables
