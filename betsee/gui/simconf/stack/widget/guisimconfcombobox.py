@@ -97,23 +97,22 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
         self._item_index_max = None
         self._item_text_to_index = None
 
-
-    @type_check
-    def init(
-        self, items_iconless_text: SequenceTypes, *args, **kwargs
-    ) -> None:
+    # ..................{ SUPERCLASS                        }..................
+    def addItems(self, items_text: SequenceTypes) -> None:
         '''
-        Finalize the initialization of this widget.
+        Add **icon-less items** (i.e., plaintext combo box items with *no*
+        corresponding icons) specified by the passed human-readable strings to
+        this combo box after the index of this combo box defined by the
+        :meth:`insertPolicy` property, defaulting to appending these items
+        *after* any existing items of this combo box.
+
+        Specifically, for each element of this sequence, this method adds a new
+        combo box item whose human-readable text is that element.
 
         Parameters
         ----------
-        items_iconless_text : SequenceTypes
-            Sequence of **icon-less item text** (i.e., human-readable text of
-            all combo box items with *no* corresponding icons). Equivalently,
-            this is the arbitrarily ordered iterable of all possible strings
-            constraining the values of the passed ``sim_conf_alias`` parameter.
-
-        All remaining parameters are passed as is to the superclass method.
+        items_text : SequenceTypes
+            Sequence of the text of each item to be added to this combo box.
 
         Raises
         ----------
@@ -125,33 +124,22 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
             number of members mapped by (i.e., of keys in) this dictionary.
         '''
 
+        # Defer to the superclass implementation first.
+        super().addItems(items_text)
+
         # Log this initialization.
         logs.log_debug(
-            'Initializing sequential combo box "%s"...', self.obj_name)
+            'Populating sequential combo box "%s"...', self.obj_name)
 
         # Range of 0-based indices accepted by this combo box.
-        self._item_index_min = -len(items_iconless_text)
-        self._item_index_max = len(items_iconless_text) - 1
+        self._item_index_min = -len(items_text)
+        self._item_index_max =  len(items_text) - 1
 
         # Dictionary mapping from the text to 0-based index of each such item.
         self._item_text_to_index = {
             item_text: item_index
-            for item_index, item_text in enumerate(items_iconless_text)
+            for item_index, item_text in enumerate(items_text)
         }
-
-        # Initialize our superclass with all passed parameters *AFTER*
-        # classifying the above instance variables. Why? Obscure
-        # chicken-and-egg issues, of course. Specifically:
-        #
-        # * The QBetseeSimConfEditWidgetMixin.init() method calls...
-        # * The QBetseeSimConfEditScalarWidgetMixin._set_filename() method,
-        #   which calls...
-        # * The
-        #   QBetseeSimConfEditScalarWidgetMixin._set_widget_to_alias_value()
-        #   method, which calls...
-        # * The _get_widget_from_alias_value() method defined by this subclass,
-        #   which expects the above instance variables to be non-None.
-        super().init(*args, items_iconless_text=items_iconless_text, **kwargs)
 
     # ..................{ PROPERTIES                        }..................
     @property
@@ -161,8 +149,8 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
     # ..................{ GETTERS                           }..................
     def _get_alias_from_widget_value(self) -> object:
 
-        # If this object has yet to be initialized, raise an exception.
-        self.die_unless_initted()
+        # If this combo box has yet to be prepopulated, raise an exception.
+        self._die_unless_items_added()
 
         # 0-based index of the currently displayed item of this combo box.
         item_index = self.widget_value
@@ -188,8 +176,8 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
 
     def _get_widget_from_alias_value(self) -> object:
 
-        # If this object has yet to be initialized, raise an exception.
-        self.die_unless_initted()
+        # If this combo box has yet to be prepopulated, raise an exception.
+        self._die_unless_items_added()
 
         # Current value of this simulation configuration alias. If this method
         # does *NOT* subsequnetly raise an exception, this is guaranteed to be

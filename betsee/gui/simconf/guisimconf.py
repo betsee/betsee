@@ -83,7 +83,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         encouraged to retain references to this singleton with the
         :class:`QBetseeMainWindow` parameter passed to their respective
         ``init()`` methods (e.g., ``self._p = main_window.sim_conf.p``).
-    undo_stack : QBetseeUndoStackSimConf
+    undo_stack : QBetseeSimConfUndoStack
         Undo stack for the currently open simulation configuration if any *or*
         the empty undo stack otherwise.
 
@@ -203,7 +203,7 @@ class QBetseeSimConf(QBetseeControllerABC):
 
         # Avoid circular import dependencies.
         from betsee.gui.simconf.guisimconfundo import (
-            QBetseeUndoStackSimConf)
+            QBetseeSimConfUndoStack)
 
         # Classify all instance variables of this main window subsequently
         # required by this object. Since this main window owns this object,
@@ -221,7 +221,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._sim_tab             = main_window.sim_tab
 
         # Undo stack for this simulation configuration.
-        self.undo_stack = QBetseeUndoStackSimConf(
+        self.undo_stack = QBetseeSimConfUndoStack(
             main_window=main_window, sim_config=self)
 
 

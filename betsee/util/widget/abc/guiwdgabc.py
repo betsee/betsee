@@ -36,7 +36,7 @@ Default Qt object name for all :class:`QBetseeObjectMixin` instances.
 # associated with another metaclass (e.g., "abc.ABCMeta").
 class QBetseeObjectMixin(object):
     '''
-    Abstract base class of most application-specific Qt object subclasses.
+    Abstract mixin of most application-specific Qt object subclasses.
 
     This class is suitable for use as a multiple-inheritance mixin. To preserve
     the expected method resolution order (MRO) semantics, this class should
@@ -274,11 +274,93 @@ class QBetseeObjectMixin(object):
         self.obj_name = pyident.convert_camelcase_to_snakecase(cls_name)
 
 # ....................{ MIXINS ~ edit                     }....................
+#FIXME: It would appear that we need to explicitly prevent subclass
+#implementations of the init() method from implicitly pushing undo commands
+#onto the undo stack. This hasn't been an issue in the past, as we previously
+#only called this method *BEFORE* opening the first simulation configuration.
+#Now, however, we frequently repeatedly call this method for editable widgets
+#on stack pages associated with dynamic list items. Doing so sanely will
+#probably prove non-trivial, but is nonetheless mandatory to preserve sanity:
+#
+#* Define a new "guiwdgeditabc" submodule of this subpackage.
+#* Shift this subclass into that submodule.
+#* Define a new function in this submodule resembling:
+#     from betse.util.type.types import type_check, GeneratorType
+#     from contextlib import contextmanager
+#
+#     @contextmanager
+#     @type_check
+#     def ignoring_undo_cmds(widget: QBetseeEditWidgetMixin) -> GeneratorType:
+#         '''
+#         Context manager temporarily disabling the
+#         :attr:`QBetseeEditWidgetMixin.is_undo_cmd_pushable` boolean of the
+#         passed widget for the duration of this context *and* guaranteeably
+#         restores this boolean to its prior state after this context returns.
+#
+#         This context manager prevents :attr:`QBetseeEditWidgetMixin` methods
+#         from recursively pushing additional undo commands onto the undo stack
+#         when already applying an undo command, which typically induces infinite
+#         recursion, which is bad.
+#
+#         Parameters
+#         -----------
+#         widget : QBetseeEditWidgetMixin
+#             Editable widget to be prevented from inducing infinite recursion.
+#
+#         Returns
+#         -----------
+#         contextlib._GeneratorContextManager
+#             Context manager manhandling this widget as described above.
+#
+#         Yields
+#         -----------
+#         None
+#             Since this context manager yields no values, the caller's ``with``
+#             statement must be suffixed by *no* ``as`` clause.
+#         '''
+#
+#         # Prior state of this boolean, preserved to permit restoration.
+#         is_undo_cmd_pushable_prior = widget.is_undo_cmd_pushable
+#
+#         # Yield control to the body of the caller's "with" block.
+#         try:
+#             widget.is_undo_cmd_pushable = False
+#             yield
+#         # Restore this boolean's state even if that block raised an exception.
+#         finally:
+#             widget.is_undo_cmd_pushable = is_undo_cmd_pushable_prior
+#* Refactor the existing QBetseeWidgetUndoCommandABC._in_undo_cmd() method to
+#  defer to the above context manager, which implies that this method should
+#  (probably) no longer be decorated by the @contextmanager decorator.
+#* Define a new _init_safe() abstract method of this subclass.
+#* Override the init() method in this mixin as follows:
+#  def init(*args, **kwargs) -> None:
+#
+#      # Finalize the initialization of our superclass.
+#      super().init(*args, **kwargs)
+#
+#      with ignoring_undo_cmds(widget=self):
+#          self._init_safe(*args, **kwargs)
+#* Refactor all subclasses overriding the init() method to instead override the
+#  _init_safe() method. (Ideally, we'd also decorate this init() method in such
+#  a way as to prohibit subclasses from overriding that method. Since we lack
+#  sufficient time for that, we'll simply have to make sure we're rigorous.)
+#* Extend this same metaphor to the QBetseePagerItemizedMixin.reinit() method
+#  (e.g., by defining a new abstract _reinit_safe() method and calling that
+#  method appropriately).
+#* Implement the related "FIXME:" comment preceding the
+#  QBetseeSimConfEditWidgetMixin.set_filename() slot.
+#
+#Wowzers! Critical work, but non-trivial. Nonetheless, this is our path ahead.
 class QBetseeEditWidgetMixin(QBetseeObjectMixin):
     '''
-    Abstract base class of most application-specific **editable widget** (i.e.,
+    Abstract mixin of most application-specific **editable widget** (i.e.,
     widget interactively editing one or more values in an undoable manner)
     subclasses.
+
+    This class is suitable for use as a multiple-inheritance mixin. To preserve
+    the expected method resolution order (MRO) semantics, this class should
+    typically be inherited *first* rather than *last* in subclasses.
 
     Attributes
     ----------
@@ -312,7 +394,19 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
         # Unset the undo stack to which this widget pushes undo commands.
         self._unset_undo_stack()
 
-    # ..................{ UNDO STACK ~ set                  }..................
+    # ..................{ TESTERS                           }..................
+    def _is_undo_stack_dirty(self) -> bool:
+        '''
+        ``True`` only if this widget is associated with an undo stack (i.e., if
+        the :meth:`_set_undo_stack` method has been called more recently than
+        the :meth:`_unset_undo_stack` method) *and* this undo stack is in the
+        **dirty state** (i.e., contains at least one undo command to be
+        subsequently undone).
+        '''
+
+        return self._undo_stack is not None and not self._undo_stack.isClean()
+
+    # ..................{ SETTERS                           }..................
     @type_check
     def _set_undo_stack(self, undo_stack: QUndoStack) -> None:
         '''
@@ -341,17 +435,7 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
         # Undo commands are now safely pushable from this widget.
         self.is_undo_cmd_pushable = False
 
-    # ..................{ UNDO STACK ~ other                }..................
-    def _is_undo_stack_dirty(self) -> bool:
-        '''
-        ``True`` only if the undo stack associated with this widget is in the
-        **dirty state** (i.e., contains at least one undo command to be
-        subsequently undone).
-        '''
-
-        return not self._undo_stack.isClean()
-
-
+    # ..................{ PUSHERS                           }..................
     @type_check
     def _push_undo_cmd_if_safe(
         self,
@@ -377,4 +461,4 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
 
         # Else, no such command is being applied. Since pushing this undo
         # command onto the stack is thus safe, do so.
-        self._sim_conf.undo_stack.push(undo_cmd)
+        self._undo_stack.push(undo_cmd)

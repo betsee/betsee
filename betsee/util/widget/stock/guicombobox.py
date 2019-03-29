@@ -8,7 +8,7 @@ General-purpose :mod:`QComboBox` widget subclasses.
 '''
 
 # ....................{ IMPORTS                           }....................
-# from PySide2.QtCore import QCoreApplication  #, Signal, Slot
+from PySide2.QtCore import QCoreApplication  #, Signal, Slot
 from PySide2.QtWidgets import QComboBox
 from betse.util.io.log import logs
 from betse.util.type.iterable import iterables, itertest
@@ -20,6 +20,7 @@ from betse.util.type.types import (
     SequenceStandardTypes,
 )
 # from betsee.guiexception import BetseePySideComboBoxException
+from betsee.guiexception import BetseePySideComboBoxException
 from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
 
 # ....................{ SUBCLASSES                        }....................
@@ -37,6 +38,13 @@ class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
       editable by end users).
     * **Uniqueness** (i.e., the text of each item is unique and hence differs
       from the text of each other item).
+
+    Attributes
+    ----------
+    _is_items_added : bool
+        ``True`` only if the :meth:`addItems` method has been previously
+        called, implying this combo box to have been populated with one or more
+        icon-less items.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -44,6 +52,9 @@ class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
 
         # Initialize our superclass with all passed arguments.
         super().__init__(*args, **kwargs)
+
+        # Nullify all instance variables for safety.
+        self._is_items_added = False
 
         # Disable editability, preventing users from manually editing item
         # text. While our superclass already disables editability by default,
@@ -80,19 +91,69 @@ class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
         # Log this finalization.
         logs.log_debug('Initializing combo box "%s"...', self.obj_name)
 
-        # If prepopulating this combo box with icon-less items, do so.
+        # If prepopulating this combo box with icon-less items...
         if items_iconless_text is not None:
+            # Remove all items previously added to this combo box *BEFORE*
+            # adding these items back to this combo box. If *NOT* done, the
+            # subsequent call to the add_items_iconless() method would
+            # correctly raise an exception on detecting an attempt to add
+            # duplicate items to this combo box.
+            self.clear()
+
+            # Prepopulating this combo box with these icon-less items.
             self.add_items_iconless(items_iconless_text)
+
+    # ..................{ EXCEPTIONS                        }..................
+    def _die_unless_items_added(self) -> None:
+        '''
+        Raise an exception unless the :meth:`addItems` method has been
+        previously called (i.e., unless this combo box has already been
+        populated with one or more icon-less items).
+
+        Equivalently, this method raises an exception if the :meth:`addItems`
+        method has *not* been previously called.
+
+        Raises
+        ----------
+        BetseePySideComboBoxException
+            if the :meth:`addItems` method has *not* been previously called.
+        '''
+
+        # If the addItems() method has *NOT* been called, raise an exception.
+        if not self._is_items_added:
+            raise BetseePySideComboBoxException(QCoreApplication.translate(
+                'QBetseeComboBox',
+                'Combo box unpopulated (i.e., addItems() not called).'))
+
+    # ..................{ SUPERCLASS                        }..................
+    # Superclass methods overridden to define the "_is_items_added" boolean.
+
+    def addItems(self, items_text: SequenceTypes) -> None:
+
+        # Defer to the superclass implementation first.
+        super().addItems(items_text)
+
+        # Note this method to now have been called.
+        self._is_items_added = True
+
+
+    def clear(self) -> None:
+
+        # Defer to the superclass implementation first.
+        super().clear()
+
+        # Note the addItems() method to now have effectively *NOT* been called.
+        self._is_items_added = False
 
     # ..................{ ADDERS                            }..................
     @type_check
     def add_items_iconless(self, items_text: SequenceTypes) -> None:
         '''
         Add **icon-less items** (i.e., plaintext combo box items with *no*
-        corresponding icons) with the passed text to this combo box after the
-        index of this combo box defined by the :meth:`insertPolicy` property,
-        defaulting to appending these items *after* any existing items of
-        this combo box.
+        corresponding icons) specified by the passed human-readable strings to
+        this combo box after the index of this combo box defined by the
+        :meth:`insertPolicy` property, defaulting to appending these items
+        *after* any existing items of this combo box.
 
         Specifically, for each element of this sequence, this method adds a new
         combo box item whose human-readable text is that element.

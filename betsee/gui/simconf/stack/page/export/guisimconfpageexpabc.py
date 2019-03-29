@@ -17,6 +17,7 @@ from betse.science.pipe.export.pipeexpabc import SimPipeExportABC
 # from betse.util.io.log import logs
 from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.iterable import sequences
+from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.util.widget.abc.control.guictlpageabc import (
     QBetseePagerItemizedABC)
@@ -34,6 +35,15 @@ class QBetseeSimConfPagerExportABC(QBetseePagerItemizedABC):
     ----------
     _p : Parameters
         Simulation configuration singleton.
+
+    Attributes (Widget)
+    ----------
+    _widget_kind : QBetseeSimConfComboBoxSequence
+        Combo box widget editing the type of this simulation export, whose Qt
+        object name is :meth:`_widget_name_prefix` appended by ``kind``.
+    _widget_name : QBetseeSimConfLineEdit
+        Line edit widget editing the name of this simulation export, whose Qt
+        object name is :meth:`_widget_name_prefix` appended by ``name``.
     '''
 
     # ..................{ PROPERTIES ~ abstract             }..................
@@ -86,16 +96,45 @@ class QBetseeSimConfPagerExportABC(QBetseePagerItemizedABC):
 
         # Nullify all remaining instance variables for safety.
         self._p = None
+        self._widget_kind = None
+        self._widget_name = None
 
 
     @type_check
     def init(self, main_window: QMainWindow) -> None:
+
+        # Avoid circular import dependencies.
+        from betsee.gui.simconf.stack.widget.guisimconfcombobox import (
+            QBetseeSimConfComboBoxSequence)
+        from betsee.gui.simconf.stack.widget.guisimconflineedit import (
+            QBetseeSimConfLineEdit)
 
         # Initialize our superclass with all passed parameters.
         super().init(main_window)
 
         # Classify variables of this main window required by most subclasses.
         self._p = main_window.sim_conf.p
+
+        # Widgets editing this export's name and type.
+        self._widget_kind = main_window.get_widget(
+            widget_name=self._widget_name_prefix + 'kind')
+        self._widget_name = main_window.get_widget(
+            widget_name=self._widget_name_prefix + 'name')
+
+        # If any of these are *NOT* of the expected type, raise an exception.
+        objects.die_unless_instance(
+            obj=self._widget_kind, cls=QBetseeSimConfComboBoxSequence)
+        objects.die_unless_instance(
+            obj=self._widget_name, cls=QBetseeSimConfLineEdit)
+
+        # Sequence of the string types of all exports supported by the pipeline
+        # associated with this pager (in sorted lexicographic order).
+        export_confs_kind = self._pipe_cls.iter_runners_metadata_kind()
+
+        # Prepopulate the widget editing this export's type with this sequence,
+        # which remains constant across repeated reinitializations of this
+        # combo box (i.e., calls to the reinit() method).
+        self._widget_kind.add_items_iconless(items_text=export_confs_kind)
 
 
     @type_check
@@ -108,24 +147,8 @@ class QBetseeSimConfPagerExportABC(QBetseePagerItemizedABC):
         # Type of this export configuration.
         export_conf_cls = type(export_conf)
 
-        # Sequence of the string types of all exporters supported by the
-        # pipeline associated with this pager (in sorted lexicographic order).
-        export_confs_kind = self._pipe_cls.iter_runners_metadata_kind()
-
-        # Widgets editing this export's name and type.
-        widget_name = main_window.get_widget(
-            widget_name=self._widget_name_prefix + 'name')
-        widget_kind = main_window.get_widget(
-            widget_name=self._widget_name_prefix + 'kind')
-
-        # Remove all items previously added to the combo box editing this type
-        # *BEFORE* adding these items back to this box. If *NOT* done, the
-        # subsequent widget_kind.init() call would correctly raise an exception
-        # on detecting an attempt to add duplicate items to this combo box.
-        widget_kind.clear()
-
         # Initialize these widgets.
-        widget_name.init(
+        self._widget_name.init(
             sim_conf=main_window.sim_conf,
             sim_conf_alias=export_conf_cls.name,
             sim_conf_alias_parent=export_conf,
@@ -136,10 +159,9 @@ class QBetseeSimConfPagerExportABC(QBetseePagerItemizedABC):
         #push cycle. To correct this, we'll need to generalize the
         #superclass reinit() implementation to avoid pushing undo commands for
         #the duration of this method call. *sigh*
-        widget_kind.init(
+        self._widget_kind.init(
             sim_conf=main_window.sim_conf,
             sim_conf_alias=export_conf_cls.kind,
             sim_conf_alias_parent=export_conf,
-            items_iconless_text=export_confs_kind,
             is_reinitable=True,
         )

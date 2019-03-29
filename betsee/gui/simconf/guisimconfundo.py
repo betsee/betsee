@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -34,7 +34,7 @@
 #widget slot already emitting "set_dirty_signal", there appears to be no need
 #for this undo stack to explicitly do so as well.
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QSize  # Signal, Slot
 from PySide2.QtGui import QIcon, QKeySequence
 from PySide2.QtWidgets import QUndoCommand, QUndoStack
@@ -44,8 +44,8 @@ from betsee.guiexception import BetseePySideMenuException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
 from betsee.gui.simconf.guisimconf import QBetseeSimConf
 
-# ....................{ CLASSES                            }....................
-class QBetseeUndoStackSimConf(QUndoStack):
+# ....................{ SUBCLASSES                        }....................
+class QBetseeSimConfUndoStack(QUndoStack):
     '''
     :class:`QUndoStack`-based stack of all :class:`QBetseeUndoCommandSimConf`
     instances signifying user-driven simulation configuration modifications and
@@ -59,7 +59,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         Undo action synchronized with the contents of this stack.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(
         self,
@@ -125,7 +125,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         Parameters
         ----------
         main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
+            Initialized application-specific :class:`QMainWindow` widget.
         sim_config: QBetseeSimConf
             Direct parent object against which to initialize this object.
         '''
@@ -145,7 +145,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         # Redo action synchronized with the contents of this stack.
         self._redo_action = self.createRedoAction(
             self, QCoreApplication.translate(
-                'QBetseeUndoStackSimConf', '&Redo'))
+                'QBetseeSimConfUndoStack', '&Redo'))
         self._redo_action.setIcon(redo_icon)
         self._redo_action.setObjectName('action_redo')
         self._redo_action.setShortcuts(QKeySequence.Redo)
@@ -153,7 +153,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         # Undo action synchronized with the contents of this stack.
         self._undo_action = self.createUndoAction(
             self, QCoreApplication.translate(
-                'QBetseeUndoStackSimConf', '&Undo'))
+                'QBetseeSimConfUndoStack', '&Undo'))
         self._undo_action.setIcon(undo_icon)
         self._undo_action.setObjectName('action_undo')
         self._undo_action.setShortcuts(QKeySequence.Undo)
@@ -168,7 +168,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         Parameters
         ----------
         main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
+            Initialized application-specific :class:`QMainWindow` widget.
         '''
 
         # List of all actions in the "Edit" menu.
@@ -189,7 +189,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
             # If this action is *NOT* a separator, raise an exception.
             if not first_separator.isSeparator():
                 raise BetseePySideMenuException(QCoreApplication.translate(
-                    'QBetseeUndoStackSimConf',
+                    'QBetseeSimConfUndoStack',
                     'First "Edit" menu action '
                     '"{0}" not a separator.'.format(first_separator.text())))
 
@@ -207,7 +207,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         Parameters
         ----------
         main_window : QBetseeMainWindow
-            Initialized application-specific parent :class:`QMainWindow` widget.
+            Initialized application-specific :class:`QMainWindow` widget.
         '''
 
         # List of all actions in the main toolbar.
@@ -215,22 +215,22 @@ class QBetseeUndoStackSimConf(QUndoStack):
 
         # For each such action...
         for first_separator in tool_bar_actions:
-            # If this action is the first separator in this toolbar, this action
-            # is the desired separator.
+            # If this action is the first separator in this toolbar, this
+            # action is the desired separator.
             if first_separator.isSeparator():
                 # Insert a new separator before this separator in this toolbar,
                 # such that:
                 #
-                # * The former separator will precede the undo and redo actions.
-                # * The latter separator will succeed the undo and redo actions.
+                # * The former separator precedes the undo and redo actions.
+                # * The latter separator succeeds the undo and redo actions.
                 main_window.toolbar.insertSeparator(first_separator)
 
                 # Cease searching.
                 break
         # Else, this action contains no separators. In this case, default to a
         # placeholder integer instructing subsequent insertions to append to
-        # this toolbar. While this edge case should never happen, never is still
-        # the enemy of reason.
+        # this toolbar. While this edge case should never happen, never is
+        # still the enemy of reason.
         else:
             first_separator = 0
 
@@ -238,7 +238,7 @@ class QBetseeUndoStackSimConf(QUndoStack):
         main_window.toolbar.insertAction(first_separator, self._undo_action)
         main_window.toolbar.insertAction(first_separator, self._redo_action)
 
-    # ..................{ PUSHERS                            }..................
+    # ..................{ PUSHERS                           }..................
     def push(self, undo_command: QUndoCommand) -> None:
 
         # Log this push *BEFORE* performing this push, for debuggability.

@@ -257,6 +257,53 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         return self._sim_conf is not None and self._sim_conf.is_open
 
     # ..................{ SLOTS                             }..................
+    #FIXME: This is demonstrably terrible. Instead, consider:
+    #
+    #* Refactoring the "is_undo_cmd_pushable" instance variable into a property
+    #  whose setter method is trivially defined to set this variable but...
+    #  whose getter method resembles:
+    #      @property
+    #      def is_undo_cmd_pushable(self) -> bool:
+    #          return self._is_undo_cmd_pushable and self._sim_conf.is_open
+    #  * Actually, don't do that at all. That's awful, for a number of obvious
+    #    reasons. Instead, the dramatically more elegant approach is to improve
+    #    the intelligence of the existing "QBetseeSimConfUndoStack" subclass.
+    #    Specifically:
+    #    * Preserve a reference to "self._sim_conf = main_window.sim_conf" in
+    #      the QBetseeSimConfUndoStack.init() method somewhere.
+    #    * Define a new QBetseeSimConfUndoStack.push_undo_cmd_if_safe() method
+    #      with signature resembling:
+    #          @type_check
+    #          def push_undo_cmd_if_safe(
+    #              self,
+    #              # To avoid circular imports, this type is validated dynamically.
+    #              undo_cmd: (
+    #                  'betsee.util.widget.abc.guiundocmdabc.QBetseeWidgetUndoCommandABC'),
+    #          ) -> None:
+    #              '''
+    #              Push the passed widget-specific undo command onto the undo stack
+    #              associated with this widget.
+    #
+    #              Parameters
+    #              ----------
+    #              undo_cmd : QBetseeWidgetUndoCommandABC
+    #                  Widget-specific undo command to be pushed onto this stack.
+    #
+    #              See Also
+    #              ----------
+    #              :meth:`betsee.util.widget.abc.guiwdgabc.QBetseeEditWidgetMixin._push_undo_cmd_if_safe`
+    #                   Parent caller of this method.
+    #              '''
+    #
+    #              if self._sim_conf.is_open:
+    #                  self.push(undo_cmd)
+    #              else:
+    #                  logs.log_debug('Ignoring this undo command push request.')
+    #     * Refine the existing QBetseeEditWidgetMixin._push_undo_cmd_if_safe()
+    #       method to call the above method rather than the push() method.
+    #       Since that's the only caller of the push() method, we're done here.
+    #* Reducing the implementation of this slot to "pass".
+    #* Otherwise preserving this slot as is.
     @Slot(str)
     def _set_filename(self, filename: str) -> None:
         '''

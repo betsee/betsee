@@ -406,11 +406,7 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
 
         # Initialize our superclass with all remaining arguments.
         super().__init__(
-            *args,
-            widget=widget,
-            synopsis=widget.undo_synopsis,
-            **kwargs
-        )
+            *args, widget=widget, synopsis=widget.undo_synopsis, **kwargs)
 
         # Classify all passed parameters.
         self._value_old = value_old
