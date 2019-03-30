@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,7 +7,7 @@
 :class:`QAbstractSpinBox`-based simulation configuration widget subclasses.
 '''
 
-#FIXME: Improve the init() method to internally call the self.setMinimum()
+#FIXME: Improve the _init_safe() method to internally call the self.setMinimum()
 #and/or self.setMaximum() methods with a range of permissible values specific to
 #the current "self._sim_conf_alias" data descriptor. Although the expr_alias()
 #function currently provides no means of explicitly defining this range, it
@@ -46,7 +46,7 @@
 #predicate (if any) by declaring a new instance variable "expr_alias_predicate"
 #on the instance of the class returned by that function.
 #
-#Given that, the init() method could then internally call:
+#Given that, the _init_safe() method could then internally call:
 #
 #    predicate = self._sim_conf_alias.data_desc.predicate
 #
@@ -59,19 +59,19 @@
 #It's *NOT* hard. It's mostly just tedious. But it *MUST* be done to prevent
 #users from entering invalid numeric data. (Let us see this through, please.)
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Qt, Signal
 from PySide2.QtWidgets import QSpinBox
 # from betse.util.io.log import logs
 from betse.util.type.numeric import floats
 from betse.util.type.types import type_check, ClassOrNoneTypes
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
     QBetseeClipboardScalarWidgetMixin)
 from betsee.util.widget.stock.guispinbox import QBetseeDoubleSpinBox
 
-# ....................{ SUPERCLASSES                       }....................
+# ....................{ SUPERCLASSES                      }....................
 class QBetseeSimConfSpinBoxWidgetMixin(
     QBetseeClipboardScalarWidgetMixin, QBetseeSimConfEditScalarWidgetMixin):
     '''
@@ -80,7 +80,7 @@ class QBetseeSimConfSpinBoxWidgetMixin(
     external simulation configuration files to be interactively edited.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed arguments.
@@ -91,15 +91,15 @@ class QBetseeSimConfSpinBoxWidgetMixin(
         # duration of time that the spon box GUI arrows are depressed.
         self.setAccelerated(True)
 
-        # Align the displayed number against the right rather than left internal
-        # edge of this spin box -- the typical default in most GUI frameworks.
-        # (For unclear reasons, Qt defaults to right alignment.)
+        # Align the displayed number against the right rather than left
+        # internal edge of this spin box -- the typical default in most GUI
+        # frameworks. (For unclear reasons, Qt defaults to right alignment.)
         self.setAlignment(Qt.AlignRight)
 
         # Disable so-called "keyboard tracking," reducing signal verbosity by
-        # preventing the superclass from emitting valueChanged() signals on each
-        # key entered by the user (e.g., on all three of the "3", "1", and "4"
-        # keys entered by the user to enter the integer "314").
+        # preventing the superclass from emitting valueChanged() signals on
+        # each key entered by the user (e.g., on all three of the "3", "1", and
+        # "4" keys entered by the user to enter the integer "314").
         #
         # Instead, the valueChanged() signal will *ONLY* be emitted when:
         #
@@ -109,7 +109,7 @@ class QBetseeSimConfSpinBoxWidgetMixin(
         #   key is pressed, the up or down graphical arrow is clicked).
         self.setKeyboardTracking(False)
 
-    # ..................{ SUPERCLASS ~ setter                }..................
+    # ..................{ SUPERCLASS ~ setter               }..................
     def setValue(self, value_new: str) -> None:
 
         # logs.log_debug('In QBetseeSimConfSpinBoxWidgetMixin.setValue()...')
@@ -117,11 +117,11 @@ class QBetseeSimConfSpinBoxWidgetMixin(
         # Defer to the superclass setter.
         super().setValue(value_new)
 
-        # If this configuration is currently open, set the current value of this
-        # simulation configuration alias to this widget's current value.
+        # If this configuration is currently open, set the current value of
+        # this simulation configuration alias to this widget's current value.
         self._set_alias_to_widget_value_if_sim_conf_open()
 
-    # ..................{ MIXIN ~ property                   }..................
+    # ..................{ MIXIN ~ property                  }..................
     @property
     def undo_synopsis(self) -> str:
         return QCoreApplication.translate(
@@ -137,7 +137,7 @@ class QBetseeSimConfSpinBoxWidgetMixin(
     def _finalize_widget_change_signal(self) -> Signal:
         return self.editingFinished
 
-# ....................{ SUBCLASSES                         }....................
+# ....................{ SUBCLASSES                        }....................
 class QBetseeSimConfIntSpinBox(
     QBetseeSimConfSpinBoxWidgetMixin, QSpinBox):
     '''
@@ -146,7 +146,7 @@ class QBetseeSimConfIntSpinBox(
     interactively edited.
     '''
 
-    # ..................{ MIXIN                              }..................
+    # ..................{ MIXIN                             }..................
     @property
     def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
         return int
@@ -171,20 +171,20 @@ class QBetseeSimConfIntSpinBox(
 class QBetseeSimConfDoubleSpinBox(
     QBetseeSimConfSpinBoxWidgetMixin, QBetseeDoubleSpinBox):
     '''
-    Simulation configuration-specific floating point spin box widget, permitting
-    floating point numbers backed by external simulation configuration files to
-    be interactively edited.
+    Simulation configuration-specific floating point spin box widget,
+    permitting floating point numbers backed by external simulation
+    configuration files to be interactively edited.
     '''
 
-    # ..................{ MIXIN                              }..................
+    # ..................{ MIXIN                             }..................
     @property
     def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
         return float
 
 
     # This method is typically called *ONLY* once on loading the current
-    # simulation configuration, enabling this widget to reinitialize itself in a
-    # manner dependent upon the current value of the associated alias.
+    # simulation configuration, enabling this widget to reinitialize itself in
+    # a manner dependent upon the current value of the associated alias.
     def _get_widget_from_alias_value(self) -> object:
 
         # Initial value of the floating point number returned by the simulation
@@ -219,7 +219,8 @@ class QBetseeSimConfDoubleSpinBox(
         # Refine this precision to the largest of:
         widget_value_precision = max(
             # This alias' precision, incremented by one to permit the end user
-            # to interactively decrease this number an additional decimal place.
+            # to interactively decrease this number an additional decimal
+            # place.
             widget_value_precision + 1,
             # A reasonable default precision.
             3,

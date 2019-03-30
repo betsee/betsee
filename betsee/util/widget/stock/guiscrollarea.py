@@ -10,7 +10,7 @@ General-purpose :mod:`QScrollArea` subclasses.
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import Signal, Slot
 from PySide2.QtWidgets import QScrollArea
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeScrollImage(QBetseeObjectMixin, QScrollArea):

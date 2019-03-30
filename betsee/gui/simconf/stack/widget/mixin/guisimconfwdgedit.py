@@ -16,7 +16,7 @@ from betse.util.io.log import logs
 from betse.util.type.descriptor.datadescs import DataDescriptorBound
 from betse.util.type.types import type_check, ClassOrNoneTypes
 from betsee.guiexception import BetseePySideWidgetException
-from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
+from betsee.util.widget.mixin.guiwdgeditmixin import QBetseeEditWidgetMixin
 
 # ....................{ MIXINS                            }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
@@ -62,7 +62,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
 
 
     @type_check
-    def init(
+    def _init_safe(
         self,
 
         # Mandatory parameters.
@@ -97,16 +97,16 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
             YAML-backed simulation configuration).
 
         All remaining parameters are passed as is to the
-        :meth:`QBetseeEditWidgetMixin.init` method.
+        :meth:`QBetseeEditWidgetMixin._init_safe` method.
 
         See Also
         ----------
-        :meth:`QBetseeWidgetMixinSimConf.init`
+        :meth:`QBetseeWidgetMixinSimConf._init_safe`
             Further details.
         '''
 
         # Initialize our superclass with all remaining parameters.
-        super().init(*args, **kwargs)
+        super()._init_safe(*args, **kwargs)
 
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
@@ -270,7 +270,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
     #    the intelligence of the existing "QBetseeSimConfUndoStack" subclass.
     #    Specifically:
     #    * Preserve a reference to "self._sim_conf = main_window.sim_conf" in
-    #      the QBetseeSimConfUndoStack.init() method somewhere.
+    #      the QBetseeSimConfUndoStack._init_safe() method somewhere.
     #    * Define a new QBetseeSimConfUndoStack.push_undo_cmd_if_safe() method
     #      with signature resembling:
     #          @type_check

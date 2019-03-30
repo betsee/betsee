@@ -38,7 +38,17 @@ Abstract base classes of all widget-specific undo command subclasses.
 #  differing parameters). See the following brilliant StackOverflow definition
 #  of such a decorator, which is surprisingly elegant:
 #      https://stackoverflow.com/a/15955706/2809027
-#* Decorate the QBetseeSimConfUndoStack.push() method by this decorator.
+#  * Alternately, define a similar (albeit simpler) decorator raising an
+#    exception on *ANY* recursive call -- which might be exactly what we
+#    require here. Consider both cases. Again, see this StackOverflow answer:
+#    https://stackoverflow.com/a/7900380/2809027
+#    Note that this implementation is probably quite inefficient, suggesting
+#    that the prior StackOverflow answer might yield a more responsible base
+#    implementation that we would then simplify to produce the desired result.
+#* Decorate the QBetseeSimConfUndoStack.push() method by this decorator -- or
+#  perhaps the proposed QBetseeSimConfUndoStack.push_undo_cmd_if_safe() method,
+#  which is probably a safer bet. Decorating Qt methods is probably a recipe
+#  for untimely disaster.
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtWidgets import QUndoCommand
@@ -133,43 +143,25 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
         return self._id
 
     # ..................{ CONTEXTS                          }..................
-    @contextmanager
-    def _in_undo_cmd(self) -> GeneratorType:
+    def _ignoring_undo_cmds(self) -> GeneratorType:
         '''
-        Context manager notifying the widget associated with this undo command
-        that this undo command is now being applied to it for the duration of
-        this context.
+        Context manager temporarily disabling the
+        :attr:`QBetseeEditWidgetMixin.is_undo_cmd_pushable` boolean of the
+        editable widget responsible for this undo command for the duration of
+        this context, guaranteeably restoring this boolean to its prior state
+        immediately *before* returning.
 
-        This context manager temporarily disables and then guaranteeably
-        restores the :attr:`QBetseeEditWidgetMixin.is_undo_cmd_pushable`
-        boolean (even in the event of fatal exceptions), preventing
-        :attr:`QBetseeEditWidgetMixin` methods from recursively pushing
-        additional undo commands onto the undo stack when already applying an
-        undo command. Why? Because doing so induces infinite recursion, which
-        is bad.
-
-        Returns
+        See Also
         -----------
-        contextlib._GeneratorContextManager
-            Context manager notifying this widget as described above.
-
-        Yields
-        -----------
-        None
-            Since this context manager yields no values, the caller's ``with``
-            statement must be suffixed by *no* ``as`` clause.
+        :func:`guiwdgeditmixin.ignoring_undo_cmds`
+            Further details.
         '''
 
-        # Prior state of this boolean, preserved to permit restoration.
-        is_undo_cmd_pushable_prior = self._widget.is_undo_cmd_pushable
+        # Avoid circular import dependencies.
+        from betsee.util.widget.mixin import guiwdgeditmixin
 
-        # Yield control to the body of the caller's "with" block.
-        try:
-            self._widget.is_undo_cmd_pushable = False
-            yield
-        # Restore this boolean's state even if that block raised an exception.
-        finally:
-            self._widget.is_undo_cmd_pushable = is_undo_cmd_pushable_prior
+        # Create and return this context manager for this editable widget.
+        return guiwdgeditmixin.ignoring_undo_cmds(self._widget)
 
 # ....................{ PLACEHOLDERS                      }....................
 class QBetseeUndoCommandNull(QUndoCommand):

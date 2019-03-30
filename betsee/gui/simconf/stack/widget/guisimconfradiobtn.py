@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -16,7 +16,7 @@
 #  currently exposed to end users from within Qt (Creator|Designer) *AND*
 #  presumably automatically resolves the prior concern of promotability.
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QButtonGroup, QRadioButton
 # from betse.util.io.log import logs
@@ -24,10 +24,10 @@ from betse.util.type.iterable import iterget
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideRadioButtonException
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditenum import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditenum import (
     QBetseeSimConfEditEnumWidgetMixin)
 
-# ....................{ SUBCLASSES                         }....................
+# ....................{ SUBCLASSES                        }....................
 class QBetseeSimConfEnumRadioButtonGroup(
     QBetseeSimConfEditEnumWidgetMixin, QButtonGroup):
     '''
@@ -37,11 +37,12 @@ class QBetseeSimConfEnumRadioButtonGroup(
 
     Caveats
     ----------
-    **Qt (Creator|Designer) provides no means of promoting :class:`QButtonGroup`
-    widgets to instances of this subclass,** a longstanding deficiency with no
-    short-term official solution. Instead, button groups *must* be manually
-    "promoted" via the admittedly hackish
-    :attr:`betsee.lib.pyside2.cache.guipsdcache._PROMOTE_OBJ_NAME_TO_TYPE` dictionary.
+    **Qt (Creator|Designer) provides no means of promoting
+    :class:`QButtonGroup` widgets to instances of this subclass,** a
+    longstanding deficiency with no short-term official solution. Instead,
+    button groups *must* be manually "promoted" via the admittedly hackish
+    :attr:`betsee.lib.pyside2.cache.guipsdcache._PROMOTE_OBJ_NAME_TO_TYPE`
+    dictionary.
 
     See Also
     ----------
@@ -49,16 +50,15 @@ class QBetseeSimConfEnumRadioButtonGroup(
         Alternative simulation configuration-specific widget subclass similarly
         permitting high-level enumeration members to be interactively edited.
         While more cumbersome to initialize, that subclass is preferable from
-        the user experience (UX) perspective for sufficiently large enumerations
-        (e.g., containing ten or more members).
+        the user experience (UX) perspective for sufficiently large
+        enumerations (e.g., containing ten or more members).
     '''
 
-    # ..................{ INITIALIZERS                       }..................
-    @type_check
-    def init(self, *args, **kwargs) -> None:
+    # ..................{ INITIALIZERS                      }..................
+    def _init_safe(self, *args, **kwargs) -> None:
 
         # Initialize our superclass with all passed parameters.
-        super().init(*args, **kwargs)
+        super()._init_safe(*args, **kwargs)
 
         # For each radio button previously added to this button group...
         for radio_btn in self.buttons():
@@ -75,7 +75,7 @@ class QBetseeSimConfEnumRadioButtonGroup(
                         'value of "enum_member_to_widget_value".'.format(
                             radio_btn.objectName(), self.objectName())))
 
-    # ..................{ MIXIN ~ property : read-only       }..................
+    # ..................{ MIXIN ~ property : read-only      }..................
     @property
     def undo_synopsis(self) -> str:
 
@@ -86,23 +86,23 @@ class QBetseeSimConfEnumRadioButtonGroup(
     @property
     def _finalize_widget_change_signal(self) -> Signal:
 
-        # Signals defined by the "QRadioButton" class are intentionally ignored.
-        # These low-level child widgets should *ONLY* ever be contained in a
-        # higher-level "QButtonGroup" parent widget.
+        # Signals defined by the "QRadioButton" class are intentionally
+        # ignored. These low-level child widgets should *ONLY* ever be
+        # contained in a higher-level "QButtonGroup" parent widget.
         #
-        # The low-level QRadioButton.toggled() signal is emitted for the pair of
-        # radio buttons in a group being enabled and disabled, thus generating
-        # two emissions for each toggling of a radio button. In contrast, the
-        # higher-level QButtonGroup.buttonClicked() signal returned here is
-        # emitted only once for each such toggling.
+        # The low-level QRadioButton.toggled() signal is emitted for the pair
+        # of radio buttons in a group being enabled and disabled, thus
+        # generating two emissions for each toggling of a radio button. In
+        # contrast, the higher-level QButtonGroup.buttonClicked() signal
+        # returned here is emitted only once for each such toggling.
         #
-        # Lastly, despite nomenclature suggesting this signal to apply *ONLY* to
-        # interactive clicks, Qt emits this signal on *ALL* available button
+        # Lastly, despite nomenclature suggesting this signal to apply *ONLY*
+        # to interactive clicks, Qt emits this signal on *ALL* available button
         # interactions (e.g., interactive clicks, programmatic clicks, keyboard
         # shortcut-driven clicks).
         return self.buttonClicked
 
-    # ..................{ MIXIN ~ property : value           }..................
+    # ..................{ MIXIN ~ property : value          }..................
     @property
     def widget_value(self) -> QRadioButton:
 
@@ -113,10 +113,11 @@ class QBetseeSimConfEnumRadioButtonGroup(
     @type_check
     def widget_value(self, widget_value: QRadioButton) -> None:
 
-        # Select this radio button manually. Thanks to the mutual exclusivity of
-        # radio buttons, doing so implicitly unselects all other buttons in this
-        # group. For unknown reasons, the "QButtonGroup" widget is the only
-        # scalar widget to provide no corresponding setCheckedButton() setter.
+        # Select this radio button manually. Thanks to the mutual exclusivity
+        # of radio buttons, doing so implicitly unselects all other buttons in
+        # this group. For unknown reasons, the "QButtonGroup" widget is the
+        # only scalar widget to provide no corresponding setCheckedButton()
+        # setter.
         widget_value.setChecked(True)
 
 

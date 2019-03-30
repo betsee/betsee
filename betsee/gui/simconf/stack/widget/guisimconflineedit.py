@@ -14,7 +14,7 @@ from betse.exceptions import BetseMethodUnimplementedException
 # from betse.util.io.log import logs
 from betse.util.path import pathnames
 from betse.util.type.types import type_check, StrOrNoneTypes
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.abc.guiclipboardabc import (
     QBetseeClipboardScalarWidgetMixin)
@@ -88,7 +88,7 @@ class QBetseeSimConfPathnameLineEditABC(QBetseeSimConfLineEdit):
 
     # ..................{ INITIALIZERS                      }..................
     @type_check
-    def init(self, push_btn: QPushButton, *args, **kwargs) -> None:
+    def _init_safe(self, push_btn: QPushButton, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this line edit, associated with all
         passed **sibling buddy widgets** (i.e., widgets spatially adjacent to
@@ -106,11 +106,11 @@ class QBetseeSimConfPathnameLineEditABC(QBetseeSimConfLineEdit):
             "Browse..." and situated to the right of this line edit.
 
         All remaining parameters are passed as is to the superclass
-        :meth:`QBetseeSimConfEditScalarWidgetMixin.init` method.
+        :meth:`QBetseeSimConfEditScalarWidgetMixin._init_safe` method.
         '''
 
         # Initialize our superclass with all remaining arguments.
-        super().init(*args, **kwargs)
+        super()._init_safe(*args, **kwargs)
 
         # Connect this button's click signal to a slot displaying a path dialog
         # yielding the pathname to be displayed by this line edit.
@@ -203,7 +203,8 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
 
 
     @type_check
-    def init(self, image_label: QBetseeLabelImage, *args, **kwargs) -> None:
+    def _init_safe(
+        self, image_label: QBetseeLabelImage, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this line edit, associated with all
         passed **sibling buddy widgets** (i.e., widgets spatially adjacent to
@@ -223,7 +224,7 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
             preserve this image's aspect ratio.
 
         All remaining parameters are passed as is to the superclass
-        :meth:`QBetseeSimConfPathnameLineEditABC.init` method.
+        :meth:`QBetseeSimConfPathnameLineEditABC._init_safe` method.
         '''
 
         # Finalize the initialization of the passed label "buddy" associated
@@ -231,8 +232,8 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
         # superclass. Why? Doing so obviates subtle chicken-and-egg
         # circularities within this initialization. Specifically:
         #
-        # * super().init() calls...
-        # * QBetseeSimConfEditWidgetMixin.init(), which conditionally calls...
+        # * super()._init_safe() calls...
+        # * QBetseeSimConfEditWidgetMixin._init_safe(), which conditionally calls...
         # * QBetseeSimConfEditScalarWidgetMixin._set_filename() if this is a
         #   dynamic line edit (i.e., repeatedly reinitialized during
         #   application runtime and hence associated with multiple data
@@ -248,7 +249,7 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
 
         # Finalize the initialization of our superclass with all remaining
         # variadic arguments.
-        super().init(*args, **kwargs)
+        super()._init_safe(*args, **kwargs)
 
 
     @type_check
@@ -259,7 +260,7 @@ class QBetseeSimConfPathnameImageLineEdit(QBetseeSimConfPathnameLineEditABC):
 
         See Also
         ----------
-        :meth:`init`
+        :meth:`_init_safe`
             Further details.
         '''
 

@@ -11,7 +11,7 @@ instantiated in pages of the top-level stack.
 # ....................{ IMPORTS                           }....................
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ MIXINS                            }....................
 # To avoid metaclass conflicts with the "QWidget" base class inherited by all
@@ -47,7 +47,7 @@ class QBetseeWidgetMixinSimConf(QBetseeObjectMixin):
 
 
     @type_check
-    def init(
+    def _init_safe(
         self,
         # To avoid circularity from the "QBetseeSimConf" class importing the
         # "QBetseeMainWindowConfig" class importing the "betsee_ui" submodule

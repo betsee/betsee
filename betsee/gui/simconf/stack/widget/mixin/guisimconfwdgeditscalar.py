@@ -15,7 +15,7 @@ from betse.exceptions import BetseMethodUnimplementedException
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideWidgetException
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgedit import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgedit import (
     QBetseeSimConfEditWidgetMixin)
 from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
 
@@ -51,10 +51,10 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         self._widget_value_last = None
 
 
-    def init(self, *args, **kwargs) -> bool:
+    def _init_safe(self, *args, **kwargs) -> bool:
 
         # Initialize our superclass with all passed parameters.
-        super().init(*args, **kwargs)
+        super()._init_safe(*args, **kwargs)
 
         # Connect all relevant signals to slots *AFTER* initializing our
         # superclass. See the superclass method for details.
@@ -147,7 +147,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         Signal signalled on each finalized interactive user (but *not*
         programmatic) edit of the contents of this widget.
 
-        The :meth:`init` method implicitly connects this signal to the
+        The :meth:`_init_safe` method implicitly connects this signal to the
         :meth:`_set_alias_to_widget_value_if_sim_conf_open` slot.
         '''
 
@@ -422,7 +422,7 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
 
         # Undo the prior edit. To prevent infinite recursion, notify this
         # widget that an undo command is now being applied to it.
-        with self._in_undo_cmd():
+        with self._ignoring_undo_cmds():
             self._widget.widget_value = self._value_old
 
             #FIXME: This focus attempt almost certainly fails across pages. If
@@ -440,7 +440,7 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
         super().redo()
 
         # Redo the prior edit. See the undo() method for further details.
-        with self._in_undo_cmd():
+        with self._ignoring_undo_cmds():
             self._widget.widget_value = self._value_new
             # self._widget.setFocus(Qt.OtherFocusReason)
 

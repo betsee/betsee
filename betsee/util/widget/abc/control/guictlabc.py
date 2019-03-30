@@ -13,7 +13,7 @@ paradigm) hierarchy.
 from PySide2.QtCore import QObject
 from PySide2.QtWidgets import QMainWindow
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ SUPERCLASSES                      }....................
 class QBetseeControllerABC(QBetseeObjectMixin, QObject):

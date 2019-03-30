@@ -14,7 +14,7 @@ settings associated with a single result of the current simulation) facilities.
 from PySide2.QtWidgets import QMainWindow, QTabWidget
 # from betse.util.io.log import logs
 from betse.util.type.types import type_check  #, StrOrNoneTypes
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ CLASSES                           }....................
 class QBetseeSimmerTabWidget(QBetseeObjectMixin, QTabWidget):

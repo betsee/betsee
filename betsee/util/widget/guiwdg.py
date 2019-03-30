@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,13 +8,13 @@ Low-level :mod:`PySide2`-specific widget facilities universally applicable to
 all (or at least most) widget types.
 '''
 
-# ....................{ IMPORTS                            }....................
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ....................{ IMPORTS                           }....................
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid circular import dependencies, avoid importing from *ANY*
 # application-specific submodules of this subpackage (i.e.,
 # "betsee.util.widget"). Since those submodules must *ALWAYS* be able to safely
 # import from this submodule, circularities are best avoided here.
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from PySide2.QtWidgets import QWidget
 # from betse.util.io.log import logs
@@ -22,7 +22,7 @@ from betse.util.type.types import type_check, CallableTypes
 from betsee.guiexception import BetseePySideWidgetException
 from betsee.util.type.guitype import QWidgetOrNoneTypes
 
-# ....................{ EXCEPTIONS                         }....................
+# ....................{ EXCEPTIONS                        }....................
 @type_check
 def die_unless_widget_parent_satisfies(
     widget: QWidget, predicate: CallableTypes) -> None:
@@ -55,7 +55,7 @@ def die_unless_widget_parent_satisfies(
             'satsifying predicate {1!r} not found.'.format(
                 widget.objectName(), predicate))
 
-# ....................{ TESTERS                            }....................
+# ....................{ TESTERS                           }....................
 @type_check
 def is_widget_parent_satisfies(
     widget: QWidget, predicate: CallableTypes) -> bool:
@@ -64,8 +64,8 @@ def is_widget_parent_satisfies(
     satisfies the passed predicate.
 
     For each transitive parent widget of the passed widget in ascending order
-    from the immediate to root parent widget (e.g., :class:`QMainWindow` widget)
-    of the passed widget, this function iteratively:
+    from the immediate to root parent widget (e.g., :class:`QMainWindow`
+    widget) of the passed widget, this function iteratively:
 
     #. Passes that parent widget to the passed predicate.
     #. If that predicate returns ``True``, this function halts searching and
@@ -107,13 +107,14 @@ def is_widget_parent_satisfies(
             return True
 
         # Else, this parent does *NOT* satisfy this predicate. In this case,
-        # continue searching by iterating into the parent of this parent widget.
+        # continue searching by iterating into the parent of this parent
+        # widget.
         widget_child = widget_parent
 
     # If no parents satisfy this predicate, halt searching with failure.
     return False
 
-# ....................{ GETTERS                            }....................
+# ....................{ GETTERS                           }....................
 @type_check
 def get_label(widget: QWidgetOrNoneTypes) -> str:
     '''

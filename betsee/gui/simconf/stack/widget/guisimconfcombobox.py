@@ -13,9 +13,9 @@ from betse.util.io.log import logs
 from betse.util.type.types import (
     type_check, ClassOrNoneTypes, SequenceTypes)
 from betsee.guiexception import BetseePySideComboBoxException
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditenum import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditenum import (
     QBetseeSimConfEditEnumWidgetMixin)
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 from betsee.util.widget.stock.guicombobox import QBetseeComboBox
 from collections import OrderedDict
@@ -77,13 +77,13 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
     ----------
     _item_index_min : int
         0-based index of the last combo box item at initialization time (i.e.,
-        the time of the :meth:`init` call) with respect to negative indexing.
+        the time of the :meth:`_init_safe` call) with respect to negative indexing.
     _item_index_max : int
         0-based index of the last combo box item at initialization time (i.e.,
-        the time of the :meth:`init` call) with respect to positive indexing.
+        the time of the :meth:`_init_safe` call) with respect to positive indexing.
     _item_text_to_index : MappingType
         Dictionary mapping from the text to 0-based index of each combo box
-        item at initialization time (i.e., the time of the :meth:`init` call).
+        item at initialization time (i.e., the time of the :meth:`_init_safe` call).
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -156,11 +156,11 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
         item_index = self.widget_value
 
         # If this index does *NOT* index the "items_iconless_text" sequence
-        # previously passed to the init() method, raise an exception.
+        # previously passed to the _init_safe() method, raise an exception.
         #
         # This unlikely edge case can occur when external callers
         # programmatically modify the content or composition of combo box items
-        # after the init() method has been called.
+        # after the _init_safe() method has been called.
         if not (self._item_index_min <= item_index <= self._item_index_max):
             raise BetseePySideComboBoxException(QCoreApplication.translate(
                 'QBetseeSimConfComboBoxSequence',
@@ -188,7 +188,7 @@ class QBetseeSimConfComboBoxSequence(QBetseeSimConfComboBoxABC):
         #
         # This unlikely edge case can occur when external callers
         # programmatically modify the content or composition of combo box items
-        # after the init() method has been called.
+        # after the _init_safe() method has been called.
         if item_text not in self._item_text_to_index:
             raise BetseePySideComboBoxException(QCoreApplication.translate(
                 'QBetseeSimConfComboBoxSequence',
@@ -209,7 +209,7 @@ class QBetseeSimConfComboBoxEnum(
 
     # ..................{ INITIALIZERS                      }..................
     @type_check
-    def init(
+    def _init_safe(
         self, enum_member_to_item_text: OrderedDict, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this widget.
@@ -259,7 +259,7 @@ class QBetseeSimConfComboBoxEnum(
         items_text = tuple(enum_member_to_item_text.values())
 
         # Finalize the initialization of all superclasses of this subclass.
-        super().init(
+        super()._init_safe(
             *args,
             enum_member_to_widget_value=enum_member_to_widget_value,
             items_iconless_text=items_text,

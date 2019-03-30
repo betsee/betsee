@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -7,14 +7,14 @@
 :class:`QCheckBox`-based simulation configuration widget subclasses.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QCheckBox
 from betse.util.type.types import type_check, ClassOrNoneTypes
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 
-# ....................{ SUBCLASSES                         }....................
+# ....................{ SUBCLASSES                        }....................
 class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
     '''
     Simulation configuration-specific check box widget, permitting booleans
@@ -22,7 +22,7 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
     edited.
     '''
 
-    # ..................{ MIXIN ~ property : read-only       }..................
+    # ..................{ MIXIN ~ property : read-only      }..................
     @property
     def undo_synopsis(self) -> str:
         return QCoreApplication.translate(
@@ -38,7 +38,7 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
     def _sim_conf_alias_type_strict(self) -> ClassOrNoneTypes:
         return bool
 
-    # ..................{ MIXIN ~ property : value           }..................
+    # ..................{ MIXIN ~ property : value          }..................
     @property
     def widget_value(self) -> bool:
         return self.isChecked()

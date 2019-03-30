@@ -15,7 +15,7 @@ from betse.util.type.iterable.mapping import mappings
 from betse.util.type.types import (
     type_check, ClassOrNoneTypes, EnumClassType, MappingType)
 from betsee.guiexception import BetseePySideWidgetEnumException
-from betsee.gui.simconf.stack.widget.abc.guisimconfwdgeditscalar import (
+from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditscalar import (
     QBetseeSimConfEditScalarWidgetMixin)
 
 # ....................{ MIXINS                            }....................
@@ -50,7 +50,7 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
 
 
     @type_check
-    def init(
+    def _init_safe(
         self, enum_member_to_widget_value: MappingType, *args, **kwargs
     ) -> None:
         '''
@@ -76,7 +76,7 @@ class QBetseeSimConfEditEnumWidgetMixin(QBetseeSimConfEditScalarWidgetMixin):
         '''
 
         # Initialize our superclass with all remaining parameters.
-        super().init(*args, **kwargs)
+        super()._init_safe(*args, **kwargs)
 
         # Classify both this dictionary and its inverse.
         self._enum_member_to_widget_value = enum_member_to_widget_value

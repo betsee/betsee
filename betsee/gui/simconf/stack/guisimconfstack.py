@@ -23,7 +23,7 @@ from betsee.gui.window.guinamespace import (
     SIM_CONF_STACK_PAGE_NAME_PREFIX,
 )
 from betsee.util.app import guiappwindow
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 from betsee.util.widget.abc.control.guictlpageabc import (
     QBetseePagerItemizedMixin)
 from betsee.util.widget.stock.tree import guitreeitem

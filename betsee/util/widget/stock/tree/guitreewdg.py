@@ -39,7 +39,7 @@ from betse.util.io.log import logs
 from betse.util.type.text.string import strjoin
 from betse.util.type.types import type_check, GeneratorType
 from betsee.guiexception import BetseePySideTreeWidgetException
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):

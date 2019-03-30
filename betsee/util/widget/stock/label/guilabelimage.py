@@ -18,7 +18,7 @@ from betse.util.path import pathnames, paths
 from betse.util.type.cls import classes
 from betse.util.type.text import mls
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                        }....................
 #FIXME: Submit this class once working as a novel solution to:
@@ -63,8 +63,8 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
     This widget *must* be contained in a :class:`QScrollArea` widget.
     Equivalently, some transitive parent widget of this widget *must* be a
     :class:`QScrollArea` widget. If this is *not* the case when the
-    :meth:`init` method finalizing this widget's initialization is called, that
-    method explicitly raises an exception.
+    :meth:`_init_safe` method finalizing this widget's initialization is
+    called, that method explicitly raises an exception.
 
     Why? Because size hints for widgets residing outside of
     :class:`QScrollArea` widgets are typically silently ignored. This widget
@@ -139,7 +139,7 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         self.setScaledContents(False)
 
 
-    def init(self) -> None:
+    def _init_safe(self, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this widget.
 
@@ -154,9 +154,9 @@ class QBetseeLabelImage(QBetseeObjectMixin, QLabel):
         from betsee.util.widget import guiwdg
 
         # Finalize the initialization of our superclass.
-        super().init()
+        super()._init_safe(*args, **kwargs)
 
-        # If this widget is *NOT* in a scroll area, raise an exception.
+        # If this widget is *NOT* within a scroll area, raise an exception.
         guiwdg.die_unless_widget_parent_satisfies(
             widget=self,
             predicate=lambda widget_parent: isinstance(

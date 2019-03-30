@@ -21,7 +21,7 @@ from betse.util.type.types import (
 )
 # from betsee.guiexception import BetseePySideComboBoxException
 from betsee.guiexception import BetseePySideComboBoxException
-from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
+from betsee.util.widget.mixin.guiwdgeditmixin import QBetseeEditWidgetMixin
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
@@ -68,7 +68,7 @@ class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
 
 
     @type_check
-    def init(
+    def _init_safe(
         self, items_iconless_text: SequenceOrNoneTypes = None, *args, **kwargs
     ) -> None:
         '''
@@ -86,7 +86,7 @@ class QBetseeComboBox(QBetseeEditWidgetMixin, QComboBox):
         '''
 
         # Finalize the initialization of our superclass.
-        super().init(*args, **kwargs)
+        super()._init_safe(*args, **kwargs)
 
         # Log this finalization.
         logs.log_debug('Initializing combo box "%s"...', self.obj_name)

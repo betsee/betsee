@@ -10,7 +10,7 @@ General-purpose :mod:`QProgressBar` subclasses.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Slot  # Signal,
 from PySide2.QtWidgets import QProgressBar
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeProgressBar(QBetseeObjectMixin, QProgressBar):

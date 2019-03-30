@@ -18,7 +18,7 @@ from betse.util.io.log import logs
 from betsee.guiexception import BetseePySideThreadWorkerStopException
 from betsee.util.thread import guithread
 from betsee.util.thread.guithreadenum import ThreadWorkerState
-from betsee.util.widget.abc.guiwdgabc import QBetseeObjectMixin
+from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 
 # ....................{ SUPERCLASSES                       }....................
 class QBetseeLoneThreadWorkerABC(QBetseeObjectMixin, QObject):

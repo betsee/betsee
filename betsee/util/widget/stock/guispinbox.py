@@ -14,7 +14,7 @@ from PySide2.QtWidgets import QDoubleSpinBox
 from betse.util.type.numeric import floats
 from betse.util.type.text import regexes
 from betse.util.type.types import type_check
-from betsee.util.widget.abc.guiwdgabc import QBetseeEditWidgetMixin
+from betsee.util.widget.mixin.guiwdgeditmixin import QBetseeEditWidgetMixin
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeDoubleSpinBox(QBetseeEditWidgetMixin, QDoubleSpinBox):
