@@ -32,8 +32,8 @@ this application) hierarchy.
 
 # from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QUndoStack
-from betse.exceptions import BetseMethodUnimplementedException
-# from betse.util.io.log import logs
+# from betse.exceptions import BetseMethodUnimplementedException
+from betse.util.io.log import logs
 from betse.util.type.types import type_check, GeneratorType
 # from betsee.guiexception import BetseePySideWidgetException
 from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
@@ -48,9 +48,6 @@ from contextlib import contextmanager
 #on stack pages associated with dynamic list items. Doing so sanely will
 #probably prove non-trivial, but is nonetheless mandatory to preserve sanity:
 #
-#* Extend this same metaphor to the QBetseePagerItemizedMixin.reinit() method
-#  (e.g., by defining a new abstract _reinit_safe() method and calling that
-#  method appropriately).
 #* Implement the related "FIXME:" comment preceding the
 #  QBetseeSimConfEditWidgetMixin.set_filename() slot.
 #
@@ -99,7 +96,10 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
         self._unset_undo_stack()
 
     # ..................{ SUBCLASS                          }..................
-    # Subclasses are required to implement the following abstract methods.
+    # Subclasses are required to implement these abstract methods, which would
+    # ideally be decorated by the standard @abstractmethod decorator. Since
+    # doing so conflicts with metaclass semantics, these methods are instead
+    # defined as concrete methods raising exceptions here.
 
     #FIXME: Ideally, this method would:
     #
@@ -117,7 +117,7 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
     def _init_safe(self, *args, **kwargs) -> None:
         '''
         Finalize the initialization of this editable widget in a safe manner
-        guaranteed *not* to induce infinite recursion in typical edge cases.
+        guaranteed *not* to induce infinite recursion in common edge cases.
 
         Unlike the :meth:`init` method, this method is intended to be
         overridden by subclasses.
@@ -225,15 +225,19 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
             Widget-specific undo command to be pushed onto this stack.
         '''
 
-        # If undo commands are *NOT* safely pushable (e.g., due to a prior undo
-        # command currently being applied to this widget), silently noop.
-        # Pushing this undo command unsafely could provoke infinite recursion.
-        if not self.is_undo_cmd_pushable:
-            return
-
-        # Else, no such command is being applied. Since pushing this undo
-        # command onto the stack is thus safe, do so.
-        self._undo_stack.push(undo_cmd)
+        # If undo commands are safely pushable from this widget (e.g., due to
+        # no prior undo command being applied to this widget), do so.
+        if self.is_undo_cmd_pushable:
+            self._undo_stack.push(undo_cmd)
+        # Else, undo commands are *NOT* safely pushable from this widget. In
+        # this case, pushing this command onto this stack could provoke
+        # infinite recursion. Avoid doing so with a non-fatal warning.
+        else:
+            logs.log_debug(
+                'Ignoring undo command "%s" push request from widget "%s" '
+                '(e.g., due to widget initialization or '
+                'application of another undo command).',
+                undo_cmd.actionText(), self.obj_name)
 
 # ....................{ CONTEXTS                          }....................
 @contextmanager

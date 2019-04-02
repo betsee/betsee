@@ -54,7 +54,6 @@ Abstract base classes of all widget-specific undo command subclasses.
 from PySide2.QtWidgets import QUndoCommand
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, GeneratorType
-from contextlib import contextmanager
 
 # ....................{ SUPERCLASSES                      }....................
 class QBetseeWidgetUndoCommandABC(QUndoCommand):

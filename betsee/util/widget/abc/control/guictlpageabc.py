@@ -40,18 +40,20 @@ class QBetseePagerItemizedMixin(object):
     '''
 
     # ..................{ SUBCLASS                          }..................
-    # Abstract methods required to be implemented by subclasses. Ideally, these
-    # methods would be decorated by the standard @abstractmethod decorator.
-    # Since doing so conflicts with metaclass semantics, these methods are
-    # instead defined as concrete methods raising exceptions here.
+    # Subclasses are required to implement these abstract methods, which would
+    # ideally be decorated by the standard @abstractmethod decorator. Since
+    # doing so conflicts with metaclass semantics, these methods are instead
+    # defined as concrete methods raising exceptions here.
 
+    #FIXME: Force subclasses to implement this method. See the related
+    #QBetseeEditWidgetMixin._init_safe() abstract method for details.
     @type_check
     def reinit(self, main_window: QMainWindow, list_item_index: int) -> None:
         '''
-        Reassociate this pager with the **dynamic list item** (i.e., tree item
-        of a :mod:`QTreeWidget` masquerading as a list item dynamically defined
-        at runtime) with the passed index against the passed parent main
-        window.
+        Reassociate this itemized pager with the **dynamic list item** (i.e.,
+        tree item of a :mod:`QTreeWidget` masquerading as a list item
+        dynamically defined at runtime) with the passed index against the
+        passed parent main window.
 
         This method is typically called by the parent object owning this pager
         (e.g., :mod:`QStackedWidget`) from a slot signalled immediately
@@ -63,16 +65,12 @@ class QBetseePagerItemizedMixin(object):
         widgets (e.g., simulation configuration stack widget) of this window
         may be retained, however.
 
-        Design
+        Caveats
         ----------
-        Subclasses are required to redefine this quasi-abstract method
-        *without* calling this superclass implementation, which unconditionally
-        raises an exception to enforce such redefinition.
-
-        Subclasses typically implement this method by synchronizing all
-        editable widgets on the stacked widget page controlled by this pager
-        with their current values in the underlying data model (e.g., the
-        currently open simulation configuration).
+        **Subclasses are required to reimplement this method.** The subclass
+        implementation typically synchronizes all editable widgets on the
+        stacked widget page controlled by this pager with their current values
+        in the underlying model (e.g., current simulation configuration).
 
         Parameters
         ----------
@@ -83,18 +81,9 @@ class QBetseePagerItemizedMixin(object):
             0-based index of the list item to reassociate this pager with.
         '''
 
-        #FIXME: This method *MUST* now be called from all subclasses.
-
         # Reinitialize all subclasses in method-resolution order (MRO).
         super().reinit(
             main_window=main_window, list_item_index=list_item_index)
-
-        #FIXME: This is unlikely to be the right thing to do. We don't want to
-        #destroy the entire stack -- merely prohibit undo commands from being
-        #pushed during the duration of this method. How do we resolve this
-        #elsewhere currently?
-        # Unset the undo stack to which this widget pushes undo commands.
-        # self._unset_undo_stack()
 
 
     #FIXME: Consider excising this method -- which we initially assumed to be

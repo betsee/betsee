@@ -42,7 +42,7 @@ from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideMenuException
 from betsee.gui.window.guimainwindow import QBetseeMainWindow
-from betsee.gui.simconf.guisimconf import QBetseeSimConf
+from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
 
 # ....................{ SUBCLASSES                        }....................
 class QBetseeSimConfUndoStack(QUndoStack):
@@ -51,7 +51,13 @@ class QBetseeSimConfUndoStack(QUndoStack):
     instances signifying user-driven simulation configuration modifications and
     the capacity to undo those modifications.
 
-    Attributes (Non-widgets)
+    Attributes
+    ----------
+    _sim_conf : QBetseeSimConf
+        High-level state of the currently open simulation configuration, which
+        depends on the state of this low-level simulation configuration widget.
+
+    Attributes (Actions)
     ----------
     _redo_action : QAction
         Redo action synchronized with the contents of this stack.
@@ -60,15 +66,25 @@ class QBetseeSimConfUndoStack(QUndoStack):
     '''
 
     # ..................{ INITIALIZERS                      }..................
-    @type_check
-    def __init__(
-        self,
-        main_window: QBetseeMainWindow,
-        sim_config: QBetseeSimConf,
-        *args, **kwargs
-    ) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''
-        Initialize this object, owned by the passed objects.
+        Initialize this undo stack.
+        '''
+
+        # Initialize our superclass with all passed parameters.
+        super().__init__(*args, **kwargs)
+
+        # Nullify all instance variables for safety.
+        self._sim_conf    = None
+        self._redo_action = None
+        self._undo_action = None
+
+
+    @type_check
+    def init(self, main_window: QBetseeMainWindow) -> None:
+        '''
+        Finalize the initialization of this undo stack, owned by the passed
+        main window.
 
         To avoid circular references, this method is guaranteed to *not* retain
         a reference to this main window on returning. References to child
@@ -79,19 +95,13 @@ class QBetseeSimConfUndoStack(QUndoStack):
         main_window : QBetseeMainWindow
             Initialized application-specific parent :class:`QMainWindow` widget
             against which to initialize this object.
-        sim_config: QBetseeSimConf
-            Direct parent object against which to initialize this object.
         '''
 
-        # Initialize our superclass with all passed parameters.
-        super().__init__(*args, **kwargs)
-
-        # Initialize all instance variables for safety.
-        self._redo_action = None
-        self._undo_action = None
-
         # Log this initialization.
-        logs.log_debug('Customizing simulation configuration undo stack...')
+        logs.log_debug('Initializing simulation configuration undo stack...')
+
+        # Classify attributes of this main window required by this subclass.
+        self._sim_conf = main_window.sim_conf
 
         # Create all actions and icons associated with this undo stack.
         self._init_actions()
@@ -102,10 +112,9 @@ class QBetseeSimConfUndoStack(QUndoStack):
         # Create all buttons of the main toolbar requiring these actions.
         self._init_toolbar(main_window)
 
-        #FIXME: Connect these actions to appropriate "sim_config" slots and
-        #signals. (See the "FIXME" above for commentary on exactly what.)
 
-
+    #FIXME: Connect these actions to appropriate "sim_conf" slots and
+    #signals. (See the "FIXME" above for commentary on exactly what.)
     @type_check
     def _init_actions(
         self,
@@ -239,12 +248,45 @@ class QBetseeSimConfUndoStack(QUndoStack):
         main_window.toolbar.insertAction(first_separator, self._redo_action)
 
     # ..................{ PUSHERS                           }..................
-    def push(self, undo_command: QUndoCommand) -> None:
+    @type_check
+    def push_undo_cmd_if_safe(
+        self, undo_cmd: QBetseeWidgetUndoCommandABC) -> None:
+        '''
+        Push the passed widget-specific undo command onto this undo stack.
+
+        This method is intended to be called *only* by the
+        :meth:`betsee.util.widget.abc.guiwdgabc.QBetseeEditWidgetMixin._push_undo_cmd_if_safe`
+        method, which pushes undo commands from each editable widget onto this
+        stack in a hopefully safe manner.
+
+        Parameters
+        ----------
+        undo_cmd : QBetseeWidgetUndoCommandABC
+            Widget-specific undo command to be pushed onto this stack.
+        '''
+
+        # If a simulation configuration is currently open, push this command
+        # onto this stack.
+        if self._sim_conf.is_open:
+            self.push(undo_cmd)
+        # Else, *NO* simulation configuration is currently open. In this case,
+        # avoid pushing this command onto this stack with a non-fatal warning.
+        else:
+            logs.log_debug(
+                'Ignoring undo command "%s" push request '
+                '(i.e., simulation configuration not open).',
+                undo_cmd.actionText())
+
+
+    #FIXME: Ensure that this unsafe public method is *ONLY* every called by the
+    #safe push_undo_cmd_if_safe() method. Doing so will probably require
+    #validating within the body of this method that the prior callable on the
+    #current call stack is the safe push_undo_cmd_if_safe() method.
+    def push(self, undo_cmd: QUndoCommand) -> None:
 
         # Log this push *BEFORE* performing this push, for debuggability.
         logs.log_debug(
-            'Pushing undo command "%s" onto stack...',
-            undo_command.actionText())
+            'Pushing undo command "%s" onto stack...', undo_cmd.actionText())
 
         # logs.log_debug(
         #     'Action state *BEFORE*: undo (%r), redo (%r)',
@@ -252,7 +294,7 @@ class QBetseeSimConfUndoStack(QUndoStack):
         #     self._redo_action.isEnabled())
 
         # Push this undo command onto this stack.
-        super().push(undo_command)
+        super().push(undo_cmd)
 
         # logs.log_debug(
         #     'Action state *AFTER*: undo (%r), redo (%r)',

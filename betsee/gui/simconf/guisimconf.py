@@ -124,6 +124,9 @@ class QBetseeSimConf(QBetseeControllerABC):
         Initialize this configurator.
         '''
 
+        # Avoid circular import dependencies.
+        from betsee.gui.simconf.guisimconfundo import QBetseeSimConfUndoStack
+
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
@@ -138,10 +141,12 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._sim_conf_tree = None
         self._sim_conf_tree_frame = None
         self._sim_tab = None
-        self.undo_stack = None
 
         # High-level simulation configuration, defaulting to the unload state.
         self.p = Parameters()
+
+        # Undo stack for this simulation configuration.
+        self.undo_stack = QBetseeSimConfUndoStack()
 
 
     @type_check
@@ -201,10 +206,6 @@ class QBetseeSimConf(QBetseeControllerABC):
             widget.
         '''
 
-        # Avoid circular import dependencies.
-        from betsee.gui.simconf.guisimconfundo import (
-            QBetseeSimConfUndoStack)
-
         # Classify all instance variables of this main window subsequently
         # required by this object. Since this main window owns this object,
         # since weak references are unsafe in a multi-threaded GUI context, and
@@ -221,8 +222,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._sim_tab             = main_window.sim_tab
 
         # Undo stack for this simulation configuration.
-        self.undo_stack = QBetseeSimConfUndoStack(
-            main_window=main_window, sim_config=self)
+        self.undo_stack.init(main_window=main_window)
 
 
     @type_check
