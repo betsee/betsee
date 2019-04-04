@@ -106,7 +106,7 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         '''
 
         # Initialize our superclass with all remaining parameters.
-        super()._init_safe(*args, **kwargs)
+        super()._init_safe(*args, undo_stack=sim_conf.undo_stack, **kwargs)
 
         # Log this initialization *AFTER* storing this name.
         logs.log_debug(
@@ -116,10 +116,6 @@ class QBetseeSimConfEditWidgetMixin(QBetseeEditWidgetMixin):
         # the top-level simulation configuration.
         if sim_conf_alias_parent is None:
             sim_conf_alias_parent = sim_conf.p
-
-        # Set the undo stack to which this widget pushes undo commands *BEFORE*
-        # connecting signals to slots pushing such commands.
-        self._set_undo_stack(sim_conf.undo_stack)
 
         # Classify all passed parameters. Since the main window rather than
         # this state object owns this widget, retaining a reference to this

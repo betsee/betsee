@@ -382,7 +382,7 @@ class BetseePySideEditWidgetException(BetseePySideException):
     '''
     General-purpose exception applicable to application-specific editable
     widgets (i.e., instances of the
-    :mod:`betsee.util.widget.abc.guiwdgabc.QBetseeObjectMixin` superclass).
+    :mod:`betsee.util.widget.mixin.guiwdgmixin.QBetseeObjectMixin` superclass).
     '''
 
     @property

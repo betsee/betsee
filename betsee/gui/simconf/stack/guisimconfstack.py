@@ -10,6 +10,60 @@ settings associated with a single simulation feature  of the current such
 configuration) facilities.
 '''
 
+#FIXME: The simplistic implicit mapping from tree items to stack pages
+#performed by the _init_tree_to_stack() method is fundamentally broken for
+#human-readable child tree items whose corresponding stacked widget page has a
+#slightly different name (e.g., cell cluster animations). Fortunately, if one
+#considers it, the set of all tree items is both finite and quite small. Ergo,
+#there exists no demonstrable reason *NOT* to simply:
+#
+#* Explicitly define the following instance variables in the
+#  QBetseeSimConfStackedWidget.init() method:
+#  * "_tree_item_static_to_stack_page".
+#  * "_tree_item_list_root_to_stack_page_list_leaf".
+#  Note that doing so will be vastly simplified by reuse of the currently
+#  private references to the keys of the
+#  "_tree_item_list_root_to_stack_page_list_leaf" dictionary, which are
+#  already established as instance variables by the
+#  QBetseeSimConfTreeWidget._init_items_list_root() method called by the
+#  QBetseeSimConfTreeWidget.init() method (e.g.,
+#  "QBetseeSimConfTreeWidget._item_list_root_csv"). Naturally, chicken-and-egg
+#  issues begin to assert themselves at this point. Extreme care should be
+#  taken here. Note, for example, that a prominent "FIXME:" comment in the
+#  "guisimconftree" strongly suggests that the
+#  QBetseeSimConfTreeWidget.init() method will need to iterate over the
+#  "QBetseeSimConfStackedWidget._stack_page_name_to_pager" dictionary and hence
+#  be called *AFTER* the QBetseeSimConfStackedWidget.init() method is called,
+#  which then implies that the QBetseeSimConfStackedWidget.init() method cannot
+#  by definition define the
+#  "QBetseeSimConfStackedWidget._tree_item_list_root_to_stack_page_list_leaf"
+#  dictionary. Why? Because the QBetseeSimConfStackedWidget.init() method
+#  *MUST* be called first, in which case the
+#  "QBetseeSimConfTreeWidget._item_list_root_csv", etc. variables will have yet
+#  to be defined. Ergo:
+#  * Ensure that the "QBetseeMainWindow" widget calls the
+#    QBetseeSimConfStackedWidget.init() method *BEFORE* calling the
+#    QBetseeSimConfTreeWidget.init() method.
+#  * Define a new QBetseeSimConfStackedWidget.map_tree_to_stack() method with
+#    implementation resembling:
+#      @type_check
+#      def map_tree_to_stack(
+#          tree_item_static_to_stack_page: MappingType,
+#          tree_item_list_root_to_stack_page_list_leaf: MappingType,
+#      ) -> None:
+#
+#          # Classify all passed parameters.
+#          self._tree_item_static_to_stack_page = (
+#              tree_item_static_to_stack_page)
+#          self._tree_item_list_root_to_stack_page_list_leaf = (
+#              tree_item_list_root_to_stack_page_list_leaf)
+#    * Call the main_window.sim_conf_stack.map_tree_to_stack() method from some
+#      method called by the QBetseeSimConfTreeWidget.init() method.
+#* Consider removing the _init_tree_to_stack() method entirely, which now
+#  probably reduces to a noop.
+#
+#In hindsight, this is a sickeningly generous facepalm. (Such is code life.)
+
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
@@ -111,7 +165,12 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             QBetseeSimConfPagerTime)
         from betsee.gui.simconf.stack.page.export.guisimconfpageexport import (
             QBetseeSimConfPagerExport)
-        from betsee.gui.simconf.stack.page.export.guisimconfpagecsv import (
+        from betsee.gui.simconf.stack.page.export.guisimconfpageexpanim import (
+            QBetseeSimConfPagerAnim,
+            QBetseeSimConfPagerAnimCells,
+            QBetseeSimConfPagerAnimCellsExport,
+        )
+        from betsee.gui.simconf.stack.page.export.guisimconfpageexpcsv import (
             QBetseeSimConfPagerCSV, QBetseeSimConfPagerCSVExport)
         from betsee.gui.simconf.stack.page.space.guisimconfpageion import (
             QBetseeSimConfPagerIon)
@@ -126,22 +185,37 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         super().__init__(*args, **kwargs)
 
         # Classify instance variables with sane defaults.
+        self._tree_item_static_to_stack_page = {}
+        self._tree_item_list_root_to_stack_page_list_leaf = {}
+
+        # Dictionary mapping from the name of each stack page widget to the
+        # pager controlling that page.
         self._stack_page_name_to_pager = {
-            'sim_conf_stack_page_Export': QBetseeSimConfPagerExport(),
-            'sim_conf_stack_page_Export_CSV': QBetseeSimConfPagerCSV(),
+            'sim_conf_stack_page_Export': (
+                QBetseeSimConfPagerExport()),
+            'sim_conf_stack_page_Export_CSV': (
+                QBetseeSimConfPagerCSV()),
             'sim_conf_stack_page_Export_CSV_item': (
                 QBetseeSimConfPagerCSVExport()),
-            'sim_conf_stack_page_Paths': QBetseeSimConfPagerPath(),
-            'sim_conf_stack_page_Space': QBetseeSimConfPagerSpace(),
-            'sim_conf_stack_page_Space_Ions': QBetseeSimConfPagerIon(),
+            'sim_conf_stack_page_Export_Anim': (
+                QBetseeSimConfPagerAnim()),
+            'sim_conf_stack_page_Export_Anim_Cells': (
+                QBetseeSimConfPagerAnimCells()),
+            'sim_conf_stack_page_Export_Anim_Cells_item': (
+                QBetseeSimConfPagerAnimCellsExport()),
+            'sim_conf_stack_page_Paths': (
+                QBetseeSimConfPagerPath()),
+            'sim_conf_stack_page_Space': (
+                QBetseeSimConfPagerSpace()),
+            'sim_conf_stack_page_Space_Ions': (
+                QBetseeSimConfPagerIon()),
             'sim_conf_stack_page_Space_Tissue': (
                 QBetseeSimConfPagerTissueDefault()),
             'sim_conf_stack_page_Space_Tissue_item': (
                 QBetseeSimConfPagerTissueCustom()),
-            'sim_conf_stack_page_Time': QBetseeSimConfPagerTime(),
+            'sim_conf_stack_page_Time': (
+                QBetseeSimConfPagerTime()),
         }
-        self._tree_item_static_to_stack_page = {}
-        self._tree_item_list_root_to_stack_page_list_leaf = {}
 
         # Nullify all remaining instance variables for safety.
         self._sim_conf = None

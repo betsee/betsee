@@ -255,7 +255,7 @@ class QBetseeSimConfUndoStack(QUndoStack):
         Push the passed widget-specific undo command onto this undo stack.
 
         This method is intended to be called *only* by the
-        :meth:`betsee.util.widget.abc.guiwdgabc.QBetseeEditWidgetMixin._push_undo_cmd_if_safe`
+        :meth:`betsee.util.widget.mixin.guiwdgmixin.QBetseeEditWidgetMixin._push_undo_cmd_if_safe`
         method, which pushes undo commands from each editable widget onto this
         stack in a hopefully safe manner.
 

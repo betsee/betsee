@@ -4,14 +4,12 @@
 # See "LICENSE" for further details.
 
 '''
-**CSV simulation configuration pager** (i.e., :mod:`PySide2`-based controller
-for stack widget pages specific to comma-separated value (CSV) exports)
-functionality.
+**CSV export pager** (i.e., :mod:`PySide2`-based controller for stack widget
+pages specific to comma-separated value (CSV) exports) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
-# from PySide2.QtWidgets import QMainWindow
 from betse.science.pipe.export.pipeexpabc import SimPipeExportABC
 from betse.science.pipe.export.pipeexpcsv import SimPipeExportCSVs
 # from betse.util.io.log import logs
@@ -47,11 +45,10 @@ class QBetseeSimConfPagerCSV(QBetseePagerABC):
 
 class QBetseeSimConfPagerCSVExport(QBetseeSimConfPagerExportABC):
     '''
-    **Simulation CSV export configuration pager** (i.e., :mod:`PySide2`-based
-    controller connecting all editable widgets of the stack widget page for the
-    currently selected comma-separated value (CSV) export with corresponding
-    settings of a YAML-backed list item of the currently open simulation
-    configuration).
+    **CSV export pager** (i.e., :mod:`PySide2`-based controller connecting all
+    editable widgets of the stack widget page for the currently selected
+    comma-separated value (CSV) export with corresponding settings of a
+    YAML-backed list item of the currently open simulation configuration).
 
     **This controller implements the well-known flyweight design pattern.**
     Specifically, this single controller is shared between the zero or more CSV

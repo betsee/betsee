@@ -24,7 +24,7 @@ Abstract base classes of all widget-specific undo command subclasses.
 #      File "/home/leycec/py/betsee/betsee/gui/simconf/stack/widget/abc/guisimconfwdgeditscalar.py", line 314, in _set_alias_to_widget_value_if_sim_conf_open
 #        self._push_undo_cmd_if_safe(undo_cmd)
 #      File "<string>", line 41, in func_type_checked
-#      File "/home/leycec/py/betsee/betsee/util/widget/abc/guiwdgabc.py", line 380, in _push_undo_cmd_if_safe
+#      File "/home/leycec/py/betsee/betsee.util.widget.mixin.guiwdgmixin.py", line 380, in _push_undo_cmd_if_safe
 #        self._sim_conf.undo_stack.push(undo_cmd)
 #      File "/home/leycec/py/betsee/betsee/gui/simconf/guisimconfundo.py", line 255, in push
 #        super().push(undo_command)
@@ -53,7 +53,8 @@ Abstract base classes of all widget-specific undo command subclasses.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtWidgets import QUndoCommand
 from betse.util.io.log import logs
-from betse.util.type.types import type_check, GeneratorType
+from betse.util.type.types import type_check
+from betsee.util.widget.mixin.guiwdgeditmixin import QBetseeEditWidgetMixin
 
 # ....................{ SUPERCLASSES                      }....................
 class QBetseeWidgetUndoCommandABC(QUndoCommand):
@@ -78,12 +79,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
 
     # ..................{ INITIALIZERS                      }..................
     @type_check
-    def __init__(
-        self,
-        # Avoid circular import dependencies.
-        widget: 'betsee.util.widget.abc.guiwdgabc.QBetseeEditWidgetMixin',
-        synopsis: str,
-    ) -> None:
+    def __init__(self, widget: QBetseeEditWidgetMixin, synopsis: str) -> None:
         '''
         Initialize this undo command.
 
@@ -106,7 +102,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
         # Integer uniquely identifying this concrete subclass.
         self._id = id(type(self))
 
-    # ..................{ SUPERCLASS ~ mandatory            }..................
+    # ..................{ SUPERCLASS ~ abstract             }..................
     # Abstract superclass methods required to be defined by each subclass.
 
     def undo(self) -> None:
@@ -141,34 +137,13 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
 
         return self._id
 
-    # ..................{ CONTEXTS                          }..................
-    def _ignoring_undo_cmds(self) -> GeneratorType:
-        '''
-        Context manager temporarily disabling the
-        :attr:`QBetseeEditWidgetMixin.is_undo_cmd_pushable` boolean of the
-        editable widget responsible for this undo command for the duration of
-        this context, guaranteeably restoring this boolean to its prior state
-        immediately *before* returning.
-
-        See Also
-        -----------
-        :func:`guiwdgeditmixin.ignoring_undo_cmds`
-            Further details.
-        '''
-
-        # Avoid circular import dependencies.
-        from betsee.util.widget.mixin import guiwdgeditmixin
-
-        # Create and return this context manager for this editable widget.
-        return guiwdgeditmixin.ignoring_undo_cmds(self._widget)
-
 # ....................{ PLACEHOLDERS                      }....................
 class QBetseeUndoCommandNull(QUndoCommand):
     '''
     Placeholder undo command intended solely to simplify testing.
     '''
 
-    # ..................{ SUPERCLASS ~ mandatory            }..................
+    # ..................{ SUPERCLASS                        }..................
     # Abstract superclass methods required to be defined by each subclass.
 
     def undo(self) -> None:

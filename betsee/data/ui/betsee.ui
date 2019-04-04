@@ -567,15 +567,6 @@ QTreeWidget#sim_conf_tree {
             <normaloff>://icon/open_iconic/image.svg</normaloff>://icon/open_iconic/image.svg</iconset>
           </property>
          </item>
-         <item>
-          <property name="text">
-           <string>Animations</string>
-          </property>
-          <property name="icon">
-           <iconset>
-            <normaloff>://icon/open_iconic/movie.svg</normaloff>://icon/open_iconic/movie.svg</iconset>
-          </property>
-         </item>
         </widget>
        </item>
        <item>
@@ -714,7 +705,7 @@ QTreeWidget#sim_conf_tree {
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="currentIndex">
-        <number>8</number>
+        <number>4</number>
        </property>
        <widget class="QWidget" name="sim_conf_stack_page_Time">
         <layout class="QGridLayout" name="gridLayout_3">
@@ -3504,7 +3495,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation_Cluster">
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation_Cells">
         <property name="toolTip">
          <string/>
         </property>
@@ -3550,7 +3541,82 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cluster">
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation_Cells_item">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_58">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_68">
+           <property name="toolTip">
+            <string>Settings unique to this cell cluster animation export.</string>
+           </property>
+           <property name="title">
+            <string>Cell Cluster Animation Export</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_32">
+            <item>
+             <widget class="QGroupBox" name="groupBox_69">
+              <property name="toolTip">
+               <string>General-purpose properties of this cell cluster animation export.</string>
+              </property>
+              <property name="title">
+               <string>Export Properties</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_31">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_106">
+                 <property name="text">
+                  <string>Name:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QBetseeSimConfLineEdit" name="sim_conf_anim_cells_item_name">
+                 <property name="toolTip">
+                  <string>Arbitrary string uniquely identifying this cell cluster animation export. This name must be unique to this cell cluster animation export (i.e., not shared with any other cell cluster animation export).</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_anim_cells_item_kind">
+                 <property name="toolTip">
+                  <string>Type of cell cluster animation to export.</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_107">
+                 <property name="text">
+                  <string>Type:</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_42">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cells">
         <property name="toolTip">
          <string/>
         </property>
@@ -3596,7 +3662,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Single">
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cell">
         <property name="toolTip">
          <string/>
         </property>
@@ -4963,81 +5029,6 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
               </property>
               <property name="sizeType">
                <enum>QSizePolicy::Maximum</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>16</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Animations">
-        <layout class="QGridLayout" name="gridLayout_20">
-         <item row="0" column="0">
-          <widget class="QGroupBox" name="groupBox_4">
-           <property name="title">
-            <string>Animations</string>
-           </property>
-           <layout class="QFormLayout" name="formLayout_14">
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_65">
-              <property name="text">
-               <string>Animation Type:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QComboBox" name="comboBox_3">
-              <item>
-               <property name="text">
-                <string>Vmem</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Venv</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>GJ State</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Ion</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Current</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>E Field</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string/>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <spacer name="verticalSpacer_35">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>

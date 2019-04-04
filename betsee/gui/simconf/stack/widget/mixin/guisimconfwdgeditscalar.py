@@ -8,6 +8,21 @@ Abstract base classes of all editable scalar simulation configuration widget
 subclasses instantiated in pages of the top-level stack.
 '''
 
+#FIXME: Ideally, all methods defined below unsafely raising
+#"BetseMethodUnimplementedException" would instead:
+#
+#* Be decorated as @abstractmethod. Since this is merely a mixin, that's
+#  infeasible.
+#* Raise the BetseMethodUnimplementedException() exception. Doing so, however,
+#  would prevent subclasses from calling this method.
+#* Be decorated by a newly defined @abstractmethod_mixin decorator declared
+#  somewhere in the "betse.util.type.decorator" submodule. Since no such
+#  decorator currently exists, this too is currently infeasible. Ideally, this
+#  decorator would (in order):
+#  * Dynamically detect whether or not any subclass of this superclass
+#    implements this abstract method. (StackOverflow is our friend here.)
+#  * If not, raise BetseMethodUnimplementedException().
+
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Signal, Slot  # QCoreApplication
 from PySide2.QtWidgets import QUndoCommand
@@ -422,7 +437,7 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
 
         # Undo the prior edit. To prevent infinite recursion, notify this
         # widget that an undo command is now being applied to it.
-        with self._ignoring_undo_cmds():
+        with self._widget.ignoring_undo_cmds():
             self._widget.widget_value = self._value_old
 
             #FIXME: This focus attempt almost certainly fails across pages. If
@@ -440,7 +455,7 @@ class QBetseeSimConfEditScalarWidgetUndoCommand(QBetseeWidgetUndoCommandABC):
         super().redo()
 
         # Redo the prior edit. See the undo() method for further details.
-        with self._ignoring_undo_cmds():
+        with self._widget.ignoring_undo_cmds():
             self._widget.widget_value = self._value_new
             # self._widget.setFocus(Qt.OtherFocusReason)
 

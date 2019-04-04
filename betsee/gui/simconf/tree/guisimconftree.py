@@ -128,6 +128,10 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
     Attributes (Private: Items)
     ----------
+    _item_list_root_anim_cells : QTreeWidgetItem
+        Tree item masquerading as a dynamic list of **cell cluster animation
+        exports** (i.e., simulation subconfigurations exporting simulation
+        results to cell cluster animation video files).
     _item_list_root_csv : QTreeWidgetItem
         Tree item masquerading as a dynamic list of **comma-separated value
         (CSV) exports** (i.e., simulation subconfigurations exporting
@@ -186,6 +190,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Nullify all remaining instance variables for safety.
         self._action_sim_conf_tree_item_append = None
         self._action_sim_conf_tree_item_remove = None
+        self._item_list_root_anim_cells = None
         self._item_list_root_csv = None
         self._item_list_root_tissue = None
         self._sim_conf = None
@@ -652,15 +657,21 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
         # Tree items masquerading as dynamic lists, classified to enable
         # subsequent reuse by the _init_items_list_leaf() method.
+        self._item_list_root_anim_cells = self.get_item_from_text_path(
+            'Export', 'Animation', 'Cell Cluster',)
         self._item_list_root_csv = self.get_item_from_text_path(
-            'Export', 'CSV')
+            'Export', 'CSV',)
         self._item_list_root_tissue = self.get_item_from_text_path(
-            'Space', 'Tissue')
+            'Space', 'Tissue',)
+
+        # Simulation configuration, localized for simplicity.
+        p = self._sim_conf.p
 
         # Dictionary mapping all such items to YAML-backed lists.
         self._item_list_root_to_yaml_list = {
-            self._item_list_root_csv:    self._sim_conf.p.csv.csvs_after_sim,
-            self._item_list_root_tissue: self._sim_conf.p.tissue_profiles,
+            self._item_list_root_anim_cells: p.anim.anims_after_sim,
+            self._item_list_root_csv:        p.csv.csvs_after_sim,
+            self._item_list_root_tissue:     p.tissue_profiles,
         }
 
         # Set of all such items.
