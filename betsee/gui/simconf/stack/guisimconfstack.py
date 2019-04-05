@@ -10,72 +10,13 @@ settings associated with a single simulation feature  of the current such
 configuration) facilities.
 '''
 
-#FIXME: The simplistic implicit mapping from tree items to stack pages
-#performed by the _init_tree_to_stack() method is fundamentally broken for
-#human-readable child tree items whose corresponding stacked widget page has a
-#slightly different name (e.g., cell cluster animations). Fortunately, if one
-#considers it, the set of all tree items is both finite and quite small. Ergo,
-#there exists no demonstrable reason *NOT* to simply:
-#
-#* Explicitly define the following instance variables in the
-#  QBetseeSimConfStackedWidget.init() method:
-#  * "_tree_item_static_to_stack_page".
-#  * "_tree_item_list_root_to_stack_page_list_leaf".
-#  Note that doing so will be vastly simplified by reuse of the currently
-#  private references to the keys of the
-#  "_tree_item_list_root_to_stack_page_list_leaf" dictionary, which are
-#  already established as instance variables by the
-#  QBetseeSimConfTreeWidget._init_items_list_root() method called by the
-#  QBetseeSimConfTreeWidget.init() method (e.g.,
-#  "QBetseeSimConfTreeWidget._item_list_root_csv"). Naturally, chicken-and-egg
-#  issues begin to assert themselves at this point. Extreme care should be
-#  taken here. Note, for example, that a prominent "FIXME:" comment in the
-#  "guisimconftree" strongly suggests that the
-#  QBetseeSimConfTreeWidget.init() method will need to iterate over the
-#  "QBetseeSimConfStackedWidget._stack_page_name_to_pager" dictionary and hence
-#  be called *AFTER* the QBetseeSimConfStackedWidget.init() method is called,
-#  which then implies that the QBetseeSimConfStackedWidget.init() method cannot
-#  by definition define the
-#  "QBetseeSimConfStackedWidget._tree_item_list_root_to_stack_page_list_leaf"
-#  dictionary. Why? Because the QBetseeSimConfStackedWidget.init() method
-#  *MUST* be called first, in which case the
-#  "QBetseeSimConfTreeWidget._item_list_root_csv", etc. variables will have yet
-#  to be defined. Ergo:
-#  * Ensure that the "QBetseeMainWindow" widget calls the
-#    QBetseeSimConfStackedWidget.init() method *BEFORE* calling the
-#    QBetseeSimConfTreeWidget.init() method.
-#  * Define a new QBetseeSimConfStackedWidget.map_tree_to_stack() method with
-#    implementation resembling:
-#      @type_check
-#      def map_tree_to_stack(
-#          tree_item_static_to_stack_page: MappingType,
-#          tree_item_list_root_to_stack_page_list_leaf: MappingType,
-#      ) -> None:
-#
-#          # Classify all passed parameters.
-#          self._tree_item_static_to_stack_page = (
-#              tree_item_static_to_stack_page)
-#          self._tree_item_list_root_to_stack_page_list_leaf = (
-#              tree_item_list_root_to_stack_page_list_leaf)
-#    * Call the main_window.sim_conf_stack.map_tree_to_stack() method from some
-#      method called by the QBetseeSimConfTreeWidget.init() method.
-#* Consider removing the _init_tree_to_stack() method entirely, which now
-#  probably reduces to a noop.
-#
-#In hindsight, this is a sickeningly generous facepalm. (Such is code life.)
-
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
-from betse.util.type.obj import objects, objiter
-from betse.util.type.text.string import strs
-from betse.util.type.types import type_check
+from betse.util.type.obj import objects  #, objiter
+from betse.util.type.types import type_check, MappingType
 from betsee.guiexception import BetseePySideStackedWidgetException
-from betsee.gui.window.guinamespace import (
-    SIM_CONF_STACK_PAGE_ITEMIZED_NAME_SUFFIX,
-    SIM_CONF_STACK_PAGE_NAME_PREFIX,
-)
 from betsee.util.app import guiappwindow
 from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 from betsee.util.widget.abc.control.guictlpageabc import (
@@ -116,15 +57,21 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     :attr:`SIM_CONF_STACK_PAGE_NAME_PREFIX` substring. No other widgets should
     have such names. Failure to comply may be met with an unutterable anguish.
 
-    Parameters
+    Attributes
+    ----------
+    _sim_conf : QBetseeSimConf
+        High-level object controlling simulation configuration state.
+
+    Attributes (Container)
     ----------
     _pagers : tuple
         Container of all high-level objects controlling the state of each stack
         widget page, preserved to prevent Python from erroneously garbage
         collecting these objects. Since these objects are *not* explicitly
         accessed after instantiation, this simplistic scheme suffices.
-    _sim_conf : QBetseeSimConf
-        High-level object controlling simulation configuration state.
+
+    Attributes (Container: Dictionary)
+    ----------
     _stack_page_name_to_pager : dict
         Dictionary mapping from the name of each page widget of this stack
         widget to the **pager** (i.e., high-level object controlling the flow
@@ -144,12 +91,12 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         masquerading as a list dynamically defined at application runtime
         rather than statically defined via Qt (Creator|Designer)) of the
         :class:`QTreeWidget` associated with this stack widget to the
-        corresponding **itemized page widget** (i.e., page configuring tree
-        items masquerading as list items) of this stack widget.
+        corresponding **itemized page widget** (i.e., page configuring these
+        tree items) of this stack widget.
 
     See Also
     ----------
-    QBetseeSimConfTreeWidget
+    :class:`QBetseeSimConfTreeWidget`
         Corresponding :class:`QTreeWidget` instance, exposing all high-level
         features of the current simulation configuration which this
         :class:`QStackedWidget` instance then exposes the settings of.
@@ -259,195 +206,13 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # object, this is guaranteed to avoid circularities.
         self._sim_conf = main_window.sim_conf
 
-        # Integrate this stack widget with this window's top-level tree widget.
-        self._init_tree_to_stack(main_window)
-
         # Initialize each pager controlling each page widget of this stack
         # widget *AFTER* finalizing all other initialization above.
         for pager in self._stack_page_name_to_pager.values():
             pager.init(main_window)
 
-    # ..................{ INITIALIZERS ~ tree               }..................
-    @type_check
-    def _init_tree_to_stack(self, main_window: QMainWindow) -> None:
-        '''
-        Recursively map all tree widget items of the top-level tree widget of
-        the passed parent main window to the corresponding child page widgets
-        of this stack widget.
-
-        Specifically, this method defines private instance variables of this
-        stack widget whose values are dictionaries implementing these mappings
-        (e.g., :attr:`_tree_item_static_to_stack_page`).
-
-        Parameters
-        ----------
-        main_window : QBetseeMainWindow
-            Parent :class:`QMainWindow` widget to initialize this widget with.
-        '''
-
-        # Generator iteratively yielding a 2-tuple of the name and value of
-        # each child page of this stack widget, matching all instance variables
-        # of this main window with names prefixed by an identifying substring.
-        stack_pages = objiter.iter_vars_custom_simple_prefixed(
-            obj=main_window, prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX)
-
-        # Dictionary mapping the name to value of each such child page,
-        # enabling iteration below to efficiently look these values up.
-        stack_page_name_to_value = {
-            stack_page_name: stack_page
-            for stack_page_name, stack_page in stack_pages
-        }
-
-        # Recursive function intentionally defined as a closure to permit the
-        # local variables defined above to be trivially and efficiently shared
-        # between each recursive call of this function.
-        @type_check
-        def _map_tree_item_children_to_stack_pages(
-            parent_item: QTreeWidgetItem,
-            stack_page_name_prefix: str,
-        ) -> None:
-            '''
-            Recursively map all child tree widget items of the passed parent
-            tree widget item to the corresponding child page widgets of this
-            stack widget.
-
-            Parameters
-            ----------
-            parent_item : QTreeWidgetItem
-                Parent tree widget item to recursively map all children of.
-            stack_page_name_prefix : str
-                Substring prefixing the names of all such child page widgets.
-                If this parent tree widget item is:
-
-                * The invisible placeholder root item, this is simply
-                  :data:`SIM_CONF_STACK_PAGE_NAME_PREFIX`.
-                * Any other item (including top-level, mid-level, and leaf
-                  items), this is the name of the child page widget
-                  corresponding to this item suffixed by an underscore.
-            '''
-
-            # For each child tree item of this parent tree item...
-            #
-            # Note that we intentionally iterate by tree widget items rather
-            # than stack widget pages here. Why? Because iterating by the
-            # latter would erroneously handle pages with no corresponding
-            # items, which currently exist (e.g., temporary scratchpad purposes
-            # *NOT* intended to be displayed to end users).
-            for child_item in guitreeitem.iter_child_items(parent_item):
-                # First-column text of this child tree item.
-                child_item_text = child_item.text(0)
-
-                # Log this visitation.
-                # logs.log_debug(
-                #     'Visiting tree item "%s" child "%s"...',
-                #     parent_item.text(), child_item_text)
-
-                # Name of the corresponding stack page, synthesized from the
-                # text of this child item as follows (in order):
-                #
-                # * Strip all whitespace from this child item's text (e.g.,
-                #   from "File Management" to "FileManagement").
-                # * Prefix this child item's text by the identifying substring
-                #   prefixing this child page's name (e.g., from
-                #   "FileManagement" to 'sim_conf_stack_page_FileManagement').
-                stack_page_name = (
-                    stack_page_name_prefix +
-                    strs.remove_whitespace(child_item_text))
-
-                # Name of the corresponding dynamic list item stack page (i.e.,
-                # page configuring child tree items of the current tree item
-                # masquerading as list items) if any.
-                stack_page_list_leaf_name = (
-                    stack_page_name +
-                    SIM_CONF_STACK_PAGE_ITEMIZED_NAME_SUFFIX)
-
-                # Stack page associated with this tree item if any *OR* "None"
-                # otherwise.
-                stack_page = stack_page_name_to_value.get(
-                    stack_page_name, None)
-
-                # Stack page associated with child tree items of this tree item
-                # if any *OR* "None" otherwise.
-                stack_page_list_leaf = stack_page_name_to_value.get(
-                    stack_page_list_leaf_name, None)
-
-                # If a stack page associated with child tree items of this tree
-                # item exists...
-                #
-                # To reduce the likelihood of edge cases (e.g., stack
-                # exhaustion from overly deep recursion), this logic is handled
-                # before the subsequent logic inducing recursion.
-                if stack_page_list_leaf is not None:
-                    # Log this association.
-                    logs.log_debug(
-                        'Mapping tree item "%s" to stacked page "%s" '
-                        'for list children...',
-                        child_item_text, stack_page_list_leaf_name)
-
-                    # Map this tree item to this stack page.
-                    self._tree_item_list_root_to_stack_page_list_leaf[
-                        child_item] = stack_page_list_leaf
-
-                # If a stack page is associated with this tree item...
-                if stack_page is not None:
-                    # Log this association.
-                    logs.log_debug(
-                        'Mapping tree item "%s" to stacked page "%s"...',
-                        child_item_text, stack_page_name)
-
-                    # Map this child item to this child page.
-                    self._tree_item_static_to_stack_page[child_item] = (
-                        stack_page)
-
-                    # If this child item itself contains child items,
-                    # recursively map all child items of this child item.
-                    #
-                    # Note that this test constitutes a negligible optimization
-                    # but is otherwise unnecessary. Performing this call for a
-                    # child item with no child items reduces to an inefficient
-                    # noop. That said, since the call stack is limited in
-                    # Python, we prefer to avoid exhausting the stack if we can
-                    # do so. (So, we do so.)
-                    if guitreeitem.is_parent_item(child_item):
-                        _map_tree_item_children_to_stack_pages(
-                            parent_item=child_item,
-
-                            # Require the names of all child pages of this
-                            # child page to be prefixed by the name of this
-                            # child page delimited by an underscore, a simple
-                            # convention that saves sanity.
-                            stack_page_name_prefix=stack_page_name + '_',
-                        )
-                #FIXME: Convert to a fatal exception after finalizing this GUI.
-                # Else, no stack page is associated with this tree item. In
-                # this case...
-                else:
-                    # Log a non-fatal warning.
-                    logs.log_warning(
-                        'Simulation configuration-specific stacked page '
-                        '"%s" not found.', stack_page_name)
-
-                    # Skip to the next tree widget item.
-                    continue
-
-                    # raise BetseePySideTreeWidgetException(
-                    #     QCoreApplication.translate(
-                    #         'QBetseeSimConfStackedWidget',
-                    #         'Simulation configuration-specific stacked page '
-                    #         '"{0}" not found.'.format(stack_page_name)))
-
-        # Recursively map all tree widget items of this tree widget.
-        _map_tree_item_children_to_stack_pages(
-            # Start at the invisible placeholder root item, provided by Qt for
-            # exactly this recursive purpose.
-            parent_item=main_window.sim_conf_tree.invisibleRootItem(),
-
-            # Substring prefixing the names of *ALL* stack page widgets.
-            stack_page_name_prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX,
-        )
-
-    # ..................{ SLOTS ~ public                    }..................
-    # The following public slots are connected to from other widgets.
+    # ..................{ SLOTS                             }..................
+    # Public slots connected to from other widgets.
 
     @Slot(QTreeWidgetItem, QTreeWidgetItem)
     def switch_page_to_tree_item(
@@ -559,3 +324,38 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # Switch to this page, which is now guaranteed to both exist *AND* have
         # been reinitialized (if needed).
         self.setCurrentWidget(stack_page)
+
+    # ..................{ SETTERS                           }..................
+    @type_check
+    def set_tree_item_to_stack_page(
+        self,
+        tree_item_static_to_stack_page: MappingType,
+        tree_item_list_root_to_stack_page_list_leaf: MappingType,
+    ) -> None:
+        '''
+        Establish all mappings required by this stack widget to seamlessly map
+        from each tree item of the tree widget associated with this stack
+        widget to the corresponding child page widget of this stack widget.
+
+        Parameters
+        ----------
+        tree_item_static_to_stack_page : dict
+            Dictionary mapping from each **static tree item** (i.e., item
+            statically defined via Qt (Creator|Designer) rather than
+            dynamically defined at application runtime) of the tree widget
+            associated with this stack widget to the corresponding child page
+            widget of this stack widget.
+        tree_item_list_root_to_stack_page_list_leaf : dict
+            Dictionary mapping from each **dynamic list tree item** (i.e., item
+            masquerading as a list dynamically defined at application runtime
+            rather than statically defined via Qt (Creator|Designer)) of the
+            tree widget associated with this stack widget to the corresponding
+            **itemized page widget** (i.e., page configuring these tree items)
+            of this stack widget.
+        '''
+
+        # Classify all passed parameters.
+        self._tree_item_static_to_stack_page = (
+            tree_item_static_to_stack_page)
+        self._tree_item_list_root_to_stack_page_list_leaf = (
+            tree_item_list_root_to_stack_page_list_leaf)

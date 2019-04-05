@@ -158,37 +158,12 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
 
 
     @type_check
-    def get_item_from_text_path(self, *text_path: str) -> QTreeWidgetItem:
+    def get_item_with_text_path(self, *text_path: str) -> QTreeWidgetItem:
         '''
         First tree item with the passed **absolute first-column text path**
         (i.e., sequence of one or more strings uniquely identifying this tree
         item in this tree) if any *or* raise an exception otherwise (i.e., if
         this tree contains no such item).
-
-        Each passed string is the **first-column text** (i.e., text in the
-        first column) of either the tree item to be returned *or* a parent tree
-        item of that item, such that:
-
-        #. The first passed string is the first-column text of the top-level
-           #tree item containing the tree item to be returned.
-        #. The second passed string is the first-column text of the child tree
-           item of the prior top-level tree item containing the tree item to be
-           returned.
-        #. The second-to-last passed string is the first-column text of the
-           parent tree item of the tree item to be returned.
-        #. The last passed string is the first-column text of the tree item to
-           be returned.
-
-        Caveats
-        ----------
-        **This function only returns the first such item satisfying this
-        path.** If this tree contains multiple items satisfying the same path,
-        this method silently ignores all but the first such item.
-
-        **This function performs a linear search through the items of this
-        tree** and hence exhibits ``O(n)`` worst-case time complexity, where
-        ``n`` is the number of items in this tree. While negligible in the
-        common case, this search may be a performance concern on large trees.
 
         Parameters
         ----------
@@ -201,43 +176,21 @@ class QBetseeTreeWidget(QBetseeObjectMixin, QTreeWidget):
         QTreeWidgetItem
             First tree item satisfying this absolute first-column text path.
 
-        Raises
+        See Also
         ----------
-        BetseePySideTreeWidgetException
-            If the passed ``text_path`` parameter is empty.
-        BetseePySideTreeWidgetItemException
-            If this tree contains no tree item satisfying this path.
+        :func:`guitreeitem.get_child_item_with_text_path`
+            Further details.
         '''
 
         # Avoid circular import dependencies.
         from betsee.util.widget.stock.tree import guitreeitem
 
-        # Log this query.
-        logs.log_debug(
-            'Retrieving tree "%s" item with path "%s"...',
-            self.obj_name, strjoin.join_on(*text_path, delimiter='/'))
-
-        # If this text path is empty, raise an exception.
-        if not text_path:
-            raise BetseePySideTreeWidgetException(QCoreApplication.translate(
-                'QBetseeTreeWidget', 'Tree path empty.'))
-
-        # Current parent tree item of the next child tree item to be
-        # iteratively visited starting with the root tree item.
-        parent_item = self.invisibleRootItem()
-
-        # For each passed first-column text...
-        for child_item_text in text_path:
-            # Find the child with this text of the current parent tree item,
-            # replacing the latter with the former.
-            parent_item = guitreeitem.get_child_item_with_text_first(
-                parent_item=parent_item, child_text=child_item_text)
-
-        # Return the last parent tree item visited by the above iteration.
-        return parent_item
+        # Return the child tree item of the root tree item with this path.
+        return guitreeitem.get_child_item_with_text_path(
+            parent_item=self.invisibleRootItem(), text_path=text_path)
 
     # ..................{ ITERATORS                         }..................
-    def iter_top_items(self) -> GeneratorType:
+    def iter_items_top(self) -> GeneratorType:
         '''
         Generator iteratively yielding each **top-level tree item** (i.e.,
         :class:`QTreeWidgetItem` owned by this tree such that the parent item

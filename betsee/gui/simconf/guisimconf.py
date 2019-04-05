@@ -145,8 +145,9 @@ class QBetseeSimConf(QBetseeControllerABC):
         # High-level simulation configuration, defaulting to the unload state.
         self.p = Parameters()
 
-        # Undo stack for this simulation configuration.
-        self.undo_stack = QBetseeSimConfUndoStack()
+        # Undo stack for this simulation configuration, whose parent is this
+        # controller object.
+        self.undo_stack = QBetseeSimConfUndoStack(self)
 
 
     @type_check
@@ -221,7 +222,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._sim_conf_tree_frame = main_window.sim_conf_tree_frame
         self._sim_tab             = main_window.sim_tab
 
-        # Undo stack for this simulation configuration.
+        # Finalize the initialization of this undo stack.
         self.undo_stack.init(main_window=main_window)
 
 

@@ -104,6 +104,8 @@ from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideTreeWidgetItemException  # BetseePySideTreeWidgetException,
 from betsee.gui.data import guidataicon
+from betsee.gui.simconf.stack.guisimconfstack import (
+    QBetseeSimConfStackedWidget)
 from betsee.util.widget.stock.tree import guitreeitem
 from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
@@ -125,21 +127,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
     ----------
     _sim_conf : QBetseeSimConf
         High-level object controlling simulation configuration state.
-
-    Attributes (Private: Items)
-    ----------
-    _item_list_root_anim_cells : QTreeWidgetItem
-        Tree item masquerading as a dynamic list of **cell cluster animation
-        exports** (i.e., simulation subconfigurations exporting simulation
-        results to cell cluster animation video files).
-    _item_list_root_csv : QTreeWidgetItem
-        Tree item masquerading as a dynamic list of **comma-separated value
-        (CSV) exports** (i.e., simulation subconfigurations exporting
-        simulation results to CSV files).
-    _item_list_root_tissue : QTreeWidgetItem
-        Tree item masquerading as a dynamic list of **tissue profiles** (i.e.,
-        simulation subconfigurations assigning a subset of the cell cluster the
-        same user-defined initial conditions).
 
     Attributes (Private: Items: Dictionary)
     ----------
@@ -190,9 +177,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Nullify all remaining instance variables for safety.
         self._action_sim_conf_tree_item_append = None
         self._action_sim_conf_tree_item_remove = None
-        self._item_list_root_anim_cells = None
-        self._item_list_root_csv = None
-        self._item_list_root_tissue = None
         self._sim_conf = None
 
 
@@ -258,48 +242,12 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             main_window.action_sim_conf_tree_item_remove)
         self._sim_conf = main_window.sim_conf
 
-        # Define the set of all tree items masquerading as dynamic lists
-        # *AFTER* classifying all instance variables of this main window.
+        # Define all containers containing items of this tree widget *AFTER*
+        # classifying requisite instance variables of this main window.
         #
         # Note that, as this tree widget is empty at __init__() time, this
         # initialization is necessarily deferred until init() time.
-        self._init_items_list_root()
-
-        # Sequence of all placeholder top-level placeholder items (i.e., items
-        # whose corresponding stacked page has yet to be implemented) removed.
-        # While extraneous, these items reside in the corresponding "betsee.ui"
-        # file as a visual aid to streamline this transitional design phase.
-        top_items_todo = []
-
-        # For each top-level item of this tree widget...
-        for top_item in self.iter_top_items():
-            # If either:
-            #
-            # * One or more top-level placeholder items have been previously
-            #   visited by this iteration, *ALL* top-level items from this item
-            #   onward may be safely assumed to also be placeholder items.
-            # * No top-level placeholder items have been visited yet *AND* this
-            #   item's text implies this item to be the first such placeholder.
-            #
-            # Then this is a top-level placeholder item. In either case, append
-            # this item to this sequence.
-            if top_items_todo or top_item.text(0) == '--[TODO]--':
-                top_items_todo.append(top_item)
-
-        # Remove these items *AFTER* finding these items. While removing these
-        # items during the above iteration would be preferable, doing so would
-        # invite iteration desynchronization issues. Be safe... not sorry.
-        for top_item_todo in top_items_todo:
-            # Log this removal.
-            logs.log_debug(
-                'Removing top-level placeholder tree widget item "%s"...',
-                top_item_todo.text(0))
-
-            # Remove this item. Ideally, we would call the
-            # guitreewdg.remove_item() function here. Sadly, that function
-            # requires "shiboken2" functionality unavailable under non-standard
-            # (but common) PySide2 installations.
-            self.takeTopLevelItem(self.indexOfTopLevelItem(top_item_todo))
+        self._init_items(main_window)
 
         # Expand all items of this tree widget to arbitrary depth *AFTER*
         # removing extraneous items above.
@@ -343,6 +291,213 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # Select this item *AFTER* connecting all relevant signals and slots,
         # ensuring that the corresponding slot is called.
         self.setCurrentItem(tree_item_first)
+
+    # ..................{ INITIALIZERS ~ items              }..................
+    @type_check
+    def _init_items(self, main_window: QMainWindow) -> None:
+        '''
+        Define *all* containers (including those both internal *and* external
+        to this tree widget) containing items of this tree widget.
+
+        Specifically, this method:
+
+        * Removes all placeholder top-level placeholder items from this tree
+          widget.
+        * Finalizes the initialization of the simulation configuration-specific
+          stack widget associated with this tree widget. Specifically, this
+          stack widget is notified of all requisite mappings from each tree
+          item of this tree widget to the corresponding child page widget of
+          that stack widget.
+        * Defines the set of all tree items masquerading as dynamic lists
+          (i.e., :attr:`_items_list_root`).
+
+        Parameters
+        ----------
+        main_window : QBetseeMainWindow
+            Initialized application-specific parent :class:`QMainWindow` widget
+            against which to initialize this widget.
+        '''
+
+        # Remove all placeholder top-level placeholder items from this tree
+        # *BEFORE* retrieving any items from this tree.
+        self._init_items_top_todo()
+
+        # Top-level tree items.
+        item_export = self.get_item_with_text_path('Export')
+        item_path   = self.get_item_with_text_path('Paths')
+        item_space  = self.get_item_with_text_path('Space')
+        item_time   = self.get_item_with_text_path('Time')
+
+        # Export tree items.
+        item_export_anim = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_export, child_text='Animation')
+        item_export_csv = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_export, child_text='CSV')
+        item_export_plot = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_export, child_text='Plot')
+
+        # Animation export tree items.
+        item_export_anim_cells = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_export_anim, child_text='Cell Cluster')
+
+        # Plot export tree items.
+        item_export_plot_cell = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_export_plot, child_text='Single Cell')
+        item_export_plot_cells = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_export_plot, child_text='Cell Cluster')
+
+        # Spatial tree items.
+        item_space_ions = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_space, child_text='Ions')
+        item_space_tissue = guitreeitem.get_child_item_with_text_first(
+            parent_item=item_space, child_text='Tissue')
+
+        # ................{ LIST                              }................
+        # Define the set of all tree items masquerading as dynamic lists.
+
+        # Simulation configuration, localized for simplicity.
+        p = main_window.sim_conf.p
+
+        # Dictionary mapping all such items to YAML-backed lists.
+        self._item_list_root_to_yaml_list = {
+            item_export_anim_cells: p.anim.anims_after_sim,
+            item_export_csv:        p.csv.csvs_after_sim,
+            item_space_tissue:      p.tissue_profiles,
+        }
+
+        # Set of all such items.
+        self._items_list_root = set(self._item_list_root_to_yaml_list.keys())
+
+        # ................{ STACK                             }................
+        # Finalizes the initialization of the simulation configuration-specific
+        # stack widget associated with this tree widget. Specifically, this
+        # stack widget is notified of all requisite mappings from each tree
+        # item of this tree widget to the corresponding child page widget of
+        # that stack widget.
+
+        #FIXME: Define us up.
+        # Dictionary mapping each static tree item (i.e., item statically
+        # defined via Qt (Creator|Designer) rather than dynamically defined at
+        # application runtime) of this tree widget to the corresponding child
+        # page widget of this stack widget.
+        tree_item_static_to_stack_page = {
+        }
+
+        #FIXME: Define us up.
+        # Dictionary mapping each dynamic list tree item (i.e., item
+        # masquerading as a list dynamically defined at application runtime
+        # rather than statically defined via Qt (Creator|Designer)) of this
+        # tree widget to the corresponding itemized page widget (i.e., page
+        # configuring these items) of this stack widget.
+        tree_item_list_root_to_stack_page_list_leaf = {
+        }
+
+        # Notify this stack widget of these mappings.
+        main_window.sim_conf_stack.set_tree_item_to_stack_page(
+            tree_item_static_to_stack_page=(
+                tree_item_static_to_stack_page),
+            tree_item_list_root_to_stack_page_list_leaf=(
+                tree_item_list_root_to_stack_page_list_leaf),
+        )
+
+
+    def _init_items_top_todo(self) -> None:
+        '''
+        Remove all **placeholder top-level placeholder items** (i.e., items
+        whose corresponding stacked page has yet to be implemented) from this
+        tree widget.
+
+        While extraneous, these items reside in the corresponding ``betsee.ui``
+        file as a visual aid to streamline initial UI design.
+        '''
+
+        # Sequence of all placeholder top-level placeholder items (i.e., items
+        # whose corresponding stacked page has yet to be implemented) removed.
+        # While extraneous, these items reside in the corresponding "betsee.ui"
+        # file as a visual aid to streamline this transitional design phase.
+        items_top_todo = []
+
+        # For each top-level item of this tree widget...
+        for item_top in self.iter_items_top():
+            # If either:
+            #
+            # * One or more top-level placeholder items have been previously
+            #   visited by this iteration, *ALL* top-level items from this item
+            #   onward may be safely assumed to also be placeholder items.
+            # * No top-level placeholder items have been visited yet *AND* this
+            #   item's text implies this item to be the first such placeholder.
+            #
+            # Then this is a top-level placeholder item. In either case, append
+            # this item to this sequence.
+            if items_top_todo or item_top.text(0) == '--[TODO]--':
+                items_top_todo.append(item_top)
+
+        # Remove these items *AFTER* finding these items. While removing these
+        # items during the above iteration would be preferable, doing so would
+        # invite iteration desynchronization issues. Be safe... not sorry.
+        for item_top_todo in items_top_todo:
+            # Log this removal.
+            logs.log_debug(
+                'Removing top-level placeholder tree widget item "%s"...',
+                item_top_todo.text(0))
+
+            # Remove this item. Ideally, we would call the
+            # guitreewdg.remove_item() function here. Sadly, that function
+            # requires "shiboken2" functionality unavailable under non-standard
+            # (but common) PySide2 installations.
+            self.takeTopLevelItem(self.indexOfTopLevelItem(item_top_todo))
+
+    # ..................{ INITIALIZERS ~ items : leaf       }..................
+    def _init_items_list_leaf(self) -> None:
+        '''
+        Append one child tree item masquerading as a dynamic list item to its
+        parent tree item masquerading as a dynamic list for each YAML-backed
+        simulation subconfiguration of this newly opened simulation
+        configuration file
+        '''
+
+        # Log this slot.
+        logs.log_debug('Prepopulating dynamic child tree items...')
+
+        # Initialize the set of all such child tree items to the empty set.
+        self._items_list_leaf = set()
+
+        # For each parent tree item masquerading as a dynamic list and the
+        # YAML-backed subconfiguration providing this dynamic list...
+        for item_list_root, yaml_list in (
+            self._item_list_root_to_yaml_list.items()):
+            # If this parent already contains one or more children, raise an
+            # exception. This method requires prior logic (e.g., the related
+            # _deinit_items_list_leaf() method) to have deleted all prior
+            # children if any from this parent.
+            guitreeitem.die_if_parent_item(item_list_root)
+
+            # For each existing YAML-backed list item of this dynamic list...
+            for yaml_list_item in yaml_list:
+                # Create and append a new child tree item associated with this
+                # list item to this parent tree item.
+                self._make_item_list_leaf(
+                    item_list_root=item_list_root,
+                    yaml_list_item=yaml_list_item)
+
+
+    def _deinit_items_list_leaf(self) -> None:
+        '''
+        Remove all child tree items masquerading as dynamic list items.
+        '''
+
+        # Log this slot.
+        logs.log_debug('Depopulating dynamic child tree items...')
+
+        # For each parent tree item masquerading as a dynamic list and the
+        # YAML-backed subconfiguration providing this dynamic list...
+        for item_list_root in self._items_list_root:
+            # Delete all child tree items masquerading as dynamic list items
+            # from this parent tree item.
+            guitreeitem.delete_child_items(item_list_root)
+
+        # Reduce the set of all such child tree items to the empty set.
+        self._items_list_leaf = set()
 
     # ..................{ SLOTS ~ sim conf                  }..................
     @Slot(str)
@@ -646,88 +801,6 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # now dirty (i.e., has unsaved changes) *AFTER* successfully removing
         # this child tree item.
         self._sim_conf.is_dirty = True
-
-    # ..................{ INITIALIZERS ~ set                }..................
-    def _init_items_list_root(self) -> None:
-        '''
-        Define the set of all tree items masquerading as dynamic lists (i.e.,
-        :attr:`_items_list_root`) *and* references to these items (e.g.,
-        :attr:`_item_list_root_tissue`).
-        '''
-
-        # Tree items masquerading as dynamic lists, classified to enable
-        # subsequent reuse by the _init_items_list_leaf() method.
-        self._item_list_root_anim_cells = self.get_item_from_text_path(
-            'Export', 'Animation', 'Cell Cluster',)
-        self._item_list_root_csv = self.get_item_from_text_path(
-            'Export', 'CSV',)
-        self._item_list_root_tissue = self.get_item_from_text_path(
-            'Space', 'Tissue',)
-
-        # Simulation configuration, localized for simplicity.
-        p = self._sim_conf.p
-
-        # Dictionary mapping all such items to YAML-backed lists.
-        self._item_list_root_to_yaml_list = {
-            self._item_list_root_anim_cells: p.anim.anims_after_sim,
-            self._item_list_root_csv:        p.csv.csvs_after_sim,
-            self._item_list_root_tissue:     p.tissue_profiles,
-        }
-
-        # Set of all such items.
-        self._items_list_root = set(self._item_list_root_to_yaml_list.keys())
-
-    # ..................{ INITIALIZERS ~ set : leaf         }..................
-    def _init_items_list_leaf(self) -> None:
-        '''
-        Append one child tree item masquerading as a dynamic list item to its
-        parent tree item masquerading as a dynamic list for each YAML-backed
-        simulation subconfiguration of this newly opened simulation
-        configuration file
-        '''
-
-        # Log this slot.
-        logs.log_debug('Prepopulating dynamic child tree items...')
-
-        # Initialize the set of all such child tree items to the empty set.
-        self._items_list_leaf = set()
-
-        # For each parent tree item masquerading as a dynamic list and the
-        # YAML-backed subconfiguration providing this dynamic list...
-        for item_list_root, yaml_list in (
-            self._item_list_root_to_yaml_list.items()):
-            # If this parent already contains one or more children, raise an
-            # exception. This method requires prior logic (e.g., the related
-            # _deinit_items_list_leaf() method) to have deleted all prior
-            # children if any from this parent.
-            guitreeitem.die_if_parent_item(item_list_root)
-
-            # For each existing YAML-backed list item of this dynamic list...
-            for yaml_list_item in yaml_list:
-                # Create and append a new child tree item associated with this
-                # list item to this parent tree item.
-                self._make_item_list_leaf(
-                    item_list_root=item_list_root,
-                    yaml_list_item=yaml_list_item)
-
-
-    def _deinit_items_list_leaf(self) -> None:
-        '''
-        Remove all child tree items masquerading as dynamic list items.
-        '''
-
-        # Log this slot.
-        logs.log_debug('Depopulating dynamic child tree items...')
-
-        # For each parent tree item masquerading as a dynamic list and the
-        # YAML-backed subconfiguration providing this dynamic list...
-        for item_list_root in self._items_list_root:
-            # Delete all child tree items masquerading as dynamic list items
-            # from this parent tree item.
-            guitreeitem.delete_child_items(item_list_root)
-
-        # Reduce the set of all such child tree items to the empty set.
-        self._items_list_leaf = set()
 
     # ..................{ MAKERS                            }..................
     @type_check

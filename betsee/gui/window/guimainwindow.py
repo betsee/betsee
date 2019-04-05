@@ -261,12 +261,13 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         # any subsequent logic possibly performing logging.
         guilogconf.log_to_text_edit(self.log_box)
 
-        # Object wrapping high-level state, instantiated in arbitrary order.
-        self._clipboard = QBetseeMainClipboard()
-        self.sim_conf = QBetseeSimConf()
+        # High-level controllers controlling the behaviour of low-level widgets
+        # (in arbitrary order), whose parent is this main window.
+        self._clipboard = QBetseeMainClipboard(self)
+        self.sim_conf = QBetseeSimConf(self)
 
-        # Initialize these objects (in arbitrary order) *BEFORE* initializing
-        # widgets assuming these objects to have been initialized.
+        # Initialize these controllers (in arbitrary order) *BEFORE*
+        # initializing widgets assuming these controllers to be initialized.
         self._clipboard.init(main_window=self)
         self.sim_conf.init(main_window=self)
         self.sim_tab.init(main_window=self)

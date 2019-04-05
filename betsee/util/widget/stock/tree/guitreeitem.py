@@ -12,7 +12,9 @@ from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QTreeWidgetItem, QTreeWidgetItemIterator
 from betse.util.io.log import logs
 from betse.util.py.module import pymodname
-from betse.util.type.types import type_check, GeneratorType
+from betse.util.type.iterable import sequences
+from betse.util.type.text.string import strjoin
+from betse.util.type.types import type_check, GeneratorType, SequenceTypes
 from betsee.guiexception import BetseePySideTreeWidgetItemException
 from betsee.util.type.guitype import QTreeWidgetItemOrNoneTypes
 
@@ -91,98 +93,7 @@ def is_parent_item(item: QTreeWidgetItem) -> bool:
     # Well, that was surprisingly non-intuitive.
     return item.childCount() > 0
 
-# ....................{ GETTERS                           }....................
-@type_check
-def get_item_preceding(item: QTreeWidgetItem) -> QTreeWidgetItemOrNoneTypes:
-    '''
-    Tree item preceding the passed tree item in the tree widget containing that
-    tree item if the passed tree item is *not* the first top-level item of this
-    tree widget *or* raise an exception otherwise (i.e., if this is the first
-    top-level item of this tree widget).
-
-    Raises
-    ----------
-    BetseePySideTreeWidgetItemException
-        If the passed tree item is the first top-level item of its tree widget.
-
-    See Also
-    ----------
-    :func:`get_item_preceding_or_none`
-        Further details.
-    '''
-
-    # Tree item preceding this tree item if any *OR* "None" otherwise.
-    item_preceding = get_item_preceding_or_none(item)
-
-    # If no such item exists, raise an exception.
-    if item_preceding is None:
-        raise BetseePySideTreeWidgetItemException(QCoreApplication.translate(
-            'guitreeitem',
-            'Tree item "{0}" preceded by no tree item '
-            '(i.e., due to being the first top-level tree item).'.format(
-                item.text(0))))
-    # Else, this item exists.
-
-    # Return this item.
-    return item_preceding
-
-
-@type_check
-def get_item_preceding_or_none(
-    item: QTreeWidgetItem) -> QTreeWidgetItemOrNoneTypes:
-    '''
-    Tree item preceding the passed tree item in the tree widget containing that
-    tree item if the passed tree item is *not* the first top-level item of this
-    tree widget *or* ``None`` otherwise (i.e., if this is the first top-level
-    item of this tree widget).
-
-    Specifically, this function returns:
-
-    * If the passed tree item has a **preceding sibling** (i.e., a child tree
-      item with the same parent tree item as the passed tree item whose index
-      in the parent is one less than that of the passed tree item), this
-      sibling.
-    * Else if the passed tree item has a **non-root parent** (i.e., a parent
-      tree item that is *not* the invisible root tree item of this tree widget,
-      in which case the passed tree item is *not* a top-level tree item), this
-      parent.
-    * Else, the passed tree item is the first top-level tree item of this tree
-      widget, in which case an exception is raised.
-
-    Parameters
-    ----------
-    item : QTreeWidgetItem
-        Tree item to retrieve the preceding tree item of.
-
-    Returns
-    ----------
-    QTreeWidgetItem
-        Tree item preceding the passed tree item.
-    '''
-
-    # Tree item iterator iterating from this tree item.
-    item_iter = QTreeWidgetItemIterator(item, QTreeWidgetItemIterator.All)
-
-    # Iterate this iterator to the tree item preceding this tree item if any
-    # *OR* silently fail (without raising an exception) otherwise.
-    #
-    # Yes, this is balls crazy. Yes, this works as expected. Why? Because the
-    # "QTreeWidgetItemIterator" API was designed from the arguably arcane C++
-    # perspective. In C++, overloading mathematical operators to perform
-    # non-mathematical iteration (commonly referred to as "pointer
-    # arithmetic") is a standard idiom. In Python, the corresponding operation
-    # is fundamentally non-Pythonic and hence divorced from anything resembling
-    # sanity. For further details, see the PySide2-specific documentation at:
-    #     https://doc.qt.io/qtforpython/PySide2/QtWidgets/QTreeWidgetItemIterator.html
-    item_iter -= 1
-
-    # Tree item preceding the passed tree item if any *OR* "None" otherwise.
-    item_preceding = item_iter.value()
-
-    # Return this object.
-    return item_preceding
-
-# ....................{ GETTERS ~ text                    }....................
+# ....................{ GETTERS ~ child : text            }....................
 @type_check
 def get_child_item_with_text_first(
     parent_item: QTreeWidgetItem, child_text: str) -> QTreeWidgetItem:
@@ -242,6 +153,92 @@ def get_child_item_with_text_first(
         'Parent tree item "{0}" contains no '
         'child tree item with first-column text "{1}".'.format(
             parent_item.text(0), child_text)))
+
+
+@type_check
+def get_child_item_with_text_path(
+    parent_item: QTreeWidgetItem, text_path: SequenceTypes) -> QTreeWidgetItem:
+    '''
+    First transitive child tree item of the passed parent tree item with the
+    passed **absolute first-column text path** (i.e., sequence of one or more
+    strings uniquely identifying this child tree item in the subtree rooted at
+    this parent tree item) if any *or* raise an exception otherwise (i.e., if
+    this parent tree item transitively contains no such child tree item).
+
+    Each passed string is the **first-column text** (i.e., text in the
+    first column) of either the child tree item to be returned *or* a parent
+    tree item of that item, such that:
+
+    #. The first passed string is the first-column text of the top-level
+       child tree item of this parent tree item transitively containing the
+       child tree item to be returned.
+    #. The second passed string is the first-column text of the next-level
+       child tree item of the prior top-level child tree item transitively
+       containing the child tree item to be returned.
+    #. The second-to-last passed string is the first-column text of the
+       direct parent tree item of the child tree item to be returned.
+    #. The last passed string is the first-column text of the child tree item
+       to be returned.
+
+    Caveats
+    ----------
+    **This function only returns the first such item satisfying this path.** If
+    this parent contains multiple children ambiguously satisfying this path,
+    this function silently ignores all but the first such child tree item.
+
+    **This function performs a linear search through the items of the subtree
+    rooted at this parent tree item** and hence exhibits ``O(n)`` worst-case
+    time complexity, where ``n`` is the number of items in this subtree. While
+    negligible in the common case, this search may be a performance concern on
+    large subtrees.
+
+    Parameters
+    ----------
+    parent_item : QTreeWidgetItem
+        Parent tree item to retrieve this child tree item from.
+    text_path: SequenceTypes
+        Sequence of one or more first-column texts uniquely identifying the
+        child tree item of this parent tree item to be returned.
+
+    Returns
+    ----------
+    QTreeWidgetItem
+        First child tree item with this path.
+
+    Raises
+    ----------
+    BetseePySideTreeWidgetItemException
+        If either:
+
+        * The passed ``text_path`` parameter is empty.
+        * This parent tree item contains no child tree item with this path.
+    '''
+
+    # If this tree item contains no child tree items, raise an exception.
+    die_unless_parent_item(parent_item)
+    # Else, this is tree item contains one or more children.
+
+    # Log this query.
+    logs.log_debug(
+        'Retrieving parent tree item "%s" child with path "%s"...',
+        #FIXME: We probably want a helper getter implementing this, which we
+        #should then call everywhere we currently query "item.text(0)" for use
+        #in log messages.
+        parent_item.text(0) or 'ROOT',
+        strjoin.join_on(*text_path, delimiter='/'))
+
+    # If this text path is empty, raise an exception.
+    sequences.die_if_empty(text_path, label='Tree path')
+
+    # For each passed first-column text...
+    for child_item_text in text_path:
+        # Find the child with this text of the current parent tree item,
+        # replacing the latter with the former.
+        parent_item = get_child_item_with_text_first(
+            parent_item, child_item_text)
+
+    # Return the last parent tree item visited by the above iteration.
+    return parent_item
 
 # ....................{ GETTERS ~ parent                  }....................
 @type_check
@@ -364,6 +361,97 @@ def get_parent_item_or_none(
 
     # Return this item if any *OR* "None" otherwise.
     return parent_item
+
+# ....................{ GETTERS ~ preceding               }....................
+@type_check
+def get_item_preceding(item: QTreeWidgetItem) -> QTreeWidgetItemOrNoneTypes:
+    '''
+    Tree item preceding the passed tree item in the tree widget containing that
+    tree item if the passed tree item is *not* the first top-level item of this
+    tree widget *or* raise an exception otherwise (i.e., if this is the first
+    top-level item of this tree widget).
+
+    Raises
+    ----------
+    BetseePySideTreeWidgetItemException
+        If the passed tree item is the first top-level item of its tree widget.
+
+    See Also
+    ----------
+    :func:`get_item_preceding_or_none`
+        Further details.
+    '''
+
+    # Tree item preceding this tree item if any *OR* "None" otherwise.
+    item_preceding = get_item_preceding_or_none(item)
+
+    # If no such item exists, raise an exception.
+    if item_preceding is None:
+        raise BetseePySideTreeWidgetItemException(QCoreApplication.translate(
+            'guitreeitem',
+            'Tree item "{0}" preceded by no tree item '
+            '(i.e., due to being the first top-level tree item).'.format(
+                item.text(0))))
+    # Else, this item exists.
+
+    # Return this item.
+    return item_preceding
+
+
+@type_check
+def get_item_preceding_or_none(
+    item: QTreeWidgetItem) -> QTreeWidgetItemOrNoneTypes:
+    '''
+    Tree item preceding the passed tree item in the tree widget containing that
+    tree item if the passed tree item is *not* the first top-level item of this
+    tree widget *or* ``None`` otherwise (i.e., if this is the first top-level
+    item of this tree widget).
+
+    Specifically, this function returns:
+
+    * If the passed tree item has a **preceding sibling** (i.e., a child tree
+      item with the same parent tree item as the passed tree item whose index
+      in the parent is one less than that of the passed tree item), this
+      sibling.
+    * Else if the passed tree item has a **non-root parent** (i.e., a parent
+      tree item that is *not* the invisible root tree item of this tree widget,
+      in which case the passed tree item is *not* a top-level tree item), this
+      parent.
+    * Else, the passed tree item is the first top-level tree item of this tree
+      widget, in which case an exception is raised.
+
+    Parameters
+    ----------
+    item : QTreeWidgetItem
+        Tree item to retrieve the preceding tree item of.
+
+    Returns
+    ----------
+    QTreeWidgetItem
+        Tree item preceding the passed tree item.
+    '''
+
+    # Tree item iterator iterating from this tree item.
+    item_iter = QTreeWidgetItemIterator(item, QTreeWidgetItemIterator.All)
+
+    # Iterate this iterator to the tree item preceding this tree item if any
+    # *OR* silently fail (without raising an exception) otherwise.
+    #
+    # Yes, this is balls crazy. Yes, this works as expected. Why? Because the
+    # "QTreeWidgetItemIterator" API was designed from the arguably arcane C++
+    # perspective. In C++, overloading mathematical operators to perform
+    # non-mathematical iteration (commonly referred to as "pointer
+    # arithmetic") is a standard idiom. In Python, the corresponding operation
+    # is fundamentally non-Pythonic and hence divorced from anything resembling
+    # sanity. For further details, see the PySide2-specific documentation at:
+    #     https://doc.qt.io/qtforpython/PySide2/QtWidgets/QTreeWidgetItemIterator.html
+    item_iter -= 1
+
+    # Tree item preceding the passed tree item if any *OR* "None" otherwise.
+    item_preceding = item_iter.value()
+
+    # Return this object.
+    return item_preceding
 
 # ....................{ DELETERS                          }....................
 @type_check
