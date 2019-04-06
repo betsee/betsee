@@ -124,7 +124,7 @@ class QBetseeSimmerStatefulABC(QBetseeControllerABC):
         File "./betsee/gui/simtab/guisimtab.py", line 48 in __init__
         File "<string>", line 5 in func_type_checked
         File "./betsee/data/py/betsee_ui.py", line 1988 in setupUi
-        File "./betsee/gui/window/guimainwindow.py", line 184 in __init__
+        File "./betsee/gui/window/guiwindow.py", line 184 in __init__
         File "<string>", line 25 in func_type_checked
         File "./betsee/gui/guimain.py", line 313 in _make_main_window
         File "./betsee/gui/guimain.py", line 276 in run

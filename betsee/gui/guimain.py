@@ -103,7 +103,7 @@ Root-level classes defining this application's graphical user interface (GUI).
 #  manner:
 #
 #    pyside2-lupdate \
-#        ~/py/betsee/betsee/gui/widget/guimainwindow.py \
+#        ~/py/betsee/betsee/gui/widget/guiwindow.py \
 #        ~/py/betsee/betsee/gui/widget/guisimconftree.py \
 #        # ...and so on, recursively.
 #        -ts \
@@ -318,7 +318,7 @@ class BetseeGUI(object):
         # *AFTER* this module is guaranteed to be importable.
         from betsee.gui.guimainsettings import QBetseeSettings
         from betsee.gui.guimainsignaler import QBetseeSignaler
-        from betsee.gui.window.guimainwindow import QBetseeMainWindow
+        from betsee.gui.window.guiwindow import QBetseeMainWindow
 
         # Log this initialization.
         logs.log_info('Initiating PySide2 UI...')

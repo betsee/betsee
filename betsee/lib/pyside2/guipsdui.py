@@ -64,7 +64,7 @@ def get_ui_module_base_classes(ui_module_name: str) -> SequenceTypes:
         exception_message=QCoreApplication.translate(
             'get_ui_module_base_classes',
             'Module "{0}" not found (e.g., as'
-            'module "betsee.gui.window.guimainwindow" imported before '
+            'module "betsee.gui.window.guiwindow" imported before '
             'module "betsee.lib.pyside2.cache.guipsdcache").'.format(ui_module_name)
         ))
 

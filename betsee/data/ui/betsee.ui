@@ -3449,7 +3449,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation">
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Anim">
         <property name="toolTip">
          <string/>
         </property>
@@ -3495,7 +3495,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation_Cells">
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Anim_Cells">
         <property name="toolTip">
          <string/>
         </property>
@@ -3541,7 +3541,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Export_Animation_Cells_item">
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Anim_Cells_item">
         <property name="toolTip">
          <string/>
         </property>

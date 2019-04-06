@@ -37,7 +37,7 @@ def get_status_bar() -> QStatusBar:
     To avoid circular import dependencies, this getter intentionally resides in
     this submodule known *not* to be subject to these dependencies rather than
     in an arguably more germain submodule known to be subject to these
-    dependencies (e.g., :mod:`betsee.gui.window.guimainwindow`).
+    dependencies (e.g., :mod:`betsee.gui.window.guiwindow`).
 
     Returns
     ----------

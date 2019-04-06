@@ -54,7 +54,7 @@ from betse.util.path import pathnames
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.guiexception import BetseeSimConfException
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guiwindow import QBetseeMainWindow
 from betsee.util.app import guiappstatus
 from betsee.util.io import guimessage
 from betsee.util.path import guifile

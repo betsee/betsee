@@ -41,7 +41,7 @@ from PySide2.QtWidgets import QUndoCommand, QUndoStack
 from betse.util.io.log import logs
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideMenuException
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guiwindow import QBetseeMainWindow
 from betsee.util.widget.abc.guiundocmdabc import QBetseeWidgetUndoCommandABC
 
 # ....................{ SUBCLASSES                        }....................

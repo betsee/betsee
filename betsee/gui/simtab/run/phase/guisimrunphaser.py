@@ -14,7 +14,7 @@ from betse.science.enum.enumphase import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type.iterable import tuples
 from betse.util.type.types import type_check, CallableTypes, QueueType
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guiwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.phase.guisimrunphase import QBetseeSimmerPhase
 from betsee.gui.simtab.run.work.guisimrunwork import QBetseeSimmerPhaseWorker
 from betsee.gui.simtab.run.work.guisimrunworkenum import SimmerPhaseSubkind

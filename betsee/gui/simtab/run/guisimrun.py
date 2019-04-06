@@ -45,7 +45,7 @@ from betse.science.enum.enumphase import SimPhaseKind
 from betse.util.io.log import logs
 from betse.util.type.text.string import strs
 from betse.util.type.types import type_check
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guiwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunact import QBetseeSimmerProactor
 from betsee.gui.simtab.run.guisimrunenum import SimmerState, SimmerModelState
 from betsee.gui.simtab.run.guisimrunstate import (

@@ -32,7 +32,7 @@ class QBetseeControllerABC(QBetseeObjectMixin, QObject):
     # ..................{ INITIALIZERS                      }..................
     # To avoid circular import dependencies, this parameter is validated to be
     # an instance of the "QMainWindow" superclass rather than the expected
-    # "QBetseeMainWindow" subclass of the "betsee.gui.window.guimainwindow"
+    # "QBetseeMainWindow" subclass of the "betsee.gui.window.guiwindow"
     # submodule. Why? Because the latter imports the cached "betsee_ui.py"
     # module which imports the current submodule. Since this application only
     # contains one main window, this currently suffices.

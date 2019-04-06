@@ -253,7 +253,7 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
         '''
 
         # Avoid circular import dependencies.
-        from betsee.gui.window.guimainclipboard import QBetseeMainClipboard
+        from betsee.gui.window.guiwinclipboard import QBetseeMainClipboard
         from betsee.gui.simconf.guisimconf import QBetseeSimConf
 
         # Append all unfiltered log records to the top-level log widget in an

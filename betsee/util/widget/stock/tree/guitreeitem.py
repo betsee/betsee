@@ -165,9 +165,9 @@ def get_child_item_with_text_path(
     this parent tree item) if any *or* raise an exception otherwise (i.e., if
     this parent tree item transitively contains no such child tree item).
 
-    Each passed string is the **first-column text** (i.e., text in the
-    first column) of either the child tree item to be returned *or* a parent
-    tree item of that item, such that:
+    Each passed string is the **first-column text** (i.e., text in the first
+    column) of either the child tree item to be returned *or* a parent tree
+    item of that item, such that:
 
     #. The first passed string is the first-column text of the top-level
        child tree item of this parent tree item transitively containing the

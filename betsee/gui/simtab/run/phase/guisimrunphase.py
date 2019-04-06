@@ -21,7 +21,7 @@ from betsee.gui.simtab.run.guisimrunstate import (
     SIMMER_STATE_TO_PHASE_STATUS,
     SIMMER_STATES_FROM_FLUID,
 )
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guiwindow import QBetseeMainWindow
 
 # ....................{ SUPERCLASSES                      }....................
 class QBetseeSimmerPhase(QBetseeSimmerStatefulABC):

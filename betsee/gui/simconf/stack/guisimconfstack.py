@@ -14,9 +14,11 @@ configuration) facilities.
 from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
-from betse.util.type.obj import objects  #, objiter
+from betse.util.type.iterable.mapping import mappings
+from betse.util.type.obj import objects, objiter
 from betse.util.type.types import type_check, MappingType
 from betsee.guiexception import BetseePySideStackedWidgetException
+from betsee.gui.window.guiwinnamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.util.app import guiappwindow
 from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 from betsee.util.widget.abc.control.guictlpageabc import (
@@ -72,14 +74,16 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
     Attributes (Container: Dictionary)
     ----------
+    _stack_page_name_to_page : dict
+        Dictionary mapping from the object name of each page widget of this
+        stack widget to that widget.
     _stack_page_name_to_pager : dict
-        Dictionary mapping from the name of each page widget of this stack
-        widget to the **pager** (i.e., high-level object controlling the flow
-        of application execution for a page widget) controlling that widget.
-        While the principal role of this dictionary is that of a **pager
+        Dictionary mapping from the object name of each page widget of this
+        stack widget to the **pager** (i.e., high-level object controlling the
+        flow of application execution for a page widget) controlling that
+        widget. This dictionary also serves as the principal **pager
         container** (i.e., container of all pager objects, preventing Python
-        from erroneously garbage collecting these objects), this dictionary's
-        secondary role as a pager mapper is no less mission critical.
+        from erroneously garbage collecting these objects).
     _tree_item_static_to_stack_page : dict
         Dictionary mapping from each **static tree item** (i.e., item
         statically defined via Qt (Creator|Designer) rather than dynamically
@@ -105,72 +109,20 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     # ..................{ INITIALIZERS                      }..................
     def __init__(self, *args, **kwargs) -> None:
 
-        # Defer method-specific imports for maintainability.
-        from betsee.gui.simconf.stack.page.guisimconfpagepath import (
-            QBetseeSimConfPagerPath)
-        from betsee.gui.simconf.stack.page.guisimconfpagetime import (
-            QBetseeSimConfPagerTime)
-        from betsee.gui.simconf.stack.page.export.guisimconfpageexport import (
-            QBetseeSimConfPagerExport)
-        from betsee.gui.simconf.stack.page.export.guisimconfpageexpanim import (
-            QBetseeSimConfPagerAnim,
-            QBetseeSimConfPagerAnimCells,
-            QBetseeSimConfPagerAnimCellsExport,
-        )
-        from betsee.gui.simconf.stack.page.export.guisimconfpageexpcsv import (
-            QBetseeSimConfPagerCSV, QBetseeSimConfPagerCSVExport)
-        from betsee.gui.simconf.stack.page.space.guisimconfpageion import (
-            QBetseeSimConfPagerIon)
-        from betsee.gui.simconf.stack.page.space.guisimconfpagespace import (
-            QBetseeSimConfPagerSpace)
-        from betsee.gui.simconf.stack.page.space.guisimconfpagetis import (
-            QBetseeSimConfPagerTissueDefault,
-            QBetseeSimConfPagerTissueCustom,
-        )
-
         # Initialize our superclass with all passed parameters.
         super().__init__(*args, **kwargs)
 
-        # Classify instance variables with sane defaults.
-        self._tree_item_static_to_stack_page = {}
-        self._tree_item_list_root_to_stack_page_list_leaf = {}
-
-        # Dictionary mapping from the name of each stack page widget to the
-        # pager controlling that page.
-        self._stack_page_name_to_pager = {
-            'sim_conf_stack_page_Export': (
-                QBetseeSimConfPagerExport()),
-            'sim_conf_stack_page_Export_CSV': (
-                QBetseeSimConfPagerCSV()),
-            'sim_conf_stack_page_Export_CSV_item': (
-                QBetseeSimConfPagerCSVExport()),
-            'sim_conf_stack_page_Export_Anim': (
-                QBetseeSimConfPagerAnim()),
-            'sim_conf_stack_page_Export_Anim_Cells': (
-                QBetseeSimConfPagerAnimCells()),
-            'sim_conf_stack_page_Export_Anim_Cells_item': (
-                QBetseeSimConfPagerAnimCellsExport()),
-            'sim_conf_stack_page_Paths': (
-                QBetseeSimConfPagerPath()),
-            'sim_conf_stack_page_Space': (
-                QBetseeSimConfPagerSpace()),
-            'sim_conf_stack_page_Space_Ions': (
-                QBetseeSimConfPagerIon()),
-            'sim_conf_stack_page_Space_Tissue': (
-                QBetseeSimConfPagerTissueDefault()),
-            'sim_conf_stack_page_Space_Tissue_item': (
-                QBetseeSimConfPagerTissueCustom()),
-            'sim_conf_stack_page_Time': (
-                QBetseeSimConfPagerTime()),
-        }
-
-        # Nullify all remaining instance variables for safety.
+        # Nullify all instance variables for safety.
         self._sim_conf = None
+        self._stack_page_name_to_page = None
+        self._stack_page_name_to_pager = None
+        self._tree_item_static_to_stack_page = None
+        self._tree_item_list_root_to_stack_page_list_leaf = None
 
 
     # To avoid circular import dependencies, this parameter is validated to be
     # an instance of the "QMainWindow" superclass rather than the expected
-    # "QBetseeMainWindow" subclass of the "betsee.gui.window.guimainwindow"
+    # "QBetseeMainWindow" subclass of the "betsee.gui.window.guiwindow"
     # submodule. Why? Because the latter imports the cached "betsee_ui.py"
     # module which imports the current submodule. Since this application only
     # contains one main window, this current validation suffices.
@@ -195,6 +147,29 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             against which to initialize this widget.
         '''
 
+        # Defer method-specific imports for maintainability.
+        from betsee.gui.simconf.stack.page.guisimconfpagepath import (
+            QBetseeSimConfPagerPath)
+        from betsee.gui.simconf.stack.page.guisimconfpagetime import (
+            QBetseeSimConfPagerTime)
+        from betsee.gui.simconf.stack.page.export.guisimconfpageexport import (
+            QBetseeSimConfPagerExport)
+        from betsee.gui.simconf.stack.page.export.guisimconfpageexpanim import (
+            QBetseeSimConfPagerAnim,
+            QBetseeSimConfPagerAnimCells,
+            QBetseeSimConfPagerAnimCellsExport,
+        )
+        from betsee.gui.simconf.stack.page.export.guisimconfpageexpcsv import (
+            QBetseeSimConfPagerCSV, QBetseeSimConfPagerCSVExport)
+        from betsee.gui.simconf.stack.page.space.guisimconfpageion import (
+            QBetseeSimConfPagerIon)
+        from betsee.gui.simconf.stack.page.space.guisimconfpagespace import (
+            QBetseeSimConfPagerSpace)
+        from betsee.gui.simconf.stack.page.space.guisimconfpagetis import (
+            QBetseeSimConfPagerTissueDefault,
+            QBetseeSimConfPagerTissueCustom,
+        )
+
         # Initialize our superclass with all passed parameters.
         super().init()
 
@@ -206,10 +181,55 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # object, this is guaranteed to avoid circularities.
         self._sim_conf = main_window.sim_conf
 
+        # Generator iteratively yielding a 2-tuple of the name and value of
+        # each child page of this stack widget, matching all instance variables
+        # of this main window with names prefixed by an identifying substring.
+        stack_pages = objiter.iter_vars_custom_simple_prefixed(
+            obj=main_window, prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX)
+
+        # Dictionary mapping the object name of each stack page widget to that
+        # widget.
+        self._stack_page_name_to_page = {
+            stack_page_name: stack_page
+            for stack_page_name, stack_page in stack_pages
+        }
+        # logs.log_debug(
+        #     'Detected stack page names: %r',
+        #     tuple(self._stack_page_name_to_page.keys()))
+
+        # Dictionary mapping the object name of each stack page widget to the
+        # pager controlling that page.
+        self._stack_page_name_to_pager = {
+            'sim_conf_stack_page_Export': (
+                QBetseeSimConfPagerExport(self)),
+            'sim_conf_stack_page_Export_Anim': (
+                QBetseeSimConfPagerAnim(self)),
+            'sim_conf_stack_page_Export_Anim_Cells': (
+                QBetseeSimConfPagerAnimCells(self)),
+            'sim_conf_stack_page_Export_Anim_Cells_item': (
+                QBetseeSimConfPagerAnimCellsExport(self)),
+            'sim_conf_stack_page_Export_CSV': (
+                QBetseeSimConfPagerCSV(self)),
+            'sim_conf_stack_page_Export_CSV_item': (
+                QBetseeSimConfPagerCSVExport(self)),
+            'sim_conf_stack_page_Paths': (
+                QBetseeSimConfPagerPath(self)),
+            'sim_conf_stack_page_Space': (
+                QBetseeSimConfPagerSpace(self)),
+            'sim_conf_stack_page_Space_Ions': (
+                QBetseeSimConfPagerIon(self)),
+            'sim_conf_stack_page_Space_Tissue': (
+                QBetseeSimConfPagerTissueDefault(self)),
+            'sim_conf_stack_page_Space_Tissue_item': (
+                QBetseeSimConfPagerTissueCustom(self)),
+            'sim_conf_stack_page_Time': (
+                QBetseeSimConfPagerTime(self)),
+        }
+
         # Initialize each pager controlling each page widget of this stack
         # widget *AFTER* finalizing all other initialization above.
-        for pager in self._stack_page_name_to_pager.values():
-            pager.init(main_window)
+        for stack_pager in self._stack_page_name_to_pager.values():
+            stack_pager.init(main_window)
 
     # ..................{ SLOTS                             }..................
     # Public slots connected to from other widgets.
@@ -329,8 +349,8 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
     @type_check
     def set_tree_item_to_stack_page(
         self,
-        tree_item_static_to_stack_page: MappingType,
-        tree_item_list_root_to_stack_page_list_leaf: MappingType,
+        tree_item_static_to_stack_page_name: MappingType,
+        tree_item_list_root_to_stack_page_name_list_leaf: MappingType,
     ) -> None:
         '''
         Establish all mappings required by this stack widget to seamlessly map
@@ -339,23 +359,52 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
 
         Parameters
         ----------
-        tree_item_static_to_stack_page : dict
+        tree_item_static_to_stack_page_name : dict
             Dictionary mapping from each **static tree item** (i.e., item
             statically defined via Qt (Creator|Designer) rather than
             dynamically defined at application runtime) of the tree widget
-            associated with this stack widget to the corresponding child page
-            widget of this stack widget.
-        tree_item_list_root_to_stack_page_list_leaf : dict
+            associated with this stack widget to the object name of the
+            corresponding child page widget of this stack widget.
+        tree_item_list_root_to_stack_page_name_list_leaf : dict
             Dictionary mapping from each **dynamic list tree item** (i.e., item
             masquerading as a list dynamically defined at application runtime
             rather than statically defined via Qt (Creator|Designer)) of the
-            tree widget associated with this stack widget to the corresponding
-            **itemized page widget** (i.e., page configuring these tree items)
-            of this stack widget.
+            tree widget associated with this stack widget to the object name of
+            the corresponding **itemized page widget** (i.e., page configuring
+            these tree items) of this stack widget.
         '''
 
-        # Classify all passed parameters.
+
+        # Convert each such dictionary to the corresponding dictionary with all
+        # object names of stack widget pages converted to those actual pages.
         self._tree_item_static_to_stack_page = (
-            tree_item_static_to_stack_page)
+            self._convert_mapping_values_stack_page_name_to_page(
+                tree_item_static_to_stack_page_name))
         self._tree_item_list_root_to_stack_page_list_leaf = (
-            tree_item_list_root_to_stack_page_list_leaf)
+            self._convert_mapping_values_stack_page_name_to_page(
+                tree_item_list_root_to_stack_page_name_list_leaf))
+
+
+    @type_check
+    def _convert_mapping_values_stack_page_name_to_page(
+        self, mapping: MappingType) -> MappingType:
+        '''
+        Dictionary mapping from arbitrary keys to stack widget pages converted
+        from the passed dictionary mapping from arbitrary keys to object names
+        of stack widget pages.
+
+        Succinctly, this method creates and returns a new dictionary whose
+        values are stack widget pages whose object names are the values of the
+        passed dictionary.
+        '''
+
+        # Create and return a new dictionary mapping...
+        return {
+            # From this key to the stack widget page with this object name,
+            # raising a human-readable exception if no such page exists...
+            key: mappings.get_key_value(
+                mapping=self._stack_page_name_to_page, key=stack_page_name)
+            # For each arbitrary key and object name of a stack widget page in
+            # the passed mapping.
+            for key, stack_page_name in mapping.items()
+        }

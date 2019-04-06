@@ -182,7 +182,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
     # To avoid circular import dependencies, this parameter is validated to be
     # an instance of the "QMainWindow" superclass rather than the expected
-    # "QBetseeMainWindow" subclass of the "betsee.gui.window.guimainwindow"
+    # "QBetseeMainWindow" subclass of the "betsee.gui.window.guiwindow"
     # submodule. Why? Because the latter imports the cached "betsee_ui.py"
     # module which imports the current submodule. Since this application only
     # contains one main window, this current validation suffices.
@@ -375,29 +375,45 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # item of this tree widget to the corresponding child page widget of
         # that stack widget.
 
-        #FIXME: Define us up.
         # Dictionary mapping each static tree item (i.e., item statically
         # defined via Qt (Creator|Designer) rather than dynamically defined at
-        # application runtime) of this tree widget to the corresponding child
-        # page widget of this stack widget.
-        tree_item_static_to_stack_page = {
+        # application runtime) of this tree widget to the object name of the
+        # corresponding child page widget of the top-level stack widget.
+        tree_item_static_to_stack_page_name = {
+            item_export:            'sim_conf_stack_page_Export',
+            item_export_anim:       'sim_conf_stack_page_Export_Anim',
+            item_export_anim_cells: 'sim_conf_stack_page_Export_Anim_Cells',
+            item_export_csv:        'sim_conf_stack_page_Export_CSV',
+            item_export_plot:       'sim_conf_stack_page_Export_Plot',
+            item_export_plot_cell:  'sim_conf_stack_page_Export_Plot_Cell',
+            item_export_plot_cells: 'sim_conf_stack_page_Export_Plot_Cells',
+            item_path:              'sim_conf_stack_page_Paths',
+            item_space:             'sim_conf_stack_page_Space',
+            item_space_ions:        'sim_conf_stack_page_Space_Ions',
+            item_space_tissue:      'sim_conf_stack_page_Space_Tissue',
+            item_time:              'sim_conf_stack_page_Time',
         }
 
-        #FIXME: Define us up.
         # Dictionary mapping each dynamic list tree item (i.e., item
         # masquerading as a list dynamically defined at application runtime
         # rather than statically defined via Qt (Creator|Designer)) of this
-        # tree widget to the corresponding itemized page widget (i.e., page
-        # configuring these items) of this stack widget.
-        tree_item_list_root_to_stack_page_list_leaf = {
+        # tree widget to the object name of the corresponding itemized page
+        # widget (i.e., page configuring these items) of the top-level stack
+        # widget.
+        tree_item_list_root_to_stack_page_name_list_leaf = {
+            item_export_anim_cells: 'sim_conf_stack_page_Export_Anim_Cells_item',
+            item_export_csv:        'sim_conf_stack_page_Export_CSV_item',
+            item_export_plot_cell:  'sim_conf_stack_page_Export_Plot_Cell_item',
+            item_export_plot_cells: 'sim_conf_stack_page_Export_Plot_Cells_item',
+            item_space_tissue:      'sim_conf_stack_page_Space_Tissue_item',
         }
 
         # Notify this stack widget of these mappings.
         main_window.sim_conf_stack.set_tree_item_to_stack_page(
-            tree_item_static_to_stack_page=(
-                tree_item_static_to_stack_page),
-            tree_item_list_root_to_stack_page_list_leaf=(
-                tree_item_list_root_to_stack_page_list_leaf),
+            tree_item_static_to_stack_page_name=(
+                tree_item_static_to_stack_page_name),
+            tree_item_list_root_to_stack_page_name_list_leaf=(
+                tree_item_list_root_to_stack_page_name_list_leaf),
         )
 
 

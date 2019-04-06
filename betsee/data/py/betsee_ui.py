@@ -1519,12 +1519,12 @@ class Ui_main_window(object):
         self.verticalLayout_31.addItem(spacerItem7)
         self.gridLayout_57.addWidget(self.groupBox_66, 0, 0, 1, 1)
         self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Export_CSV_item)
-        self.sim_conf_stack_page_Export_Animation = QtWidgets.QWidget()
-        self.sim_conf_stack_page_Export_Animation.setToolTip("")
-        self.sim_conf_stack_page_Export_Animation.setObjectName("sim_conf_stack_page_Export_Animation")
-        self.gridLayout_53 = QtWidgets.QGridLayout(self.sim_conf_stack_page_Export_Animation)
+        self.sim_conf_stack_page_Export_Anim = QtWidgets.QWidget()
+        self.sim_conf_stack_page_Export_Anim.setToolTip("")
+        self.sim_conf_stack_page_Export_Anim.setObjectName("sim_conf_stack_page_Export_Anim")
+        self.gridLayout_53 = QtWidgets.QGridLayout(self.sim_conf_stack_page_Export_Anim)
         self.gridLayout_53.setObjectName("gridLayout_53")
-        self.groupBox_58 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Export_Animation)
+        self.groupBox_58 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Export_Anim)
         self.groupBox_58.setToolTip("")
         self.groupBox_58.setProperty("is_page", True)
         self.groupBox_58.setObjectName("groupBox_58")
@@ -1540,13 +1540,13 @@ class Ui_main_window(object):
         spacerItem8 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_27.addItem(spacerItem8)
         self.gridLayout_53.addWidget(self.groupBox_58, 0, 0, 1, 1)
-        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Export_Animation)
-        self.sim_conf_stack_page_Export_Animation_Cells = QtWidgets.QWidget()
-        self.sim_conf_stack_page_Export_Animation_Cells.setToolTip("")
-        self.sim_conf_stack_page_Export_Animation_Cells.setObjectName("sim_conf_stack_page_Export_Animation_Cells")
-        self.gridLayout_54 = QtWidgets.QGridLayout(self.sim_conf_stack_page_Export_Animation_Cells)
+        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Export_Anim)
+        self.sim_conf_stack_page_Export_Anim_Cells = QtWidgets.QWidget()
+        self.sim_conf_stack_page_Export_Anim_Cells.setToolTip("")
+        self.sim_conf_stack_page_Export_Anim_Cells.setObjectName("sim_conf_stack_page_Export_Anim_Cells")
+        self.gridLayout_54 = QtWidgets.QGridLayout(self.sim_conf_stack_page_Export_Anim_Cells)
         self.gridLayout_54.setObjectName("gridLayout_54")
-        self.groupBox_60 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Export_Animation_Cells)
+        self.groupBox_60 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Export_Anim_Cells)
         self.groupBox_60.setToolTip("")
         self.groupBox_60.setProperty("is_page", True)
         self.groupBox_60.setObjectName("groupBox_60")
@@ -1562,13 +1562,13 @@ class Ui_main_window(object):
         spacerItem9 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_28.addItem(spacerItem9)
         self.gridLayout_54.addWidget(self.groupBox_60, 0, 0, 1, 1)
-        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Export_Animation_Cells)
-        self.sim_conf_stack_page_Export_Animation_Cells_item = QtWidgets.QWidget()
-        self.sim_conf_stack_page_Export_Animation_Cells_item.setToolTip("")
-        self.sim_conf_stack_page_Export_Animation_Cells_item.setObjectName("sim_conf_stack_page_Export_Animation_Cells_item")
-        self.gridLayout_58 = QtWidgets.QGridLayout(self.sim_conf_stack_page_Export_Animation_Cells_item)
+        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Export_Anim_Cells)
+        self.sim_conf_stack_page_Export_Anim_Cells_item = QtWidgets.QWidget()
+        self.sim_conf_stack_page_Export_Anim_Cells_item.setToolTip("")
+        self.sim_conf_stack_page_Export_Anim_Cells_item.setObjectName("sim_conf_stack_page_Export_Anim_Cells_item")
+        self.gridLayout_58 = QtWidgets.QGridLayout(self.sim_conf_stack_page_Export_Anim_Cells_item)
         self.gridLayout_58.setObjectName("gridLayout_58")
-        self.groupBox_68 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Export_Animation_Cells_item)
+        self.groupBox_68 = QtWidgets.QGroupBox(self.sim_conf_stack_page_Export_Anim_Cells_item)
         self.groupBox_68.setProperty("is_page", True)
         self.groupBox_68.setObjectName("groupBox_68")
         self.verticalLayout_32 = QtWidgets.QVBoxLayout(self.groupBox_68)
@@ -1593,7 +1593,7 @@ class Ui_main_window(object):
         spacerItem10 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_32.addItem(spacerItem10)
         self.gridLayout_58.addWidget(self.groupBox_68, 0, 0, 1, 1)
-        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Export_Animation_Cells_item)
+        self.sim_conf_stack.addWidget(self.sim_conf_stack_page_Export_Anim_Cells_item)
         self.sim_conf_stack_page_Export_Plot_Cells = QtWidgets.QWidget()
         self.sim_conf_stack_page_Export_Plot_Cells.setToolTip("")
         self.sim_conf_stack_page_Export_Plot_Cells.setObjectName("sim_conf_stack_page_Export_Plot_Cells")
@@ -3436,16 +3436,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
-from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxSequence, QBetseeSimConfComboBoxEnum
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
-from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxEnum, QBetseeSimConfComboBoxSequence
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfPathnameSubdirLineEdit
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
+from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

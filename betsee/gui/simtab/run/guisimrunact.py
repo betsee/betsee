@@ -23,7 +23,7 @@ from betse.util.type.obj import objects
 from betse.util.type.types import type_check, BoolOrNoneTypes
 from betsee.guiexception import (
     BetseeSimmerException, BetseeSimmerBetseException)
-from betsee.gui.window.guimainwindow import QBetseeMainWindow
+from betsee.gui.window.guiwindow import QBetseeMainWindow
 from betsee.gui.simtab.run.guisimrunenum import SimmerState
 from betsee.gui.simtab.run.guisimrunstate import (
     SIMMER_STATES_IDLE,
