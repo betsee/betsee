@@ -10,6 +10,36 @@ associated with tree widget items masquerading as dynamic list items)
 hierarchy.
 '''
 
+#FIXME: Substantially improve the display of the "_widget_kind" widget (i.e.,
+#the widget enabling end users to configure the type of the currently selected
+#export). Currently, this widget is constrained to be a combo box whose
+#contents are non-human-readable export pipeline runner type names (e.g.,
+#"pump_nakatpase"). Navigating this widget when a large number of such names
+#exist is overly cumbersome. Ideally, we should peplace each such combo box for
+#each such page with the following buddy (i.e., companion) widgets:
+#
+#* Either:
+#  * A list, whose contents are the sorted human-readable names associated with
+#    each such exporter rather than non-human-readable types of that exporter
+#    (e.g., "Ion Pump: Pump Rate: Na-K-ATPase" rather than "pump_nakatpase").
+#    Although overly simplistic, a list would certainly suffice.
+#  * A tree, whose contents are the nested human-readable names associated with
+#    each such exporter rather than non-human-readable types of that exporter
+#    (e.g., "Ion Pump" -> "Pump Rate" -> "Na-K-ATPase" rather than
+#    "pump_nakatpase"). Although overly complex, a tree would certainly provide
+#    the most structured and hence user-usable interface for displaying this
+#    metadata in a reasonable manner.
+#* A label, whose contents are the human-readable description (presumably
+#  culled from the method docstring) for the currently selected exporter. Some
+#  care should be taken here to either:
+#  * Strip ReST-specific syntax (e.g., "*" characters) entirely. *DO THIS.*
+#  * Convert ReST-specific syntax to the corresponding HTML. Sadly, doing so
+#    sanely is pragmatically infeasible, thanks to the lack of Python-builtin
+#    parsing methodologies like parser expression grammars (PEGs). In short,
+#    *ABSOLUTELY DO NOT DO THIS.* Well, not at first, anyway. We'll probably
+#    want to do this eventually, but the up-front implementation cost is
+#    absolutely *NOT* worth the dismal, meagre payoff.
+
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
@@ -154,11 +184,6 @@ class QBetseeSimConfPagerExportABC(QBetseePagerItemizedABC):
             sim_conf_alias_parent=export_conf,
             is_reinitable=True,
         )
-
-        #FIXME: *UGH.* This currently induces infinite recursion due to an undo
-        #push cycle. To correct this, we'll need to generalize the
-        #superclass reinit() implementation to avoid pushing undo commands for
-        #the duration of this method call. *sigh*
         self._widget_kind.init(
             sim_conf=main_window.sim_conf,
             sim_conf_alias=export_conf_cls.kind,

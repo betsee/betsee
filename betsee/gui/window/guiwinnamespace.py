@@ -19,6 +19,14 @@ For maintainability, these prefixes and suffixes are centralized here rather
 than chaotically dispersed throughout the codebase.
 '''
 
+#FIXME: Consider excising this entire submodule. Although technically still
+#applicable (...well, for the moment, anyway), this submodule is used
+#principally to query the main window object for the set of all widgets
+#satisfying overly simplistic naming constraints. Sadly, such implicit dynamic
+#retrieval of widgets has proven to be overly implicit and hence fragile.
+#Consequently, all usage of this submodule has been supplanted by explicit
+#retrieval of widgets instead -- a substantially saner approach.
+
 # ....................{ IMPORTS                           }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid circular import dependencies, avoid importing from *ANY*

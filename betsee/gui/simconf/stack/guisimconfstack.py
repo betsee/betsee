@@ -15,10 +15,9 @@ from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
 from betse.util.type.iterable.mapping import mappings
-from betse.util.type.obj import objects, objiter
+from betse.util.type.obj import objects
 from betse.util.type.types import type_check, MappingType
 from betsee.guiexception import BetseePySideStackedWidgetException
-from betsee.gui.window.guiwinnamespace import SIM_CONF_STACK_PAGE_NAME_PREFIX
 from betsee.util.app import guiappwindow
 from betsee.util.widget.mixin.guiwdgmixin import QBetseeObjectMixin
 from betsee.util.widget.abc.control.guictlpageabc import (
@@ -161,6 +160,13 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         )
         from betsee.gui.simconf.stack.page.export.guisimconfpageexpcsv import (
             QBetseeSimConfPagerCSV, QBetseeSimConfPagerCSVExport)
+        from betsee.gui.simconf.stack.page.export.guisimconfpageexpplot import (
+            QBetseeSimConfPagerPlot,
+            QBetseeSimConfPagerPlotCell,
+            QBetseeSimConfPagerPlotCellExport,
+            QBetseeSimConfPagerPlotCells,
+            QBetseeSimConfPagerPlotCellsExport,
+        )
         from betsee.gui.simconf.stack.page.space.guisimconfpageion import (
             QBetseeSimConfPagerIon)
         from betsee.gui.simconf.stack.page.space.guisimconfpagespace import (
@@ -181,22 +187,6 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
         # object, this is guaranteed to avoid circularities.
         self._sim_conf = main_window.sim_conf
 
-        # Generator iteratively yielding a 2-tuple of the name and value of
-        # each child page of this stack widget, matching all instance variables
-        # of this main window with names prefixed by an identifying substring.
-        stack_pages = objiter.iter_vars_custom_simple_prefixed(
-            obj=main_window, prefix=SIM_CONF_STACK_PAGE_NAME_PREFIX)
-
-        # Dictionary mapping the object name of each stack page widget to that
-        # widget.
-        self._stack_page_name_to_page = {
-            stack_page_name: stack_page
-            for stack_page_name, stack_page in stack_pages
-        }
-        # logs.log_debug(
-        #     'Detected stack page names: %r',
-        #     tuple(self._stack_page_name_to_page.keys()))
-
         # Dictionary mapping the object name of each stack page widget to the
         # pager controlling that page.
         self._stack_page_name_to_pager = {
@@ -212,6 +202,16 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
                 QBetseeSimConfPagerCSV(self)),
             'sim_conf_stack_page_Export_CSV_item': (
                 QBetseeSimConfPagerCSVExport(self)),
+            'sim_conf_stack_page_Export_Plot': (
+                QBetseeSimConfPagerPlot(self)),
+            'sim_conf_stack_page_Export_Plot_Cell': (
+                QBetseeSimConfPagerPlotCell(self)),
+            'sim_conf_stack_page_Export_Plot_Cell_item': (
+                QBetseeSimConfPagerPlotCellExport(self)),
+            'sim_conf_stack_page_Export_Plot_Cells': (
+                QBetseeSimConfPagerPlotCells(self)),
+            'sim_conf_stack_page_Export_Plot_Cells_item': (
+                QBetseeSimConfPagerPlotCellsExport(self)),
             'sim_conf_stack_page_Paths': (
                 QBetseeSimConfPagerPath(self)),
             'sim_conf_stack_page_Space': (
@@ -224,6 +224,13 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
                 QBetseeSimConfPagerTissueCustom(self)),
             'sim_conf_stack_page_Time': (
                 QBetseeSimConfPagerTime(self)),
+        }
+
+        # Dictionary mapping the object name of each stack page widget to that
+        # widget.
+        self._stack_page_name_to_page = {
+            stack_page_name: main_window.get_widget(stack_page_name)
+            for stack_page_name in self._stack_page_name_to_pager.keys()
         }
 
         # Initialize each pager controlling each page widget of this stack

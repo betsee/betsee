@@ -67,7 +67,6 @@ class QBetseeSimConfPagerCSVExport(QBetseeSimConfPagerExportABC):
     def _widget_name_prefix(self) -> str:
         return 'sim_conf_csv_item_'
 
-
     @property
     def _yaml_list(self) -> str:
         return self._p.csv.csvs_after_sim

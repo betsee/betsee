@@ -3581,17 +3581,17 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_anim_cells_item_kind">
-                 <property name="toolTip">
-                  <string>Type of cell cluster animation to export.</string>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_107">
                  <property name="text">
                   <string>Type:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_anim_cells_item_kind">
+                 <property name="toolTip">
+                  <string>Type of cell cluster animation to export.</string>
                  </property>
                 </widget>
                </item>
@@ -3600,6 +3600,173 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             </item>
             <item>
              <spacer name="verticalSpacer_42">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_59">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_70">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Animation Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_33">
+            <item>
+             <widget class="QGroupBox" name="groupBox_71">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QFormLayout" name="formLayout_32"/>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_43">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cell">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_56">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_64">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Single-cell Plot Settings</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_30">
+            <item>
+             <widget class="QGroupBox" name="groupBox_65">
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <layout class="QFormLayout" name="formLayout_29"/>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_40">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cell_item">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_60">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_72">
+           <property name="toolTip">
+            <string>Settings unique to this single cell plot export.</string>
+           </property>
+           <property name="title">
+            <string>Single Cell Plot Export</string>
+           </property>
+           <property name="is_page" stdset="0">
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_34">
+            <item>
+             <widget class="QGroupBox" name="groupBox_73">
+              <property name="toolTip">
+               <string>General-purpose properties of this single cell plot export.</string>
+              </property>
+              <property name="title">
+               <string>Export Properties</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_33">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_108">
+                 <property name="text">
+                  <string>Name:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QBetseeSimConfLineEdit" name="sim_conf_plot_cell_item_name">
+                 <property name="toolTip">
+                  <string>Arbitrary string uniquely identifying this single cell plot export. This name must be unique to this single cell plot (i.e., not shared with any other single cell plot export).</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_109">
+                 <property name="text">
+                  <string>Type:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_plot_cell_item_kind">
+                 <property name="toolTip">
+                  <string>Type of single cell plot to export.</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_44">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -3662,36 +3829,65 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cell">
+       <widget class="QWidget" name="sim_conf_stack_page_Export_Plot_Cells_item">
         <property name="toolTip">
          <string/>
         </property>
-        <layout class="QGridLayout" name="gridLayout_56">
+        <layout class="QGridLayout" name="gridLayout_61">
          <item row="0" column="0">
-          <widget class="QGroupBox" name="groupBox_64">
+          <widget class="QGroupBox" name="groupBox_74">
            <property name="toolTip">
-            <string/>
+            <string>Settings unique to this cell cluster plot export.</string>
            </property>
            <property name="title">
-            <string>Single-cell Plot Settings</string>
+            <string>Cell Cluster Plot Export</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_30">
+           <layout class="QVBoxLayout" name="verticalLayout_35">
             <item>
-             <widget class="QGroupBox" name="groupBox_65">
+             <widget class="QGroupBox" name="groupBox_75">
               <property name="toolTip">
-               <string/>
+               <string>General-purpose properties of this cell cluster plot export.</string>
               </property>
               <property name="title">
-               <string/>
+               <string>Export Properties</string>
               </property>
-              <layout class="QFormLayout" name="formLayout_29"/>
+              <layout class="QFormLayout" name="formLayout_34">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_110">
+                 <property name="text">
+                  <string>Name:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QBetseeSimConfLineEdit" name="sim_conf_plot_cells_item_name">
+                 <property name="toolTip">
+                  <string>Arbitrary string uniquely identifying this cell cluster plot export. This name must be unique to this cell cluster plot (i.e., not shared with any other cell cluster plot export).</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_111">
+                 <property name="text">
+                  <string>Type:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QBetseeSimConfComboBoxSequence" name="sim_conf_plot_cells_item_kind">
+                 <property name="toolTip">
+                  <string>Type of cell cluster plot to export.</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer_40">
+             <spacer name="verticalSpacer_45">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>

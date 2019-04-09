@@ -8,6 +8,58 @@
 controller for stack widget pages specific to export settings) functionality.
 '''
 
+#FIXME: Replace the combo box selecting each colormap with a widget more
+#appropriate to the excrutiating number of available colormaps. Honestly, the
+#best (albeit hardest to implement) approach would be to adopt a similar
+#approach used in most applications that enable end users to configure specific
+#colors. Think "color wheels." Specifically:
+#
+#* Augment the "betse.lib.matplotlib.mplcolormap" submodule with a *MASSIVE*
+#  database describing all well-known colormaps bundled with matplotlib. Since
+#  this will be positively massive, we actually probably want to:
+#  * Define a new "betse.lib.matplotlib.colormap" subpackage.
+#  * Shift the existing "betse.lib.matplotlib.mplcolormap" submodule to
+#    "betse.lib.matplotlib.colormap.mplcolormap".
+#  * Define a new "betse.lib.matplotlib.colormap.mplcmapmetadata" submodule
+#    defining this database.
+#  Although we'll obviously never be able to keep up with modern matplotlib
+#  developments, we should at least be able to make a reasonable go of things.
+#  To do so, this submodule should:
+#  * Define a new "MplColormapMetadata" class, which should define the
+#    following instance variables:
+#    * "kind", the machine-readable matplotlib-specific name of this colormap.
+#    * "categories", a sequence of one or more human-readable strings
+#       iteratively naming all arbitrary categories to which this colormap
+#       belongs (in descending order of hierarchical taxonomy).
+#    * "description", a human-readable description of this colormap.
+#  * Define a new "COLORMAP_KIND_TO_METADATA" dictionary mapping from the
+#    "kind" of each such colormap to a "MplColormapMetadata" instance
+#    describing that colormap in detail.
+#  * Define an init() function whose implementation:
+#    * Determines if there are any currently registered matplotlib colormaps
+#      whose names are *NOT* keys of the "COLORMAP_KIND_TO_METADATA"
+#      dictionary. If one or more such colormaps exist, a *SINGLE* non-fatal
+#      warning containing the names of these colormaps should be logged.
+#* For each of the four types of colormaps currently configurable by this
+#  pager:
+#  * Display a label presenting the human-readable name of this colormap,
+#    probably synthesized from the "categories" variable detailed above.
+#  * Display a push button with text resembling "Select..." or "Browse...".
+#    When pushed, this button should display a modal dialog that:
+#    * Displays a *TREE* dynamically constructed from the "categories" sequence
+#      of each "MplColormapMetadata" instance of the
+#      "COLORMAP_KIND_TO_METADATA" dictionary.
+#    * Displays a label presenting the human-readable description of the
+#      currently selected colormap in this tree, equivalent to the
+#      "description" variable detailed above.
+#    * Display a label presenting the machine-readable kind of this colormap,
+#      equivalent to the "kind" variable detailed above.
+#    * Display a line segment visualizing this colormap. (See "FIXME:" below.)
+#  * Display a line segment visualizing this colormap. (See "FIXME:" below.)
+#
+#Extraordinarily non-trivial, of course. Which suggests we'll probably never
+#implement even a tenth of the above plan. Still, a volunteer coder can dream.
+
 #FIXME: Below the combobox selecting each colormap on the page controlled by
 #this pager, visually display a line segment depicting the perceptual gradiant
 #implemented by that colormap. Fortunately, this is considerably more trivial

@@ -71,8 +71,9 @@ class QBetseeSimConfPagerAnimCellsExport(QBetseeSimConfPagerExportABC):
     '''
     **Cell cluster animation export pager** (i.e., :mod:`PySide2`-based
     controller connecting all editable widgets of the stack widget page for the
-    currently selected animation export with corresponding settings of a
-    YAML-backed list item of the currently open simulation configuration).
+    currently selected cell cluster animation export with corresponding
+    settings of a YAML-backed list item of the currently open simulation
+    configuration).
 
     **This controller implements the well-known flyweight design pattern.**
     Specifically, this single controller is shared between the zero or more
@@ -90,7 +91,6 @@ class QBetseeSimConfPagerAnimCellsExport(QBetseeSimConfPagerExportABC):
     @property
     def _widget_name_prefix(self) -> str:
         return 'sim_conf_anim_cells_item_'
-
 
     @property
     def _yaml_list(self) -> str:

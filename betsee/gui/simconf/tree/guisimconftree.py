@@ -100,6 +100,7 @@ from betse.lib.yaml.abc.yamllistabc import YamlList
 from betse.lib.yaml.abc.yamlmixin import YamlNamedMixin
 from betse.util.io.log import logs
 from betse.util.type.iterable import sequences
+from betse.util.type.iterable.mapping import mappings
 from betse.util.type.obj import objects
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideTreeWidgetItemException  # BetseePySideTreeWidgetException,
@@ -362,6 +363,8 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         self._item_list_root_to_yaml_list = {
             item_export_anim_cells: p.anim.anims_after_sim,
             item_export_csv:        p.csv.csvs_after_sim,
+            item_export_plot_cell:  p.plot.plots_cell_after_sim,
+            item_export_plot_cells: p.plot.plots_cells_after_sim,
             item_space_tissue:      p.tissue_profiles,
         }
 
@@ -379,7 +382,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # defined via Qt (Creator|Designer) rather than dynamically defined at
         # application runtime) of this tree widget to the object name of the
         # corresponding child page widget of the top-level stack widget.
-        tree_item_static_to_stack_page_name = {
+        item_static_to_stack_page_name = {
             item_export:            'sim_conf_stack_page_Export',
             item_export_anim:       'sim_conf_stack_page_Export_Anim',
             item_export_anim_cells: 'sim_conf_stack_page_Export_Anim_Cells',
@@ -400,7 +403,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # tree widget to the object name of the corresponding itemized page
         # widget (i.e., page configuring these items) of the top-level stack
         # widget.
-        tree_item_list_root_to_stack_page_name_list_leaf = {
+        item_list_root_to_stack_page_name_list_leaf = {
             item_export_anim_cells: 'sim_conf_stack_page_Export_Anim_Cells_item',
             item_export_csv:        'sim_conf_stack_page_Export_CSV_item',
             item_export_plot_cell:  'sim_conf_stack_page_Export_Plot_Cell_item',
@@ -408,12 +411,20 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
             item_space_tissue:      'sim_conf_stack_page_Space_Tissue_item',
         }
 
+        # If any container containing dynamic list tree items defined above
+        # does *NOT* contain the same such items as every other such container,
+        # raise an exception. This is a rudimentary sanity test.
+        mappings.die_unless_keys_equal(
+            self._item_list_root_to_yaml_list,
+            item_list_root_to_stack_page_name_list_leaf,
+        )
+
         # Notify this stack widget of these mappings.
         main_window.sim_conf_stack.set_tree_item_to_stack_page(
             tree_item_static_to_stack_page_name=(
-                tree_item_static_to_stack_page_name),
+                item_static_to_stack_page_name),
             tree_item_list_root_to_stack_page_name_list_leaf=(
-                tree_item_list_root_to_stack_page_name_list_leaf),
+                item_list_root_to_stack_page_name_list_leaf),
         )
 
 
