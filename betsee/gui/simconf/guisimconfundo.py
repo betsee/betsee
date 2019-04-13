@@ -267,7 +267,7 @@ class QBetseeSimConfUndoStack(QUndoStack):
 
         # If a simulation configuration is currently open, push this command
         # onto this stack.
-        if self._sim_conf.is_open:
+        if self._sim_conf.is_open:  # and undo_cmd._widget._is_undo_cmd_pushable:
             self.push(undo_cmd)
         # Else, *NO* simulation configuration is currently open. In this case,
         # avoid pushing this command onto this stack with a non-fatal warning.
@@ -293,8 +293,48 @@ class QBetseeSimConfUndoStack(QUndoStack):
         #     self._undo_action.isEnabled(),
         #     self._redo_action.isEnabled())
 
-        # Push this undo command onto this stack.
-        super().push(undo_cmd)
+        # Attempt to push this undo command onto this stack.
+        try:
+            super().push(undo_cmd)
+        # If "libshiboken" raises an overflow, convert this otherwise fatal
+        # exception into a non-fatal warning. For unknown reasons,
+        # "libshiboken" raises the following exception for otherwise safe
+        # (i.e., non-recursive) undo command push requests on some systems:
+        #
+        #    [betsee] Setting widget "sim_conf_space_intra_lattice_type" alias value to <CellLatticeType.SQUARE: 2>...
+        #    [betsee] Disabling editable widget "sim_conf_space_intra_lattice_type" undo command push request handling via setter...
+        #    [betsee] Pushing undo command "changes to a radio button" onto stack...
+        #    [betsee] Redoing changes to a radio button for widget "sim_conf_space_intra_lattice_type"...
+        #    [betsee] Disabling editable widget "sim_conf_space_intra_lattice_type" undo command push request handling via noop...
+        #    [betsee] /home/leycec/py/betsee/betsee/gui/simconf/guisimconfundo.py:298: RuntimeWarning: libshiboken: Overflow: Value 94379762154184 exceeds limits of type  [signed] "i" (4bytes).
+        #      super().push(undo_cmd)
+        #
+        #    [betsee] Restoring editable widget "sim_conf_space_intra_lattice_type" undo command push request handling...
+        #    [betsee] Exiting prematurely due to fatal error:
+        #
+        #    OverflowError
+        #
+        #    Traceback (most recent call last):
+        #      File "/home/leycec/py/betsee/betsee/gui/simconf/stack/widget/mixin/guisimconfwdgeditscalar.py", line 322, in _set_alias_to_widget_value_if_safe
+        #        self._push_undo_cmd_if_safe(undo_cmd)
+        #      File "<string>", line 41, in ___push_undo_cmd_if_safe_type_checked__
+        #      File "/home/leycec/py/betsee/betsee/util/widget/mixin/guiwdgeditmixin.py", line 272, in _push_undo_cmd_if_safe
+        #        self._undo_stack.push_undo_cmd_if_safe(undo_cmd)
+        #      File "<string>", line 14, in __push_undo_cmd_if_safe_type_checked__
+        #      File "/home/leycec/py/betsee/betsee/gui/simconf/guisimconfundo.py", line 271, in push_undo_cmd_if_safe
+        #        self.push(undo_cmd)
+        #      File "/home/leycec/py/betsee/betsee/gui/simconf/guisimconfundo.py", line 298, in push
+        #        super().push(undo_cmd)
+        #
+        # While such exceptions would typically be indicative of a fatal
+        # application failure, this particular exception appears to be a
+        # harmless (and hence ignorable) artifact of the "libshoken" binding
+        # for this method.
+        except OverflowError:
+            logs.log_warning(
+                'Harmless overflow from editable widget "%s" '
+                'undo command push request detected...',
+                undo_cmd._widget.obj_name)
 
         # logs.log_debug(
         #     'Action state *AFTER*: undo (%r), redo (%r)',

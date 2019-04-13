@@ -39,7 +39,7 @@ class QBetseeSimConfLineEdit(
 
         # If this configuration is currently open, set the current value of
         # this simulation configuration alias to this widget's current value.
-        self._set_alias_to_widget_value_if_sim_conf_open()
+        self._set_alias_to_widget_value_if_safe()
 
     # ..................{ MIXIN ~ property : read-only      }..................
     @property

@@ -15,21 +15,17 @@
 BETSEE
 ======
 
-**BETSEE** (**B**\ io\ **E**\ lectric **T**\ issue **S**\ imulation
-**E**\ ngine **E**\ nvironment) is the open-source cross-platform graphical user
+**BETSEE** (**B**\ io\ **E**\ lectric **T**\ issue **S**\ imulation **E**\
+ngine **E**\ nvironment) is the open-source cross-platform graphical user
 interface (GUI) for BETSE_, a  `finite volume`_ simulator for 2D computational
 multiphysics problems in the life sciences – including electrodiffusion_,
-electro-osmosis_, galvanotaxis_, `voltage-gated ion channels`_, `gene regulatory
-networks`_, and `biochemical reaction networks`_ (e.g., metabolism).
+electro-osmosis_, galvanotaxis_, `voltage-gated ion channels`_, `gene
+regulatory networks`_, and `biochemical reaction networks`_ (e.g., metabolism).
 
 Like BETSE_, BETSEE is `portably implemented <codebase_>`__ in pure `Python 3
 <Python_>`__, `continuously stress-tested <testing_>`__ with GitLab-CI_ **×**
 Appveyor_ **+** py.test_, and `permissively distributed <License_>`__ under the
 `BSD 2-clause license`_.
-
-BETSEE and BETSE_ are both associated with the `Paul Allen Discovery Center`_ at
-`Tufts University`_ and supported by a `Paul Allen Discovery Center award`_ from
-the `Paul G. Allen Frontiers Group`_.
 
 .. # ------------------( TABLE OF CONTENTS                  )------------------
 .. # Blank line. By default, Docutils appears to only separate the subsequent
@@ -154,8 +150,8 @@ Citation
 =========
 
 BETSE_ is formally described in our `introductory paper <2016 article_>`__.
-Third-party papers, theses, and other texts leveraging BETSEE (and hence BETSE_)
-should ideally cite the following:
+Third-party papers, theses, and other texts leveraging BETSEE (and hence
+BETSE_) should ideally cite the following:
 
     `Alexis Pietak`_ and `Michael Levin`_, 2016. |2016 article name|_
     |2016 article supplement|_ [#supplement]_ |2016 journal name|_ *4*\ (55).
@@ -174,10 +170,21 @@ Authors
 =======
 
 BETSEE comes courtesy a dedicated community of `authors <author list_>`__ and
-contributors_ – without whom this project would be computationally impoverished,
-biologically misaligned, and simply unusable.
+contributors_ – without whom this project would be computationally
+impoverished, biologically misaligned, and simply unusable.
 
 **Thanks, all.**
+
+Funding
+=======
+
+BETSEE is currently independently financed as a volunteer open-source project.
+Prior grant funding sources include (in chronological order):
+
+#. For the three year period spanning 2017—2019, BETSEE was graciously
+   associated with the `Paul Allen Discovery Center`_ at `Tufts University`_
+   and supported by a `Paul Allen Discovery Center award`_ from the `Paul G.
+   Allen Frontiers Group`_ .
 
 .. # ------------------( LINKS ~ betse                      )------------------
 .. _BETSE:

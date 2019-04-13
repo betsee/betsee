@@ -16,7 +16,7 @@ from betse.lib.yaml import yamls
 from betse.util.type.types import type_check, StrOrNoneTypes
 
 # ....................{ GLOBALS                           }....................
-_YAML_LABEL_TO_FILETYPES = {'YAML files': yamls.FILETYPES}
+_YAML_LABEL_TO_FILETYPES = {'YAML files': yamls.YAML_FILETYPES}
 '''
 Dictionary mapping from a human-readable label to be displayed for each
 iterable of YAML-specific filetypes accepted by this dialog to that iterable.

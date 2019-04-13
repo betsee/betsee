@@ -78,7 +78,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         # the current value of the simulation configuration alias associated
         # with this widget to this widget's displayed value.
         self._finalize_widget_change_signal.connect(
-            self._set_alias_to_widget_value_if_sim_conf_open)
+            self._set_alias_to_widget_value_if_safe)
 
     # ..................{ SUBCLASS ~ mandatory : property   }..................
     # Subclasses are required to implement the following properties.
@@ -146,11 +146,11 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         :class:`QBetseeSimConfLineEdit` subclass, for example, erroneously
         calling this subclass implementation would ensure that:
 
-        #. On each call to the :meth:`setValue` method...
+        #. Each call to the :meth:`QBetseeSimConfLineEdit.setValue` method...
         #. Which pushes an undo command onto the undo stack...
         #. Whose :meth:`QUndoCommand.redo` method is called by that stack...
-        #. Which calls the :meth:`setValue` method...
-        #. Which induces infinite recursion.
+        #. Which calls the :meth:`QBetseeSimConfLineEdit.setValue` method...
+        #. Induces infinite recursion.
         '''
 
         raise BetseMethodUnimplementedException()
@@ -163,7 +163,7 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         programmatic) edit of the contents of this widget.
 
         The :meth:`_init_safe` method implicitly connects this signal to the
-        :meth:`_set_alias_to_widget_value_if_sim_conf_open` slot.
+        :meth:`_set_alias_to_widget_value_if_safe` slot.
         '''
 
         raise BetseMethodUnimplementedException()
@@ -267,14 +267,14 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
     # ..................{ CONVERTERS ~ widget -> alias      }..................
     # Called on each user edit of this widget's value.
     @Slot()
-    def _set_alias_to_widget_value_if_sim_conf_open(self) -> None:
+    def _set_alias_to_widget_value_if_safe(self) -> None:
         '''
         Slot signalled on each finalized interactive user edit (and possibly
         but *not* necessarily each non-interactive programmatic change) to the
         value displayed by this widget, setting the current value of the
         simulation configuration alias associated with this widget to this
         widget's displayed value if a simulation configuration is currently
-        open *or* reduce to a noop otherwise.
+        open *or* silently reduce to a noop otherwise.
 
         Design
         ----------
@@ -285,27 +285,20 @@ class QBetseeSimConfEditScalarWidgetMixin(QBetseeSimConfEditWidgetMixin):
         programmatic change -- typically in the subclass implementation of this
         widget's main setter method (e.g., :meth:`QLineEdit.setText`),
         guaranteed to be called on each such change.
-
-        While *not* necessarily directly signalled on each programmatic change,
-        this method is called by the
-        :meth:`_set_alias_to_widget_value_if_sim_conf_open` method, typically
-        called by the subclass implementation of this widget's main setter
-        method (e.g., :meth:`QLineEdit.setText`). This method should *always*
-        be called on each finalized widget change -- programmatic or otherwise.
         '''
 
-        # logs.log_debug('In _set_alias_to_widget_value_if_sim_conf_open()...')
+        # logs.log_debug('In _set_alias_to_widget_value_if_safe()...')
 
         # Value currently displayed by this widget.
         widget_value = self.widget_value
 
-        # If either:
+        # If either...
         if (
-            # This widget's value remains unchanged.
+            # This widget's value remains unchanged *OR*...
             widget_value == self._widget_value_last or
-            # No simulation configuration is currently open.
+            # No simulation configuration is currently open...
             not self._is_sim_open
-        # Then reduce to a noop.
+        # Then silently reduce to a noop.
         ):
             return
 

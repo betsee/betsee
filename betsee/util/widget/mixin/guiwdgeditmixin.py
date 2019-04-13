@@ -198,7 +198,7 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
                 'undo command push request handling via noop...',
                 self.obj_name)
 
-            # Reduce to a noop by yielding control to the caller and
+            # Reduce to a noop by yielding control to the caller and then
             # immediately returning.
             yield
             return
@@ -250,8 +250,10 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
             'betsee.util.widget.abc.guiundocmdabc.QBetseeWidgetUndoCommandABC'),
     ) -> None:
         '''
-        Push the passed widget-specific undo command onto the undo stack
-        associated with this widget.
+        Non-recursively push the passed widget-specific undo command onto the
+        undo stack associated with this widget if doing so is currently safe
+        *or* silently reduce to a noop otherwise (i.e., if doing so is
+        currently unsafe).
 
         Parameters
         ----------
@@ -259,11 +261,18 @@ class QBetseeEditWidgetMixin(QBetseeObjectMixin):
             Widget-specific undo command to be pushed onto this stack.
         '''
 
-        # If this widget is associated with an undo stack *AND* undo commands
-        # are safely pushable from this widget (e.g., due to no prior undo
-        # command being applied to this widget), do so.
-        if self._undo_stack is not None and self._is_undo_cmd_pushable:
-            self._undo_stack.push(undo_cmd)
+        # If undo commands are safely pushable from this widget (e.g., due to
+        # no prior undo command being applied to this widget) *AND* this widget
+        # is associated with an undo stack...
+        if self._is_undo_cmd_pushable and self._undo_stack is not None:
+            # While temporarily ignoring attempts by subclass implementations
+            # to push undo commands onto the undo stack associated with this
+            # widget, push this undo command onto this stack.
+            with self.ignoring_undo_cmds():
+                self._undo_stack.push_undo_cmd_if_safe(undo_cmd)
+                # logs.log_debug(
+                #     'Returning from _push_undo_cmd_if_safe() for "%s"...',
+                #     self.obj_name)
         # Else, undo commands are *NOT* safely pushable from this widget. In
         # this case, pushing this command onto this stack could provoke
         # infinite recursion. Avoid doing so with a non-fatal warning.

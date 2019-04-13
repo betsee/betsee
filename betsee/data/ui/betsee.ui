@@ -705,7 +705,7 @@ QTreeWidget#sim_conf_tree {
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>6</number>
        </property>
        <widget class="QWidget" name="sim_conf_stack_page_Time">
         <layout class="QGridLayout" name="gridLayout_3">
@@ -1810,7 +1810,7 @@ QTreeWidget#sim_conf_tree {
                <item row="2" column="1">
                 <widget class="QBetseeSimConfCheckBox" name="sim_conf_space_extra_is_ecm">
                  <property name="toolTip">
-                  <string>Enable the extracellular matrix (ECM), simulating the environmental spaces surrounding each cell in the cluster? Disabling this substantially reduces simulation accuracy at a substantial reduction in space and time costs.</string>
+                  <string>If checked, the extracellular matrix (ECM) simulating the environmental spaces surrounding each cell in the cluster is enabled. Disabling this substantially reduces simulation accuracy at a substantial reduction in space and time costs.</string>
                  </property>
                  <property name="text">
                   <string/>
@@ -3243,6 +3243,56 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_25">
             <item>
+             <widget class="QGroupBox" name="groupBox_4">
+              <property name="toolTip">
+               <string>Cell index (i.e., unique integer ranging from [0, ∞) assigned to each cell in the seed phase) settings for exported plots and animations.</string>
+              </property>
+              <property name="title">
+               <string>Cell Indices</string>
+              </property>
+              <layout class="QFormLayout" name="formLayout_14">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_65">
+                 <property name="text">
+                  <string>Display:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QBetseeSimConfCheckBox" name="sim_conf_exp_is_show_cell_indices">
+                 <property name="toolTip">
+                  <string>If checked, the indices of all cells are displayed in all cell cluster plots and animations (e.g., as integers situated at cell centres).</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_112">
+                 <property name="text">
+                  <string>Single cell index:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QBetseeSimConfIntSpinBox" name="sim_conf_exp_single_cell_index">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index of the cell to be visualized for all single cell plots and animations. Defaults to 0, the index assigned to the first cell in this cluster. Note that cell indices:
+&lt;ul&gt;
+&lt;li&gt;Are seed-specific (i.e., arbitrarily reassigned on each run of the &lt;b&gt;seed&lt;/b&gt; phase for this simulation).&lt;/li&gt;
+&lt;li&gt;May be displayed for the currently seeded cluster by checking the preceding &quot;Display:&quot; checkbox.&lt;/li&gt;
+&lt;/ul&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>999999999</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QGroupBox" name="groupBox_55">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Matplotlib colormaps (i.e., predefined linear-segmented gradients) mapping arbitrary cell data to color values in exported plots and animations. See also &lt;a href=&quot;https://matplotlib.org/tutorials/colors/colormaps.html&quot;&gt;&quot;Choosing Colormaps in Matplotlib&quot;&lt;/a&gt; for detailed discussion.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -3506,7 +3556,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string/>
            </property>
            <property name="title">
-            <string>Cell Cluster Animation Settings</string>
+            <string>Animation (Cell Cluster) Settings</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>
@@ -3552,7 +3602,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string>Settings unique to this cell cluster animation export.</string>
            </property>
            <property name="title">
-            <string>Cell Cluster Animation Export</string>
+            <string>Animation (Cell Cluster) Export</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>
@@ -3627,7 +3677,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string/>
            </property>
            <property name="title">
-            <string>Animation Settings</string>
+            <string>Plot Settings</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>
@@ -3673,7 +3723,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string/>
            </property>
            <property name="title">
-            <string>Single-cell Plot Settings</string>
+            <string>Plot (Single Cell) Settings</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>
@@ -3719,7 +3769,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string>Settings unique to this single cell plot export.</string>
            </property>
            <property name="title">
-            <string>Single Cell Plot Export</string>
+            <string>Plot (Single Cell) Export</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>
@@ -3794,7 +3844,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string/>
            </property>
            <property name="title">
-            <string>Cell Cluster Plot Settings</string>
+            <string>Plot (Cell Cluster) Settings</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>
@@ -3840,7 +3890,7 @@ m&lt;sup&gt;2&lt;/sup&gt;/s
             <string>Settings unique to this cell cluster plot export.</string>
            </property>
            <property name="title">
-            <string>Cell Cluster Plot Export</string>
+            <string>Plot (Cell Cluster) Export</string>
            </property>
            <property name="is_page" stdset="0">
             <bool>true</bool>

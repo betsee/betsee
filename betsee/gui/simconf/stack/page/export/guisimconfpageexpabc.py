@@ -10,6 +10,18 @@ associated with tree widget items masquerading as dynamic list items)
 hierarchy.
 '''
 
+#FIXME: Enforce the uniqueness of the "_widget_name" widget. To do so, we'll
+#probably want to define a custom slot on the "QBetseeSimConfPagerExportABC"
+#superclass connected to a builtin signal of that widget -- ideally triggered
+#whenever the end user completes an interactive edit of that widget. This slot
+#should then detect whether the new name is indeed still unique and, if not:
+#
+#* Display a non-fatal warning message.
+#* Automatically either:
+#  * Force this widget back to interactive edit mode. This is strongly
+#    preferable, as we'd rather not entirely discard the new name.
+#  * Revert this name to the prior name. (Highly non-ideal.)
+
 #FIXME: Substantially improve the display of the "_widget_kind" widget (i.e.,
 #the widget enabling end users to configure the type of the currently selected
 #export). Currently, this widget is constrained to be a combo box whose
@@ -39,6 +51,24 @@ hierarchy.
 #    *ABSOLUTELY DO NOT DO THIS.* Well, not at first, anyway. We'll probably
 #    want to do this eventually, but the up-front implementation cost is
 #    absolutely *NOT* worth the dismal, meagre payoff.
+#FIXME: Actually, we probably want to belay most of the above in favour of:
+#
+#* Refactoring all visuals in the BETSE codebase to leverage layers.
+#* Generalizing the YAML-formatted simulation configuration file format to
+#  permit visuals (e.g., plots, animations) to be expressed as the composition
+#  of one or more layers.
+#* Removing all existing hard-coded visuals in the BETSE codebase currently
+#  implemented as export pipeline runners (e.g.,
+#  SimPipeExportAnimCells.export_currents_intra()). Henceforth, *ALL* visuals
+#  will be dynamically configured as the composition of one or more layers.
+#* Shifting the existing "self._widget_kind" instance variable into the
+#  "QBetseeSimConfPagerCSVExport" subclass. For the moment, CSV exports *ONLY*
+#  will continue to be implemented as hard-coded export pipeline runners.
+#* Replacing the "self._widget_kind" combo box from all *OTHER* subclasses with
+#  a group of related widgets enabling end users to dynamically configure each
+#  visual export as the composition of one or more layers. Naturally, a great
+#  deal of additional thought should be made as to the presentation and
+#  relation of these widgets to both one another and the underlying YAML.
 
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot

@@ -21,7 +21,7 @@ Abstract base classes of all widget-specific undo command subclasses.
 #    OverflowError
 #
 #    Traceback (most recent call last):
-#      File "/home/leycec/py/betsee/betsee/gui/simconf/stack/widget/abc/guisimconfwdgeditscalar.py", line 314, in _set_alias_to_widget_value_if_sim_conf_open
+#      File "/home/leycec/py/betsee/betsee/gui/simconf/stack/widget/abc/guisimconfwdgeditscalar.py", line 314, in _set_alias_to_widget_value_if_safe
 #        self._push_undo_cmd_if_safe(undo_cmd)
 #      File "<string>", line 41, in func_type_checked
 #      File "/home/leycec/py/betsee/betsee.util.widget.mixin.guiwdgmixin.py", line 380, in _push_undo_cmd_if_safe
@@ -132,7 +132,7 @@ class QBetseeWidgetUndoCommandABC(QUndoCommand):
 
         Our pure-C++ :class:`QUndoCommand` superclass requires this integer to
         transparently support **command compression** (i.e., automatic merging
-        of adjacent undo commands of the same type)..
+        of adjacent undo commands of the same type).
         '''
 
         return self._id

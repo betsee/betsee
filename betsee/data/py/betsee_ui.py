@@ -1434,6 +1434,25 @@ class Ui_main_window(object):
         self.groupBox_54.setObjectName("groupBox_54")
         self.verticalLayout_25 = QtWidgets.QVBoxLayout(self.groupBox_54)
         self.verticalLayout_25.setObjectName("verticalLayout_25")
+        self.groupBox_4 = QtWidgets.QGroupBox(self.groupBox_54)
+        self.groupBox_4.setObjectName("groupBox_4")
+        self.formLayout_14 = QtWidgets.QFormLayout(self.groupBox_4)
+        self.formLayout_14.setObjectName("formLayout_14")
+        self.label_65 = QtWidgets.QLabel(self.groupBox_4)
+        self.label_65.setObjectName("label_65")
+        self.formLayout_14.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_65)
+        self.sim_conf_exp_is_show_cell_indices = QBetseeSimConfCheckBox(self.groupBox_4)
+        self.sim_conf_exp_is_show_cell_indices.setText("")
+        self.sim_conf_exp_is_show_cell_indices.setObjectName("sim_conf_exp_is_show_cell_indices")
+        self.formLayout_14.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_is_show_cell_indices)
+        self.label_112 = QtWidgets.QLabel(self.groupBox_4)
+        self.label_112.setObjectName("label_112")
+        self.formLayout_14.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_112)
+        self.sim_conf_exp_single_cell_index = QBetseeSimConfIntSpinBox(self.groupBox_4)
+        self.sim_conf_exp_single_cell_index.setMaximum(999999999)
+        self.sim_conf_exp_single_cell_index.setObjectName("sim_conf_exp_single_cell_index")
+        self.formLayout_14.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sim_conf_exp_single_cell_index)
+        self.verticalLayout_25.addWidget(self.groupBox_4)
         self.groupBox_55 = QtWidgets.QGroupBox(self.groupBox_54)
         self.groupBox_55.setObjectName("groupBox_55")
         self.formLayout_24 = QtWidgets.QFormLayout(self.groupBox_55)
@@ -2973,7 +2992,7 @@ class Ui_main_window(object):
         self.toolbar.addSeparator()
 
         self.retranslateUi(main_window)
-        self.sim_conf_stack.setCurrentIndex(4)
+        self.sim_conf_stack.setCurrentIndex(6)
         QtCore.QMetaObject.connectSlotsByName(main_window)
 
     def retranslateUi(self, main_window):
@@ -3087,7 +3106,7 @@ class Ui_main_window(object):
         self.widget_16.setToolTip(QtWidgets.QApplication.translate("main_window", "Number of square grid spaces (in both the X and Y dimensions) to computationally divide this simulation\'s square environment into. Increasing this increases simulation granularity and hence stability at a quadratic increase in space and time costs. This should typically be in the range [10, 60].", None, -1))
         self.label_82.setText(QtWidgets.QApplication.translate("main_window", "squares", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("main_window", "Extracellular matrix:", None, -1))
-        self.sim_conf_space_extra_is_ecm.setToolTip(QtWidgets.QApplication.translate("main_window", "Enable the extracellular matrix (ECM), simulating the environmental spaces surrounding each cell in the cluster? Disabling this substantially reduces simulation accuracy at a substantial reduction in space and time costs.", None, -1))
+        self.sim_conf_space_extra_is_ecm.setToolTip(QtWidgets.QApplication.translate("main_window", "If checked, the extracellular matrix (ECM) simulating the environmental spaces surrounding each cell in the cluster is enabled. Disabling this substantially reduces simulation accuracy at a substantial reduction in space and time costs.", None, -1))
         self.groupBox_52.setTitle(QtWidgets.QApplication.translate("main_window", "Ions", None, -1))
         self.groupBox_20.setToolTip(QtWidgets.QApplication.translate("main_window", "Predefined ion profiles enabling ions in typical combinations at typical initial concentrations.", None, -1))
         self.groupBox_20.setTitle(QtWidgets.QApplication.translate("main_window", "Ion Presets", None, -1))
@@ -3307,6 +3326,16 @@ class Ui_main_window(object):
 "m<sup>2</sup>/s\n"
 "</p></body></html>", None, -1))
         self.groupBox_54.setTitle(QtWidgets.QApplication.translate("main_window", "Export Settings", None, -1))
+        self.groupBox_4.setToolTip(QtWidgets.QApplication.translate("main_window", "Cell index (i.e., unique integer ranging from [0, ∞) assigned to each cell in the seed phase) settings for exported plots and animations.", None, -1))
+        self.groupBox_4.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Indices", None, -1))
+        self.label_65.setText(QtWidgets.QApplication.translate("main_window", "Display:", None, -1))
+        self.sim_conf_exp_is_show_cell_indices.setToolTip(QtWidgets.QApplication.translate("main_window", "If checked, the indices of all cells are displayed in all cell cluster plots and animations (e.g., as integers situated at cell centres).", None, -1))
+        self.label_112.setText(QtWidgets.QApplication.translate("main_window", "Single cell index:", None, -1))
+        self.sim_conf_exp_single_cell_index.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Index of the cell to be visualized for all single cell plots and animations. Defaults to 0, the index assigned to the first cell in this cluster. Note that cell indices:\n"
+"<ul>\n"
+"<li>Are seed-specific (i.e., arbitrarily reassigned on each run of the <b>seed</b> phase for this simulation).</li>\n"
+"<li>May be displayed for the currently seeded cluster by checking the preceding \"Display:\" checkbox.</li>\n"
+"</ul></p></body></html>", None, -1))
         self.groupBox_55.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Matplotlib colormaps (i.e., predefined linear-segmented gradients) mapping arbitrary cell data to color values in exported plots and animations. See also <a href=\"https://matplotlib.org/tutorials/colors/colormaps.html\">\"Choosing Colormaps in Matplotlib\"</a> for detailed discussion.</p></body></html>", None, -1))
         self.groupBox_55.setTitle(QtWidgets.QApplication.translate("main_window", "Matplotlib Colormaps", None, -1))
         self.label_100.setText(QtWidgets.QApplication.translate("main_window", "Diverging:", None, -1))
@@ -3328,28 +3357,28 @@ class Ui_main_window(object):
         self.sim_conf_csv_item_kind.setToolTip(QtWidgets.QApplication.translate("main_window", "Type of comma-separated value (CSV) data to export.", None, -1))
         self.label_105.setText(QtWidgets.QApplication.translate("main_window", "Type:", None, -1))
         self.groupBox_58.setTitle(QtWidgets.QApplication.translate("main_window", "Animation Settings", None, -1))
-        self.groupBox_60.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Cluster Animation Settings", None, -1))
+        self.groupBox_60.setTitle(QtWidgets.QApplication.translate("main_window", "Animation (Cell Cluster) Settings", None, -1))
         self.groupBox_68.setToolTip(QtWidgets.QApplication.translate("main_window", "Settings unique to this cell cluster animation export.", None, -1))
-        self.groupBox_68.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Cluster Animation Export", None, -1))
+        self.groupBox_68.setTitle(QtWidgets.QApplication.translate("main_window", "Animation (Cell Cluster) Export", None, -1))
         self.groupBox_69.setToolTip(QtWidgets.QApplication.translate("main_window", "General-purpose properties of this cell cluster animation export.", None, -1))
         self.groupBox_69.setTitle(QtWidgets.QApplication.translate("main_window", "Export Properties", None, -1))
         self.label_106.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
         self.sim_conf_anim_cells_item_name.setToolTip(QtWidgets.QApplication.translate("main_window", "Arbitrary string uniquely identifying this cell cluster animation export. This name must be unique to this cell cluster animation export (i.e., not shared with any other cell cluster animation export).", None, -1))
         self.label_107.setText(QtWidgets.QApplication.translate("main_window", "Type:", None, -1))
         self.sim_conf_anim_cells_item_kind.setToolTip(QtWidgets.QApplication.translate("main_window", "Type of cell cluster animation to export.", None, -1))
-        self.groupBox_70.setTitle(QtWidgets.QApplication.translate("main_window", "Animation Settings", None, -1))
-        self.groupBox_64.setTitle(QtWidgets.QApplication.translate("main_window", "Single-cell Plot Settings", None, -1))
+        self.groupBox_70.setTitle(QtWidgets.QApplication.translate("main_window", "Plot Settings", None, -1))
+        self.groupBox_64.setTitle(QtWidgets.QApplication.translate("main_window", "Plot (Single Cell) Settings", None, -1))
         self.groupBox_72.setToolTip(QtWidgets.QApplication.translate("main_window", "Settings unique to this single cell plot export.", None, -1))
-        self.groupBox_72.setTitle(QtWidgets.QApplication.translate("main_window", "Single Cell Plot Export", None, -1))
+        self.groupBox_72.setTitle(QtWidgets.QApplication.translate("main_window", "Plot (Single Cell) Export", None, -1))
         self.groupBox_73.setToolTip(QtWidgets.QApplication.translate("main_window", "General-purpose properties of this single cell plot export.", None, -1))
         self.groupBox_73.setTitle(QtWidgets.QApplication.translate("main_window", "Export Properties", None, -1))
         self.label_108.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
         self.sim_conf_plot_cell_item_name.setToolTip(QtWidgets.QApplication.translate("main_window", "Arbitrary string uniquely identifying this single cell plot export. This name must be unique to this single cell plot (i.e., not shared with any other single cell plot export).", None, -1))
         self.label_109.setText(QtWidgets.QApplication.translate("main_window", "Type:", None, -1))
         self.sim_conf_plot_cell_item_kind.setToolTip(QtWidgets.QApplication.translate("main_window", "Type of single cell plot to export.", None, -1))
-        self.groupBox_62.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Cluster Plot Settings", None, -1))
+        self.groupBox_62.setTitle(QtWidgets.QApplication.translate("main_window", "Plot (Cell Cluster) Settings", None, -1))
         self.groupBox_74.setToolTip(QtWidgets.QApplication.translate("main_window", "Settings unique to this cell cluster plot export.", None, -1))
-        self.groupBox_74.setTitle(QtWidgets.QApplication.translate("main_window", "Cell Cluster Plot Export", None, -1))
+        self.groupBox_74.setTitle(QtWidgets.QApplication.translate("main_window", "Plot (Cell Cluster) Export", None, -1))
         self.groupBox_75.setToolTip(QtWidgets.QApplication.translate("main_window", "General-purpose properties of this cell cluster plot export.", None, -1))
         self.groupBox_75.setTitle(QtWidgets.QApplication.translate("main_window", "Export Properties", None, -1))
         self.label_110.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
@@ -3537,16 +3566,16 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setText(QtWidgets.QApplication.translate("main_window", "Work", None, -1))
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit
 from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxSequence, QBetseeSimConfComboBoxEnum
-from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameImageLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit
 from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
-from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
 from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxSequence, QBetseeSimConfComboBoxEnum
 from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
+from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow

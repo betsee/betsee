@@ -24,6 +24,7 @@ See Also
 
 import re, sys, traceback
 from PySide2.QtWidgets import QMessageBox
+from betse.util.type.obj import objects
 from betsee.util.app import guiapp
 
 # ....................{ INSTALLERS                        }....................
@@ -210,9 +211,20 @@ def show_exception(exception: Exception) -> None:
 
     # Human-readable synopsis and exegesis of this exception if defined (e.g.,
     # if this exception is an instance of the "BetseeException" superclass)
-    # *OR* this exception message and None otherwise.
-    exception_synopsis = getattr(exception, 'synopsis', str(exception))
+    # *OR* "None" otherwise.
+    exception_synopsis = getattr(exception, 'synopsis', None)
     exception_exegesis = getattr(exception, 'exegesis', None)
+
+    # If this exception defines no synopsis...
+    if exception_synopsis is None:
+        # Default this synopsis to the contents of this exception.
+        exception_synopsis = str(exception)
+
+        # If this exception has no contents, default this synopsis to the type
+        # of this exception. While non-ideal, something is better than nothing;
+        # moreover, this edge case is rather rare.
+        if not exception_synopsis:
+            exception_synopsis = objects.get_class_name_unqualified(exception)
 
     # If this exception has a human-readable title, use this title as is.
     if hasattr(exception, 'title'):

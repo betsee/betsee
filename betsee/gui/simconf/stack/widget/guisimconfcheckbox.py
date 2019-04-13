@@ -41,7 +41,7 @@ class QBetseeSimConfCheckBox(QBetseeSimConfEditScalarWidgetMixin, QCheckBox):
     # ..................{ MIXIN ~ property : value          }..................
     @property
     def widget_value(self) -> bool:
-        return self.isChecked()
+        return super().isChecked()
 
 
     @widget_value.setter

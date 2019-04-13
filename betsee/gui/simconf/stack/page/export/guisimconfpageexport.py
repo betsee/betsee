@@ -77,6 +77,8 @@ controller for stack widget pages specific to export settings) functionality.
 # from PySide2.QtCore import QCoreApplication #, Signal, Slot
 from PySide2.QtWidgets import QMainWindow
 from betse.science.parameters import Parameters
+from betse.science.config.export.visual.confexpvisual import (
+    SimConfExportVisual)
 # from betse.util.io.log import logs
 from betse.lib.matplotlib import mplcolormap
 from betse.util.type.types import type_check
@@ -97,8 +99,20 @@ class QBetseeSimConfPagerExport(QBetseePagerABC):
         # Initialize our superclass with all passed parameters.
         super().init(main_window)
 
-        # Simulation configuration state object.
-        sim_conf = main_window.sim_conf
+        # Visual export subconfiguration.
+        sim_conf_visual = main_window.sim_conf.p.visual
+
+        # Initialize all cell index-centric widgets on this page.
+        main_window.sim_conf_exp_is_show_cell_indices.init(
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=SimConfExportVisual.is_show_cell_indices,
+            sim_conf_alias_parent=sim_conf_visual,
+        )
+        main_window.sim_conf_exp_single_cell_index.init(
+            sim_conf=main_window.sim_conf,
+            sim_conf_alias=SimConfExportVisual.single_cell_index,
+            sim_conf_alias_parent=sim_conf_visual,
+        )
 
         # Sequence of the names of all colormaps currently registered with
         # matplotlib (in sorted lexicographic order).
@@ -106,22 +120,22 @@ class QBetseeSimConfPagerExport(QBetseePagerABC):
 
         # Initialize all colormap combobox widgets on this page.
         main_window.sim_conf_exp_colormap_diverging.init(
-            sim_conf=sim_conf,
+            sim_conf=main_window.sim_conf,
             sim_conf_alias=Parameters.colormap_diverging_name,
             items_iconless_text=colormap_names,
         )
         main_window.sim_conf_exp_colormap_sequential.init(
-            sim_conf=sim_conf,
+            sim_conf=main_window.sim_conf,
             sim_conf_alias=Parameters.colormap_sequential_name,
             items_iconless_text=colormap_names,
         )
         main_window.sim_conf_exp_colormap_gj.init(
-            sim_conf=sim_conf,
+            sim_conf=main_window.sim_conf,
             sim_conf_alias=Parameters.colormap_gj_name,
             items_iconless_text=colormap_names,
         )
         main_window.sim_conf_exp_colormap_grn.init(
-            sim_conf=sim_conf,
+            sim_conf=main_window.sim_conf,
             sim_conf_alias=Parameters.colormap_grn_name,
             items_iconless_text=colormap_names,
         )

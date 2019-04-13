@@ -8,6 +8,10 @@
 controller for stack widget pages specific to tissue profiles) functionality.
 '''
 
+#FIXME: Add support for specifying cell cluster topologies as SVG-formatted
+#files, which the BETSE codebase now supports. See the "import from svg" option
+#in our default simulation configuration file.
+
 #FIXME: Add support to the "QBetseeSimConfPagerTissueCustom"
 #subclass for all YAML-based data descriptors specific to the
 #"betse.science.config.model.conftis.SimConfTissueListItem" subclass.
@@ -19,7 +23,8 @@ controller for stack widget pages specific to tissue profiles) functionality.
 #corresponding line edit widget, we need to:
 #
 #* Explicitly validate that this profile's new name does *NOT* collide with
-#  that of any other existing tissue profile -- either default or custom.
+#  that of any other existing tissue profile -- either default or custom. Note
+#  that similar logic is required of exports as well.
 #* If this profile's new name does collide:
 #  * Display a non-fatal warning dialog that name collisions are prohibited.
 #  * Implicitly revert this profile's name to the prior name (e.g., by
