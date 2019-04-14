@@ -544,16 +544,20 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
               empty string.
         '''
 
-        # If a simulation configuration is currently open, append one child
-        # tree item masquerading as a dynamic list item to its parent tree item
-        # masquerading as a dynamic list for each YAML-backed simulation
-        # subconfiguration of this newly opened simulation configuration file.
+        # Unconditionally reset the contents of this tree back to their default
+        # static state, regardless of whether the user is opening or closing a
+        # simulation configuration file. Specifically:
+        #
+        # * Remove all child tree items masquerading as dynamic list items.
+        self._deinit_items_list_leaf()
+
+        # If the user opened a new simulation configuration file, append child
+        # tree items masquerading as dynamic list items to their related parent
+        # tree items masquerading as a dynamic lists.
         if sim_conf_filename:
             self._init_items_list_leaf()
-        # Else, no simulation configuration is currently open. In this case,
-        # remove all child tree items masquerading as dynamic list items.
-        else:
-            self._deinit_items_list_leaf()
+        # Else, the user closed an open simulation configuration file. In this
+        # case, no further work remains to be done.
 
     # ..................{ SLOTS ~ item                      }..................
     @Slot(QTreeWidgetItem, QTreeWidgetItem)
