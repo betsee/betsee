@@ -4,7 +4,9 @@
 # See "LICENSE" for further details.
 
 '''
-:mod:`PySide2`-based file functionality.
+**Pathname dialog** (i.e., :mod:`PySide2`-based modal dialog enabling end users
+to interactively select arbitrary paths from the local filesystem that
+optionally satisfy caller-defined constraints) functionality.
 '''
 
 # ....................{ IMPORTS                           }....................
@@ -17,9 +19,9 @@ from betse.util.type.text.string import strjoin
 from betse.util.type.types import (
     type_check,
     CallableTypes,
+    IntOrNoneTypes,
     MappingType,
     MappingOrNoneTypes,
-    NoneType,
     StrOrNoneTypes,
 )
 
@@ -31,7 +33,7 @@ def select_path(
     dialog_title: str,
 
     # Optional parameters.
-    dialog_options: (QFileDialog.Option, NoneType) = None,
+    dialog_options: IntOrNoneTypes = None,
     init_pathname: StrOrNoneTypes = None,
     parent_dirname: StrOrNoneTypes = None,
     is_subpaths: bool = False,
@@ -98,11 +100,23 @@ def select_path(
         by this function (e.g., :func:`QFileDialog.getOpenFileName`).
     dialog_title : str
         Human-readable title of this dialog.
-    dialog_options : (QFileDialog.Option, NoneType)
+    dialog_options : IntOrNoneTypes
         **Bit field** (i.e., integer OR-ed together from mutually exclusive bit
         flags ala C-style enumeration types) of all :attr:`QFileDialog.Option`
-        flags with which to configure this dialog. Defaults to ``None``, in
-        which case this dialog defaults to the default configuration.
+        flags with which to configure this dialog. Note these flags are
+        Qt-specific enumerations whose underlying implementations are
+        integer-based bit masks. Since PySide2 offers no Python-centric API for
+        handling such flags, callers *must* manually reduce the desired flags
+        to a Pythonic bit field first. Although callers may technically do so
+        by manually converting each Qt-specific enumeration member to an
+        integer (e.g., with the :func:`int` builtin), usage of the global
+        integer constants predefined by the :mod:`guipathenum` submodule is
+        advised. If multiple integer constants are required, callers may OR
+        each such constant together with the ``|`` operator (e.g., a
+        ``dialog_options`` parameter whose value is
+        ``guipathenum.SHOW_DIRS_ONLY | guipathenum.READ_ONLY``, configuring
+        this dialog to select only directories in a read-only manner). Defaults
+        to ``None``, in which case this dialog defaults to default options.
     init_pathname : StrOrNoneTypes
         Absolute or relative pathname of the path to initially display in this
         dialog. If this path is a directory, this directory is selected and the
@@ -144,6 +158,7 @@ def select_path(
 
     # Avoid circular import dependencies.
     from betsee.util.app import guiappwindow
+    from betsee.util.path import guipathenum
 
     # True only if this dialog is selecting one or more directories, as
     # indicated by the "QFileDialog.ShowDirsOnly" bit being enabled in the
@@ -151,7 +166,7 @@ def select_path(
     is_selecting_dir = (
         dialog_options is not None and
         bits.is_bit_on(
-            bit_field=dialog_options, bit_mask=QFileDialog.ShowDirsOnly)
+            bit_field=dialog_options, bit_mask=guipathenum.SHOW_DIRS_ONLY)
     )
 
     # Absolute dirname of the last selected directory.

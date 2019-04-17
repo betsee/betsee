@@ -77,7 +77,7 @@ def select_subdir(
     '''
 
     # Avoid circular import dependencies.
-    from betsee.util.path import guipath
+    from betsee.util.path import guipath, guipathenum
 
     # If no title was passed, default to a sensible title.
     if 'dialog_title' not in kwargs:
@@ -96,7 +96,11 @@ def select_subdir(
         #   directory dialog. By default, this static function permits users to
         #   select any arbitrary file or directory *AND* prevents Qt from
         #   displaying a native dialog -- which, frankly, defeats the purpose.
-        dialog_options=QFileDialog.ShowDirsOnly,
+        #   Note that "QFileDialog.ShowDirsOnly" is a Qt-specific enumeration
+        #   type whose underlying implementation is an integer-based bit mask.
+        #   Since PySide2 offers no Python-centric API for handling such types,
+        #   this type is necessarily reduced to an integer-based bit mask.
+        dialog_options=guipathenum.SHOW_DIRS_ONLY,
 
         # Passed pathnames unmodified.
         init_pathname=init_pathname,
