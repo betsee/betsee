@@ -1,13 +1,13 @@
-.. # ------------------( BADGES                             )------------------
-.. #FIXME: Depict the current BETSEE rather than BETSE build status after
-.. #creating a BETSEE test suite.
+.. # ------------------( DIRECTIVES                         )------------------
+.. # Fallback language applied to all code blocks failing to specify an
+.. # explicit language. Since the majority of all code blocks in this document
+.. # are Bash one-liners intended to be run interactively, this is "console".
+.. # For a list of all supported languages, see also:
+.. #     http://build-me-the-docs-please.readthedocs.org/en/latest/Using_Sphinx/ShowingCodeExamplesInSphinx.html#pygments-lexers
 
-.. image::  https://gitlab.com/betse/betse/badges/master/build.svg
-   :target: https://gitlab.com/betse/betse/pipelines
-   :alt: Linux Build Status
-.. image::  https://ci.appveyor.com/api/projects/status/mow7y8k3vpfu30c6/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/betse/betse/branch/master
-   :alt: Windows Build Status
+.. # FIXME: Sadly, this appears to be unsupported by some ReST parsers and hence
+.. # is disabled until more widely supported. *collective shrug*
+.. # highlight:: console
 
 .. # ------------------( SYNOPSIS                           )------------------
 
