@@ -9,8 +9,11 @@ to interactively select arbitrary paths from the local filesystem that
 optionally satisfy caller-defined constraints) functionality.
 '''
 
+#FIXME: Configure the modal dialog displayed by the select_path() function to
+#register <Enter> keystrokes as confirmation of that dialog. All dialogs
+#produced by this function currently appear to ignore such keystrokes. *sigh*
+
 # ....................{ IMPORTS                           }....................
-from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
 from betse.util.path import dirs, pathnames, paths
 from betse.util.type.iterable import sequences
