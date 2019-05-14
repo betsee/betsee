@@ -126,25 +126,7 @@ class BetseeCLI(CLIABC):
         self._cache_policy = None
         self._sim_conf_filename = None
 
-    # ..................{ SUPERCLASS ~ property : optional  }..................
-    # The following properties *MAY* be implemented by subclasses.
-
-    @property
-    def _is_option_matplotlib_backend(self) -> bool:
-        '''
-        ``False``, preventing this CLI from exposing the
-        ``--matplotlib-backend`` option and hence permitting users to
-        externally specify an arbitrary matplotlib backend at the command line.
-
-        Of necessity, this Qt-based application strictly requires a single
-        Qt-based matplotlib backend (e.g., ``Qt5Agg``).
-        '''
-
-        return False
-
-    # ..................{ SUPERCLASS ~ property : mandatory }..................
-    # The following properties *MUST* be implemented by subclasses.
-
+    # ..................{ SUPERCLASS ~ property             }..................
     @property
     def _module_metadata(self) -> ModuleType:
 
@@ -166,7 +148,7 @@ seed, initialize, and then simulate such a simulation in the current directory:
 ;    betse  sim sim_config.yaml
 '''
 
-    # ..................{ SUPERCLASS ~ igniters             }..................
+    # ..................{ SUPERCLASS ~ initers              }..................
     def _init_app_libs(self) -> None:
 
         # Initialize all mandatory runtime dependencies of this application,
@@ -181,10 +163,11 @@ seed, initialize, and then simulate such a simulation in the current directory:
         metaappton.get_app_meta().init_libs(cache_policy=self._cache_policy)
 
     # ..................{ SUPERCLASS ~ options              }..................
-    def _make_options_top(self) -> SequenceTypes:
+    @property
+    def _options_top(self) -> SequenceTypes:
 
         # Sequence of all default top-level options.
-        options_top = super()._make_options_top()
+        options_top = super()._options_top
 
         # Return a list extending this sequence with subclass-specific options.
         return list(options_top) + [
@@ -220,6 +203,21 @@ seed, initialize, and then simulate such a simulation in the current directory:
 
         # Initial simulation configuration file parsed from the passed options.
         self._sim_conf_filename = self._args.sim_conf_filename
+
+
+    @property
+    def _matplotlib_backend_name_forced(self) -> bool:
+        '''
+        Name of the headless Qt-based matplotlib backend, preventing this CLI
+        from exposing the ``--matplotlib-backend`` option and hence permitting
+        users to externally specify an arbitrary matplotlib backend at the
+        command line.
+
+        Of necessity, this Qt-based application strictly requires a single
+        Qt-based matplotlib backend (e.g., ``Qt5Agg``).
+        '''
+
+        return 'Qt5Agg'
 
     # ..................{ SUPERCLASS ~ methods              }..................
     def _do(self) -> object:
