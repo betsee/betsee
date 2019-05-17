@@ -148,21 +148,7 @@ seed, initialize, and then simulate such a simulation in the current directory:
 ;    betse  sim sim_config.yaml
 '''
 
-    # ..................{ SUPERCLASS ~ initers              }..................
-    def _init_app_libs(self) -> None:
-
-        # Initialize all mandatory runtime dependencies of this application,
-        # including both BETSE and BETSEE.
-        #
-        # Note that the superclass _init_app_libs() method is intentionally
-        # *NOT* called, as that method sets the matplotlib backend. While doing
-        # so is typically desirable, a chicken-and-egg conflict between Qt and
-        # matplotlib complicates the initialization of both.
-        #
-        # See the MetaAppABC.init_libs() method for further details.
-        metaappton.get_app_meta().init_libs(cache_policy=self._cache_policy)
-
-    # ..................{ SUPERCLASS ~ options              }..................
+    # ..................{ SUPERCLASS ~ property : options   }..................
     @property
     def _options_top(self) -> SequenceTypes:
 
@@ -170,7 +156,7 @@ seed, initialize, and then simulate such a simulation in the current directory:
         options_top = super()._options_top
 
         # Return a list extending this sequence with subclass-specific options.
-        return list(options_top) + [
+        return options_top + [
             CLIOptionArgEnum(
                 long_name='--cache-policy',
                 synopsis=(
@@ -220,6 +206,20 @@ seed, initialize, and then simulate such a simulation in the current directory:
         return 'Qt5Agg'
 
     # ..................{ SUPERCLASS ~ methods              }..................
+    def _init_app_libs(self) -> None:
+
+        # Initialize all mandatory runtime dependencies of this application,
+        # including both BETSE and BETSEE.
+        #
+        # Note that the superclass _init_app_libs() method is intentionally
+        # *NOT* called, as that method sets the matplotlib backend. While doing
+        # so is typically desirable, a chicken-and-egg conflict between Qt and
+        # matplotlib complicates the initialization of both.
+        #
+        # See the MetaAppABC.init_libs() method for further details.
+        metaappton.get_app_meta().init_libs(cache_policy=self._cache_policy)
+
+
     def _do(self) -> object:
         '''
         Implement this command-line interface (CLI) by unconditionally running
