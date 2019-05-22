@@ -274,7 +274,6 @@ def _init_qt_dpi() -> None:
     # Attempt to...
     try:
         # Import BETSE submodules, whose importability has yet to be validated.
-        from betse.util.os import oses
         from betse.util.os import displays
 
         # If none of the following conditions is satisfied:
@@ -286,6 +285,9 @@ def _init_qt_dpi() -> None:
         #   enabled under macOS.
         # * The current platform is Linux and the current display server is a
         #   Wayland compositor, which all natively support high-DPI scaling.
+        # * The current platform is Windows >= 10, which mostly natively
+        #   supports high-DPI scaling to a sufficient degree to warrant
+        #   avoiding non-native emulation here.
         #
         # Then the current display environment does *NOT* natively support
         # high-DPI scaling. Notably, the Windows and X11 display environments
@@ -293,7 +295,7 @@ def _init_qt_dpi() -> None:
         # to do so via emulation at the framework level, converting all
         # previously physical pixels defined throughout this application into
         # logical pixels portable across displays sporting varying DPI.
-        if not (oses.is_macos() or displays.is_linux_wayland()):
+        if not displays.is_dpi_scaling():
             logging.debug('Initializing high-DPI scaling emulation...')
             QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     # If any such submodule is unimportable, log a non-fatal error and

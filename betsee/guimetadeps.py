@@ -100,7 +100,7 @@ RUNTIME_MANDATORY = {
     #platforms (e.g., conda-forge, Gentoo). Until then, this suffices.
 
     # Unversioned dependencies directly required by this application.
-    'PySide2': '',
+    # 'PySide2': '',
     # 'PySide2': '>= 5.6.0~a1',
 
     # Unversioned dependencies directly required by this application. Since

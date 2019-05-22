@@ -18,13 +18,20 @@ by BETSE's existing test suite. Note, in particular, the need for:
       for the current process. Wait. Actually, "pytest-qt" and "QTest" are only
       genuinely of interest when unit testing. Their applicability for
       functional testing appears to be limited and possibly non-existent...
-    * Ah-ha! It would seem that we require "pytest-xfvb", which wraps Xvfb
+    * Ah-ha! It would seem that we require "pytest-xvfb", which wraps Xvfb
       (i.e., an X.org-based  virtual frame buffer) rather than "pytest-qt" for
       functional testing of Qt-based Python applications. The issue here, of
       course, is that neither Portage nor any third-party overlay currently
-      provide "pytest-xfvb", implying that we'll need to produce an ebuild.
-      See the official GitHub repository at:
-          https://github.com/The-Compiler/pytest-xvfb
+      provide "pytest-xvfb", implying that we'll need to produce an ebuild.
+      See the official GitHub repository at
+      https://github.com/The-Compiler/pytest-xvfb. Note that:
+      * "pytest-xvfb" effectively obsoletes "xvfbwrapper", a "py.test"-agnostic
+        Python package providing a subset of the functionality provided by
+        "pytest-xvfb" but *NO* "py.test" integration. This wholly defeats the
+        point for us, as we only require "xvfb" when running "py.test".
+      * "pytest-xvfb" is available from conda-forge. Investigate whether
+        installing this conda-forge package also installs "xvfb" or whether we
+        need to do so manually via "apt".
 
 * Unit tests, including:
 
@@ -37,6 +44,7 @@ by BETSE's existing test suite. Note, in particular, the need for:
     * ``betse/data/py/betsee_rc.py`` from ``betse/data/qrc/betsee.qrc``.
     * ``betse/data/py/betsee_ui.py`` from ``betse/data/ui/betsee.ui``.
     
-    To do so, we'll need to generalize the existing :mod:`betsee.lib.pyside2.cache.guipsdcache`
-    submodule to provide public testers permitting this test to trivially test
-    for desynchronization. See *FIXME:* comments at the head of that file.
+    To do so, we'll need to generalize the existing
+    :mod:`betsee.lib.pyside2.cache.guipsdcache` submodule to provide public
+    testers permitting this test to trivially test for desynchronization. See
+    *FIXME:* comments at the head of that file.
