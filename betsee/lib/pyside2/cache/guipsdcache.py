@@ -11,7 +11,7 @@ user-specific files on the local filesystem.
 
 # ....................{ IMPORTS                           }....................
 import PySide2
-from betse.util.app.meta import metaappton
+from betse.util.app.meta import appmetaone
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmdpath
@@ -53,9 +53,9 @@ CachePolicy = make_enum(
           usage. In this case, the :attr:`USER` cache policy is deferred to.
     DEV : enum
         **Developer cache policy.** When enabled, application-wide submodules
-        (e.g., :meth:`betsee.guimetaapp.BetseeMetaApp.data_py_qrc_filename`)
+        (e.g., :meth:`betsee.guiappmeta.BetseeAppMeta.data_py_qrc_filename`)
         are generated and copied over all equivalent user-specific submodules
-        (e.g., :meth:`betsee.guimetaapp.BetseeMetaApp.dot_py_qrc_filename`),
+        (e.g., :meth:`betsee.guiappmeta.BetseeAppMeta.dot_py_qrc_filename`),
         guaranteeing the latter to *always* exist. Exceptions raised while
         doing so are treated as fatal.
     USER : enum
@@ -111,7 +111,7 @@ def init(cache_policy: CachePolicy) -> None:
     '''
 
     # Application metadata singleton.
-    app_meta = metaappton.get_app_meta()
+    app_meta = appmetaone.get_app_meta()
 
     # If the automatic cache policy is preferred...
     if cache_policy is CachePolicy.AUTO:
@@ -161,7 +161,7 @@ def _init_dev() -> None:
     logs.log_info('Synchronizing cached PySide2 submodules for development...')
 
     # Application metadata singleton.
-    app_meta = metaappton.get_app_meta()
+    app_meta = appmetaone.get_app_meta()
 
     # (Re)cache *ALL* application-wide submodules (in arbitrary order).
     _cache_py_qrc_file(
@@ -203,7 +203,7 @@ def _init_user() -> None:
     logs.log_info('Synchronizing cached PySide2 submodules...')
 
     # Application metadata singleton.
-    app_meta = metaappton.get_app_meta()
+    app_meta = appmetaone.get_app_meta()
 
     # Attempt to (re)cache the user-specific QRC submodule.
     try:

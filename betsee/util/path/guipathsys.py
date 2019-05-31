@@ -11,7 +11,7 @@ application's specific usage of this filesystem.
 
 See Also
 ----------
-:mod:`betsee.guimetaapp`
+:mod:`betsee.guiappmeta`
     Collection of the absolute paths of numerous critical files and directories
     describing the structure of this application on the local filesystem.
 '''

@@ -5,6 +5,20 @@ TODO
 Create a test suite exercising both functional and unit tests loosely inspired
 by BETSE's existing test suite. Note, in particular, the need for:
 
+* Validation of mandatory test dependencies at test-time. For generality, one
+  sane place to implement such validation might be within the
+  "betse.lib.setuptool.command.supcmdtest" submodule. That said, doing so will
+  probably require that we also generalize the "AppMetaABC" superclass to
+  expose the "betse.metadeps.TESTING_MANDATORY" and
+  "betsee.guimetadeps.TESTING_MANDATORY" dictionaries via a new
+  AppMetaABC.testing_mandatory() property. Given such a property, the
+  "betse.lib.setuptool.command.supcmdtest" submodule could then generically
+  access this property in a seamless manner transparently supporting both
+  BETSE and BETSEE -- which seems quite valuable. To best implement this,
+  consider additionally:
+  * Defining a new abstract AppMetaABC._metadeps_module() property.
+  * Defining the AppMetaABC.testing_mandatory() property and similar properties
+    to be concrete properties internally deferring to _metadeps_module().
 * Functional tests, including:
 
   * A test ensuring that the application acutally starts up without exception

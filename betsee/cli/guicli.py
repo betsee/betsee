@@ -93,11 +93,11 @@ Concrete subclasses defining this application's command line interface (CLI).
 # * Never raise exceptions on importation (e.g., due to module-level logic).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from betse.util.app.meta import metaappton
+from betse.util.app.meta import appmetaone
 from betse.util.cli.cliabc import CLIABC
 from betse.util.cli.cliopt import CLIOptionArgEnum, CLIOptionArgStr
 from betse.util.io.log import logs
-from betse.util.type.types import type_check, ModuleType, SequenceTypes
+from betse.util.type.types import type_check, SequenceTypes
 from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
 
 # ....................{ SUBCLASS                          }....................
@@ -127,14 +127,6 @@ class BetseeCLI(CLIABC):
         self._sim_conf_filename = None
 
     # ..................{ SUPERCLASS ~ property             }..................
-    @property
-    def _module_metadata(self) -> ModuleType:
-
-        # Defer heavyweight imports.
-        from betsee import guimetadata
-        return guimetadata
-
-
     @property
     def _help_epilog(self) -> str:
 
@@ -216,8 +208,8 @@ seed, initialize, and then simulate such a simulation in the current directory:
         # so is typically desirable, a chicken-and-egg conflict between Qt and
         # matplotlib complicates the initialization of both.
         #
-        # See the MetaAppABC.init_libs() method for further details.
-        metaappton.get_app_meta().init_libs(cache_policy=self._cache_policy)
+        # See the AppMetaABC.init_libs() method for further details.
+        appmetaone.get_app_meta().init_libs(cache_policy=self._cache_policy)
 
 
     def _do(self) -> object:

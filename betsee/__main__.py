@@ -90,13 +90,13 @@ def main(arg_list: list = None) -> int:
         return _show_betse_exception(exception)
 
     # Import from this application's package tree *AFTER* validating BETSE.
-    from betsee.guimetaapp import BetseeMetaApp
+    from betsee.guiappmeta import BetseeAppMeta
     from betsee.cli.guicli import BetseeCLI
 
     # Initialize this application (excluding mandatory dependencies of this
     # application, which will be initialized later in the startup process) by
     # instantiating the BETSEE-specific application metadata singleton.
-    BetseeMetaApp()
+    BetseeAppMeta()
 
     # Run this application's CLI and return the exit status of doing so.
     return BetseeCLI().run(arg_list)

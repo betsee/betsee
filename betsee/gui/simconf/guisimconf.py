@@ -49,7 +49,7 @@ from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
 from betse.science.config import confio
 from betse.science.parameters import Parameters
-from betse.util.app.meta import metaappton
+from betse.util.app.meta import appmetaone
 from betse.util.path import pathnames
 from betse.util.io.log import logs
 from betse.util.type.types import type_check, StrOrNoneTypes
@@ -449,7 +449,7 @@ class QBetseeSimConf(QBetseeControllerABC):
 
         # Basename of the default simulation configuration.
         conf_default_basename = pathnames.get_basename(
-            metaappton.get_app_meta().betse_sim_conf_default_filename)
+            appmetaone.get_app_meta().betse_sim_conf_default_filename)
 
         # Display a dialog requiring the user to select a YAML-formatted file
         # (either existing or non-existing) to be subsequently opened for

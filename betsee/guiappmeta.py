@@ -16,15 +16,15 @@ synopsizing application metadata via read-only properties).
 # for downstream consumers (e.g., BETSEE).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-from betse.metaapp import BetseMetaApp
+from betse.appmeta import BetseAppMeta
 from betse.util.path import dirs, files, pathnames
 from betse.util.type.decorator.decmemo import property_cached
-from betse.util.type.types import type_check
-from betsee import guimetadata
+from betse.util.type.types import type_check, ModuleType
+from betsee import guimetadata, guimetadeps
 from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
 
 # ....................{ SUBCLASSES                        }....................
-class BetseeMetaApp(BetseMetaApp):
+class BetseeAppMeta(BetseAppMeta):
     '''
     **Application metadata singleton** (i.e., application-wide object
     synopsizing application metadata via read-only properties) subclass.
@@ -110,6 +110,15 @@ class BetseeMetaApp(BetseMetaApp):
         # BETSE itself) to strictly require a Qt 5-specific matplotlib backend
         # *AFTER* initializing PySide2 .
         super().init_libs(matplotlib_backend_name='Qt5Agg')
+
+    # ..................{ SUPERCLASS ~ properties           }..................
+    @property
+    def module_metadata(self) -> ModuleType:
+        return guimetadata
+
+    @property
+    def module_metadeps(self) -> ModuleType:
+        return guimetadeps
 
     # ..................{ PROPERTIES ~ dir : data           }..................
     @property_cached

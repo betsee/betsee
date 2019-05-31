@@ -159,11 +159,9 @@ See Also
 
 # ....................{ LIBS ~ testing : mandatory        }....................
 TESTING_MANDATORY = {
-    # For simplicity, py.test should remain the only hard dependency for
-    # testing on local machines. While our setuptools-driven testing regime
-    # optionally leverages third-party py.test plugins (e.g., "pytest-xdist"),
-    # these plugins are *NOT* required for simple testing.
-    'pytest': '>= 2.5.0',
+    'pytest':      '>= 2.5.0',
+    'pytest-qt':   '>= 3.2.0',
+    'pytest-xvfb': '>= 1.2.0',
 }
 '''
 Dictionary mapping from the :mod:`setuptools`-specific project name of each

@@ -418,7 +418,7 @@ def get_description() -> str:
     # Relative path of this application's front-facing documentation in
     # reStructuredText format, required by PyPI. This path resides outside this
     # application's package tree and hence is inlined here rather than provided
-    # by the "betsee.guimetaapp" submodule.
+    # by the "betsee.guiappmeta" submodule.
     DESCRIPTION_FILENAME = 'README.rst'
 
     # Description read from this description file.
