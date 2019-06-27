@@ -85,7 +85,7 @@ if sys.version_info[:3] < PYTHON_VERSION_MIN_PARTS:
             NAME, PYTHON_VERSION_MIN, PYTHON_VERSION))
 
 # ....................{ METADATA ~ version                }....................
-VERSION = '1.0.0.1'
+VERSION = '1.0.1.0'
 '''
 Human-readable application version as a ``.``-delimited string.
 
@@ -197,6 +197,9 @@ have yet to be stabilized and hence tagged. Hence, this URL is typically valid
 '''
 
 # ....................{ METADATA ~ python                 }....................
+#FIXME: Replace all references to this global with
+#"betse.appmeta.app_meta.package_name", which supports both BETSE and BETSEE;
+#then excise this global.
 PACKAGE_NAME = NAME.lower()
 '''
 Fully-qualified name of the top-level Python package implementing this
@@ -204,6 +207,9 @@ application.
 '''
 
 
+#FIXME: Replace all references to this global with
+#"betse.appmeta.app_meta.package_name", which supports both BETSE and BETSEE;
+#then excise this global.
 SCRIPT_BASENAME = PACKAGE_NAME
 '''
 Basename of the CLI-specific Python script wrapper created by :mod:`setuptools`

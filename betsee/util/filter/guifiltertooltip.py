@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
+# --------------------( LICENSE                           )--------------------
 # Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
@@ -8,15 +8,15 @@ Low-level tooltip-specific event filters globally applicable to the entire
 application as a whole and hence *all* tooltips for *all* widgets.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QEvent, QObject
 from PySide2.QtWidgets import QWidget
 # from betse.util.io.log import logs
-from betse.util.type.obj import objects
+from betse.util.type.obj import objtest
 from betse.util.type.text import mls
 # from betse.util.type.types import type_check
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 #FIXME: When working, submit as a PySide2-specific solution to the following
 #StackOverflow question and open Qt issue:
 #    https://bugreports.qt.io/browse/QTBUG-41051
@@ -33,8 +33,8 @@ class QBetseePlaintextTooltipEventFilter(QObject):
     hence typically behave as expected.
 
     **Plaintext tooltips** (i.e., tooltips containing no such tags), however,
-    are not. For unclear reasons, plaintext tooltips are implicitly truncated to
-    the width of their parent windows. The only means of circumventing this
+    are not. For unclear reasons, plaintext tooltips are implicitly truncated
+    to the width of their parent windows. The only means of circumventing this
     obscure constraint is to manually inject newlines at the appropriate
     80-character boundaries of such tooltips -- which has the distinct
     disadvantage of failing to scale to edge-case display and device
@@ -58,13 +58,14 @@ class QBetseePlaintextTooltipEventFilter(QObject):
        #. Escapes all HTML syntax in this tooltip (e.g., converting all ``&``
           characters to ``&amp;`` substrings).
        #. Embeds this tooltip in the Qt-specific ``<qt>...</qt>`` tag, thus
-          implicitly converting this plaintext tooltip into a rich text tooltip.
+          implicitly converting this plaintext tooltip into a rich text
+          tooltip.
 
     .. _issue:
         https://bugreports.qt.io/browse/QTBUG-41051
     '''
 
-    # ..................{ FILTERS                            }..................
+    # ..................{ FILTERS                           }..................
     def eventFilter(self, widget: QObject, event: QEvent) -> bool:
         '''
         Tooltip-specific event filter handling the passed Qt object and event.
@@ -75,10 +76,11 @@ class QBetseePlaintextTooltipEventFilter(QObject):
 
         # If this is a tooltip event...
         if event.type() == QEvent.ToolTipChange:
-            # If the target Qt object containing this tooltip is *NOT* a widget,
-            # raise a human-readable exception. While this should *NEVER* be the
-            # case, edge cases are edge cases because they sometimes happen.
-            objects.die_unless_instance(obj=widget, cls=QWidget)
+            # If the target Qt object containing this tooltip is *NOT* a
+            # widget, raise a human-readable exception. While this should
+            # *NEVER* be the case, edge cases are edge cases because they
+            # sometimes happen.
+            objtest.die_unless_instance(obj=widget, cls=QWidget)
 
             # Tooltip for this widget if any *OR* the empty string otherwise.
             tooltip = widget.toolTip()
@@ -89,15 +91,17 @@ class QBetseePlaintextTooltipEventFilter(QObject):
             # Unfortunately, the shiboken2 Qt 5 bindings parser internally
             # leveraged by PySide2 fails to create valid bindings for a variety
             # of "PySide2.QtCore.Qt" utility functions -- including
-            # Qt.mightBeRichText(), a tester returning True if the passed string
-            # appears to be rich text. Hence, we defer to a homegrown (albeit
-            # presumably less reliable) solution.
+            # Qt.mightBeRichText(), a tester returning True if the passed
+            # string appears to be rich text. Hence, we defer to a homegrown
+            # (albeit presumably less reliable) solution.
             if tooltip and not guistr.is_rich(tooltip):
-                # Convert this plaintext into a rich text tooltip by (in order):
+                # Convert this plaintext into a rich text tooltip by (in
+                # order):
                 #
-                #* Escaping all HTML syntax in this tooltip.
-                #* Replacing each newline with a "<br/>" tag.
-                #* Embedding this tooltip in the Qt-specific "<qt>...</qt>" tag.
+                # * Escaping all HTML syntax in this tooltip.
+                # * Replacing each newline with a "<br/>" tag.
+                # * Embedding this tooltip in the Qt-specific "<qt>...</qt>"
+                #   tag.
                 tooltip = '<qt>{}</qt>'.format(
                     mls.tagify_newlines(mls.escape_ml(tooltip)))
 

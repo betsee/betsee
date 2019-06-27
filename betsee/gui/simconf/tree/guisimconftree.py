@@ -100,13 +100,11 @@ from betse.lib.yaml.abc.yamllistabc import YamlList
 from betse.lib.yaml.abc.yamlmixin import YamlNamedMixin
 from betse.util.io.log import logs
 from betse.util.type.iterable import sequences
-from betse.util.type.iterable.mapping import mappings
-from betse.util.type.obj import objects
+from betse.util.type.iterable.mapping import maptest
+from betse.util.type.obj import objtest
 from betse.util.type.types import type_check
-from betsee.guiexception import BetseePySideTreeWidgetItemException  # BetseePySideTreeWidgetException,
+from betsee.guiexception import BetseePySideTreeWidgetItemException
 from betsee.gui.data import guidataicon
-from betsee.gui.simconf.stack.guisimconfstack import (
-    QBetseeSimConfStackedWidget)
 from betsee.util.widget.stock.tree import guitreeitem
 from betsee.util.widget.stock.tree.guitreewdg import QBetseeTreeWidget
 
@@ -414,7 +412,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
         # If any container containing dynamic list tree items defined above
         # does *NOT* contain the same such items as every other such container,
         # raise an exception. This is a rudimentary sanity test.
-        mappings.die_unless_keys_equal(
+        maptest.die_unless_maps_keys_equal(
             self._item_list_root_to_yaml_list,
             item_list_root_to_stack_page_name_list_leaf,
         )
@@ -807,7 +805,7 @@ class QBetseeSimConfTreeWidget(QBetseeTreeWidget):
 
         # If this object is *NOT* a YAML-backed named configuration and hence
         # does *NOT* define the "name" property, raise an exception.
-        objects.die_unless_instance(obj=yaml_list_item, cls=YamlNamedMixin)
+        objtest.die_unless_instance(obj=yaml_list_item, cls=YamlNamedMixin)
 
         # If the first-column text of this child tree item is *NOT* the name of
         # this list item subconfiguration, raise an exception.

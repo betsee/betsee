@@ -17,6 +17,7 @@ Metadata constants synopsizing high-level application dependencies.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from betsee.guimetadata import VERSION
+from collections import namedtuple
 
 # ....................{ LIBS ~ install : mandatory        }....................
 SETUPTOOLS_VERSION_MIN = '38.2.0'
@@ -100,7 +101,7 @@ RUNTIME_MANDATORY = {
     #platforms (e.g., conda-forge, Gentoo). Until then, this suffices.
 
     # Unversioned dependencies directly required by this application.
-    # 'PySide2': '',
+    'PySide2': '',
     # 'PySide2': '>= 5.6.0~a1',
 
     # Unversioned dependencies directly required by this application. Since
@@ -159,7 +160,13 @@ See Also
 
 # ....................{ LIBS ~ testing : mandatory        }....................
 TESTING_MANDATORY = {
-    'pytest':      '>= 2.5.0',
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+    # WARNING: This py.test requirement *MUST* be manually synchronized to the
+    # same requirement in the upstream "betse.metadeps" submodule. Failure to
+    # do so will raise exceptions at BETSEE startup.
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+
+    'pytest':      '>= 3.1.0',
     'pytest-qt':   '>= 3.2.0',
     'pytest-xvfb': '>= 1.2.0',
 }
@@ -173,6 +180,43 @@ See Also
 :data:`betse.metadata.RUNTIME_MANDATORY`
     Further details on dictionary structure.
 :download:`/doc/rst/INSTALL.rst`
+    Human-readable list of these dependencies.
+'''
+
+# ....................{ LIBS ~ commands                   }....................
+RequirementCommand = namedtuple('RequirementCommand', ('name', 'basename',))
+RequirementCommand.__doc__ = '''
+    Lightweight metadata describing a single external command required by an
+    application dependency of arbitrary type (including optional, mandatory,
+    runtime, testing, and otherwise).
+
+    Attributes
+    ----------
+    name : str
+        Human-readable name associated with this command (e.g., ``Graphviz``).
+    basename : str
+        Basename of this command to be searched for in the current ``${PATH}``.
+    '''
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# WARNING: Changes to this dictionary *MUST* be synchronized with:
+# * Front-facing documentation (e.g., "doc/md/INSTALL.md").
+# * Gitlab-CI configuration (e.g., the top-level "requirements-conda.txt" file).
+# * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+REQUIREMENT_NAME_TO_COMMANDS = {
+    'pytest-xvfb': (RequirementCommand(name='Xvfb', basename='Xvfb'),),
+}
+'''
+Dictionary mapping from the :mod:`setuptools`-specific project name of each
+application dependency (of any type, including optional, mandatory, runtime,
+testing, or otherwise) requiring one or more external commands to a tuple of
+:class:`RequirementCommand` instances describing these requirements.
+
+See Also
+----------
+:download:`/doc/md/INSTALL.md`
     Human-readable list of these dependencies.
 '''
 

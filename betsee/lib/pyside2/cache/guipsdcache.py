@@ -330,11 +330,11 @@ def _cache_py_ui_file(ui_filename: str, py_filename: str) -> None:
     '''
 
     # Avoid circular import dependencies.
-    from betsee.lib import guilib
+    from betse.lib import libs
     from betsee.lib.pyside2.cache import guipsdcacheui
 
     # "pyside2uic" package installed by the "pyside2-tools" dependency.
-    pyside2uic = guilib.import_runtime_optional('pyside2uic')
+    pyside2uic = libs.import_runtime_optional('pyside2uic')
 
     # List of the absolute pathnames of all input paths required to do so. For
     # efficiency, these paths are ordered according to the heuristic discussed

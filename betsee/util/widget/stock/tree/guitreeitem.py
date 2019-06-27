@@ -228,7 +228,10 @@ def get_child_item_with_text_path(
         strjoin.join_on(*text_path, delimiter='/'))
 
     # If this text path is empty, raise an exception.
-    sequences.die_if_empty(text_path, label='Tree path')
+    sequences.die_if_empty(
+        sequence=text_path,
+        exception_message=QCoreApplication.translate(
+            'guitreeitem', 'Tree path empty.'))
 
     # For each passed first-column text...
     for child_item_text in text_path:

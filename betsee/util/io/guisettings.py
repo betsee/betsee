@@ -17,7 +17,7 @@ See Also
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, QSettings
-from betse.util.os import oses
+from betse.util.os.brand import windows
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideSettingsException
 from betsee.util.type.guitype import QVariantTypes, QVariantOrNoneTypes
@@ -43,7 +43,7 @@ def init() -> None:
 
     # Set the default settings format in a platform-specific manner.
     QSettings.setDefaultFormat(
-        QSettings.IniFormat if oses.is_windows_vanilla() else
+        QSettings.IniFormat if windows.is_windows_vanilla() else
         QSettings.NativeFormat)
 
 # ....................{ EXCEPTIONS                        }....................

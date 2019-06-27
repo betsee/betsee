@@ -15,7 +15,7 @@ from PySide2.QtCore import QCoreApplication, Slot
 from PySide2.QtWidgets import QMainWindow, QStackedWidget, QTreeWidgetItem
 from betse.util.io.log import logs
 from betse.util.type.iterable.mapping import mappings
-from betse.util.type.obj import objects
+from betse.util.type.obj import objects, objtest
 from betse.util.type.types import type_check, MappingType
 from betsee.guiexception import BetseePySideStackedWidgetException
 from betsee.util.app import guiappwindow
@@ -332,7 +332,7 @@ class QBetseeSimConfStackedWidget(QBetseeObjectMixin, QStackedWidget):
             # "QBetseePagerItemizedMixin" mixin) are permitted to
             # control stack pages associated with list items; likewise, only
             # itemized pagers define the reinit() method called below.
-            objects.die_unless_instance(
+            objtest.die_unless_instance(
                 obj=stack_page_pager, cls=QBetseePagerItemizedMixin)
 
             # 0-based index of the currently selected tree item in the dynamic

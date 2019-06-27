@@ -77,7 +77,7 @@ from betse.science.pipe.export.pipeexpabc import SimPipeExportABC
 # from betse.util.io.log import logs
 from betse.util.type.decorator.deccls import abstractproperty
 from betse.util.type.iterable import sequences
-from betse.util.type.obj import objects
+from betse.util.type.obj import objtest
 from betse.util.type.types import type_check
 from betsee.util.widget.abc.control.guictlpageabc import (
     QBetseePagerItemizedABC)
@@ -182,9 +182,9 @@ class QBetseeSimConfPagerExportABC(QBetseePagerItemizedABC):
             widget_name=self._widget_name_prefix + 'name')
 
         # If any of these are *NOT* of the expected type, raise an exception.
-        objects.die_unless_instance(
+        objtest.die_unless_instance(
             obj=self._widget_kind, cls=QBetseeSimConfComboBoxSequence)
-        objects.die_unless_instance(
+        objtest.die_unless_instance(
             obj=self._widget_name, cls=QBetseeSimConfLineEdit)
 
         # Sequence of the string types of all exports supported by the pipeline

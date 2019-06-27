@@ -14,7 +14,7 @@ from PySide2.QtCore import Qt, QEvent
 from PySide2.QtGui import QKeyEvent
 from PySide2.QtWidgets import QApplication
 from betse.exceptions import BetseMethodUnimplementedException
-from betse.util.type.obj import objects
+from betse.util.type.obj import objtest
 # from betse.util.type.types import type_check
 
 # ....................{ MIXINS                            }....................
@@ -102,7 +102,7 @@ class QBetseeClipboardScalarWidgetMixin(QBetseeClipboardWidgetMixin):
     def copy_selection_to_clipboard(self) -> None:
 
         # If this subclass provides explicit clipboard support, prefer that.
-        if objects.has_method(self, 'copy'):
+        if objtest.has_method(self, 'copy'):
             self.copy()
         # Else, assume (without evidence) that this subclass supports the
         # standard keyboard shortcuts. In this case, queue up a key event
@@ -114,7 +114,7 @@ class QBetseeClipboardScalarWidgetMixin(QBetseeClipboardWidgetMixin):
 
     def cut_selection_to_clipboard(self) -> None:
 
-        if objects.has_method(self, 'cut'):
+        if objtest.has_method(self, 'cut'):
             self.cut()
         else:
             QApplication.postEvent(self, QKeyEvent(
@@ -123,7 +123,7 @@ class QBetseeClipboardScalarWidgetMixin(QBetseeClipboardWidgetMixin):
 
     def paste_clipboard_to_selection(self) -> None:
 
-        if objects.has_method(self, 'paste'):
+        if objtest.has_method(self, 'paste'):
             self.paste()
         else:
             QApplication.postEvent(self, QKeyEvent(

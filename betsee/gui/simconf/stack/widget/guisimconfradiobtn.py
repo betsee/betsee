@@ -21,7 +21,7 @@ from PySide2.QtCore import QCoreApplication, Signal
 from PySide2.QtWidgets import QButtonGroup, QRadioButton
 # from betse.util.io.log import logs
 from betse.util.type.iterable import iterget
-from betse.util.type.obj import objects
+from betse.util.type.obj import objtest
 from betse.util.type.types import type_check
 from betsee.guiexception import BetseePySideRadioButtonException
 from betsee.gui.simconf.stack.widget.mixin.guisimconfwdgeditenum import (
@@ -63,7 +63,7 @@ class QBetseeSimConfEnumRadioButtonGroup(
         # For each radio button previously added to this button group...
         for radio_btn in self.buttons():
             # If this button is *NOT* a radio button, raise an exception.
-            objects.die_unless_instance(obj=radio_btn, cls=QRadioButton)
+            objtest.die_unless_instance(obj=radio_btn, cls=QRadioButton)
 
             # If this button is *NOT* mapped to be the dictionary externally
             # passed to this method, raise an exception.

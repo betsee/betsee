@@ -232,7 +232,7 @@ def convert_ui_to_py_file(
     '''
 
     # Avoid circular import dependencies.
-    from betsee.lib import guilib
+    from betse.lib import libs
     from betsee.lib.pyside2 import guipsd
     from betsee.lib.pyside2.guipsdui import BASE_CLASSES_GLOBAL_NAME
 
@@ -265,7 +265,7 @@ def convert_ui_to_py_file(
     ui_code_str_buffer = StringIO()
 
     # "pyside2uic" package installed by the "pyside2-tools" dependency.
-    pyside2uic = guilib.import_runtime_optional('pyside2uic')
+    pyside2uic = libs.import_runtime_optional('pyside2uic')
 
     # Object converting XML-formatted UI to Python files.
     ui_compiler = pyside2uic.Compiler.compiler.UICompiler()

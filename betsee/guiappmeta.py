@@ -20,7 +20,7 @@ from betse.appmeta import BetseAppMeta
 from betse.util.path import dirs, files, pathnames
 from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.types import type_check, ModuleType
-from betsee import guimetadata, guimetadeps
+from betsee import guimetadata
 from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
 
 # ....................{ SUBCLASSES                        }....................
@@ -44,36 +44,6 @@ class BetseeAppMeta(BetseAppMeta):
     '''
 
     # ..................{ INITIALIZERS                      }..................
-    def init_sans_libs(self) -> None:
-        '''
-        Initialize this application *except* mandatory third-party dependencies
-        of this application, which requires external resources (e.g.,
-        command-line options, configuration files) to have been parsed.
-
-        Specifically, this method (in order):
-
-        #. Initializes BETSE itself by calling the superclass method.
-        #. Validates but does *not* initialize all mandatory third-party
-           dependencies of this application, which the :meth:`init_libs` method
-           does so subsequently.
-        #. Validates the active Python interpreter to support multithreading.
-        '''
-
-        # Avoid circular import dependencies.
-        from betsee.lib import guilib
-
-        # Initialize our superclass and hence BETSE itself.
-        super().init_sans_libs()
-
-        # Validate mandatory dependencies *AFTER* initializing BETSE.
-        #
-        # These dependencies are intentionally *NOT* initialized here (e.g., by
-        # calling guilib.init()), as doing so requires the logging
-        # configuration to have been finalized (e.g., by parsing CLI options),
-        # which has yet to occur this early in the application lifecycle.
-        guilib.die_unless_runtime_mandatory_all()
-
-
     @type_check
     def init_libs(self, cache_policy: CachePolicy) -> None:
         '''
@@ -113,12 +83,57 @@ class BetseeAppMeta(BetseAppMeta):
 
     # ..................{ SUPERCLASS ~ properties           }..................
     @property
-    def module_metadata(self) -> ModuleType:
+    def _module_metadata(self) -> ModuleType:
         return guimetadata
 
+
     @property
-    def module_metadeps(self) -> ModuleType:
-        return guimetadeps
+    def _module_metadeps(self) -> ModuleType:
+        '''
+        **Application-wide dependency metadata submodule** (i.e., submodule
+        publishing lists of version-pinned dependencies as global constants
+        synopsizing all requirements of the current application).
+
+        Design
+        ----------
+        This property dynamically creates and returns a new in-memory submodule
+        that does *not* physically exist on-disk. Rather, this high-level
+        submodule merges *all* dependency metadata defined by lower-level
+        submodules that do actually exist on-disk. This means:
+
+        * BETSE's :mod:`betse.metadeps` submodule.
+        * BETSEE's :mod:`betsee.guimetadeps` submodule.
+
+        This submodule satisfies all requirements of both BETSE and BETSEE,
+        thus safeguarding usage of the :mod:`betse.lib.libs` API -- notably
+        calls to the :func:`betse.lib.libs.import_runtime_optional` function
+        distributed throughout the BETSE and BETSEE codebases, regardless of
+        the codebase in which they reside.
+
+        See Also
+        ----------
+        :meth:`module_metadeps`
+            Concrete public property validating the module returned by this
+            abstract private property to expose the expected attributes.
+        '''
+
+        # Isolate method-specific imports for maintainability.
+        from betse import metadeps as betse_metadeps
+        from betse.util.app.meta import appmetamod
+        from betsee import guimetadeps as betsee_metadeps
+
+        # Application dependency metadata module merging the BETSE and BETSEE
+        # application dependency metadata modules.
+        module_metadeps_merged = appmetamod.merge_module_metadeps(
+            # Fully-qualified name of the module to be created. For simplicity,
+            # prefer a guaranteeably unique submodule of the top-level "betsee"
+            # package, which is guaranteed to exist.
+            module_name='betsee.__betse_plus_betsee_metadeps__',
+            modules_metadeps=(betse_metadeps, betsee_metadeps,),
+        )
+
+        # Return this module.
+        return module_metadeps_merged
 
     # ..................{ PROPERTIES ~ dir : data           }..................
     @property_cached
