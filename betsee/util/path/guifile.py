@@ -12,11 +12,11 @@ from PySide2.QtCore import QCoreApplication
 from PySide2.QtWidgets import QFileDialog
 # from betse.util.io.log import logs
 from betse.lib.pil import pils
-from betse.lib.yaml import yamls
+from betse.lib.yaml.yamls import YAML_FILETYPES
 from betse.util.type.types import type_check, StrOrNoneTypes
 
 # ....................{ GLOBALS                           }....................
-_YAML_LABEL_TO_FILETYPES = {'YAML files': yamls.YAML_FILETYPES}
+_YAML_LABEL_TO_FILETYPES = {'YAML files': YAML_FILETYPES}
 '''
 Dictionary mapping from a human-readable label to be displayed for each
 iterable of YAML-specific filetypes accepted by this dialog to that iterable.
