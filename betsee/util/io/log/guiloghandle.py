@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-# --------------------( LICENSE                            )--------------------
-# Copyright 2017 by Alexis Pietak & Cecil Curry
+# --------------------( LICENSE                           )--------------------
+# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
 Low-level :mod:`PySide2`-specific logging handler subclasses.
 '''
 
-# ....................{ IMPORTS                            }....................
+# ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Signal
 from betse.util.type.types import type_check
 from logging import Handler
 
-# ....................{ CLASSES                            }....................
+# ....................{ CLASSES                           }....................
 #FIXME: Post as an answer to the following StackOverflow question:
 #    https://stackoverflow.com/questions/14349563/how-to-get-non-blocking-real-time-behavior-from-python-logging-module-output-t
 class LogHandlerSignal(Handler):
@@ -27,7 +27,7 @@ class LogHandlerSignal(Handler):
         Signal to redirect log records to.
     '''
 
-    # ..................{ INITIALIZERS                       }..................
+    # ..................{ INITIALIZERS                      }..................
     @type_check
     def __init__(self, signal: Signal, *args, **kwargs) -> None:
         '''
@@ -47,11 +47,11 @@ class LogHandlerSignal(Handler):
         # Classify all explicitly specified parameters.
         self._signal = signal
 
-    # ..................{ EMITTERS                           }..................
+    # ..................{ EMITTERS                          }..................
     def emit(self, record) -> None:
 
-        # Log messaged formatted from this log record via this handler's current
-        # log message formatter.
+        # Log messaged formatted from this log record via this handler's
+        # current log message formatter.
         record_message = self.format(record)
 
         # Redirect this log message to all slots connected to this handler's
