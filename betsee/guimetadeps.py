@@ -165,8 +165,9 @@ TESTING_MANDATORY = {
     # same requirement in the upstream "betse.metadeps" submodule. Failure to
     # do so will raise exceptions at BETSEE startup.
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+    'pytest':      '>= 3.7.0',
 
-    'pytest':      '>= 3.1.0',
+    # All subsequent requirements require no such synchronization.
     'pytest-qt':   '>= 3.2.0',
     'pytest-xvfb': '>= 1.2.0',
 }

@@ -50,8 +50,9 @@ from PySide2.QtWidgets import QMessageBox
 from betse.science.config import confio
 from betse.science.parameters import Parameters
 from betse.util.app.meta import appmetaone
-from betse.util.path import pathnames
 from betse.util.io.log import logs
+from betse.util.path import pathnames
+from betse.util.path.dirs import DirOverwritePolicy
 from betse.util.type.types import type_check, StrOrNoneTypes
 from betsee.guiexception import BetseeSimConfException
 from betsee.gui.window.guiwindow import QBetseeMainWindow
@@ -615,7 +616,15 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Else, the user confirmed this dialog.
 
         # Reserialize this configuration into this new file.
-        self.p.save(conf_filename)
+        #
+        # Since the user confirmed this dialog and hence explicitly requested
+        # that this file *AND* all subdirectories of this file's directory be
+        # silently overwritten, we instruct this method to do so.
+        self.p.save(
+            conf_filename=conf_filename,
+            is_conf_file_overwritable=True,
+            conf_subdir_overwrite_policy=DirOverwritePolicy.OVERWRITE,
+        )
 
         # Notify all interested slots of this event.
         self.set_filename_signal.emit(conf_filename)
