@@ -61,6 +61,23 @@ Low-level :mod:`PySide2`-specific logging handler subclasses.
 #  * Disconnect all slots connected to the "_signal" instance variable... or
 #    perhaps not, as doing so would modify external caller-defined objects in a
 #    possibly unexpected manner?
+#FIXME: Ah-ha! We've isolated the cause of the above segmentation fault: the
+#call to the guiappwindow.unset_main_window() function in the "guiwindow"
+#submodule. This suggests that, in addition to implementing the safety check
+#advised by the prior FIXME: comment (which remains both valid and important),
+#we *ALSO* need to defer the call to the guiappwindow.unset_main_window()
+#function until the absolute last minute -- namely, by:
+#
+#* Removing the existing call to guiappwindow.unset_main_window() from the
+#  "guiwindow" submodule.
+#* Overriding the default AppMetaABC.deinit() method to call the
+#  guiappwindow.unset_main_window() function: e.g.,
+#     def deinit(self) -> None:
+#         super().deinit()
+#         guiappwindow.unset_main_window()
+#
+#When doing so, ensure that the guiappwindow.unset_main_window() function does
+#*NOT* attempt to perform any logging. If it does, consider squelching that.
 
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Signal

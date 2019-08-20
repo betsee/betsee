@@ -448,9 +448,12 @@ class QBetseeSimConf(QBetseeControllerABC):
         default settings be both created and opened.
         '''
 
-        # Basename of the default simulation configuration.
-        conf_default_basename = pathnames.get_basename(
+        # Filename and basename of the default simulation configuration.
+        conf_default_filename = (
             appmetaone.get_app_meta().betse_sim_conf_default_filename)
+
+        # Basename of the default simulation configuration.
+        conf_default_basename = pathnames.get_basename(conf_default_filename)
 
         # Display a dialog requiring the user to select a YAML-formatted file
         # (either existing or non-existing) to be subsequently opened for
@@ -479,26 +482,30 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Close the currently open simulation configuration if any.
         self._close_sim()
 
-        # Write the default simulation configuration to this file.
-        confio.write_default(
+        # Temporarily load the default simulation configuration.
+        self.p.load(conf_filename=conf_default_filename)
+
+        # Copy this configuration to this target file.
+        self.p.save(
             conf_filename=conf_filename,
 
-            # Silently (over)write this file if this file already exists. Since
-            # the guifile.select_file_save() function has already interactively
-            # confirmed this overwrite in this case, doing so is safe to the
+            # Silently overwrite this target file *AND* all subdirectories of
+            # this target file's directory. Since the prior call to the
+            # "guifile" function has already forced the end user to
+            # interactively confirm these overwrites, doing so is "safe" to the
             # extent that the user has already accepted the consequences.
-            is_conf_overwritable=True,
-
-            # Preserve all external resources required by
-            # this file with those contained in this default simulation
-            # configuration. Since the guifile.select_file_save() function has
-            # already interactively confirmed this overwrite when this file
-            # already exists, doing so is safe to the extent that the user has
-            # accepted the painful consequences.
+            is_conf_file_overwritable=True,
+            conf_subdir_overwrite_policy=DirOverwritePolicy.OVERWRITE,
         )
 
-        # Deserialize this low-level file into a high-level configuration.
-        self.load(conf_filename)
+        # Update relevant Qt objects in response to these operations.
+        #
+        # Note that the _handle_load() rather than load() method is called.
+        # Since the call to the self.p.save() method has already saved and
+        # hence loaded this configuration, calling the load() method which
+        # calls the self.p.load() method would be entirely superfluous and
+        # hence inefficient (albeit presumably harmless).
+        self._handle_load()
 
         # Update the status bar *AFTER* successfully completing this action.
         guiappstatus.show_status(QCoreApplication.translate(
@@ -622,6 +629,12 @@ class QBetseeSimConf(QBetseeControllerABC):
         # silently overwritten, we instruct this method to do so.
         self.p.save(
             conf_filename=conf_filename,
+
+            # Silently overwrite this target file *AND* all subdirectories of
+            # this target file's directory. Since the prior call to the
+            # "guifile" function has already forced the end user to
+            # interactively confirm these overwrites, doing so is "safe" to the
+            # extent that the user has already accepted the consequences.
             is_conf_file_overwritable=True,
             conf_subdir_overwrite_policy=DirOverwritePolicy.OVERWRITE,
         )
@@ -633,7 +646,7 @@ class QBetseeSimConf(QBetseeControllerABC):
         guiappstatus.show_status(QCoreApplication.translate(
             'QBetseeSimConf', 'Simulation saved.'))
 
-    # ..................{ LOADERS                           }..................
+    # ..................{ (UN)LOADERS                       }..................
     @type_check
     def load(self, conf_filename: str) -> None:
         '''
@@ -660,8 +673,23 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Deserialize this low-level file into a high-level configuration.
         self.p.load(conf_filename)
 
+        # Update relevant Qt objects in response to this deserialization.
+        self._handle_load()
+
+
+    def _handle_load(self) -> None:
+        '''
+        Update relevant Qt objects in response to a recent deserialization
+        (i.e., loading) of a YAML-formatted simulation configuration file.
+
+        Specifically, this method (in order):
+
+        #. Signals all interested slots of this event.
+        #. Focuses the top-level tree widget.
+        '''
+
         # Signal all interested slots of this event.
-        self.set_filename_signal.emit(conf_filename)
+        self.set_filename_signal.emit(self.filename)
 
         # Focus the top-level tree widget *AFTER* signaling (and hence
         # prepopulating) that widget to reflect the current state of this
