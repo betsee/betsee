@@ -47,7 +47,6 @@ configuration files) functionality.
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import QCoreApplication, Signal, Slot
 from PySide2.QtWidgets import QMessageBox
-from betse.science.config import confio
 from betse.science.parameters import Parameters
 from betse.util.app.meta import appmetaone
 from betse.util.io.log import logs
@@ -451,8 +450,6 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Filename and basename of the default simulation configuration.
         conf_default_filename = (
             appmetaone.get_app_meta().betse_sim_conf_default_filename)
-
-        # Basename of the default simulation configuration.
         conf_default_basename = pathnames.get_basename(conf_default_filename)
 
         # Display a dialog requiring the user to select a YAML-formatted file
@@ -482,20 +479,17 @@ class QBetseeSimConf(QBetseeControllerABC):
         # Close the currently open simulation configuration if any.
         self._close_sim()
 
-        # Temporarily load the default simulation configuration.
-        self.p.load(conf_filename=conf_default_filename)
+        # Copy the default simulation configuration to this target file.
+        self.p.save_default(
+           conf_filename=conf_filename,
 
-        # Copy this configuration to this target file.
-        self.p.save(
-            conf_filename=conf_filename,
-
-            # Silently overwrite this target file *AND* all subdirectories of
-            # this target file's directory. Since the prior call to the
-            # "guifile" function has already forced the end user to
-            # interactively confirm these overwrites, doing so is "safe" to the
-            # extent that the user has already accepted the consequences.
-            is_conf_file_overwritable=True,
-            conf_subdir_overwrite_policy=DirOverwritePolicy.OVERWRITE,
+           # Silently overwrite this target file *AND* all subdirectories of
+           # this target file's directory. Since the prior call to the
+           # "guifile" function has already forced the end user to
+           # interactively confirm these overwrites, doing so is "safe" to the
+           # extent that the user has already accepted the consequences.
+           is_conf_file_overwritable=True,
+           conf_subdir_overwrite_policy=DirOverwritePolicy.OVERWRITE,
         )
 
         # Update relevant Qt objects in response to these operations.
