@@ -7,78 +7,6 @@
 Low-level :mod:`PySide2`-specific logging handler subclasses.
 '''
 
-#FIXME: Tragically, our recent improvements to guarantee closure of all open
-#logfile handles has invited a spurious segmentation fault at BETSEE closure:
-#
-#    [betsee] Deinitializing singleton logging configuration...
-#    free(): invalid pointer
-#    Fatal Python error: Aborted
-#
-#    Current thread 0x00007fc68dd89680 (most recent call first):
-#      File "/home/leycec/py/betsee/betsee/util/io/log/guiloghandle.py", line 59 in emit
-#      File "/usr/lib64/python3.6/logging/__init__.py", line 863 in handle
-#      File "/usr/lib64/python3.6/logging/__init__.py", line 1514 in callHandlers
-#      File "/usr/lib64/python3.6/logging/__init__.py", line 1452 in handle
-#      File "/usr/lib64/python3.6/logging/__init__.py", line 1442 in _log
-#      File "/usr/lib64/python3.6/logging/__init__.py", line 1294 in debug
-#      File "/usr/lib64/python3.6/logging/__init__.py", line 1910 in debug
-#      File "/home/leycec/py/betse/betse/util/io/log/logs.py", line 169 in log_debug
-#      File "<string>", line 14 in __log_debug_type_checked__
-#      File "/home/leycec/py/betse/betse/util/io/log/conf/logconf.py", line 126 in deinit
-#      File "<string>", line 4 in __deinit_type_checked__
-#      File "/home/leycec/py/betse/betse/util/app/meta/appmetaabc.py", line 319 in deinit
-#      File "/home/leycec/py/betse/betse/util/app/meta/appmetaone.py", line 297 in deinit
-#      File "/home/leycec/py/betse/betse/util/cli/cliabc.py", line 207 in run
-#      File "<string>", line 14 in __run_type_checked__
-#      File "/home/leycec/py/betsee/betsee/__main__.py", line 102 in main
-#      File "/usr/bin/betsee", line 87 in <module>
-#    zsh: abort      betsee -v
-#
-#Clearly, this issue *MUST* be resolved as soon as feasible. To do so, we'll
-#probably need to override the default AppMetaABC.deinit() method as follows:
-#
-#1. Disconnect all slots connected to the "signal" parameter passed to the
-#   "LogHandlerSignal" instance *BEFORE* calling super().deinit().
-#1. Ensure the "LogHandlerSignal" instance previously added to our root logger
-#   has been removed. This is probably already implicitly handled by the
-#   subsequent super().deinit() call, but let's be rather sure of that.
-#2. Call super().deinit(), thus closing this logfile.
-#FIXME: Ah-ha! A superior alternative presents itself. Rather than do any of
-#the above, it *SHOULD* theoretically suffice to simply do the following:
-#
-#* Override the Handler.close() method in the "LogHandlerSignal" subclass
-#  defined below, whose implementation should either:
-#  * Nullify the "_signal" instance variable. This is probably the ideal
-#    approach, as doing so avoids modifying external caller-defined objects.
-#    Note, however, that this approach then requires slightly generalizing the
-#    emit() method to test for whether "_signal" is "None" and, if so, silently
-#    reduce to a noop. Lastly, note that there exists no corresponding open()
-#    or _open() methods in the "Handler" superclass; ergo, there exist no
-#    concerns about needing to reopen a previously closed handler, implying
-#    that permanently nullifying the "_signal" instance variable on the first
-#    call to the close() method is indeed the optimal approach. (Indeed, the
-#    superclass close() method itself behaves irreversibly destructively.)
-#  * Disconnect all slots connected to the "_signal" instance variable... or
-#    perhaps not, as doing so would modify external caller-defined objects in a
-#    possibly unexpected manner?
-#FIXME: Ah-ha! We've isolated the cause of the above segmentation fault: the
-#call to the guiappwindow.unset_main_window() function in the "guiwindow"
-#submodule. This suggests that, in addition to implementing the safety check
-#advised by the prior FIXME: comment (which remains both valid and important),
-#we *ALSO* need to defer the call to the guiappwindow.unset_main_window()
-#function until the absolute last minute -- namely, by:
-#
-#* Removing the existing call to guiappwindow.unset_main_window() from the
-#  "guiwindow" submodule.
-#* Overriding the default AppMetaABC.deinit() method to call the
-#  guiappwindow.unset_main_window() function: e.g.,
-#     def deinit(self) -> None:
-#         super().deinit()
-#         guiappwindow.unset_main_window()
-#
-#When doing so, ensure that the guiappwindow.unset_main_window() function does
-#*NOT* attempt to perform any logging. If it does, consider squelching that.
-
 # ....................{ IMPORTS                           }....................
 from PySide2.QtCore import Signal
 from betse.util.type.types import type_check
@@ -95,8 +23,13 @@ class LogHandlerSignal(Handler):
 
     Parameters
     ----------
-    _signal : Signal
-        Signal to redirect log records to.
+    _signal : SignalOrNoneTypes
+        Either:
+
+        * If the :meth:`close` method has yet to be called, the signal to
+          forward log records to.
+        * Else (i.e., if the :meth:`close` method has already been called),
+          ``None``.
     '''
 
     # ..................{ INITIALIZERS                      }..................
@@ -108,7 +41,7 @@ class LogHandlerSignal(Handler):
         Parameters
         ----------
         signal : Signal
-            Signal to redirect log records to.
+            Signal to forward log records to.
 
         All remaining parameters are passed as is to our superclass method.
         '''
@@ -126,6 +59,24 @@ class LogHandlerSignal(Handler):
         # current log message formatter.
         record_message = self.format(record)
 
-        # Redirect this log message to all slots connected to this handler's
-        # previously initialized signal.
-        self._signal.emit(record_message)
+        # If this handler is still open (i.e., the close() method has yet to be
+        # called), forward this message to all slots connected to this signal.
+        if self._signal is not None:
+            self._signal.emit(record_message)
+
+    # ..................{ CLOSERS                           }..................
+    def close(self) -> None:
+
+        # Close our superclass.
+        super().close()
+
+        # Nullify the signal to forward log messages to, silently reducing the
+        # emit() method (and hence this entire handler) to a noop.
+        #
+        # Note that there exists *NO* corresponding open() or _open() methods
+        # in the "Handler" superclass and hence *NO* concerns about reopening a
+        # previously closed handler. Indeed, the superclass close() method
+        # itself behaves irreversibly destructively, making closure permanent.
+        # Ergo, nullifying this instance variable on the first call to this
+        # method is the optimal solution.
+        self._signal = None

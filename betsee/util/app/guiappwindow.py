@@ -96,9 +96,24 @@ def unset_main_window() -> None:
     '''
     Unset the main window singleton widget for this application.
 
-    This function is intended to be called *only* on application destruction as
-    a safety measure to avoid garbage collection issues.
+    Caveats
+    ----------
+    **No Qt-specific logic may be performed after calling this method.** This
+    method nullifies and hence schedules this singleton for garbage collection.
+    Since this singleton ideally contains the only references (both direct and
+    transitive) to every live Qt object, scheduling this singleton for garbage
+    collection effectively schedules *each* live Qt object for similar garbage
+    collection. This function is intended to be called only on application
+    destruction as a safety measure to avoid garbage collection issues.
     '''
+
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # CAUTION: This function is typically called *AFTER* the
+    # AppMetaABC.deinit() method has been called, which both nullifies the
+    # application metadata singleton and closes open logfile handles. Ergo,
+    # effectively *NO* application logic (e.g., logging) may be safely
+    # performed here, leaving only logic isolated to this submodule as safe.
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # Globals modified below.
     global _MAIN_WINDOW

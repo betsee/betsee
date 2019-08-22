@@ -22,6 +22,7 @@ from betse.util.type.decorator.decmemo import property_cached
 from betse.util.type.types import type_check, ModuleType
 from betsee import guimetadata
 from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
+from betsee.util.app import guiappwindow
 
 # ....................{ SUBCLASSES                        }....................
 class BetseeAppMeta(BetseAppMeta):
@@ -53,7 +54,7 @@ class BetseeAppMeta(BetseAppMeta):
         Parameters
         ----------
         cache_policy : CachePolicy
-            Type of :mod:`PySide2`-based submodule caching to be performed.
+            Type of :mod:`PySide2`-based submodule caching to perform.
         '''
 
         # Defer heavyweight imports.
@@ -80,6 +81,58 @@ class BetseeAppMeta(BetseAppMeta):
         # BETSE itself) to strictly require a Qt 5-specific matplotlib backend
         # *AFTER* initializing PySide2 .
         super().init_libs(matplotlib_backend_name='Qt5Agg')
+
+    # ..................{ DEINITIALIZERS                    }..................
+    def deinit(self) -> None:
+
+        # Deinitialize our superclass, thus nullifying the application metadata
+        # singleton *AND* closing open logfile handles.
+        #
+        # *NO APPLICATION LOGIC MAY BE PERFORMED AFTER CALLING THIS METHOD.*
+        # All application logic assumes this singleton to be non-None and
+        # logfile handles to remain open.
+        super().deinit()
+
+        # Unset the global exposing the main application window, minimizing
+        # subtle garbage collection issues during application destruction
+        # (i.e., now).
+        #
+        # Note that order of operations is critical here. In particular, this
+        # global is unset as the very last operation at application shutdown.
+        # Reversing this order (i.e., calling super().deinit() last rather than
+        # first in this method) is guaranteed to raise an exception resembling
+        # the following:
+        #
+        #     [betsee] Deinitializing singleton logging configuration...
+        #     free(): invalid pointer
+        #     Fatal Python error: Aborted
+        #
+        #     Current thread 0x00007fc68dd89680 (most recent call first):
+        #       File "/home/leycec/py/betsee/betsee/util/io/log/guiloghandle.py", line 59 in emit
+        #       File "/usr/lib64/python3.6/logging/__init__.py", line 863 in handle
+        #       File "/usr/lib64/python3.6/logging/__init__.py", line 1514 in callHandlers
+        #       File "/usr/lib64/python3.6/logging/__init__.py", line 1452 in handle
+        #       File "/usr/lib64/python3.6/logging/__init__.py", line 1442 in _log
+        #       File "/usr/lib64/python3.6/logging/__init__.py", line 1294 in debug
+        #       File "/usr/lib64/python3.6/logging/__init__.py", line 1910 in debug
+        #       File "/home/leycec/py/betse/betse/util/io/log/logs.py", line 169 in log_debug
+        #       File "<string>", line 14 in __log_debug_type_checked__
+        #       File "/home/leycec/py/betse/betse/util/io/log/conf/logconf.py", line 126 in deinit
+        #       File "<string>", line 4 in __deinit_type_checked__
+        #       File "/home/leycec/py/betse/betse/util/app/meta/appmetaabc.py", line 319 in deinit
+        #       File "/home/leycec/py/betse/betse/util/app/meta/appmetaone.py", line 297 in deinit
+        #       File "/home/leycec/py/betse/betse/util/cli/cliabc.py", line 207 in run
+        #       File "<string>", line 14 in __run_type_checked__
+        #       File "/home/leycec/py/betsee/betsee/__main__.py", line 102 in main
+        #       File "/usr/bin/betsee", line 87 in <module>
+        #     zsh: abort      betsee -v
+        #
+        # Why? Because the super().deinit() call performs logging, which
+        # triggers the betsee.util.io.log.guiloghandle.LogHandlerSignal.emit()
+        # method, which implicitly assumes at least one live reference to the
+        # main application window, which the guiappwindow.unset_main_window()
+        # garbage collects.
+        guiappwindow.unset_main_window()
 
     # ..................{ SUPERCLASS ~ properties           }..................
     @property

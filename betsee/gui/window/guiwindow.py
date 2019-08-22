@@ -429,10 +429,6 @@ class QBetseeMainWindow(*MAIN_WINDOW_BASE_CLASSES):
             # Store application-wide settings *BEFORE* closing this window.
             self.signaler.store_settings_signal.emit()
 
-            # Unset the global exposing this main window, minimizing subtle
-            # garbage collection issues during application destruction.
-            guiappwindow.unset_main_window()
-
             # Accept this request, thus finalizing the closure of this window.
             # To ensure superclass handling is performed, call the superclass
             # implementation rather than event.accept().
