@@ -169,9 +169,7 @@ _SETUP_OPTIONS = {
     'entry_points': {
         # GUI-specific scripts.
         'gui_scripts': (
-            '{} = {}.__main__:main'.format(
-                guimetadata.SCRIPT_BASENAME, guimetadata.PACKAGE_NAME),
-        ),
+            '{0} = {0}.__main__:main'.format(guimetadata.PACKAGE_NAME)),
     },
 
     # Install all data files (i.e., non-Python files) embedded in the Python

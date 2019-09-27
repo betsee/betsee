@@ -480,8 +480,8 @@ class QBetseeSimConf(QBetseeControllerABC):
         self._close_sim()
 
         # Copy the default simulation configuration to this target file.
-        self.p.save_default(
-           conf_filename=conf_filename,
+        self.p.copy_default(
+           trg_conf_filename=conf_filename,
 
            # Silently overwrite this target file *AND* all subdirectories of
            # this target file's directory. Since the prior call to the

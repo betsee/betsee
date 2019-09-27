@@ -20,6 +20,7 @@ from betsee.guimetadata import VERSION
 from collections import namedtuple
 
 # ....................{ LIBS ~ install : mandatory        }....................
+# This is externally referenced by the top-level "setup.py" and hence public.
 SETUPTOOLS_VERSION_MIN = '38.2.0'
 '''
 Minimum version of :mod:`setuptools` required at application installation time
@@ -70,39 +71,43 @@ non-human-readable fatal errors resembling:
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+# This is externally referenced by "betsee.__main__" and hence public.
+#
 # See the "Design" section below for commentary.
-BETSE_VERSION_MIN = VERSION[:VERSION.rindex('.')]
+BETSE_VERSION = VERSION[:VERSION.rindex('.')]
 '''
-Minimum version of BETSE, the low-level CLI underlying this high-level GUI,
-required by this application as a human-readable ``.``-delimited string.
-
-Whereas all other minimum versions of third-party dependencies required by this
-application are specified as key-value pairs of various dictionary globals of
-this submodule, this minimum version is specified as an independent global --
-simplifying inspection and validation of this version elsewhere (e.g., in the
-:func:`betsee.__main__.die_unless_betse` function).
+Version of BETSE (i.e., the low-level CLI underlying this high-level GUI)
+required by this version of BETSEE as a human-readable ``.``-delimited string.
 
 Design
 ----------
-By design, the current version of this application requires at least the same
-version of BETSE ignoring the trailing component of the former -- an
-application-specific patch number allowing each version of BETSE to satisfy
-multiple versions of this application. For example, BETSE 0.8.1 satisfies both
-versions 0.8.1.0 *and* 0.8.1.1 of this application.
+Whereas all other minimum versions of third-party dependencies required by this
+application are specified as key-value pairs of various dictionary globals of
+this submodule, this version is specified as an independent global --
+simplifying inspection and validation of this version elsewhere (e.g., in the
+:func:`betsee.__main__.die_unless_betse` function).
+
+See Also
+----------
+:data:`betsee.guimetadata.VERSION`
+    Further details.
 '''
 
 
 RUNTIME_MANDATORY = {
-    # Versioned dependencies directly required by this application.
-    'BETSE': '>= ' + BETSE_VERSION_MIN,
+    # Each version of BETSEE strictly requires the same version of BETSE
+    # excluding the trailing patch number of the former (e.g., BETSEE 0.8.1.1
+    # and 0.8.1.0 both strictly require BETSE 0.8.1). Since newer versions of
+    # BETSE typically break backward compatibility with older versions of
+    # BETSEE, this dependency does *NOT* extend to newer versions of BETSE.
+    'BETSE': '== ' + BETSE_VERSION,
 
     #FIXME: Convert this into a versioned dependency once the Qt Company
     #releases an official PySide2 release supported under all requisite
     #platforms (e.g., conda-forge, Gentoo). Until then, this suffices.
 
-    # Unversioned dependencies directly required by this application.
     'PySide2': '',
-    # 'PySide2': '>= 5.6.0~a1',
+    # 'PySide2': '>= 5.12.3',  # First official stable release of PySide2.
 
     # Unversioned dependencies directly required by this application. Since
     # the modules providing these dependencies define no PEP-8-compliant

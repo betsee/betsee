@@ -85,22 +85,30 @@ if sys.version_info[:3] < PYTHON_VERSION_MIN_PARTS:
             NAME, PYTHON_VERSION_MIN, PYTHON_VERSION))
 
 # ....................{ METADATA ~ version                }....................
-VERSION = '1.0.1.0'
+VERSION = '1.1.0.0'
 '''
 Human-readable application version as a ``.``-delimited string.
 
-Design
+Caveats
 ----------
-**This string must be prefixed by the minimum version of BETSE required by this
-application.** Equivalently, this string must be of the form
-``{betse_version}.{patch_version}`, where:
+**This string must be prefixed by the exact version of BETSE required by this
+version of BETSEE.** Each version of BETSEE requires the same version of BETSE,
+excluding the trailing patch number of that version of BETSEE (e.g., BETSEE
+1.1.0.0 and 1.1.0.1 both require BETSE 1.1.0). Since newer versions of BETSE
+typically break backward compatibility with older versions of BETSEE, this
+dependency does *not* extend to newer versions of BETSE -- which *cannot* be
+guaranteed to preserve backward compatibility.
 
-* ``{betse_version}`` is the minimum required version of BETSE.
-* ``{patch_version}`` is the current patch number of this application with
-  respect to this version of BETSE.
+Equivalently, this string must be of the form
+``{betse_version}.{patch_version}``, where:
 
-For example, if this is the second iteration of this application to require at
-least BETSE 0.8.5, this version is expected to be ``0.8.5.2``.
+* ``{betse_version}`` is the version of BETSE required by this version of
+  BETSEE.
+* ``{patch_version}`` is the patch number of this version of BETSEE relative to
+  this version of BETSE.
+
+For example, if this is the second iteration of BETSE to require BETSE 0.8.5,
+this version is expected to be ``0.8.5.2``.
 
 This is *not* merely a style convention; this is a hard prerequisite. Why?
 Because this string is parsed elsewhere (e.g., the `:mod:`betsee.guimetadeps`
@@ -119,7 +127,7 @@ Machine-readable application version as a tuple of integers.
 # Note that a human-readable multiline description is exposed via the top-level
 # "setup.py" script. This description is inefficiently culled from the contents
 # of the top-level "README.rst" file and hence omitted here. (Doing so here
-# would significantly increase program startup costs with little to no benefit.)
+# would significantly increase program startup costs with little to no gain.)
 SYNOPSIS = 'BETSEE, the BioElectric Tissue Simulation Engine Environment.'
 '''
 Human-readable single-line synopsis of this application.
@@ -204,16 +212,6 @@ PACKAGE_NAME = NAME.lower()
 '''
 Fully-qualified name of the top-level Python package implementing this
 application.
-'''
-
-
-#FIXME: Replace all references to this global with
-#"betse.appmeta.app_meta.package_name", which supports both BETSE and BETSEE;
-#then excise this global.
-SCRIPT_BASENAME = PACKAGE_NAME
-'''
-Basename of the CLI-specific Python script wrapper created by :mod:`setuptools`
-installation.
 '''
 
 # ....................{ METADATA ~ python : main window   }....................

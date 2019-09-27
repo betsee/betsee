@@ -131,24 +131,24 @@ def _die_unless_betse() -> None:
         ) from import_error
     # Else, BETSE is importable.
 
-    # Minimum version of BETSE required by this application as a
-    # machine-readable tuple of integers. This tuple is only required once
-    # (i.e., here) and hence *NOT* persisted as a "guimetadata" global.
-    BETSE_VERSION_MIN_PARTS = (
-        guimetadata._convert_version_str_to_tuple(
-            guimetadeps.BETSE_VERSION_MIN))
+    # Version of BETSE required by this version of BETSEE as a machine-readable
+    # tuple of integers. This tuple is only required once (i.e., here) and is
+    # thus *NOT* persisted as a "guimetadata" global.
+    BETSE_VERSION_PARTS = guimetadata._convert_version_str_to_tuple(
+        guimetadeps.BETSE_VERSION)
 
-    # If the current version of BETSE is insufficient, raise an exception.
-    if betse.__version_info__ < BETSE_VERSION_MIN_PARTS:
+    # If this differs from the currently installed version of BETSE (i.e., the
+    # former is older or newer than the latter), raise an exception.
+    if betse.__version_info__ != BETSE_VERSION_PARTS:
         raise _BetseNotFoundException(
             title=EXCEPTION_TITLE,
-            synopsis='Obsolete version of mandatory dependency BETSE found.',
+            synopsis='BETSE version mismatch.',
             exegesis=(
-                '{} {} requires at least BETSE {}, '
+                '{} {} requires BETSE {}, '
                 'but only BETSE {} is currently installed.'.format(
                     guimetadata.NAME,
                     guimetadata.VERSION,
-                    guimetadeps.BETSE_VERSION_MIN,
+                    guimetadeps.BETSE_VERSION,
                     betse.__version__,
                 )))
 
