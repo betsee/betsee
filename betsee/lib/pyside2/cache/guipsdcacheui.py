@@ -10,6 +10,7 @@ Designer application.
 '''
 
 # ....................{ IMPORTS                           }....................
+import PySide2
 from PySide2 import QtWidgets
 from PySide2.QtCore import QCoreApplication, QObject
 from betse.util.io import iofiles
@@ -267,8 +268,33 @@ def convert_ui_to_py_file(
     # "pyside2uic" package installed by the "pyside2-tools" dependency.
     pyside2uic = libs.import_runtime_optional('pyside2uic')
 
+    #FIXME: File a Qt issue concerning this breakage.
     # Object converting XML-formatted UI to Python files.
-    ui_compiler = pyside2uic.Compiler.compiler.UICompiler()
+    #
+    # Obtaining this object is complicated by the unfortunate observation that
+    # PySide2 5.13.0 broke backward compatibility. The UICompiler.__init__()
+    # method now requires a new mandatory "all_pyside2_modules" parameter.
+    # Since the pyside2uic.__init__.compileUi() function defaults this
+    # parameter to simply "PySide2.__all__" (i.e., the list of all compiled
+    # PySide2 C extensions), it would have been trivial for Qt engineers to
+    # render this parameter optional using the same default. (They did not.)
+    #
+    # First, attempt to instantiate this object in a manner compatible with
+    # PySide2 >= 5.13.0. Ideally, this conditionality would be efficiently
+    # implemented by testing the current version of the "pyside2uic" package.
+    # Naturally, the "pyside2uic.__init__" submodule unconditionally sets this
+    # version to the empty string. While we could test the current version of
+    # the "PySide2" package instead, there technically exists no guarantee that
+    # the two versions are synchronized.
+    #
+    # For further details, see the following official PYSIDE2 issue report:
+    #     https://bugreports.qt.io/browse/PYSIDE-1092
+    try:
+        ui_compiler = pyside2uic.Compiler.compiler.UICompiler(PySide2.__all__)
+    # If doing so fails with a type error, fallback to instantiating this
+    # object in a manner compatible with PySide2 < 5.13.0.
+    except TypeError:
+        ui_compiler = pyside2uic.Compiler.compiler.UICompiler()
 
     # Dictionary of high-level metadata describing the high-level types
     # produced by converting this file into this string buffer, containing the
