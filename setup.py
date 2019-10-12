@@ -35,7 +35,7 @@ from betsee import guimetadata, guimetadeps
 from betsee_setup import beupbuild, beuputil
 
 # ....................{ EXCEPTIONS                        }....................
-# Validate the currently installed version of setuptools to meet the
+# Validate the currently installed version of setuptools to meet all
 # installation-time requirements of this application.
 beuputil.die_unless_setuptools_version_at_least(
     guimetadeps.SETUPTOOLS_VERSION_MIN)
@@ -112,8 +112,8 @@ _SETUP_OPTIONS = {
         python_version_min_parts=guimetadata.PYTHON_VERSION_MIN_PARTS,
         python_version_minor_max=guimetadata.PYTHON_VERSION_MINOR_MAX,
     ),
-    'keywords':    _KEYWORDS,
-    'license':     guimetadata.LICENSE,
+    'keywords': _KEYWORDS,
+    'license': guimetadata.LICENSE,
 
     # ..................{ DEPENDENCIES                      }..................
     # Mandatory nuntime dependencies.
@@ -219,9 +219,8 @@ customize these options (e.g., by defining custom commands).
 # print('extras: {}'.format(setup_options['extras_require']))
 
 
-_SETUP_OPTIONS_CUSTOM = {
-    # While currently empty, it's likely we'll want this again... someday.
-}
+# While currently empty, it's likely we'll want this again... someday.
+_SETUP_OPTIONS_CUSTOM = {}
 '''
 Non-setuptools-specific metadata, used to inform custom subcommands (e.g.,
 ``freeze_file``) of other metadata *not* already declared by the
@@ -234,8 +233,8 @@ instead.
 
 # ....................{ COMMANDS                          }....................
 # Define all application-specific setuptools commands.
-for _setup_module in (beupbuild,):
-    _setup_module.add_setup_commands(_SETUP_OPTIONS_CUSTOM, _SETUP_OPTIONS)
+for subcommand_submodule in beupbuild,:
+    subcommand_submodule.add_subcommand(_SETUP_OPTIONS, _SETUP_OPTIONS_CUSTOM)
 
 # ....................{ SETUP                             }....................
 setuptools.setup(**_SETUP_OPTIONS)

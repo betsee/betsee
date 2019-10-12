@@ -165,11 +165,11 @@ See Also
 
 # ....................{ LIBS ~ testing : mandatory        }....................
 TESTING_MANDATORY = {
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # WARNING: This py.test requirement *MUST* be manually synchronized to the
     # same requirement in the upstream "betse.metadeps" submodule. Failure to
     # do so will raise exceptions at BETSEE startup.
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     'pytest':      '>= 3.7.0',
 
     # All subsequent requirements require no such synchronization.
