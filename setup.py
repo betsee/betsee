@@ -231,10 +231,26 @@ contains unrecognized keys. For safety, these keys are added to this dictionary
 instead.
 '''
 
-# ....................{ COMMANDS                          }....................
-# Define all application-specific setuptools commands.
-for subcommand_submodule in beupbuild,:
-    subcommand_submodule.add_subcommand(_SETUP_OPTIONS, _SETUP_OPTIONS_CUSTOM)
+# ....................{ SUBCOMMANDS                       }....................
+# List of all submodules defining custom setuptools subcommands.
+_subcommand_submodules = [beupbuild]
+
+# Attempt to...
+try:
+    # Import BETSE-specific submodules defining custom setuptools subcommands.
+    from betse.lib.setuptools.command import supcmdtest
+
+    # Append these submodules to this list.
+    _subcommand_submodules.append(supcmdtest)
+# If setuptools has yet to install BETSE, silently ignore these subcommands.
+# Since none of these subcommands are required (or desired) at installation
+# time, the lack of these subcommands does *NOT* constitute an error.
+except ImportError:
+    pass
+
+# Define these subcommands.
+for _subcommand_submodule in _subcommand_submodules:
+    _subcommand_submodule.add_subcommand(_SETUP_OPTIONS, _SETUP_OPTIONS_CUSTOM)
 
 # ....................{ SETUP                             }....................
 setuptools.setup(**_SETUP_OPTIONS)

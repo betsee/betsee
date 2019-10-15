@@ -20,11 +20,11 @@ from betsee.guimetadata import VERSION
 from collections import namedtuple
 
 # ....................{ LIBS ~ install : mandatory        }....................
-# This is externally referenced by the top-level "setup.py" and hence public.
+# This public global is externally referenced by "setup.py".
 SETUPTOOLS_VERSION_MIN = '38.2.0'
 '''
-Minimum version of :mod:`setuptools` required at application installation time
-as a human-readable ``.``-delimited string.
+Minimum version of :mod:`setuptools` required at both application install- and
+runtime as a human-readable ``.``-delimited string.
 
 Motivation
 ----------
@@ -95,6 +95,10 @@ See Also
 
 
 RUNTIME_MANDATORY = {
+    # setuptools is currently required at both install and runtime. At runtime,
+    # setuptools is used to validate that dependencies are available.
+    'setuptools': '>= ' + SETUPTOOLS_VERSION_MIN,
+
     # Each version of BETSEE strictly requires the same version of BETSE
     # excluding the trailing patch number of the former (e.g., BETSEE 0.8.1.1
     # and 0.8.1.0 both strictly require BETSE 0.8.1). Since newer versions of
