@@ -8,6 +8,49 @@
 tasks (e.g., installation, freezing, test running) for this application.
 '''
 
+# ....................{ KLUDGES                           }....................
+# Explicitly register all files and subdirectories of the root directory
+# containing this top-level "setup.py" script to be importable modules and
+# packages (respectively) for the remainder of this Python process if this
+# directory has yet to be registered.
+#
+# Technically, this should *NOT* be required. The current build framework
+# (e.g., "pip", "setuptools") should implicitly guarantee this to be the case.
+# Indeed, the "setuptools"-based "easy_install" script does just that.
+# Unfortunately, "pip" >= 19.0.0 does *NOT* guarantee this to be the case for
+# projects defining a "pyproject.toml" file -- which, increasingly, is all of
+# them. Although "pip" purports to have resolved this upstream, current stable
+# release appear to suffer the same deficiencies. See also:
+#     https://github.com/pypa/pip/issues/6163
+#
+# Note this logic necessarily duplicates the implementation of the
+# betse.util.py.module import pyimport.register_dir() function. *sigh*
+
+# Isolate this kludge to a private function for safety.
+def _register_dir() -> None:
+
+    # Avert thy eyes, purist Pythonistas!
+    import os, sys
+
+    # Absolute dirname of this directory, inspired by the following
+    # StackOverflow answer: https://stackoverflow.com/a/8663557/2809027
+    setup_dirname = os.path.dirname(os.path.realpath(__file__))
+
+    # If the current PYTHONPATH does *NOT* already contain this directory...
+    if setup_dirname not in sys.path:
+        # Print this registration.
+        print(
+            'WARNING: Registering "setup.py" directory for importation under '
+            'broken installer (e.g., pip >= 19.0.0)...',
+            file=sys.stderr)
+        # print('setup_dirname: {}\nsys.path: {!r}'.format(setup_dirname, sys.path))
+
+        # Append this directory to the current PYTHONPATH.
+        sys.path.append(setup_dirname)
+
+# Kludge us up the bomb.
+_register_dir()
+
 # ....................{ IMPORTS                           }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To avoid race conditions during setuptools-based installation, this
@@ -93,7 +136,16 @@ https://pypi.python.org/pypi?%3Aaction=list_classifiers
 # setuptools or distutils must be added to the above dictionary instead.
 _SETUP_OPTIONS = {
     # ..................{ CORE                              }..................
-    # Self-explanatory metadata.
+    # Self-explanatory metadata. Note that the following metadata keys are
+    # instead specified by the "setup.cfg" file,
+    #
+    # * "license_file", for unknown reasons. We should probably reconsider
+    # * "long_description", since "setup.cfg" supports convenient
+    #   "file: ${relative_filename}" syntax for transcluding the contents of
+    #   arbitrary project-relative files into metadata values. Attempting to do
+    #   so here would require safely opening this file with a context manager,
+    #   reading the contents of this file into a local variable, and passing
+    #   that variable's value as this metadata outside of that context. (Ugh.)
     'name':             guimetadata.PACKAGE_NAME,
     'version':          guimetadata.VERSION,
     'author':           guimetadata.AUTHORS,
@@ -101,7 +153,6 @@ _SETUP_OPTIONS = {
     'maintainer':       guimetadata.AUTHORS,
     'maintainer_email': guimetadata.AUTHOR_EMAIL,
     'description':      guimetadata.SYNOPSIS,
-    'long_description': beuputil.get_description(),
     'url':              guimetadata.URL_HOMEPAGE,
     'download_url':     guimetadata.URL_DOWNLOAD,
 

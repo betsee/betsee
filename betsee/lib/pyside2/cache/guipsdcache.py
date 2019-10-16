@@ -15,8 +15,7 @@ from betse.util.app.meta import appmetaone
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
 from betse.util.path.command import cmdpath
-from betse.util.py import pys
-from betse.util.py.module import pymodule
+from betse.util.py.module import pyimport, pymodule
 from betse.util.type.enums import make_enum
 from betse.util.type.types import type_check, IterableTypes
 from betsee.guiexception import BetseeCacheException
@@ -140,7 +139,7 @@ def init(cache_policy: CachePolicy) -> None:
     # Append the directory containing all generated user-specific submodules to
     # the ${PYTHONPATH} *AFTER* successfully making these submodules, enabling
     # these submodules to be subsequently imported elsewhere in the codebase.
-    pys.add_import_dirname(app_meta.dot_py_dirname)
+    pyimport.register_dir(app_meta.dot_py_dirname)
 
 
 def _init_dev() -> None:
