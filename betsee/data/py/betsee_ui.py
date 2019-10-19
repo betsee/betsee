@@ -1,4 +1,4 @@
-#!/usr/lib/python-exec/python3.6/python3
+#!/usr/bin/python3.6
 from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_main_window(object):
@@ -3400,12 +3400,12 @@ class Ui_main_window(object):
         self.label_48.setText(QtWidgets.QApplication.translate("main_window", "Multiplier:", None, -1))
         self.label_49.setText(QtWidgets.QApplication.translate("main_window", "Modulator function:", None, -1))
         self.label_50.setText(QtWidgets.QApplication.translate("main_window", "Apply to tissue profile:", None, -1))
-        self.comboBox_interventionFunk.setItemText(15, QtWidgets.QApplication.translate("main_window", "None", None, -1))
-        self.comboBox_interventionFunk.setItemText(16, QtWidgets.QApplication.translate("main_window", "gradient_x", None, -1))
-        self.comboBox_interventionFunk.setItemText(17, QtWidgets.QApplication.translate("main_window", "gradient_y", None, -1))
-        self.comboBox_interventionFunk.setItemText(18, QtWidgets.QApplication.translate("main_window", "gradient_r", None, -1))
-        self.comboBox_interventionFunk.setItemText(19, QtWidgets.QApplication.translate("main_window", "periodic", None, -1))
-        self.comboBox_interventionFunk.setItemText(20, QtWidgets.QApplication.translate("main_window", "f_sweep", None, -1))
+        self.comboBox_interventionFunk.setItemText(0, QtWidgets.QApplication.translate("main_window", "None", None, -1))
+        self.comboBox_interventionFunk.setItemText(1, QtWidgets.QApplication.translate("main_window", "gradient_x", None, -1))
+        self.comboBox_interventionFunk.setItemText(2, QtWidgets.QApplication.translate("main_window", "gradient_y", None, -1))
+        self.comboBox_interventionFunk.setItemText(3, QtWidgets.QApplication.translate("main_window", "gradient_r", None, -1))
+        self.comboBox_interventionFunk.setItemText(4, QtWidgets.QApplication.translate("main_window", "periodic", None, -1))
+        self.comboBox_interventionFunk.setItemText(5, QtWidgets.QApplication.translate("main_window", "f_sweep", None, -1))
         self.groupBox_Junctions.setTitle(QtWidgets.QApplication.translate("main_window", "Junctions", None, -1))
         self.rb_vsGJ.setText(QtWidgets.QApplication.translate("main_window", "&Voltage sensitive GJ", None, -1))
         self.label_25.setText(QtWidgets.QApplication.translate("main_window", "V threshold:  ", None, -1))
@@ -3417,8 +3417,8 @@ class Ui_main_window(object):
         self.rb_useNetwork.setText(QtWidgets.QApplication.translate("main_window", "Use network", None, -1))
         self.radioButton_2.setText(QtWidgets.QApplication.translate("main_window", "Use network from e&xternal config:", None, -1))
         self.label_61.setText(QtWidgets.QApplication.translate("main_window", "External Network type:", None, -1))
-        self.comboBox_netType.setItemText(21, QtWidgets.QApplication.translate("main_window", "Standard", None, -1))
-        self.comboBox_netType.setItemText(22, QtWidgets.QApplication.translate("main_window", "Metabolic", None, -1))
+        self.comboBox_netType.setItemText(0, QtWidgets.QApplication.translate("main_window", "Standard", None, -1))
+        self.comboBox_netType.setItemText(1, QtWidgets.QApplication.translate("main_window", "Metabolic", None, -1))
         self.label_21.setText(QtWidgets.QApplication.translate("main_window", "External Network Configuration File:", None, -1))
         self.pushButton_netBrowse.setText(QtWidgets.QApplication.translate("main_window", "Browse", None, -1))
         self.groupBox_AdditionalPhysics.setTitle(QtWidgets.QApplication.translate("main_window", "Additional Physics", None, -1))
@@ -3446,24 +3446,24 @@ class Ui_main_window(object):
         self.label_13.setText(QtWidgets.QApplication.translate("main_window", "Plot cell index:", None, -1))
         self.groupBox_5.setTitle(QtWidgets.QApplication.translate("main_window", "Raw Data Export", None, -1))
         self.label_66.setText(QtWidgets.QApplication.translate("main_window", "Export type:", None, -1))
-        self.comboBox_4.setItemText(23, QtWidgets.QApplication.translate("main_window", "1D Data summary", None, -1))
-        self.comboBox_4.setItemText(24, QtWidgets.QApplication.translate("main_window", "2D Vmem", None, -1))
+        self.comboBox_4.setItemText(0, QtWidgets.QApplication.translate("main_window", "1D Data summary", None, -1))
+        self.comboBox_4.setItemText(1, QtWidgets.QApplication.translate("main_window", "2D Vmem", None, -1))
         self.groupBox.setTitle(QtWidgets.QApplication.translate("main_window", "Line Plot Settings", None, -1))
         self.label_63.setText(QtWidgets.QApplication.translate("main_window", "Plot type:", None, -1))
-        self.comboBox.setItemText(25, QtWidgets.QApplication.translate("main_window", "Vmem", None, -1))
-        self.comboBox.setItemText(26, QtWidgets.QApplication.translate("main_window", "Jmem", None, -1))
-        self.comboBox.setItemText(27, QtWidgets.QApplication.translate("main_window", "Ion", None, -1))
-        self.comboBox.setItemText(28, QtWidgets.QApplication.translate("main_window", "Pump rate", None, -1))
+        self.comboBox.setItemText(0, QtWidgets.QApplication.translate("main_window", "Vmem", None, -1))
+        self.comboBox.setItemText(1, QtWidgets.QApplication.translate("main_window", "Jmem", None, -1))
+        self.comboBox.setItemText(2, QtWidgets.QApplication.translate("main_window", "Ion", None, -1))
+        self.comboBox.setItemText(3, QtWidgets.QApplication.translate("main_window", "Pump rate", None, -1))
         self.label_67.setText(QtWidgets.QApplication.translate("main_window", "Plot cell:", None, -1))
         self.groupBox_3.setTitle(QtWidgets.QApplication.translate("main_window", "2D Plots", None, -1))
         self.label_64.setText(QtWidgets.QApplication.translate("main_window", "Plot type:", None, -1))
-        self.comboBox_2.setItemText(29, QtWidgets.QApplication.translate("main_window", "Vmem", None, -1))
-        self.comboBox_2.setItemText(30, QtWidgets.QApplication.translate("main_window", "Venv", None, -1))
-        self.comboBox_2.setItemText(31, QtWidgets.QApplication.translate("main_window", "GJ State", None, -1))
-        self.comboBox_2.setItemText(32, QtWidgets.QApplication.translate("main_window", "Current", None, -1))
-        self.comboBox_2.setItemText(33, QtWidgets.QApplication.translate("main_window", "Ion", None, -1))
-        self.comboBox_2.setItemText(34, QtWidgets.QApplication.translate("main_window", "Electric Field", None, -1))
-        self.comboBox_2.setItemText(35, QtWidgets.QApplication.translate("main_window", "Pump Rate", None, -1))
+        self.comboBox_2.setItemText(0, QtWidgets.QApplication.translate("main_window", "Vmem", None, -1))
+        self.comboBox_2.setItemText(1, QtWidgets.QApplication.translate("main_window", "Venv", None, -1))
+        self.comboBox_2.setItemText(2, QtWidgets.QApplication.translate("main_window", "GJ State", None, -1))
+        self.comboBox_2.setItemText(3, QtWidgets.QApplication.translate("main_window", "Current", None, -1))
+        self.comboBox_2.setItemText(4, QtWidgets.QApplication.translate("main_window", "Ion", None, -1))
+        self.comboBox_2.setItemText(5, QtWidgets.QApplication.translate("main_window", "Electric Field", None, -1))
+        self.comboBox_2.setItemText(6, QtWidgets.QApplication.translate("main_window", "Pump Rate", None, -1))
         self.groupBox_6.setTitle(QtWidgets.QApplication.translate("main_window", "Substance", None, -1))
         self.label_72.setText(QtWidgets.QApplication.translate("main_window", "Name:", None, -1))
         self.groupBox_7.setTitle(QtWidgets.QApplication.translate("main_window", "Reaction", None, -1))
@@ -3567,15 +3567,15 @@ class Ui_main_window(object):
         self.action_sim_run_toggle_work.setToolTip(QtWidgets.QApplication.translate("main_window", "<html><head/><body><p>Start, pause, or unpause the currently queued simulation phase. Clicking this button either:</p><ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starts this phase if currently unstarted.</li><li style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Pauses this phase if currently started at its current position (e.g., sampled time step).</li><li style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Unpauses this phase if currently paused from its current position (e.g., sampled time step).</li></ul></body></html>", None, -1))
 
 from betsee.gui.simconf.stack.guisimconfstack import QBetseeSimConfStackedWidget
-from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfDoubleSpinBox, QBetseeSimConfIntSpinBox
-from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxSequence, QBetseeSimConfComboBoxEnum
+from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfLineEdit, QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfPathnameImageLineEdit
 from betsee.util.widget.stock.guiprogressbar import QBetseeProgressBar
-from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
+from betsee.gui.simconf.stack.widget.guisimconfspinbox import QBetseeSimConfIntSpinBox, QBetseeSimConfDoubleSpinBox
+from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
 from betsee.gui.simconf.stack.widget.guisimconfcheckbox import QBetseeSimConfCheckBox
-from betsee.gui.simconf.stack.widget.guisimconflineedit import QBetseeSimConfPathnameSubdirLineEdit, QBetseeSimConfLineEdit, QBetseeSimConfPathnameImageLineEdit
+from betsee.gui.simconf.stack.widget.guisimconfcombobox import QBetseeSimConfComboBoxEnum, QBetseeSimConfComboBoxSequence
 from betsee.gui.simtab.guisimtab import QBetseeSimmerTabWidget
 from betsee.util.widget.stock.label.guilabelimage import QBetseeLabelImage
-from betsee.util.widget.stock.guitextedit import QBetseePlainTextEdit
+from betsee.gui.simconf.tree.guisimconftree import QBetseeSimConfTreeWidget
 import betsee_rc
 
 from PySide2.QtWidgets import QMainWindow
