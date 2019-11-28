@@ -12,7 +12,7 @@ Qt Designer application.
 # ....................{ IMPORTS                           }....................
 from betse.util.io.log import logs
 from betse.util.path import files, pathnames, paths
-from betse.util.path.command import cmdrun, cmds
+from betse.util.os.command import cmdrun, cmds
 from betse.util.type.types import type_check
 
 # ....................{ CONVERTERS                        }....................

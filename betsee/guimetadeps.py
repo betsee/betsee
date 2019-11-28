@@ -88,19 +88,19 @@ RUNTIME_MANDATORY = {
     # and 0.8.1.0 both strictly require BETSE 0.8.1). Since newer versions of
     # BETSE typically break backward compatibility with older versions of
     # BETSEE, this dependency does *NOT* extend to newer versions of BETSE.
-    'BETSE': '== ' + BETSE_VERSION,
+    'betse': '== ' + BETSE_VERSION,
 
-    #FIXME: Convert this into a versioned dependency once the Qt Company
-    #releases an official PySide2 release supported under all requisite
-    #platforms (e.g., conda-forge, Gentoo). Until then, this suffices.
-
-    'PySide2': '',
-    # 'PySide2': '>= 5.12.3',  # First official stable release of PySide2.
+    # Versioned dependencies directly required by this application.
+    'PySide2': '>= 5.12.3',  # First official stable release of PySide2.
 
     # Unversioned dependencies directly required by this application. Since
     # the modules providing these dependencies define no PEP-8-compliant
     # "__version__" or "__version_info__" attributes. merely validating these
     # modules to be importable is the most we can do.
+    #
+    # Note that this is guaranteed to be the case for users installing PySide2
+    # from official PyPI-hosted wheels, but *NOT* for users installing PySide2
+    # from other sources (e.g., system-wide package managers).
     'PySide2.QtGui': '',
     'PySide2.QtSvg': '',
     'PySide2.QtWidgets': '',
@@ -122,20 +122,24 @@ See Also
 '''
 
 # ....................{ LIBS ~ runtime : optional         }....................
-#FIXME: Should these dependencies also be added to our "setup.py" metadata,
-#perhaps as so-called "extras"? Contemplate. Consider. Devise.
 RUNTIME_OPTIONAL = {
     # To simplify subsequent lookup at runtime, project names for optional
     # dependencies should be *STRICTLY LOWERCASE*. Since setuptools parses
     # project names case-insensitively, case is only of internal relevance.
 
+    # Unversioned dependencies directly required by this application. Since
+    # the modules providing these dependencies define no PEP-8-compliant
+    # "__version__" or "__version_info__" attributes. merely validating these
+    # modules to be importable is the most we can do.
+    #
+    # Note that this is guaranteed to be the case for users installing PySide2
+    # from official PyPI-hosted wheels, but *NOT* for users installing PySide2
+    # from other sources (e.g., system-wide package managers).
+
     #FIXME: Add a minimum required version *AFTER* upstream resolves the
-    #following open issue:
-    #    https://bugreports.qt.io/browse/PYSIDE-517
-    #FIXME: The official "PySide2" wheel now ships "pyside2uic" out-of-the-box,
-    #suggesting this should now resemble:
-    #    'pyside2uic': RUNTIME_MANDATORY['PySide2'],
-    #Test the above specification when time admits (i.e., sadly never).
+    #following open issue: https://bugreports.qt.io/browse/PYSIDE-517
+    # Note that the corresponding "pyside2-uic" command is *NOT* required; only
+    # the pure-Python "pyside2uic" package referenced here is required.
     'pyside2uic': '',
 }
 '''
@@ -153,6 +157,31 @@ See Also
 
 # ....................{ LIBS ~ testing : mandatory        }....................
 TESTING_MANDATORY = {
+    # setuptools is currently required at testing time as well. If ommitted,
+    # "tox" commonly fails at venv creation time with exceptions resembling:
+    #
+    #     GLOB sdist-make: /home/leycec/py/betse/setup.py
+    #     py36 inst-nodeps: /home/leycec/py/betse/.tox/.tmp/package/1/betse-1.1.1.zip
+    #     ERROR: invocation failed (exit code 1), logfile: /home/leycec/py/betse/.tox/py36/log/py36-3.log
+    #     =================================================== log start ===================================================
+    #     Processing ./.tox/.tmp/package/1/betse-1.1.1.zip
+    #         Complete output from command python setup.py egg_info:
+    #         Traceback (most recent call last):
+    #           File "<string>", line 1, in <module>
+    #           File "/tmp/pip-0j3y5x58-build/setup.py", line 158, in <module>
+    #             buputil.die_unless_setuptools_version_at_least(metadeps.SETUPTOOLS_VERSION_MIN)
+    #           File "/tmp/pip-0j3y5x58-build/betse_setup/buputil.py", line 74, in die_unless_setuptools_version_at_least
+    #             setuptools_version_min, setuptools.__version__))
+    #         Exception: setuptools >= 38.2.0 required by this application, but only setuptools 28.8.0 found.
+    #
+    #         ----------------------------------------
+    #     Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-0j3y5x58-build/
+    #     You are using pip version 9.0.1, however version 19.3.1 is available.
+    #     You should consider upgrading via the 'pip install --upgrade pip' command.
+    #
+    #     ==================================================== log end ====================================================
+    'setuptools': '>= ' + SETUPTOOLS_VERSION_MIN,
+
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # WARNING: This py.test requirement *MUST* be manually synchronized to the
     # same requirement in the upstream "betse.metadeps" submodule. Failure to
@@ -200,6 +229,7 @@ RequirementCommand.__doc__ = '''
 # * Third-party platform-specific packages (e.g., Gentoo Linux ebuilds).
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 REQUIREMENT_NAME_TO_COMMANDS = {
+    # "pytest-xvfb" requires "Xvfb" to be externally installed.
     'pytest-xvfb': (RequirementCommand(name='Xvfb', basename='Xvfb'),),
 }
 '''
@@ -250,10 +280,8 @@ def get_runtime_mandatory_tuple() -> tuple:
         for dependency_name, dependency_constraints in
             RUNTIME_MANDATORY.items()
 
-        # If this is neither a PySide2-specific submodule nor the "pyside2uic"
-        # subpackage, which official PySide2 wheels now bundle out-of-the-box
-        # and hence are *NOT* externally available from PyPI...
-        if not dependency_name.startswith(('PySide2.', 'pyside2uic'))
+        # If this is *NOT* a PySide2-specific submodule...
+        if not dependency_name.startswith('PySide2.')
     }
 
     # Return this dictionary converted into a tuple.
@@ -272,8 +300,28 @@ def get_runtime_optional_tuple() -> tuple:
     # Avoid circular import dependencies.
     from betsee.lib.setuptools import guisetuptool
 
+    # Dictionary of all mandatory runtime dependencies excluding submodules.
+    runtime_optional_sans_submodules = {
+        # Map this dependency's name to constraints.
+        dependency_name: dependency_constraints
+
+        # For the name and constraints of each optional runtime dependency...
+        for dependency_name, dependency_constraints in
+            RUNTIME_OPTIONAL.items()
+
+        # If this is *NOT* the "pyside2uic" package, which official PySide2
+        # wheels now bundle out-of-the-box rather than distributing as a
+        # separate PyPI-hosted package. Since this package is *NOT* externally
+        # available from PyPI, including this package here would induce fatal
+        # install-time errors for users and test-time utilities (e.g., "tox")
+        # installing the "all" extra for all optional runtime dependencies.
+        if not dependency_name == 'pyside2uic'
+    }
+
     # Return this dictionary converted into a tuple.
-    return guisetuptool.convert_requirements_dict_to_tuple(RUNTIME_OPTIONAL)
+    return guisetuptool.convert_requirements_dict_to_tuple(
+        runtime_optional_sans_submodules)
+
 
 
 def get_testing_mandatory_tuple() -> tuple:

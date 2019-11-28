@@ -5,149 +5,72 @@
 # --------------------( SYNOPSIS                          )--------------------
 # Project-wide GitLab-CI configuration, integrating the in-house
 # free-as-in-beer continuous integration (CI) service exposed by GitLab with
-# this project's "py.test"-driven test suite. GitLab-specific terminology used
-# by this service includes (from highest- to lowest-level):
+# this project's "py.test"-driven test suite.
 #
-# * GitLab-CI, GitLab's high-level CI service coordinating project-specific and
-#   shared Runners with projects - including project artefacts and metadata.
-# * Runner, a low-level virtual machine conforming to the GitLab Runner API and
-#   acquiring builds to process through the GitLab-CI coordinator API. There
-#   exist two categories of Runners:
-#   * Project Runners, hosted either directly by project maintainers on private
-#     servers *OR* indirectly by for-profit intermediaries on private servers
-#     paid for by the project maintainers. As the nomenclature implies, Project
-#     Runners are specific to and hence accessible by only the project to which
-#     they are assigned. In either case, "paid" and "private" are the general
-#     keywords here. (Inapplicable for our use case.)
-#   * Shared Runners. As the nomenclature implies, Shared Runners are
-#     accessible to all projects on a GitLab instance. Hence, all projects
-#     hosted by the official gitlab.com host share access to the same Shared
-#     Runners. Shared Runners are hosted either:
-#     * If the GitLab instance hosting this project is *NOT* the official
-#       gitlab.com, then by the prior mechanisms (e.g., by project maintainers
-#       or for-profit intermediaries).
-#     * If the GitLab instance hosting this project is the official gitlab.com,
-#       then by the for-profit intermediary with whom gitlab.com has partnered:
-#       as of this writing, DigitalOcean. In this and only this special
-#       edge-case, Shared Runners are free-as-in-beer for both public and
-#       private repositories hosted with this instance. An inevitable caveat,
-#       of course, is that only Linux-based Shared Runners are available. To
-#       quote the official response to a recent issue report requesting both OS
-#       X and Windows support:
-#       "If you are writing about shared runners on GitLab.com, then they are
-#        only Linux based (with docker executor). If you need Windows, Mac or
-#        any other OS for the runner, then you need to install it on your own
-#        host and register it in your project on GitLab.com."
-#
-# This gitlab.com-hosted project has been configured to enable Linux-based
-# Shared Runners. Exercising tests on either OS X or Windows requires doing so
-# on an external third-party free-as-in-beer CI service specific to that
-# platform and then integrating this service with GitLab.
+# --------------------( SEE ALSO                          )--------------------
+# * "betse/.gitlab-ci.yml", from which this file largely derives.
 
 # ....................{ DOCKER                            }....................
-# Colon-delimited name and tag of the first- or third-party Docker image
-# registered with the Docker Hub Registery (e.g., "python:3", denoting the
-# Docker image named "python" tagged as "3"), provisioning the scientific stack
-# to be tested against. A tag is an alphanumeric label unique to an image,
-# whose name is itself an alphanumeric label unique to the set of all images
-# registered with the Docker Hub Registery. A tag typically specifies the
-# version of that image to be used.
+# Colon-delimited name and tag of the Docker image registered at the Docker Hub
+# Registery (e.g., "python:3", denoting the Docker image named "python" tagged
+# as "3"), provisioning the Python stack to be tested against.
 #
-# For a list of all available Docker images, see the search bar at the top of
-# "https://hub.docker.com". To find relevant images, consider (in order):
+# A name is an alphanumeric label such that:
 #
-# * Either:
-#   * Google "docker python3 matplotlib". Since Matplotlib transitively
-#     requires most dependencies required by this project, this query
-#     (typically) yields maximally relevant images.
-#   * Search the Docker Hub Registry directly by:
-#     * Switching the list box from its useless default of "All" to either
-#       "Downloads" or "Stars", sorting hits on image usage or upvotes.
-#     * Searching for "python". Unfortunately, since the search engine *ONLY*
-#       searches image names rather than some combination of names,
-#       descriptions, and/or Dockerfiles, the resulting hits tend to be only
-#       minimally relevant.
-# * For each image of interest, clicking the "Tags" subpage to list:
-#   * All available tags for that image.
-#   * For each such tag, the compressed filesize of that tagged image.
+# * For third-party Docker images, the name is prefixed by an organization name
+#   delimited by a "/" character (e.g., "continuumio/anaconda3").
+# * For official Docker images published by Docker itself, the name is a bare
+#   label prefixed by *NO* such delimiter (e.g., "python").
 #
-# All else being equal, the smallest image pre-packaging the largest number of
-# dependencies required for our scientific stack is the most ideal. Note that
-# downloading and installing dependencies via a package manager is
-# significantly slower than merely downloading an image pre-packaging those
-# dependencies.
+# A tag is an alphanumeric label unique to an image, whose name is itself an
+# alphanumeric label unique across all images registered at the Docker Hub
+# Registery. A tag typically specifies the version of that image to be used.
 #
-# Docker official images are rumoured to be switching from an Ubuntu- to an
-# Alpine Linux-based OS. Thanks to an obsessive-compulsive attention to
-# minification, Alpine Linux is ideal for Docker-based CI. While Alpine Linux
-# comes bundled with a package manager ("apk") providing a variety of
-# scientific Python packages (e.g., "py-numpy"), these packages are all
-# specific to the Python 2.7 ecosystem as of mid-2017. If and when Alpine Linux
-# provides new Python 3.x-compatible scientific Python packages, the current
-# choice of Docker image below should be revisited.
-#
-# For simplicity, we currently fallback to the official Anaconda 3 Docker image
-# from Continuum Analytics. If and when Alpine Linux supports Python 3.x,
-# consider a (probably painful and hence improbable) switch. See also:
-#
-# * Docker Hub Registery entry for this image:
-#   https://hub.docker.com/r/continuumio/anaconda3
-# * Open-source GitHub repository hosting this image's Dockerfile:
-#   https://github.com/ContinuumIO/docker-images/tree/master/anaconda3
-# * Platform-specific lists of all Anaconda packages installed by default:
-#   http://repo.continuum.io/pkgs
-# * A promising alternative installing additional optional dependencies over
-#   Anaconda 3, including FFMpeg. It's fairly heavyweight (which is bad), but
-#   frequently maintained (which is good):
-#   https://hub.docker.com/r/kaggle/python
-#   https://github.com/Kaggle/docker-python
-# * A promising alternative layering Anaconda 3 onto Alpine Linux, thus
-#   circumventing several of the aforementioned issues. Unfortunately, this
-#   image is infrequently maintained and hence unreliable (which is terribad):
-#   https://github.com/vishnu2kmohan/anaconda3-docker
-image: continuumio/anaconda3:latest
+# Lastly, note that the test matrix defined below explicitly overrides this
+# basic image for every test environment. This is only a desperate fallback.
+image: python
 
-# ....................{ GLOBALS                           }....................
+# ....................{ GLOBALS ~ env                     }....................
 # Dictionary mapping from the name to value of each environment variable to be
 # "globally" exported and hence accessible to *ALL* commands run below.
 variables:
   # ...................{ GLOBALS ~ public                  }...................
   # Public environment variables specific to third-party applications.
+  #
+  # Note that *ALL* pathnames to be cached below should be prefixed by
+  # "${CI_PROJECT_DIR}/", the absolute dirname of the pipeline-specific
+  # directory containing this project. See the "WARNING" below for details.
 
-  # Instruct Matplotlib to cache metadata to the build-relative directory
-  # repeated in the "cache:" section below.
-  MPLCONFIGDIR: "mpl-cache"
+  # Reduce the Advanced Package Tool (APT) package manager provided by this
+  # Debian Linux-based image to headless behaviour. To quote "man debconf":
+  #     "This is the anti-frontend. It never interacts with you at all, and
+  #      makes the default answers be used for all questions. It might mail
+  #      error messages to root, but that's it; otherwise it is completely
+  #      silent and unobtrusive, a perfect frontend for automatic installs. If
+  #      you are using this front-end, and require non-default answers to
+  #      questions, you will need to preseed the debconf database; see the
+  #      section below on Unattended Package Installation for more details."
+  # Note that the "apt --yes" option technically obsoletes this setting for
+  # most purposes, but that a little explicitness never hurt no one never.
+  DEBIAN_FRONTEND: noninteractive
+
+  # Instruct XDG-compliant packages (e.g., matplotlib) to cache metadata to the
+  # build-relative directory repeated in the "cache:" mapping below.
+  XDG_CACHE_HOME: "${CI_PROJECT_DIR}/.cache"
 
   # ...................{ GLOBALS ~ private                 }...................
   # Private environment variables specific to this configuration. To avoid
   # conflict with third-party applications, the name of each such variable is
   # intentionally prefixed by "_".
 
-  # Relative path of the top-level directory containing this configuration's
-  # Ananconda environment repeated in the "cache:" section below. To
-  # differentiate this environment from an environment of the same name in the
-  # default system-wide directory for Anaconda environments (e.g.,
-  # "/opt/conda/envs"), this path is intentionally prefixed by "./".
-  _CONDA_ENV_DIRNAME: "./conda-env"
-
-
+# ....................{ GLOBALS ~ cache                   }....................
 cache:
-  # Enable per-branch caching, assigning each repository branch a unique cache.
-  # By default, Gitlab-CI enables per-job and per-branch caching, assigning
-  # each repository branch for each job a unique cache. While a sane default,
-  # this pipeline does *NOT* isolating each cache to each job. On the contrary,
-  # the build and test jobs defined below expect to share the same cache.
-  #
-  # For a human-readable list of permissible values for this setting, see also:
-  #     https://docs.gitlab.com/ce/ci/yaml/README.html#cache-key
-  key: "$CI_BUILD_REF_NAME"
-
   # Cache all subdirectories and files of the build directory *NOT* already
   # tracked by Git for this repository, in addition to those paths explicitly
   # cached below. In theory, all paths requiring caching should be explicitly
   # cached below; in practice, this fallback ensures that paths omitted below
   # will still be implicitly cached.
-  untracked: true
+  # untracked: true
 
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   # WARNING: Due to an outstanding issue, GitLab-CI currently ignores *ALL*
@@ -155,7 +78,7 @@ cache:
   #     https://gitlab.com/gitlab-org/gitlab-ce/issues/4431
   # Sadly, this implies that cache paths listed below *MUST* be both relative
   # to and contained in the build directory. Ensure that each such path is
-  # prefixed by neither "/", "./", or "../" *OR* by any variable expanding to
+  # prefixed by neither "/", "./", or "../" *NOR* by any variable expanding to
   # such a path (e.g., "$HOME").
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   #
@@ -163,119 +86,8 @@ cache:
   # preserved between CI pipelines. (Note that relative dirnames are relative
   # to the current build directory.)
   paths:
-    # Directory to which Anaconda persists this configuration's environment.
-    - conda-env/
-
-    # Directory to which Matplotlib caches metadata (e.g., on fonts).
-    - mpl-cache/
-
-# ....................{ GLOBALS ~ script                  }....................
-# List of all external commands run *BEFORE* running those listed by the
-# "script" key of any job below. These commands build and install both this
-# application and all third-party dependencies required by this application.
-before_script:
-  # Update all system packages installed by default with this image for the
-  # duration of this CI pipeline.
-  #
-  # Since this image is frequently updated, this is ignored.
-  #- apt-get update -qy
-
-  # Install all dependencies available via the system-wide package manager,
-  # which is typically both faster and stabler than doing so via pip3.
-  #
-  # Since this image provides such dependencies by default, this is ignored.
-  # - apt-get install -y
-
-  # Configure "conda" to run in headless mode. Dismantled, this is:
-  #
-  # * "always_yes true", automatically pass the "--yes" option to *ALL*
-  #   "conda" commands run below. This is a superficial convenience reducing
-  #   the likelihood of developer oversight and hence saving essential sanity.
-  # * "auto_update_conda false", improving both space and time complexity by
-  #   preventing "conda" from unnecessarily upgrading itself.
-  - conda config --set always_yes true --set auto_update_conda false
-
-  # Update "conda" *SAFELY*. To circumvent a well-known hard blocker in the
-  # supposedly stable release of conda 4.4, "conda" is intentionally *NOT*
-  # updated here with a standard one-liner: "conda upgrade -y conda". For
-  # further details, see the following exhaustive GitHub issue:
-  #     https://github.com/conda/conda/issues/6811
-  - conda install --quiet --name base conda
-
-  # For debuggability, print metadata identifying this Anaconda release.
-  - conda info --all
-
-  #FIXME: This doesn't appear to actually be cached. We have little idea why.
-  #The "cache" section defined above appears to be syntactically correct and
-  #indeed be caching the same directory defined below. The culprit, really, is
-  #the complete (and utterly frustrating) lack of detailed debug output from
-  #Gitlab-CI concerning which exact paths are being cached and when. Until
-  #such output lands, we probably won't be able to reasonably address this.
-
-  # Create an empty Anaconda environment if not already created by a prior job
-  # *OR* silently ignore the resulting error otherwise. To create this
-  # environment in a cachable build-local directory rather than the uncachable
-  # default directory for Anaconda environments, the "--prefix" rather than
-  # "--name" option is passed. Since these two options are mutually exclusive,
-  # only the former is passed.
-  #
-  # Note that isolating the installation of package dependencies into this
-  # environment is essential. Although this installation is already confined
-  # to a temporary Docker image and hence requires no additional isolation,
-  # Anaconda *ONLY* supports configurable caching via the "${CONDA_PREFIX}"
-  # environment variable specific to Anaconda environments. To persist this
-  # installation across jobs, there exists no sane alternative.
-  - conda create --quiet --prefix "${_CONDA_ENV_DIRNAME}" || true
-
-  # Activate this environment (i.e., prepend the current ${PATH} by this
-  # environment's top-level directory).
-  - conda activate "${_CONDA_ENV_DIRNAME}"
-
-  # Add the third-party "conda-forge" channel as the highest-priority channel,
-  # ensuring that subsequently installed dependencies prefer the versions
-  # supplied by this channel rather than any official default channels. This
-  # is strongly preferable for any number of obvious reasons, including:
-  #
-  # * Official default channels either fail to:
-  #   * Supply packages (e.g., "pyside2").
-  #   * Supply working packages (e.g., "graphviz", whose official package
-  #     appears to suffer numerous well-known deficiencies under Windows).
-  # * Parity with the existing Anaconda package for this application, which is
-  #   hosted by conda-forge for the above reasons and more. Parity with respect
-  #   to dependency installation increases the likelihood of parity between
-  #   testing results and end user experience.
-  - conda config --add channels conda-forge
-
-  # Install all mandatory and optional dependencies of this application into
-  # this environment from the "conda-forge" channel.
-  #
-  # Note that passing the "--file requirements-conda.txt" option to the above
-  # "conda create" command would suffice to do so for the initial creation of
-  # this environment but fail to account for subsequent changes to these
-  # dependencies; hence, environment creation and dependency installation
-  # *MUST* be separated. The efficiency hit is minimal if any.
-  #
-  # Note also that, in theory, it would be superficially feasible to replace
-  # our usage of this external requirements file with usage of the dependencies
-  # already defined for the existing Anaconda package for this application with
-  # the new "--only-deps" option introduced with conda 4.4: e.g.,
-  #
-  #     - conda install --only-deps -c conda-forge betse
-  #
-  # In practice, however, that would be a terrible idea. There exists no
-  # guarantee that the dependency list required by the most recent stable
-  # release of this application (and hence that Anaconda package) perfectly
-  # coincides with the dependency list required by the live version of this
-  # application exercised by this configuration. Moreover, doing so would also
-  # install PySide2 -- a heavyweight interactive dependency with no meaningful
-  # utility during testing.
-  #
-  # In short: "Explicit is still better than implicit."
-  - conda install --quiet --file requirements-conda.txt
-
-  # Install this project into this environment in the most efficient means
-  # possible (i.e., without copying this project into this environment).
-  - python setup.py develop
+    # Directory to which XDG-compliant packages cache metadata (e.g., fonts).
+    - .cache/
 
 # ....................{ STAGES                            }....................
 # List of all stages to be run by this pipeline (in order).
@@ -305,7 +117,6 @@ before_script:
 # job is now performed as a global "before_script" key. While non-ideal, there
 # appears to be no remedy as yet.
 stages:
-  # - build
   - test
 
 # ....................{ JOBS                              }....................
@@ -321,31 +132,75 @@ stages:
 # official key, thus confining the action of that key (e.g., artifact building,
 # caching, script commands) to that job.
 
-# ....................{ JOBS ~ test                       }....................
-# Test-specific job, exercising the entire test suite for this application.
-betse_test:
+# ....................{ JOBS ~ test : common              }....................
+# Mapping-style anchor to be interpolated into each job's mapping below.
+.test_common: &test_common
   # Stage to run this job under. Note that "test" is technically the default
   # stage and hence need *NOT* be explicitly specified here. For disambiguity,
   # we do so anyway.
   stage: test
 
-  # List of all external commands run by this job.
-  script:
-    # For debuggability, print metadata identifying the current version of this
-    # application. Since the same metadata is also printed, captured, and
-    # squelched by a functional test exercised by testing run below, doing so
-    # is redundant. Nonetheless, py.test provides no means of selectively
-    # disabling output capturing for only specific tests. For efficiency and
-    # readability, globally disabling output capturing is undesirable.
-    # Dismantled, this is:
+  # List of all external commands run *BEFORE* running those listed by the
+  # "script" key of any job below. These commands build and install both this
+  # application and all third-party dependencies required by this application.
+  before_script:
+    # Update all system-wide packages installed by default with this image for
+    # the temporary duration of this job and, if a package cache has yet to be
+    # created, do so.
     #
-    # * "--headless", preventing this application from erroneously attempting
-    #   to initialize interactive-only matplotlib backends (e.g., "PyQt4").
-    - betse --headless info
+    # This command *MUST* be run before attempting to install any dependencies
+    # via the system-wide package manager, as the latter requires the package
+    # cache created by the former. If omitted, the first such attempt fails
+    # with a fatal error resembling:
+    #
+    #    $ apt-get install -y graphviz
+    #    Reading package lists...
+    #    Building dependency tree...
+    #    Reading state information...
+    #    E: Unable to locate package graphviz
+    - apt-get update --quiet --yes
 
-    # Run the entire "py.test"-based test suite under the following options:
+    # Install all dependencies available via the system-wide package manager.
+    # Doing so is typically both faster and stabler than doing so via "pip"
+    # and, in any case, supports installation of non-Pythonic dependencies
+    # unavailable via "pip" (e.g., "graphviz").
+    - apt-get install --quiet --yes graphviz
+
+    # Install all preliminary Python dependencies with "pip". Note that the
+    # "tox.ini" file provided by this project installs:
     #
-    # * "--maxfail=3", halting testing on the third failure. For discussion,
-    #   see the "betse.lib.setuptool.command.supcmdtest" submodule.
-    - py.test --maxfail=3
-    # - py.test --maxfail=3 -s
+    # * All remaining Python dependencies (e.g., "pytest", "numpy", "scipy").
+    # * This project itself (e.g., "betse").
+    - python3 -m pip --quiet install tox
+
+# ....................{ JOBS ~ test : version             }....................
+# Note that non-slim Docker Python images are currently preferred to slim
+# variants with names suffixed by "-slim" (e.g., "python:3.8-slim"), as the
+# latter fail to include C and C++ compilers required to build and install
+# wheels for Python packages both lacking official wheels *AND* containing
+# mandatory C extensions (e.g., "psutil"). Installing compilers under slim
+# variants would circumvent this but also defeat the purpose of doing so.
+
+# Python 3.5-specific test job, exercising this project's full test suite.
+test_python35:
+  <<: *test_common
+  image: python:3.5
+  script: python3 -m tox -e py35
+
+# Python 3.6-specific test job, exercising this project's full test suite.
+test_python36:
+  <<: *test_common
+  image: python:3.6
+  script: python3 -m tox -e py36
+
+# Python 3.7-specific test job, exercising this project's full test suite.
+test_python37:
+  <<: *test_common
+  image: python:3.7
+  script: python3 -m tox -e py37
+
+# Python 3.8-specific test job, exercising this project's full test suite.
+test_python38:
+  <<: *test_common
+  image: python:3.8
+  script: python3 -m tox -e py38

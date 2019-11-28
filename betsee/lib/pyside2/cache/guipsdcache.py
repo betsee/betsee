@@ -14,7 +14,7 @@ import PySide2
 from betse.util.app.meta import appmetaone
 from betse.util.io.log import logs
 from betse.util.path import files, paths, pathnames
-from betse.util.path.command import cmdpath
+from betse.util.os.command import cmdpath
 from betse.util.py.module import pyimport, pymodule
 from betse.util.type.enums import make_enum
 from betse.util.type.types import type_check, IterableTypes
