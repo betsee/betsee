@@ -227,8 +227,9 @@ test_python37:
   image: python:3.7
   script: python3 -m tox -e py37
 
+#FIXME: Uncomment after upstream resolves PYSIDE-939. See "betsee.guimetadata".
 # Python 3.8-specific test job, exercising this project's full test suite.
-test_python38:
-  <<: *test_common
-  image: python:3.8
-  script: python3 -m tox -e py38
+# test_python38:
+#   <<: *test_common
+#   image: python:3.8
+#   script: python3 -m tox -e py38
