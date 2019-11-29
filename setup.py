@@ -167,6 +167,9 @@ _SETUP_OPTIONS = {
     'license': guimetadata.LICENSE,
 
     # ..................{ DEPENDENCIES                      }..................
+    # Python dependency.
+    'python_requires': '>=' + guimetadata.PYTHON_VERSION_MIN,
+
     # Mandatory nuntime dependencies.
     'install_requires': guimetadeps.get_runtime_mandatory_tuple(),
 

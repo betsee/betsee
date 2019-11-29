@@ -186,13 +186,13 @@ stages:
     #    Building dependency tree...
     #    Reading state information...
     #    E: Unable to locate package graphviz
-    - apt-get update --quiet --yes
+    - apt-get update --quiet --quiet --yes
 
     # Install all dependencies available via the system-wide package manager.
     # Doing so is typically both faster and stabler than doing so via "pip"
     # and, in any case, supports installation of non-Pythonic dependencies
     # unavailable via "pip" (e.g., "graphviz").
-    - apt-get install --quiet --yes ${_APT_PACKAGE_NAMES}
+    - apt-get install --quiet --quiet --yes ${_APT_PACKAGE_NAMES}
 
     # Install all preliminary Python dependencies with "pip". Note that the
     # "tox.ini" file provided by this project installs:

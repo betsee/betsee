@@ -46,7 +46,13 @@ Human-readable minimum version of Python required by this application as a
 '''
 
 
-PYTHON_VERSION_MINOR_MAX = 8
+#FIXME: PySide2 (and hence BETSEE by extension) is currently incompatible with
+#Python 3.8 to a significant enough degree that importing from PySide2 under
+#Python 3.8 induces an exception whose message resembles:
+#    TypeError: 'Shiboken.ObjectType' object is not iterable
+#Until the following well-known issue is resolved, we're locked to Python 3.7:
+#    https://bugreports.qt.io/browse/PYSIDE-939
+PYTHON_VERSION_MINOR_MAX = 7
 '''
 Maximum minor stable version of the current Python 3.x mainline (e.g., ``9`` if
 Python 3.9 is the most recent stable version of Python 3.x).
