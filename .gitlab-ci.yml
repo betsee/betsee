@@ -163,8 +163,32 @@ stages:
     # Install all dependencies available via the system-wide package manager.
     # Doing so is typically both faster and stabler than doing so via "pip"
     # and, in any case, supports installation of non-Pythonic dependencies
-    # unavailable via "pip" (e.g., "graphviz").
-    - apt-get install --quiet --yes graphviz
+    # unavailable via "pip" (e.g., "graphviz"). These include:
+    #
+    # * "graphviz", required by BETSE's optional "pydot" dependency.
+    # * "libgl1-mesa-glx", implicitly required by the Linux-specific PySide2
+    #   wheel, which assumes the default Linux shared library stack. If absent,
+    #   the first attempt to import from the "PySide2" package at BETSEE
+    #   startup raises a fatal exception resembling:
+    #       Traceback (most recent call last):
+    #         File "/usr/local/lib/python3.5/runpy.py", line 193, in _run_module_as_main
+    #           "__main__", mod_spec)
+    #         File "/usr/local/lib/python3.5/runpy.py", line 85, in _run_code
+    #           exec(code, run_globals)
+    #         File "/builds/betse/betsee/.tox/py35/lib/python3.5/site-packages/betsee/__main__.py", line 243, in <module>
+    #           sys.exit(main())
+    #         File "/builds/betse/betsee/.tox/py35/lib/python3.5/site-packages/betsee/__main__.py", line 93, in main
+    #           from betsee.guiappmeta import BetseeAppMeta
+    #         File "/builds/betse/betsee/.tox/py35/lib/python3.5/site-packages/betsee/guiappmeta.py", line 24, in <module>
+    #           from betsee.lib.pyside2.cache.guipsdcache import CachePolicy
+    #         File "/builds/betse/betsee/.tox/py35/lib/python3.5/site-packages/betsee/lib/pyside2/cache/guipsdcache.py", line 22, in <module>
+    #           from betsee.gui.simconf.stack.widget.guisimconfradiobtn import (
+    #         File "/builds/betse/betsee/.tox/py35/lib/python3.5/site-packages/betsee/gui/simconf/stack/widget/guisimconfradiobtn.py", line 21, in <module>
+    #           from PySide2.QtWidgets import QButtonGroup, QRadioButton
+    #       ImportError: libGL.so.1: cannot open shared object file: No such file or directory
+    - apt-get install --quiet --yes \
+          graphviz \
+          libgl1-mesa-glx \
 
     # Install all preliminary Python dependencies with "pip". Note that the
     # "tox.ini" file provided by this project installs:
