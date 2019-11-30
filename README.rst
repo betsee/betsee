@@ -47,83 +47,27 @@ Appveyor_ **+** py.test_, and `permissively distributed <License_>`__ under the
 Installation
 ============
 
-BETSEE is installable under **Linux**, **macOS**, and **Windows** as follows:
+BETSEE is universally installable with either:
 
-- [\ *Windows*\ ] Emulate **Ubuntu Linux** via the `Windows Subsystem for Linux
-  (WSL) <WSL_>`__. [#windows_not]_
-- Install the **Python 3.x** [#python2_not]_ (e.g., 3.6) variant of Anaconda_.
-  [#anaconda_not]_
-- Open a **Bash terminal.** [#terminal]_
-- Run the following commands.
+- [\ *Recommended*\ ] pip_, the standard Python package manager:
 
-  - Enable conda-forge_.
+  .. code-block:: console
 
-    .. code-block:: console
+     pip3 install betsee
 
-       conda config --add channels conda-forge
+- Anaconda_, a third-party Python package manager:
 
-  - Install **BETSEE.** [#conda_package]_
+  .. code-block:: console
 
-    .. code-block:: console
+     conda config --add channels conda-forge
+     conda install betsee
 
-       conda install betsee
+See our `installation instructions <BETSE install_>`__ for details. [#install_betse]_
 
-  - [\ *Optional*\ ] Run **BETSEE.**
-
-    .. code-block:: console
-
-       betsee
-
-.. [#windows_not]
-   The `Windows Subsystem for Linux (WSL) <WSL_>`__ and – hence BETSEE itself –
-   is *only* installable under **Windows 10.** Under older Windows versions,
-   BETSEE may be installed from a `virtual Linux guest <VirtualBox_>`__.
-
-.. [#python2_not]
-   Do *not* install the **Python 2.7** variant of Anaconda_. BETSEE requires
-   **Python 3.x.**
-
-.. [#anaconda_not]
-   BETSEE is currently *only* installable via Anaconda_, a cross-platform
-   scientific Python distribution simplifying installation of non-Python
-   dependencies (e.g., OpenBLAS_, PySide2_). While a `PyPI package`_ for
-   installing BETSEE under ``pip`` (the standard Python package manager) does
-   exist, `that package <PyPI package_>`__ is currently uninstallable due to
-   a lack of official PySide2_ wheels. Even when official PySide2_ wheels are
-   published, Anaconda_ will remain the official installation path for BETSE_
-   and hence BETSEE. ``pip`` commonly produces a performance-crippled
-   single-core installation of BETSE_. Anaconda_ suffers no such issues and is
-   guaranteed to produce a performance-optimized multicore installation of
-   BETSE_ on *all* supported platforms. We strongly recommend Anaconda_ – even
-   when you think you know better.
-
-.. [#terminal]
-   To open a `POSIX`_\ -compatible terminal under:
-
-   - **Windows:**
-
-     #. Install **Ubuntu Linux** via the `Windows Subsystem for Linux (WSL) <WSL_>`__.
-     #. Open an *Ubuntu Linux terminal.*
-
-   - **macOS:**
-
-     #. Open the *Finder*.
-     #. Open the *Applications* folder.
-     #. Open the *Utilities* folder.
-     #. Open *Terminal.app*.
-
-   - **Ubuntu Linux:**
-
-     #. Type ``Ctrl``\ +\ ``Alt``\ +\ ``t``.
-
-.. [#conda_package]
-
-   This command installs both the `most recent stable release of BETSEE <conda
-   package_>`__ *and* all mandatory and most optional dependencies of this
-   release. Older stable releases are installable in a similar manner (e.g.,
-   ``conda install betsee=0.8.2`` for BETSEE 0.8.2). All `Anaconda packages`_
-   are kindly hosted by the `non-profit conda-forge organization
-   <conda-forge_>`__.
+.. [#install_betse]
+   Globally replace all instances of the substring ``betse`` with ``betsee``
+   (e.g., ``pip3 install betsee`` rather than ``pip3 install betse``) in these
+   instructions, which technically refer to BETSE rather than BETSEE.
 
 License
 =======
@@ -191,6 +135,8 @@ Prior grant funding sources include (in chronological order):
    https://gitlab.com/betse/betse
 .. _BETSE citation:
    https://gitlab.com/betse/betse#citation
+.. _BETSE install:
+   https://gitlab.com/betse/betse/blob/master/doc/rst/INSTALL.rst
 .. _BETSE live:
    https://gitlab.com/betse/betse#advanced
 
@@ -287,7 +233,7 @@ Prior grant funding sources include (in chronological order):
 .. _WSL:
    https://msdn.microsoft.com/en-us/commandline/wsl/install-win10
 
-.. # ------------------( LINKS ~ software                   )------------------
+.. # ------------------( LINKS ~ soft                       )------------------
 .. _Appveyor:
    https://ci.appveyor.com/project/betse/betse/branch/master
 .. _Bash on Ubuntu on Windows:
@@ -308,12 +254,6 @@ Prior grant funding sources include (in chronological order):
    https://en.wikipedia.org/wiki/Macintosh_operating_systems
 .. _MacPorts:
    https://www.macports.org
-.. _Matplotlib:
-   http://matplotlib.org
-.. _Miniconda:
-   https://conda.io/miniconda.html
-.. _NumPy:
-   http://www.numpy.org
 .. _MEncoder:
    https://en.wikipedia.org/wiki/MEncoder
 .. _OpenBLAS:
@@ -322,28 +262,12 @@ Prior grant funding sources include (in chronological order):
    https://en.wikipedia.org/wiki/POSIX
 .. _PPA:
    https://launchpad.net/ubuntu/+ppas
-.. _PyPI:
-   https://pypi.python.org
-.. _Python:
-   https://www.python.org
-.. _py.test:
-   http://pytest.org
-.. _SciPy:
-   http://www.scipy.org
 .. _VirtualBox:
    https://www.virtualbox.org
 .. _YAML:
    http://yaml.org
 
-.. # ------------------( LINKS ~ software : conda           )------------------
-.. _Anaconda:
-   https://www.anaconda.com/download
-.. _Anaconda packages:
-   https://anaconda.org
-.. _conda-forge:
-   https://conda-forge.org
-
-.. # ------------------( LINKS ~ software : icon            )------------------
+.. # ------------------( LINKS ~ soft : icon                )------------------
 .. _BETSEE Entypo+ icons:
    betsee/data/qrc/icon/entypo+
 .. _BETSEE Noun Project icons:
@@ -366,7 +290,54 @@ Prior grant funding sources include (in chronological order):
 .. _Open Iconic icons:
    https://github.com/iconic/open-iconic
 
-.. # ------------------( LINKS ~ software : pyside2         )------------------
+.. # ------------------( LINKS ~ soft : license             )------------------
+.. _license compatibility:
+   https://en.wikipedia.org/wiki/License_compatibility#Compatibility_of_FOSS_licenses
+.. _BSD 2-clause license:
+   https://opensource.org/licenses/BSD-2-Clause
+.. _CC BY 3.0 license:
+   https://creativecommons.org/licenses/by/3.0
+.. _CC BY-SA 4.0 license:
+   https://creativecommons.org/licenses/by-sa/4.0
+.. _Entypo+ license:
+   licenses/entypo+
+.. _MIT license:
+   https://opensource.org/licenses/MIT
+.. _Open Iconic license:
+   licenses/open_iconic
+
+.. # ------------------( LINKS ~ soft : py                  )------------------
+.. _dill:
+   https://pypi.python.org/pypi/dill
+.. _imageio:
+   https://imageio.github.io
+.. _Matplotlib:
+   http://matplotlib.org
+.. _NumPy:
+   http://www.numpy.org
+.. _PyPI:
+   https://pypi.python.org
+.. _Python:
+.. _Python 3:
+   https://www.python.org
+.. _pip:
+   https://pip.pypa.io
+.. _py.test:
+   http://pytest.org
+.. _SciPy:
+   http://www.scipy.org
+
+.. # ------------------( LINKS ~ soft : py : conda          )------------------
+.. _Anaconda:
+   https://www.anaconda.com/download
+.. _Anaconda packages:
+   https://anaconda.org
+.. _conda-forge:
+   https://conda-forge.org
+.. _Miniconda:
+   https://conda.io/miniconda.html
+
+.. # ------------------( LINKS ~ soft : py : pyside2        )------------------
 .. _PySide2:
    https://wiki.qt.io/PySide2
 .. _PySide2 5.9:
@@ -383,19 +354,3 @@ Prior grant funding sources include (in chronological order):
    https://www.qt.io
 .. _Qt 5.9:
    https://wiki.qt.io/Qt_5.9_Release
-
-.. # ------------------( LINKS ~ software : licenses        )------------------
-.. _license compatibility:
-   https://en.wikipedia.org/wiki/License_compatibility#Compatibility_of_FOSS_licenses
-.. _BSD 2-clause license:
-   https://opensource.org/licenses/BSD-2-Clause
-.. _CC BY 3.0 license:
-   https://creativecommons.org/licenses/by/3.0
-.. _CC BY-SA 4.0 license:
-   https://creativecommons.org/licenses/by-sa/4.0
-.. _Entypo+ license:
-   licenses/entypo+
-.. _MIT license:
-   https://opensource.org/licenses/MIT
-.. _Open Iconic license:
-   licenses/open_iconic
