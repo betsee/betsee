@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2020 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -260,8 +260,8 @@ def _cache_py_qrc_file(qrc_filename: str, py_filename: str) -> None:
     Raises
     ----------
     BetseCommandException
-        If the ``pyside2-rcc`` command installed by the optional third-party
-        dependency ``pyside2-tools`` is *not* in the current ``${PATH}``.
+        If the ``rcc`` command installed by the optional third-party dependency
+        ``pyside2-tools`` is *not* in the current ``${PATH}``.
 
     See Also
     ----------
@@ -273,22 +273,21 @@ def _cache_py_qrc_file(qrc_filename: str, py_filename: str) -> None:
     from betsee.lib.pyside2.cache import guipsdcacheqrc
 
     # List of the absolute pathnames of all input paths required to do so. For
-    # efficiency, these paths are ordered according to the heuristic discussed
-    # by the paths.is_mtime_recursive_older_than_paths() function.
+    # efficiency, these paths are ordered via the heuristic documented by the
+    # paths.is_mtime_recursive_older_than_paths() function. These include:
+    #
+    # * All files and subdirectories of the input directory containing both
+    #   this input QRC file and all resource files referenced by this file.
+    # * The input "rcc" executable run by the psdqrc.convert_qrc_to_py_file()
+    #   function called below.
     src_pathnames = [
         qrc_filename,
         pymodule.get_filename(guipsdcacheqrc),
-        cmdpath.get_filename('pyside2-rcc'),
+        cmdpath.get_filename('rcc'),
     ]
 
-    # If this output module is at least as new as *ALL* the following paths,
-    # this output module is sufficiently up-to-date and need *NOT* be
-    # regenerated:
-    #
-    # * The input "pyside2-rcc" executable run by the
-    #   psdqrc.convert_qrc_to_py_file() function called below.
-    # * Any file or subdirectory in the input directory containing both this
-    #   input QRC file and all resource files referenced by this file.
+    # If this output module is at least as new as all of the above paths, this
+    # output module is sufficiently up-to-date and need *NOT* be regenerated.
     if not _is_trg_file_stale(
         src_pathnames=src_pathnames, trg_filename=py_filename):
         return
@@ -336,18 +335,8 @@ def _cache_py_ui_file(ui_filename: str, py_filename: str) -> None:
     pyside2uic = libs.import_runtime_optional('pyside2uic')
 
     # List of the absolute pathnames of all input paths required to do so. For
-    # efficiency, these paths are ordered according to the heuristic discussed
-    # by the paths.is_mtime_recursive_older_than_paths() function.
-    src_pathnames = [
-        ui_filename,
-        pymodule.get_filename(guipsdcacheui),
-        pymodule.get_dirname(PySide2),
-        pymodule.get_dirname(pyside2uic),
-    ]
-
-    # If this output module is at least as new as *ALL* the following paths,
-    # this output module is sufficiently up-to-date and need *NOT* be
-    # regenerated:
+    # efficiency, these paths are ordered via the heuristic documented by the
+    # paths.is_mtime_recursive_older_than_paths() function. These include:
     #
     # * This input UI file.
     # * The file providing the submodule of this application converting this UI
@@ -355,6 +344,15 @@ def _cache_py_ui_file(ui_filename: str, py_filename: str) -> None:
     # * Any file or subdirectory in the input directories containing the
     #   "PySide2" and "pyside2uic" packages required by the
     #   psdui.convert_ui_to_py_file() function called below.
+    src_pathnames = [
+        ui_filename,
+        pymodule.get_filename(guipsdcacheui),
+        pymodule.get_dirname(PySide2),
+        pymodule.get_dirname(pyside2uic),
+    ]
+
+    # If this output module is at least as new as all of the above paths, this
+    # output module is sufficiently up-to-date and need *NOT* be regenerated.
     if not _is_trg_file_stale(
         src_pathnames=src_pathnames, trg_filename=py_filename):
         return

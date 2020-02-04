@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2020 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -91,7 +91,14 @@ RUNTIME_MANDATORY = {
     'betse': '== ' + BETSE_VERSION,
 
     # Versioned dependencies directly required by this application.
-    'PySide2': '>= 5.12.3',  # First official stable release of PySide2.
+    # Specifically, this application requires:
+    #
+    # * PySide2 >= 5.14.0, which removed the requisite "pyside2-uic" and
+    #   "pyside2-rcc" commands in favour of the "uic --generate python" and
+    #   "rcc --generate python" commands provided by both the optional
+    #   "pyside2-tools" dependency and mandatory C++ Qt dependencies. In short,
+    #   "pyside2-tools" is mostly no longer required at runtime.
+    'PySide2': '>= 5.14.0',
 
     # Unversioned dependencies directly required by this application. Since
     # the modules providing these dependencies define no PEP-8-compliant
@@ -138,8 +145,8 @@ RUNTIME_OPTIONAL = {
 
     #FIXME: Add a minimum required version *AFTER* upstream resolves the
     #following open issue: https://bugreports.qt.io/browse/PYSIDE-517
-    # Note that the corresponding "pyside2-uic" command is *NOT* required; only
-    # the pure-Python "pyside2uic" package referenced here is required.
+    # Note that the corresponding "uic" command is *NOT* required -- only the
+    # pure-Python "pyside2uic" package referenced here.
     'pyside2uic': '',
 }
 '''

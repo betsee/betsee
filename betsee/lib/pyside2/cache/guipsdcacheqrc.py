@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2020 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -44,9 +44,9 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
         pathnames.get_basename(py_filename),
         pathnames.get_basename(qrc_filename))
 
-    # If "pyside2-rcc" is *NOT* in the current ${PATH}, raise an exception.
+    # If "rcc" is *NOT* in the current ${PATH}, raise an exception.
     cmds.die_unless_command(
-        filename='pyside2-rcc',
+        filename='rcc',
         reason='(e.g., as package "pyside2-tools" not installed).')
 
     # If this input file does *NOT* exist, raise an exception.
@@ -59,12 +59,27 @@ def convert_qrc_to_py_file(qrc_filename: str, py_filename: str) -> None:
     pathnames.die_unless_filetype_equals(pathname=qrc_filename, filetype='qrc')
     pathnames.die_unless_filetype_equals(pathname=py_filename,  filetype='py')
 
-    # Convert this input file to this output file or raise an exception if
-    # unsuccessful. For debuggability, this command's stdout and stderr is
-    # redirected to this application's stdout, stderr, and logging file
-    # handles.
+    # Convert this input file to this output file if successful *OR* raise an
+    # exception otherwise (i.e., if unsuccessful), redirecting output to this
+    # application's stdout, stderr, and logging file handles for debuggability.
     cmdrun.log_output_or_die(
-        command_words=('pyside2-rcc', '-o', py_filename, qrc_filename))
+        command_words=(
+            'rcc',
+            # Avoid attempting to perform C++-specific compression of media
+            # files referenced by the input QRC file passed below. Since these
+            # files are *ALL* vector- rather than raster-based, compression
+            # yields no tangible benefits and incurs non-negligible costs at
+            # runtime for both this function call and at application startup.
+            '--compress-algo', 'none',
+            # Output something other than nothing (the default).
+            '--verbose',
+            # Output Python 3.x rather than C++ (the default).
+            '--generator', 'python',
+            # Output to this file rather than stdout (the default).
+            '--output', py_filename,
+            # Input the contents of this QRC file.
+            qrc_filename,
+        ))
 
     #FIXME: The contents of this output "py_filename" should additionally be
     #opened for writing and prefixed by a shebang line running the active Python

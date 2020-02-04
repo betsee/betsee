@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --------------------( LICENSE                           )--------------------
-# Copyright 2017-2019 by Alexis Pietak & Cecil Curry.
+# Copyright 2017-2020 by Alexis Pietak & Cecil Curry.
 # See "LICENSE" for further details.
 
 '''
@@ -11,7 +11,7 @@ application startup) functionality.
 By compare, most icons leveraged by this application are required only at
 application startup and hence already managed by the pregenerated
 :mod:`betsee.data.py.betsee_ui` submodule cached from the Qt Creator-managed
-``betsee/data/ui/betsee.ui` file created at application design time. To avoid
+``betsee/data/ui/betsee.ui`` file created at application design time. To avoid
 redundancy, this submodule intentionally excludes these icons.
 
 Design
@@ -25,6 +25,9 @@ guaranteeing that:
 * All subsequent calls to that function return the existing :class:`QIcon`
   instance previously cached by the first call to that function.
 '''
+
+#FIXME: See also this elegant icon set best comparable to OpenIconic:
+#    https://feathericons.com
 
 # ....................{ IMPORTS                           }....................
 # from PySide2.QtCore import QCoreApplication
