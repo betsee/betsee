@@ -32,8 +32,7 @@ def _register_dir() -> None:
     # Avert thy eyes, purist Pythonistas!
     import os, sys
 
-    # Absolute dirname of this directory, inspired by the following
-    # StackOverflow answer: https://stackoverflow.com/a/8663557/2809027
+    # Absolute dirname of this directory inspired by this StackOverflow answer:
     setup_dirname = os.path.dirname(os.path.realpath(__file__))
 
     # If the current PYTHONPATH does *NOT* already contain this directory...
@@ -127,7 +126,7 @@ delimiting human-readable capitalized English words formally recognized by the
 
 See Also
 ----------
-https://pypi.python.org/pypi?%3Aaction=list_classifiers
+https://pypi.org/classifiers
     Plaintext list of all trove classifier strings recognized by PyPI.
 '''
 
@@ -137,9 +136,9 @@ https://pypi.python.org/pypi?%3Aaction=list_classifiers
 _SETUP_OPTIONS = {
     # ..................{ CORE                              }..................
     # Self-explanatory metadata. Note that the following metadata keys are
-    # instead specified by the "setup.cfg" file,
+    # instead specified by the "setup.cfg" file:
     #
-    # * "license_file", for unknown reasons. We should probably reconsider
+    # * "license_file", for unknown reasons. We should probably reconsider.
     # * "long_description", since "setup.cfg" supports convenient
     #   "file: ${relative_filename}" syntax for transcluding the contents of
     #   arbitrary project-relative files into metadata values. Attempting to do

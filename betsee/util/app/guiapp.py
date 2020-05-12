@@ -21,7 +21,7 @@ singleton for this application.
 import logging
 from PySide2.QtCore import Qt, QCoreApplication
 from PySide2.QtGui import QGuiApplication
-from PySide2.QtWidgets import QApplication, qApp
+from PySide2.QtWidgets import QApplication
 from betsee import guimetadata
 from betsee.guiexception import BetseePySideApplicationException
 

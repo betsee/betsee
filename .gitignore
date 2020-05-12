@@ -3,7 +3,8 @@
 # See "LICENSE" for further details.
 #
 # --------------------( SYNOPSIS                          )--------------------
-# Paths matching the following glob expressions are *NOT* committed by default.
+# Git-specific dotfile instructing git to avoid tracking repository paths
+# matching one or more glob expressions listed below by default.
 #
 # --------------------( SEE ALSO                          )--------------------
 # For further details, see:

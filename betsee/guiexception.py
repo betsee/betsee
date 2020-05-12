@@ -7,6 +7,9 @@
 Application-specific exception hierarchy.
 '''
 
+#FIXME: Rename this submodule to "betsee.guiexceptions" for parity with the
+#comparable "betse.exceptions" submodule.
+
 # ....................{ IMPORTS                           }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: To raise human-readable exceptions on application startup, the

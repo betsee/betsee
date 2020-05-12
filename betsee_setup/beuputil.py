@@ -120,7 +120,7 @@ def sanitize_classifiers(
     # formally classify this version as such.
     for python_version_minor in range(
         python_version_min_parts[1], python_version_minor_max):
-        classifiers.append(
+        classifiers_sane.append(
             'Programming Language :: Python :: {}.{}'.format(
                 PYTHON_VERSION_MAJOR, python_version_minor,))
     # print('classifiers: {}'.format(_CLASSIFIERS))
