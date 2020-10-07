@@ -62,7 +62,8 @@ BETSEE is universally installable with either:
      conda config --add channels conda-forge
      conda install betsee
 
-See our `installation instructions <BETSE install_>`__ for details. [#install_betse]_
+See our `installation instructions <BETSE install_>`__ for details.
+[#install_betse]_
 
 .. [#install_betse]
    Globally replace all instances of the substring ``betse`` with ``betsee``

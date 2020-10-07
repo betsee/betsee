@@ -33,26 +33,25 @@ Human-readable name of the license this application is licensed under.
 # ....................{ PYTHON ~ version                  }....................
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # WARNING: Changes to this section *MUST* be synchronized with:
+# * The corresponding section of the "betse.metadata" submodule.
 # * Front-facing documentation (e.g., "README.rst", "doc/md/INSTALL.md").
 # On bumping the minimum required version of Python, consider also documenting
 # the justification for doing so in the "Python Version" section of this
 # submodule's docstring above.
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-PYTHON_VERSION_MIN = '3.5.0'
+PYTHON_VERSION_MIN = '3.6.0'
 '''
 Human-readable minimum version of Python required by this application as a
 ``.``-delimited string.
 '''
 
 
-#FIXME: PySide2 (and hence BETSEE by extension) is currently incompatible with
-#Python 3.8 to a significant enough degree that importing from PySide2 under
-#Python 3.8 induces an exception whose message resembles:
-#    TypeError: 'Shiboken.ObjectType' object is not iterable
-#Until the following well-known issue is resolved, we're locked to Python 3.7:
-#    https://bugreports.qt.io/browse/PYSIDE-939
-PYTHON_VERSION_MINOR_MAX = 7
+#FIXME: PySide2 (and hence BETSEE by extension) is probably incompatible with
+#Python 3.9, which has only recently been released. Until further investigation
+#demonstrably shows the currently released stable version of PySide2 to be
+#fully compatible with Python 3.9, we assume the opposite.
+PYTHON_VERSION_MINOR_MAX = 8
 '''
 Maximum minor stable version of the current Python 3.x mainline (e.g., ``9`` if
 Python 3.9 is the most recent stable version of Python 3.x).
